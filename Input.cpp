@@ -14,34 +14,45 @@
 
 static char spellcode [3];
 
-bool is_letter(int tk_code)
+bool is_letter (int tk_code)
 {
 	return tk_code >= TK_A && tk_code <= TK_Z;
 }
 
-bool is_keyboad_key(int tk_code)
+bool is_keyboard_key (int tk_code)
 {
 	return (tk_code >= TK_A && tk_code <= TK_ALT);
 }
 
-void handle_next_input()
+void handle_next_input ()
 {
 	// block until input is received
 	// note: "key" may also include mouse events, etc.
 	int key = terminal_read();
 	int shift = terminal_check(TK_SHIFT);
 
-	// check for the lowercase letters (spell keys)
-	if (is_letter(key) && !shift)
+	// check for the uppercase letters (spell keys)
+	if (is_letter(key) && shift)
 	{
-		char letter = 'a' + (key - TK_A);
-		handle_input_lowercase(letter);
+		char letter = 'A' + (key - TK_A);
+		handle_input_uppercase(letter);
 		return;
 	}
-	else if (is_keyboad_key(key)) // other keyboard
+	else if (key == TK_SHIFT)
 	{
-		blank_lowercase_input();
+		// press shift, clear spell
 		set_spell_preview_string("__");
+		blank_lowercase_input();
+	}
+	else if (is_keyboard_key(key)
+		|| key == (TK_SHIFT | TK_KEY_RELEASED))
+	{
+		// released shift, cancel spell
+		if (spellcode[0] != 0)
+		{
+			set_spell_preview_string("__");
+		}
+		blank_lowercase_input();
 	}
 
 	// other commands
@@ -98,7 +109,7 @@ void blank_lowercase_input ()
 	spellcode[2] = 0;
 }
 
-void handle_input_lowercase (char letter)
+void handle_input_uppercase (char letter)
 {
 	if (spellcode[0] == 0)
 	{

@@ -11,5 +11,11 @@ void config_terminal()
 	terminal_setf("font: %s, size=8x16", FONT1);
 	terminal_setf("tile font: %s, size=16x16, spacing=2x1", FONT2);
 
+	// register for input
+	terminal_set
+	(
+		"input.filter=[keyboard+]"
+	);
+
 	//terminal_set("window.cellsize=8x16");
 }
