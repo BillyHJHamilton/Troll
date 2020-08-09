@@ -14,21 +14,26 @@ struct DrawView
 		{ return view_area().contains(global_pos); }
 };
 
-void init_draw();
+void init_draw ();
 
-void draw_tile(int code, Vec2  const & global_pos, DrawView const & view,
+DrawView get_draw_view ();
+
+void draw_tile (int code, Vec2  const & global_pos, DrawView const & view,
 	char const * const colour);
-void draw_tile_bg(int code, Vec2  const & global_pos, DrawView const & view,
+void draw_tile_bg (int code, Vec2  const & global_pos, DrawView const & view,
 	char const * const colour, char const * const bg_colour);
+void draw_tile_temp (int code, Vec2  const & global_pos, DrawView const & view,
+	char const * const colour);
 
-void print_in_box(Box const & box, char const * const str, int align=TK_ALIGN_LEFT);
-void add_game_message(std::string && message);
-void run_game_message(std::string && message); // adds to most recent message
-void print_game_messages(Box const & box);
+void print_in_box (Box const & box, char const * const str, int align=TK_ALIGN_LEFT);
+void add_game_message (std::string && message);
+void run_game_message (std::string && message); // adds to most recent message
+void print_game_messages (Box const & box);
 
-void set_spell_preview_string(std::string preview);
+void set_spell_preview_string (std::string preview);
 
-void draw_scren();
+void update_screen ();
+void draw_screen ();
 int num_lines_for_visible_creature_stats ();
 void print_player_stats (Box draw_area);
-void print_visible_creature_stats(Box draw_area);
+void print_visible_creature_stats (Box draw_area);

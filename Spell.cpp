@@ -13,7 +13,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 {
 	Spell::Data {"Relashio",			"RL",	"red",			5,	0,	2,		65,	&relashio_effect,			Miscast::Beam },
 	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	3,		55,	&flipendo_effect,			Miscast::Beam },
-	Spell::Data {"Tarantallegra",		"TA",	"darker pink",	15,	0,	0,		70,	&tarantallegra_effect,		Miscast::Beam }
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		70,	&tarantallegra_effect,		Miscast::Beam }
 };
 
 void init()

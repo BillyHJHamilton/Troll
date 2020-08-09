@@ -114,6 +114,7 @@ void LineItr::advance()
 	// based on https://stackoverflow.com/questions/10060046/drawing-lines-with-bresenhams-line-algorithm
 
 	int const error_too_big = error >= dist_long;
+	// dist_long / 2 makes nicer line, but does strange things to visibility
 
 	current += step[error_too_big];
 	error += d_error[error_too_big];

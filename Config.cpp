@@ -19,3 +19,4 @@ void config_terminal()
 
 	//terminal_set("window.cellsize=8x16");
 }
+

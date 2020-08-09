@@ -11,6 +11,8 @@
 #include <sstream>
 #include <list>
 
+static int constexpr ANIMATION_STEP_MS = 25;
+
 static std::list<std::string> game_messages;
 static int constexpr MAX_GAME_MESSAGES = 100;
 
@@ -18,10 +20,55 @@ static std::string spell_preview_string;
 
 static int constexpr TILE_WIDTH_FACTOR = 2;
 
+// ------------------------------------------------------------------------------------------------
+// TerminalLayer helper class
+
+class TerminalLayer
+{
+public:
+	enum Layer : byte
+	{
+		Base = 0,
+		Animation
+	};
+
+	TerminalLayer (Layer layer);
+	~TerminalLayer ();
+private:
+	int old_layer;
+};
+
+TerminalLayer::TerminalLayer (Layer layer)
+{
+	old_layer = terminal_state(TK_LAYER);
+	terminal_layer(layer);
+}
+
+TerminalLayer::~TerminalLayer ()
+{
+	terminal_layer(old_layer);
+}
+
+// ------------------------------------------------------------------------------------------------
+// Drawing functions
+
 void init_draw ()
 {
 	game_messages.clear();
 	spell_preview_string = "__";
+}
+
+DrawView get_draw_view ()
+{
+	int constexpr view_size = 31;
+	Box viewport = make_box(0,0,view_size, view_size);
+
+	// centre the view on the player
+	int constexpr half_size = view_size / 2;
+	Vec2 constexpr half_vec {half_size, half_size};
+	Vec2 start = Player::pos() - half_vec;
+
+	return DrawView{viewport, start};
 }
 
 void draw_tile (int code, Vec2 const & global_pos, DrawView const & view,
@@ -40,6 +87,18 @@ void draw_tile_bg (int code, Vec2 const & global_pos, DrawView const & view,
 	terminal_bkcolor(bg_colour);
 	draw_tile(code, global_pos, view, colour);
 	terminal_bkcolor("black");
+}
+
+void draw_tile_temp (int code, Vec2 const & global_pos, DrawView const & view,
+	char const * const colour)
+{
+	TerminalLayer layer_scope(TerminalLayer::Animation);
+	draw_tile(code, global_pos, view, colour);
+	terminal_refresh();
+	terminal_delay(ANIMATION_STEP_MS);
+
+	// remove animation after
+	draw_tile(' ', global_pos, view, "white");
 }
 
 void print_in_box (Box const & box, char const * const str, int align)
@@ -96,19 +155,11 @@ void set_spell_preview_string(std::string preview)
 	spell_preview_string = preview;
 }
 
-void draw_scren ()
+void update_screen ()
 {
 	terminal_clear();
 
-	int constexpr view_size = 31;
-	Box viewport = make_box(0,0,view_size, view_size);
-
-	// centre the view on the player
-	int constexpr half_size = view_size / 2;
-	Vec2 constexpr half_vec {half_size, half_size};
-	Vec2 start = Player::pos() - half_vec;
-
-	DrawView view = {viewport, start};
+	DrawView view = get_draw_view();
 
 	terminal_font("tile");
 	g_map().draw(view);
@@ -144,7 +195,11 @@ void draw_scren ()
 		"MW  Mimblewimble\n"
 		"RS  Rictusempra\n"
 	);*/
+}
 
+void draw_screen ()
+{
+	update_screen();
 	terminal_refresh();
 }
 

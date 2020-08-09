@@ -28,9 +28,12 @@
 // X Message printing
 // X Dynamic stat display
 // X Status effects
-// - Spell accuracy/failure
-// - Spell animations
+// X Spell accuracy/failure
+// X Spell animations
 // - Manual targeting
+// - AI firing back
+// - Turn and action timing
+// - Check spells known
 // - Map generation
 
 void test_line_drawing()
@@ -53,7 +56,7 @@ void game_loop()
 	update_visible_creatures();
 	update_target();
 
-	draw_scren();
+	draw_screen();
 
 	handle_next_input();
 }

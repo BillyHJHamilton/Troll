@@ -21,6 +21,9 @@ static void test_for_impact (Beam::Data & beam);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, int target);
 static void hit_creature (Beam::Data const & beam, int target);
+
+static std::string get_colour (Beam::Data const & beam);
+static int get_codepoint (Beam::Data const & beam);
 static int get_damage (Beam::Data const & beam);
 static Spell::EffectFunc get_effect_func (Beam::Data const & beam);
 
@@ -72,6 +75,11 @@ void shoot_along_line (Beam::Data & beam)
 	assert(beam.pos != end); // zero trajectory will make infinite loop
 	LineItr line_itr(beam.pos, end);
 
+	// init for animation
+	DrawView view = get_draw_view();
+	int codepoint = get_codepoint(beam);
+	std::string colour = get_colour(beam);
+
 	do
 	{
 		++ line_itr;
@@ -79,8 +87,12 @@ void shoot_along_line (Beam::Data & beam)
 		// update position
 		beam.pos = *line_itr;
 
+		// do animation
+		draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+		
 		// see if we hit anything; this may change done to true
 		test_for_impact(beam);
+
 	}
 	while (!beam.done && line_itr.steps_left > 0);
 }
@@ -227,7 +239,33 @@ void hit_creature(Beam::Data const & beam, int target)
 	}
 }
 
-static int get_damage (Beam::Data const & beam)
+std::string get_colour (Beam::Data const & beam)
+{
+	if (beam.type == Beam::Type::Spell)
+	{
+		Spell::Instance inst = Spell::get_current_instance();
+		return inst.colour;
+	}
+	else
+	{
+		return "white"; // todo - projectiles
+	}
+}
+
+int get_codepoint (Beam::Data const & beam)
+{
+	if (beam.type == Beam::Type::Spell)
+	{
+		Spell::Instance inst = Spell::get_current_instance();
+		return inst.codepoint;
+	}
+	else
+	{
+		return '*'; // todo - projectiles
+	}
+}
+
+int get_damage (Beam::Data const & beam)
 {
 	if (beam.type == Beam::Type::Spell)
 	{

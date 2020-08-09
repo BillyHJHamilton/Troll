@@ -54,6 +54,9 @@ bool player_try_cast_spell(char const * spell_abbrev)
 
 void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
 {
+	// Update the screen because we'll do some animation for the spell
+	draw_screen();
+
 	// 1. Distractedness
 	// Chance you won't get to cast at all
 
@@ -107,6 +110,11 @@ void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
 		message += Spell::get_name(spell) + "!";
 		add_game_message(std::move(message));
 
+		// do animation
+		DrawView view = get_draw_view();
+		draw_tile_temp('X', creature_pos(caster), view, "yellow");
+		draw_tile_temp('X', creature_pos(caster), view, "black");
+
 		// todo - proper miscasts
 		//Miscast::perform(caster, target, spell_used);
 		return;
@@ -134,12 +142,4 @@ void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
 		bool constexpr caster_aimed = true;
 		Beam::shoot_spell (spell, caster, target_pos, caster_aimed);
 	}
-
-	/*
-	// effects
-	Spell::execute_effect(spell, caster, target);
-
-	int damage = Spell::get_damage(spell, caster);
-	damage_creature(target, damage);
-	*/
 }
