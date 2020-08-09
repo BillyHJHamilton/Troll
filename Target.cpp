@@ -1,6 +1,8 @@
 #include "Target.h"
 
 #include "Creature.h"
+#include "Player.h"
+
 
 #include <algorithm>
 #include <cassert>
@@ -43,7 +45,11 @@ void update_target ()
 
 void cycle_target ()
 {
-	g_target_mode = TargetMode::Automatic;
+	if (g_target_mode == TargetMode::Manual)
+	{
+		g_target_index = creature_at_pos(g_target_pos);
+		g_target_mode = TargetMode::Automatic;
+	}
 	
 	if (g_visible_creatures.size() > 0)
 	{
@@ -83,7 +89,14 @@ void cycle_target ()
 
 void move_target_pos (Vec2 dir)
 {
-	g_target_mode = TargetMode::Manual;
+	if (g_target_mode == TargetMode::Automatic)
+	{
+		if (g_target_index == Creature::None)
+		{
+			g_target_pos = Player::pos();
+		}
+		g_target_mode = TargetMode::Manual;
+	}
 	g_target_pos += dir;
 }
 

@@ -27,6 +27,7 @@ bool player_try_cast_spell(Spell::Index spell)
 		}
 		else
 		{
+			add_game_message("No target.");
 			return false;
 		}
 	}
@@ -37,6 +38,13 @@ bool player_try_cast_spell(Spell::Index spell)
 	else
 	{
 		assert(false); // unhandled case
+	}
+
+	// check if targeting is valid...
+	if (target_pos == Player::pos() && Spell::get_accuracy(spell) != -1)
+	{
+		add_game_message("Don't shoot that spell at yourself.");
+		return false;
 	}
 
 	// Having confirmed it is plausible for the player to try to cast the spell,

@@ -78,7 +78,9 @@ void clear_creatures ()
 
 bool creature_valid(int creature_index)
 {
-	return s_creatures[creature_index].type != Creature::None;
+	return creature_index >= 0
+		&& creature_index < max_creature_index
+		&& s_creatures[creature_index].type != Creature::None;
 }
 
 Creature::Type creature_type (int creature_index)
