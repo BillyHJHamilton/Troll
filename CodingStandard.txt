@@ -1,0 +1,33 @@
+MEMORY MANAGEMENT
+- avoid new/delete - use arrays and/or vectors
+- avoid smart pointers (which are just another form of new/delete)
+- don't store pointers to things in vectors - use index handles (the vector may reallocate)
+- whenever possible, allocate everything at program startup
+- use RAII when applicable (if a class MUST manage a resource)
+
+OBJECTS
+- use "struct" for POD and "class" for things with constructors, etc.
+- use POD structs (instead of classes) whenever feasible
+- if necessary, define separate (or static) function to construct a POD struct
+- avoid pointless getters/setters - use public members for access outside class
+- use getter/setter to give multiple useful ways to access the same thing
+- use free functions for things that seem to involve multiple objects
+- avoid virtual functions whenever possible (e.g., use enum/switch)
+
+STYLE
+- do only one thing per line (no clever K&R tricks)
+- make function calls clear to read (no naked true/false)
+- east const
+- keep lines to 100 characters long
+- space before parens in function definition but NOT in function call
+- if for-loop has any complex part, separate the three loop parts onto three lines
+
+LANGUAGE FEATURES
+- goto considered acceptable
+- use const as much as possible
+- don't make Hitler sad (https://www.youtube.com/watch?v=ZWRRXP-XFvY)
+- use constexpr as much as possible
+- don't throw exceptions
+- no lambdas
+- use enum class
+- use "using" instead of "typedef"
