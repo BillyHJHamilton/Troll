@@ -30,8 +30,6 @@ void add_game_message (std::string && message);
 void run_game_message (std::string && message); // adds to most recent message
 void print_game_messages (Box const & box);
 
-void set_spell_preview_string (std::string preview);
-
 void update_screen ();
 void draw_screen ();
 int num_lines_for_visible_creature_stats ();

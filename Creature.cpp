@@ -377,7 +377,7 @@ void draw_creature (int creature_index, DrawView const & view)
 		int code = s_creatures[creature_index].codepoint;
 		if (creature_is_targeted(creature_index))
 		{
-			draw_tile_bg(code, pos, view, "white", "darkest red");
+			draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
 		}
 		else
 		{

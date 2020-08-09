@@ -4,8 +4,6 @@
 #include "Map.h"
 #include "Player.h"
 
-Map global_map;
-
 bool g_quit_flag;
 
 void setup_global()
@@ -27,6 +25,3 @@ void setup_global()
 	spawn_creature(Creature::ColinCreevy_0, {15,16});
 	spawn_creature(Creature::ColinCreevy_0, {8,13});
 }
-
-Map & g_map () { return global_map; }
-

@@ -1,10 +1,15 @@
 #include "BearLibTerminal.h"
-
 #include "Map.h"
-#include "Global.h"
+
 #include "Draw.h"
+#include "Global.h"
+#include "Target.h"
 
 #include <cassert>
+
+static Map global_map;
+
+Map & g_map () { return global_map; }
 
 //-------------------------------------------------------------------------------------------------
 // Terrain
@@ -148,11 +153,25 @@ void Map::draw_map_tile (Vec2 global_pos, DrawView const & view, bool ignore_vis
 	Visibility v = get_visibility(global_pos);
 	if (ignore_visibility || v == Visibility::Visible)
 	{
-		draw_tile(code, global_pos, view, "white");
+		if (pos_is_targeted(global_pos))
+		{
+			draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
+		}
+		else
+		{
+			draw_tile(code, global_pos, view, "white");
+		}
 	}
 	else if (v == Visibility::Explored)
 	{
-		draw_tile(code, global_pos, view, "dark grey");
+		if (pos_is_targeted(global_pos))
+		{
+			draw_tile_bg(code, global_pos, view, "dark grey", TARGET_COLOUR);
+		}
+		else
+		{
+			draw_tile(code, global_pos, view, "dark grey");
+		}
 	}
 }
 

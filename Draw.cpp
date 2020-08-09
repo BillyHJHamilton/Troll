@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "Global.h"
+#include "Input.h"
 #include "Map.h"
 #include "Player.h"
 #include "Target.h"
@@ -15,8 +16,6 @@ static int constexpr ANIMATION_STEP_MS = 25;
 
 static std::list<std::string> game_messages;
 static int constexpr MAX_GAME_MESSAGES = 100;
-
-static std::string spell_preview_string;
 
 static int constexpr TILE_WIDTH_FACTOR = 2;
 
@@ -55,7 +54,6 @@ TerminalLayer::~TerminalLayer ()
 void init_draw ()
 {
 	game_messages.clear();
-	spell_preview_string = "__";
 }
 
 DrawView get_draw_view ()
@@ -93,6 +91,7 @@ void draw_tile_temp (int code, Vec2 const & global_pos, DrawView const & view,
 	char const * const colour)
 {
 	TerminalLayer layer_scope(TerminalLayer::Animation);
+	terminal_font("tile");
 	draw_tile(code, global_pos, view, colour);
 	terminal_refresh();
 	terminal_delay(ANIMATION_STEP_MS);
@@ -150,11 +149,6 @@ void print_game_messages(Box const & box)
 	print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
 }
 
-void set_spell_preview_string(std::string preview)
-{
-	spell_preview_string = preview;
-}
-
 void update_screen ()
 {
 	terminal_clear();
@@ -187,7 +181,8 @@ void update_screen ()
 
 	// spells area
 	Box spell_area = make_box(93, 1, 27, 30);
-	print_in_box(spell_area, spell_preview_string.c_str());
+	std::string spell_preview = get_spell_preview_string();
+	print_in_box(spell_area, spell_preview.c_str());
 /*	print_in_box(spell_area,
 		"Spells:\n"
 		"RL  Relashio\n"

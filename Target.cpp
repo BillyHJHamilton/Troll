@@ -81,7 +81,13 @@ void cycle_target ()
 	}
 }
 
-bool creature_is_targeted(int creature_index)
+void move_target_pos (Vec2 dir)
+{
+	g_target_mode = TargetMode::Manual;
+	g_target_pos += dir;
+}
+
+bool creature_is_targeted (int creature_index)
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -98,3 +104,22 @@ bool creature_is_targeted(int creature_index)
 		return false;
 	}
 }
+
+bool pos_is_targeted (Vec2 const & global_pos)
+{
+	if (g_target_mode == TargetMode::Manual)
+	{
+		return global_pos == g_target_pos;
+	}
+	else if (g_target_mode == TargetMode::Automatic)
+	{
+		return creature_valid(g_target_index)
+			&& g_target_pos == global_pos;
+	}
+	else
+	{
+		assert(false); // unhandled case
+		return false;
+	}
+}
+

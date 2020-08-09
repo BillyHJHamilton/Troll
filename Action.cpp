@@ -1,34 +1,24 @@
 #include "Action.h"
+
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Map.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
 #include "Target.h"
 
-bool player_try_cast_spell(char const * spell_abbrev)
-{
-	// check if it's a real spell
-	Spell::Index spell_index = Spell::get_index_by_abbrev(spell_abbrev);
-	if (spell_index == Spell::None)
-	{
-		std::string preview = std::string(spell_abbrev) + " - Invalid";
-		set_spell_preview_string(preview);
-		return false;
-	}
-	else
-	{
-		std::string preview = std::string(spell_abbrev) + " - " + Spell::get_name(spell_index);
-		set_spell_preview_string(preview);
-	}
+#include <cassert>
 
+bool player_try_cast_spell(Spell::Index spell)
+{
 	// check if the player knows the spell
 	// todo
 
 	// targeting
-	Vec2 target_pos;
+	Vec2 target_pos = {0,0};
 	if (g_target_mode == TargetMode::Automatic)
 	{
 		if (creature_valid(g_target_index))
@@ -44,10 +34,14 @@ bool player_try_cast_spell(char const * spell_abbrev)
 	{
 		target_pos = g_target_pos;
 	}
+	else
+	{
+		assert(false); // unhandled case
+	}
 
 	// Having confirmed it is plausible for the player to try to cast the spell,
 	// we now continue to the generic spell-casting function
-	try_cast_spell(spell_index, Creature::Player, target_pos);
+	try_cast_spell(spell, Creature::Player, target_pos);
 
 	return true;
 }
@@ -105,15 +99,17 @@ void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
 
 	if ( is_miscast )
 	{
-		std::string message = Grammar::Name(caster) + " ";
-		message += Grammar::verbs("miscast", caster) + " ";
-		message += Spell::get_name(spell) + "!";
-		add_game_message(std::move(message));
+		if (creature_visible(caster))
+		{
+			std::string message = Grammar::Name(caster) + " ";
+			message += Grammar::verbs("miscast", caster) + " ";
+			message += Spell::get_name(spell) + "!";
+			add_game_message(std::move(message));
 
-		// do animation
-		DrawView view = get_draw_view();
-		draw_tile_temp('X', creature_pos(caster), view, "yellow");
-		draw_tile_temp('X', creature_pos(caster), view, "black");
+			DrawView view = get_draw_view();
+			draw_tile_temp('X', creature_pos(caster), view, "yellow");
+			draw_tile_temp('X', creature_pos(caster), view, "black");
+		}
 
 		// todo - proper miscasts
 		//Miscast::perform(caster, target, spell_used);

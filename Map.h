@@ -61,4 +61,6 @@ public:
 	inline bool contains(Vec2 const & global_pos) const { return map_box.contains(global_pos); }
 };
 
+Map & g_map();
+
 bool check_los(Map const & map, Vec2 const & p0, Vec2 const & p1);

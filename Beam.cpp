@@ -88,7 +88,11 @@ void shoot_along_line (Beam::Data & beam)
 		beam.pos = *line_itr;
 
 		// do animation
-		draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+		Visibility tile_vis = g_map().get_visibility(beam.pos);
+		if (tile_vis == Visibility::Visible)
+		{
+			draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+		}
 		
 		// see if we hit anything; this may change done to true
 		test_for_impact(beam);
@@ -107,7 +111,10 @@ void test_for_impact (Beam::Data & beam)
 	// hit wall
 	if (map.tile_is_solid(beam.pos))
 	{
-		add_game_message("The " + beam_description(beam) + " hits the wall.");
+		if (map.get_visibility(beam.pos) == Visibility::Visible)
+		{
+			add_game_message("The " + beam_description(beam) + " hits the wall.");
+		}
 		beam.done = true;
 		return;
 	}
