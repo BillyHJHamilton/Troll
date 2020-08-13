@@ -1,8 +1,10 @@
 #include "SpellEffect.h"
 
+#include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Map.h"
 #include "Status.h"
 
 #include <iostream>
@@ -17,10 +19,41 @@ void vermillious_effect (int caster, int target)
 void flipendo_effect (int caster, int target)
 {
 	// Push back
-	// - Need to get the trajectory of the active spell
+	std::optional<LineItr> optional_line = Beam::get_latest_impact_line();
+	if (optional_line.has_value())
+	{
+		LineItr line = *optional_line;
+		++ line;
+		Vec2 knock_pos = *line;
 
-	std::string message = Grammar::Name_is(target) + " knocked back!";
-	add_game_message(std::move(message));
+		// check for collision
+		if (g_map().tile_is_solid(knock_pos))
+		{
+			std::string message = Grammar::Name_is(target) + " knocked into the wall!";
+			add_game_message(std::move(message));
+			damage_creature(target, 1);
+		}
+		else
+		{
+			int secondary_target = creature_at_pos(knock_pos);
+			if (secondary_target != Creature::None)
+			{
+				std::string message = Grammar::Name_is(target) + " knocked into "
+					+ Grammar::name(secondary_target) + "!";
+				add_game_message(std::move(message));
+				damage_creature(target, 1);
+				damage_creature(secondary_target, 1);
+			}
+			else
+			{
+				move_creature(target, knock_pos);
+				std::string message = Grammar::Name_is(target) + " knocked back!";
+				add_game_message(std::move(message));
+			}
+		}
+	}
+
+
 }
 
 void tarantallegra_effect (int caster, int target)

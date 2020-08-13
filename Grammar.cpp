@@ -17,6 +17,18 @@ std::string Name (int creature_index)
 	}
 }
 
+std::string name (int creature_index)
+{
+	if (creature_is_player(creature_index))
+	{
+		return "you";
+	}
+	else
+	{
+		return creature_name(creature_index);
+	}
+}
+
 std::string Name_is (int creature_index)
 {
 	if (creature_is_player(creature_index))

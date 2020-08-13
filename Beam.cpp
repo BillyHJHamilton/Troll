@@ -11,16 +11,18 @@
 namespace Beam
 {
 
+static std::optional<LineItr> s_impact_line;
+
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
 
 static Beam::Data make_spell_beam (Spell::Index, int caster, Vec2 target_pos, bool caster_aimed);
 static void shoot_beam (Beam::Data & beam);
 static void shoot_along_line (Beam::Data & beam);
-static void test_for_impact (Beam::Data & beam);
+static void test_for_impact (Beam::Data & beam, LineItr const & line);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, int target);
-static void hit_creature (Beam::Data const & beam, int target);
+static void hit_creature (Beam::Data const & beam, int target, LineItr const & line);
 
 static std::string get_colour (Beam::Data const & beam);
 static int get_codepoint (Beam::Data const & beam);
@@ -35,6 +37,11 @@ void shoot_spell (Spell::Index spell, int caster, Vec2 target_pos, bool caster_a
 	Spell::create_and_bind_instance(spell, caster);
 	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed);
 	shoot_beam(beam);
+}
+
+std::optional<LineItr> get_latest_impact_line ()
+{
+	return s_impact_line;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -95,7 +102,7 @@ void shoot_along_line (Beam::Data & beam)
 		}
 		
 		// see if we hit anything; this may change done to true
-		test_for_impact(beam);
+		test_for_impact(beam, line_itr);
 
 		// Not sure we want max range.
 		// If we do, it needs to follow Pyhtagorus; or we go to square LOS...
@@ -108,7 +115,7 @@ void shoot_along_line (Beam::Data & beam)
 	while (!beam.done && line_itr.steps_left > 0);
 }
 
-void test_for_impact (Beam::Data & beam)
+void test_for_impact (Beam::Data & beam, LineItr const & line)
 {
 	Map const & map = g_map();
 
@@ -142,7 +149,7 @@ void test_for_impact (Beam::Data & beam)
 
 		if (hit_chance < accuracy_roll)
 		{
-			hit_creature(beam, creature_in_path);
+			hit_creature(beam, creature_in_path, line);
 			beam.done = true;
 			return;
 		}
@@ -234,7 +241,7 @@ static int get_hit_chance(Beam::Data const & beam, int target)
 	}
 }
 
-void hit_creature(Beam::Data const & beam, int target)
+void hit_creature(Beam::Data const & beam, int target, LineItr const & line)
 {
 	// todo - exception for firing into watertrap
 
@@ -244,6 +251,16 @@ void hit_creature(Beam::Data const & beam, int target)
 
 	int damage = get_damage(beam);
 	Spell::EffectFunc effect_func = get_effect_func(beam);
+
+	// stash the impact line - sorry for hack
+	Vec2 hit_pos = creature_pos(target);
+	LineItr line_temp = line;
+	while (!line_temp.finished())
+	{
+		++ line_temp;
+	}
+	Vec2 some_end_pos = *line_temp + 5*beam.trajectory;
+	s_impact_line = LineItr(hit_pos, some_end_pos);
 
 	// deal damage and then apply effect
 	damage_creature(target, damage);

@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "Geometry.h"
 
+#include <optional>
 #include <string>
 
 // A beam is a spell flying through the air.
@@ -28,5 +29,7 @@ namespace Beam
 	};
 
 	void shoot_spell (Spell::Index spell, int caster, Vec2 target_pos, bool caster_aimed);
+
+	std::optional<LineItr> get_latest_impact_line ();
 }
 
