@@ -97,6 +97,13 @@ void shoot_along_line (Beam::Data & beam)
 		// see if we hit anything; this may change done to true
 		test_for_impact(beam);
 
+		// Not sure we want max range.
+		// If we do, it needs to follow Pyhtagorus; or we go to square LOS...
+		//++ beam.dist_travelled;
+		//if (beam.dist_travelled >= Beam::get_range(beam))
+		//{
+		//	beam.done = true;
+		//}
 	}
 	while (!beam.done && line_itr.steps_left > 0);
 }

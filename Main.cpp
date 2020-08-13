@@ -30,7 +30,7 @@
 // X Status effects
 // X Spell accuracy/failure
 // X Spell animations
-// - Manual targeting
+// X Manual targeting
 // - Max spell range
 // - AI firing back
 // - Turn and action timing

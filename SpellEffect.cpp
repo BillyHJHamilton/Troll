@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-void relashio_effect (int caster, int target)
+void vermillious_effect (int caster, int target)
 {
 	std::string message = Grammar::Name_is(target) + " showered in sparks!";
 	add_game_message(std::move(message));
@@ -16,6 +16,9 @@ void relashio_effect (int caster, int target)
 
 void flipendo_effect (int caster, int target)
 {
+	// Push back
+	// - Need to get the trajectory of the active spell
+
 	std::string message = Grammar::Name_is(target) + " knocked back!";
 	add_game_message(std::move(message));
 }

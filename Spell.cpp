@@ -10,8 +10,8 @@ namespace Spell
 {
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{
-	Spell::Data {"Relashio",			"RL",	"red",			5,	0,	2,		65,	&relashio_effect,			Miscast::Beam },
+{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc	Effect function				Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		65,	&vermillious_effect,		Miscast::Beam },
 	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	3,		55,	&flipendo_effect,			Miscast::Beam },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		70,	&tarantallegra_effect,		Miscast::Beam }
 };
@@ -21,27 +21,27 @@ void init()
 	// none required, thank you constexpr
 }
 
-std::string get_name(Spell::Index spell_index)
+std::string get_name (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].name;
 }
 
-std::string get_abbrev(Spell::Index spell_index)
+std::string get_abbrev (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].abbrev;
 }
 
-std::string get_colour(Spell::Index spell_index)
+std::string get_colour (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].colour;
 }
 
-int get_difficulty(Spell::Index spell_index)
+int get_difficulty (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].difficulty;
 }
 
-int get_damage(Spell::Index spell_index, int caster)
+int get_damage (Spell::Index spell_index, int caster)
 {
 	int skill_magic = creature_skill_magic(caster);
 
@@ -54,28 +54,28 @@ int get_damage(Spell::Index spell_index, int caster)
 		return 0;
 }
 
-int get_accuracy(Spell::Index spell_index)
+int get_accuracy (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].accuracy;
 }
 
-EffectFunc get_effect_func(Spell::Index spell_index)
+EffectFunc get_effect_func (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].effect_func;
 }
 
-int Spell::get_dark(Spell::Index spell_index)
+int Spell::get_dark (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].dark;
 }
 
-Miscast::Category get_miscast_category(Spell::Index spell_index)
+Miscast::Category get_miscast_category (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].miscast_category;
 }
 
 // returns none if no spell exists with given name
-Spell::Index get_index_by_name(std::string const & spell_name)
+Spell::Index get_index_by_name (std::string const & spell_name)
 {
 	// just a linear search, with multiple points of exit.
 	unsigned int i = 0;
@@ -89,7 +89,7 @@ Spell::Index get_index_by_name(std::string const & spell_name)
 }
 
 // returns none if no spell exists with given abbreviation
-Spell::Index get_index_by_abbrev(std::string const & spell_abbrev)
+Spell::Index get_index_by_abbrev (std::string const & spell_abbrev)
 {
 	// just a linear search, with multiple points of exit.
 	unsigned int i = 0;
@@ -102,13 +102,13 @@ Spell::Index get_index_by_abbrev(std::string const & spell_abbrev)
 	return Spell::None;
 }
 
-char const * get_description(Spell::Index spell_index)
+char const * get_description (Spell::Index spell_index)
 {
 	return "This is a spell."; // todo
 //	return spell_description[spell_index];
 }
 
-float get_miscast_rate(Spell::Index spell, int skill_magic)
+float get_miscast_rate (Spell::Index spell, int skill_magic)
 {
 	// The miscast rate is based on the difference between difficulty and skill.
 	// If difficulty is equal to skill, the miscast rate is 15%.

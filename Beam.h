@@ -30,37 +30,3 @@ namespace Beam
 	void shoot_spell (Spell::Index spell, int caster, Vec2 target_pos, bool caster_aimed);
 }
 
-/*
-struct Beam2
-{
-	// Data
-	int damage;
-	int accuracy;
-
-	Spell::Index spell_index; // if any
-	Spell::EffectFunc effect_func;
-	int caster_index; // if any
-	bool caster_aimed;
-
-	std::string description;
-	int codepoint;
-	std::string colour;
-
-	Vec2 start_pos;
-	Vec2 target_pos;
-	bool done;
-
-	// Functions
-
-	static Beam make_spell (Spell::Index spell, int caster);
-	// make fake spell, projectile...
-
-	static void shoot_at_target (Beam & beam, int caster, int target);
-	static void shoot_at_pos (Beam & beam, int caster, Vec2 target_pos);
-	static void shoot_along_line (Beam & beam);
-	
-	static int get_hit_chance (Beam const & beam, int caster, int target);
-	static void hit_creature (Beam const & beam, int caster, int target);
-};
-*/
-
