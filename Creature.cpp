@@ -4,6 +4,7 @@
 #include "Draw.h"
 #include "Global.h"
 #include "Map.h"
+#include "Spell.h"
 #include "Status.h"
 #include "Target.h"
 
@@ -16,25 +17,44 @@
 // of different kinds.  (It is called gingerbread because they are like cookie cutters.)
 // Note that the first entry in the array is reserved for the player.
 
-static Creature::Stats gingerbread [Creature::Count];
+static Creature::Stats s_gingerbread [Creature::Count];
+static Spell::Bitset s_gingerbread_spells [Creature::Count]; 
 
-void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gender gender, int magic, int hp)
+void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string);
+
+void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gender gender, int magic, int hp, std::string spell_string)
 {
-	gingerbread[type] = {type, name, codepoint, gender, magic, hp, hp, {0,0}};
+	s_gingerbread[type] = {type, name, codepoint, gender, magic, hp, hp, {0,0}};
+	parse_spell_string(s_gingerbread_spells[type], spell_string);
 }
 
 void init_creatures ()
 {
-	//																			  mag  hp
-	mix_gingerbread(Creature::Player,		 "Player",       '@', Gender::Female, 10,  10);
-	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   10);
-	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  10);
+	//																			  mag  hp  spells
+	mix_gingerbread(Creature::Player,		 "Player",       '@', Gender::Female, 10,  10, "VM FP TA");
+	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   10, "VM FP");
+	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  10, "VM TA");
+}
+
+void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
+{
+	int i = 0;
+
+	std::stringstream ss(spell_string);
+
+	std::string token;
+	while (ss >> token)
+	{
+		Spell::Index spell = Spell::get_index_by_abbrev(token);
+		assert(spell != Spell::None);
+		spell_bitset.set(spell, true);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
 
 // Individual creatures are stored in the s_creatures array.
-// The parallel arrays s_creature_status and s_derived_stats hold further information.
+// The parallel arrays (s_creature_status, s_derived_stats, etc.) hold further information.
 // The arrays are hidden but can be accessed with the functions such as creature_type()
 // Just as with the gingerbread array, the first entry is reserved for the player.
 // This means the Creature::Player constant applies to *both* gingerbread *and* g_creatures.
@@ -43,7 +63,8 @@ int constexpr MAX_CREATURES = 200;
 static Creature::Stats s_creatures [MAX_CREATURES];
 static Grid<int> s_creature_status; // [creature][status]
 static Creature::DerivedStats s_derived_stats [MAX_CREATURES];
-static int max_creature_index;
+static Spell::Bitset s_spells_known [MAX_CREATURES];
+static int s_max_creature_index;
 
 static Creature::Stats & get_creature (int index)
 {
@@ -67,10 +88,37 @@ void clear_creatures ()
 
 	s_creature_status = make_grid(MAX_CREATURES, Status::Count, 0);
 
-	max_creature_index = 0;
+	s_max_creature_index = 0;
 
 	g_visible_creatures.clear();
 	g_visible_creatures.reserve(MAX_CREATURES);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Iterator over valid creature indices
+
+Creature::IndexItr::IndexItr ()
+	: current(0)
+{
+}
+
+int Creature::IndexItr::get () const
+{
+	return current;
+}
+
+void Creature::IndexItr::advance ()
+{
+	++ current;
+	while (!creature_valid(current) && current < s_max_creature_index)
+	{
+		++ current;
+	}
+}
+
+bool Creature::IndexItr::finished () const
+{
+	return current >= s_max_creature_index;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -79,7 +127,7 @@ void clear_creatures ()
 bool creature_valid(int creature_index)
 {
 	return creature_index >= 0
-		&& creature_index < max_creature_index
+		&& creature_index < s_max_creature_index
 		&& s_creatures[creature_index].type != Creature::None;
 }
 
@@ -148,6 +196,12 @@ int creature_accuracy (int creature_index)
 	return get_derived_stats(creature_index).accuracy;
 }
 
+bool creature_knows_spell (int creature_index, Spell::Index spell)
+{
+	Spell::Bitset const & spell_bitset = s_spells_known[creature_index];
+	return spell_bitset.test(spell);
+}
+
 //-------------------------------------------------------------------------------------------------
 // More complex accessor functions
 
@@ -180,7 +234,7 @@ bool creature_visible(int creature_index)
 int creature_at_pos (Vec2 pos)
 {
 	// search creature array
-	for (int i = 0; i < max_creature_index; i++)
+	for (int i = 0; i < s_max_creature_index; i++)
 	{
 		if (creature_pos(i) == pos)
 		{
@@ -203,6 +257,16 @@ bool creature_is_player (int creature_index)
 		assert(creature_index != Creature::Player);
 		return false;
 	}
+}
+
+float creature_miscast_rate_for_spell (int creature_index, Spell::Index spell)
+{
+	// Miscastiness effectively applies a penalty to your magic skill.
+	int miscastiness = creature_miscastiness(creature_index);
+	int skill_magic = creature_skill_magic(creature_index);
+	int effective_skill_magic = skill_magic - miscastiness;
+
+	return Spell::get_miscast_rate(spell, effective_skill_magic);
 }
 
 std::string creature_status_string (int creature_index)
@@ -232,6 +296,20 @@ std::string creature_status_string (int creature_index)
 	return outs.str();
 }
 
+std::vector<Spell::Index> creature_spells_known (int creature_index)
+{
+	Spell::Bitset const & spell_bitset = s_spells_known[creature_index];
+	std::vector<Spell::Index> spell_list;
+	for (int i = 0; i < Spell::Index::Count; i++)
+	{
+		if (spell_bitset.test(i))
+		{
+			spell_list.push_back(static_cast<Spell::Index>(i));
+		}
+	}
+	return spell_list;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Mutator functions
 
@@ -239,7 +317,7 @@ int spawn_creature (Creature::Type type, Vec2 const & pos)
 {
 	// find creature number
 	int new_index = -1;
-	for (int i = 0; i < max_creature_index; i++)
+	for (int i = 0; i < s_max_creature_index; i++)
 	{
 		if (!creature_valid(i))
 		{
@@ -248,17 +326,18 @@ int spawn_creature (Creature::Type type, Vec2 const & pos)
 		}
 	}
 
-	if (new_index == -1 && max_creature_index < MAX_CREATURES)
+	if (new_index == -1 && s_max_creature_index < MAX_CREATURES)
 	{
-		new_index = max_creature_index;
-		++ max_creature_index;
+		new_index = s_max_creature_index;
+		++ s_max_creature_index;
 	}
 
 	assert(new_index != -1); // if this fails, increase creature memory budget
 
 	// allocate new creature on the arrays
-	s_creatures[new_index] = gingerbread[type];
+	s_creatures[new_index] = s_gingerbread[type];
 	s_creatures[new_index].pos = pos;
+	s_spells_known[new_index] = s_gingerbread_spells[type];
 	creature_cure_all(new_index);
 	update_derived_stats(new_index);
 
@@ -362,7 +441,7 @@ void update_visible_creatures ()
 {
 	g_visible_creatures.clear();
 	assert(creature_is_player(0)); // we are skipping index 0 on this premise
-	for (int i = 1; i < max_creature_index; i++)
+	for (int i = 1; i < s_max_creature_index; i++)
 	{
 		if (creature_visible(i))
 		{

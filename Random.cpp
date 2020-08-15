@@ -30,9 +30,9 @@ int random (int min, int max)
 	return dist(generator);
 }
 
-int random_index (int size)
+std::size_t random_index (std::size_t size)
 {
-	std::uniform_int_distribution<int> dist(0, size-1);
+	std::uniform_int_distribution<std::size_t> dist(0, size-1);
 	return dist(generator);
 }
 

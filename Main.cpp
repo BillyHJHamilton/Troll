@@ -31,7 +31,6 @@
 // X Spell accuracy/failure
 // X Spell animations
 // X Manual targeting
-// - Max spell range
 // - AI firing back
 // - Turn and action timing
 // - Check spells known

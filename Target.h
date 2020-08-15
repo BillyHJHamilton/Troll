@@ -2,6 +2,8 @@
 
 #include "Geometry.h"
 
+#include <optional>
+
 enum class TargetMode : int
 {
 	Automatic,
@@ -21,3 +23,4 @@ void move_target_pos (Vec2 dir);
 
 bool creature_is_targeted (int creature_index);
 bool pos_is_targeted (Vec2 const & global_pos);
+std::optional<Vec2> get_target_pos ();

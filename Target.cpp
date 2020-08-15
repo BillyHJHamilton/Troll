@@ -136,3 +136,26 @@ bool pos_is_targeted (Vec2 const & global_pos)
 	}
 }
 
+std::optional<Vec2> get_target_pos ()
+{
+	if (g_target_mode == TargetMode::Automatic)
+	{
+		if (creature_valid(g_target_index))
+		{
+			return creature_pos(g_target_index);
+		}
+		else
+		{
+			return std::optional<Vec2>(); // none
+		}
+	}
+	else if (g_target_mode == TargetMode::Manual)
+	{
+		return g_target_pos;
+	}
+	else
+	{
+		assert(false); // unhandled case
+		return Vec2 {0,0};
+	}
+}

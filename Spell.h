@@ -2,8 +2,9 @@
 
 #include "Types.h"
 
-#include <string>
 #include <bitset>
+#include <string>
+#include <vector>
 
 namespace Miscast // todo
 {
@@ -17,7 +18,7 @@ namespace Spell
 	enum Index : int
 	{
 		None = -1,
-		Relashio = 0,
+		Vermillious = 0,
 		Flipendo,
 		Tarantallegra,
 

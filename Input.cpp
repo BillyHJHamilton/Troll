@@ -3,6 +3,7 @@
 #include "Input.h"
 
 #include "Action.h"
+#include "Bot.h"
 #include "Draw.h"
 #include "Geometry.h"
 #include "Global.h"
@@ -106,6 +107,11 @@ void handle_next_input ()
 		{
 			cycle_target();
 			return;
+		}
+
+		if (key == TK_SPACE)
+		{
+			Bot::do_all_bot_turns();
 		}
 
 		// unhandled

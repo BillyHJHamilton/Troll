@@ -12,35 +12,36 @@
 
 #include <cassert>
 
-bool player_try_cast_spell(Spell::Index spell)
+//-------------------------------------------------------------------------------------------------
+// Helper function declarations
+
+bool check_distraction (int caster);
+bool check_miscast (int caster, Spell::Index spell);
+void do_miscast (int caster, Spell::Index spell, Vec2 target_pos);
+void do_successful_cast (int caster, Spell::Index spell, Vec2 target_pos);
+
+//-------------------------------------------------------------------------------------------------
+// Interface functions
+
+bool player_try_cast_spell (Spell::Index spell)
 {
 	// check if the player knows the spell
-	// todo
+	if (!creature_knows_spell(Creature::Player, spell))
+	{
+		add_game_message("You don't know that spell.");
+		return false;
+	}
 
 	// targeting
-	Vec2 target_pos = {0,0};
-	if (g_target_mode == TargetMode::Automatic)
+	std::optional<Vec2> target_pos = get_target_pos();
+
+	if (!target_pos.has_value())
 	{
-		if (creature_valid(g_target_index))
-		{
-			target_pos = creature_pos(g_target_index);
-		}
-		else
-		{
-			add_game_message("No target.");
-			return false;
-		}
-	}
-	else if (g_target_mode == TargetMode::Manual)
-	{
-		target_pos = g_target_pos;
-	}
-	else
-	{
-		assert(false); // unhandled case
+		add_game_message("No target.");
+		return false;
 	}
 
-	// check if targeting is valid...
+	// check for self-targeting
 	if (target_pos == Player::pos() && Spell::get_accuracy(spell) != -1)
 	{
 		add_game_message("Don't shoot that spell at yourself.");
@@ -49,19 +50,44 @@ bool player_try_cast_spell(Spell::Index spell)
 
 	// Having confirmed it is plausible for the player to try to cast the spell,
 	// we now continue to the generic spell-casting function
-	try_cast_spell(spell, Creature::Player, target_pos);
+	try_cast_spell(spell, Creature::Player, *target_pos);
 
 	return true;
 }
 
-void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
+void try_cast_spell (Spell::Index spell, int caster, Vec2 target_pos)
 {
 	// Update the screen because we'll do some animation for the spell
 	draw_screen();
 
 	// 1. Distractedness
-	// Chance you won't get to cast at all
+	bool is_distracted = check_distraction(caster);
+	if (is_distracted)
+	{
+		add_game_message(Grammar::You_are(caster) + " too distracted to cast a spell!");
+		return;
+	}
 
+	// 2. Deduct hatred for dark spells (even on miscast)
+	// Todo
+
+	// 3. Miscastiness
+	bool is_miscast = check_miscast(caster, spell);
+	if ( is_miscast )
+	{
+		return;
+	}
+
+	// 4. Success!
+	do_successful_cast(caster, spell, target_pos);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Helper function implementations
+
+bool check_distraction (int caster)
+{
+	// Simple percentage chance you won't get to cast at all
 	int distractedness = creature_distractedness(caster); 
 	int distractedness_roll = random(0,99);
 	if (SHOW_SPELL_DEBUG)
@@ -70,62 +96,52 @@ void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos)
 			 << "%    Roll: " << distractedness_roll << std::endl << " ";
 	}
 
-	if (distractedness_roll < distractedness )
-	{
-		add_game_message(Grammar::Name_is(caster) + " too distracted to cast a spell!");
-		return;
-	}
+	return (distractedness_roll < distractedness);
+}
 
-	// 2. Deduct hatred for dark spells (even on miscast)
-	// Todo
-
-	// 3. Miscastiness
+bool check_miscast (int caster, Spell::Index spell)
+{
 	// Chance you mess up the spell, based on its difficulty and your skill.
 	// This is done with float math since there's an exponent in the formula.
-
-	// Miscastiness effectively applies a penalty to your magic skill.
-	int miscastiness = creature_miscastiness(caster);
-	int skill_magic = creature_skill_magic(caster);
-	int effective_skill_magic = skill_magic - miscastiness;
-
-	float miscast_rate = Spell::get_miscast_rate(spell, effective_skill_magic);
+	float miscast_rate = creature_miscast_rate_for_spell(caster, spell);
 	float miscast_roll = random(0.0f, 100.0f);
+
 	if (SHOW_SPELL_DEBUG)
 	{
 		std::cout << "Miscast Rate: " << miscast_rate
 			 << "%    Roll: " << miscast_roll << std::endl << " ";
 	}
 
-	bool is_miscast;
 	if (miscast_roll < miscast_rate)
-		is_miscast = true;
-	// exception: underwater, every cast is a miscast!
-	//else if ( caster.has_status(Status::WATER) )
-	//	is_miscast = true;
-	else
-		is_miscast = false;
-
-	if ( is_miscast )
 	{
-		if (creature_visible(caster))
-		{
-			std::string message = Grammar::Name(caster) + " ";
-			message += Grammar::verbs("miscast", caster) + " ";
-			message += Spell::get_name(spell) + "!";
-			add_game_message(std::move(message));
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
-			DrawView view = get_draw_view();
-			draw_tile_temp('X', creature_pos(caster), view, "yellow");
-			draw_tile_temp('X', creature_pos(caster), view, "black");
-		}
+void do_miscast (int caster, Spell::Index spell, Vec2 target_pos)
+{
+	if (creature_visible(caster))
+	{
+		std::string message = Grammar::You(caster) + " ";
+		message += Grammar::verbs("miscast", caster) + " ";
+		message += Spell::get_name(spell) + "!";
+		add_game_message(std::move(message));
 
-		// todo - proper miscasts
-		//Miscast::perform(caster, target, spell_used);
-		return;
+		DrawView view = get_draw_view();
+		draw_tile_temp('X', creature_pos(caster), view, "yellow");
+		draw_tile_temp('X', creature_pos(caster), view, "black");
 	}
 
-	// Display message on successful cast.
+	// todo - proper miscasts
+	//Miscast::perform(caster, target, spell_used);
+}
 
+void do_successful_cast (int caster, Spell::Index spell, Vec2 target_pos)
+{
 	std::string message;
 	if (creature_is_player(caster))
 	{

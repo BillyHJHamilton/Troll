@@ -2,6 +2,7 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Global.h"
+#include "Grammar.h"
 #include "Map.h"
 #include "Random.h"
 #include "Spell.h"
@@ -156,7 +157,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 		else
 		{
 			add_game_message("The " + beam_description(beam) + " misses "
-				+ creature_name(creature_in_path) + ".");
+				+ Grammar::you(creature_in_path) + ".");
 		}
 	}
 }

@@ -60,6 +60,20 @@ namespace Creature
 		int accuracy;
 		int shield_strength;
 	};
+
+	class IndexItr
+	{
+	public:
+		IndexItr();
+		int get() const;
+		void advance();
+		bool finished () const;
+		int operator++ () { advance(); return current; }
+		int operator* () const { return get(); }
+		explicit operator bool () const { return !finished(); }
+	private:
+		int current;
+	};
 };
 
 extern std::vector<int> g_visible_creatures;
@@ -67,6 +81,7 @@ extern std::vector<int> g_visible_creatures;
 void init_creatures ();
 void clear_creatures ();
 
+// Simple accessors
 bool creature_valid (int creature_index);
 Creature::Type creature_type (int creature_index);
 std::string creature_name (int creature_index);
@@ -81,12 +96,17 @@ int creature_distractedness (int creature_index);
 int creature_miscastiness (int creature_index);
 int creature_evasion (int creature_index);
 int creature_accuracy (int creature_index);
+bool creature_knows_spell (int creature_index, Spell::Index spell);
 
+// Complex accessors
 int creature_at_pos (Vec2 pos);
 bool creature_is_player (int creature_index);
 bool creature_visible (int creature_index);
+float creature_miscast_rate_for_spell (int creature_index, Spell::Index spell);
 std::string creature_status_string (int creature_index);
+std::vector<Spell::Index> creature_spells_known (int creature_index);
 
+// Mutators
 int spawn_creature (Creature::Type type, Vec2 const & pos);
 void damage_creature (int creature_index, int damage);
 void move_creature (int creature_index, Vec2 const & new_pos);
@@ -97,8 +117,8 @@ void creature_cure_all (int creature_index); // heals status and hp
 
 void update_derived_stats (int creature_index);
 
+// Visible creature operations
 void update_visible_creatures ();
 void draw_creature (int creature_index, DrawView const & view);
 void draw_visible_creatures (DrawView const & view);
-
 

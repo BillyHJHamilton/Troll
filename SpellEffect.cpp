@@ -12,7 +12,7 @@
 
 void vermillious_effect (int caster, int target)
 {
-	std::string message = Grammar::Name_is(target) + " showered in sparks!";
+	std::string message = Grammar::You_are(target) + " showered in sparks!";
 	add_game_message(std::move(message));
 }
 
@@ -29,7 +29,7 @@ void flipendo_effect (int caster, int target)
 		// check for collision
 		if (g_map().tile_is_solid(knock_pos))
 		{
-			std::string message = Grammar::Name_is(target) + " knocked into the wall!";
+			std::string message = Grammar::You_are(target) + " knocked into the wall!";
 			add_game_message(std::move(message));
 			damage_creature(target, 1);
 		}
@@ -38,8 +38,8 @@ void flipendo_effect (int caster, int target)
 			int secondary_target = creature_at_pos(knock_pos);
 			if (secondary_target != Creature::None)
 			{
-				std::string message = Grammar::Name_is(target) + " knocked into "
-					+ Grammar::name(secondary_target) + "!";
+				std::string message = Grammar::You_are(target) + " knocked into "
+					+ Grammar::you(secondary_target) + "!";
 				add_game_message(std::move(message));
 				damage_creature(target, 1);
 				damage_creature(secondary_target, 1);
@@ -47,7 +47,7 @@ void flipendo_effect (int caster, int target)
 			else
 			{
 				move_creature(target, knock_pos);
-				std::string message = Grammar::Name_is(target) + " knocked back!";
+				std::string message = Grammar::You_are(target) + " knocked back!";
 				add_game_message(std::move(message));
 			}
 		}
@@ -60,7 +60,7 @@ void tarantallegra_effect (int caster, int target)
 {
 	if (creature_has_status(target, Status::Dancing))
 	{
-		add_game_message(Grammar::Name_possessive(target) + " feet quicken their dance!");
+		add_game_message(Grammar::Your(target) + " feet quicken their dance!");
 		inflict_status(target, Status::Dancing, 4);
 	}
 //	else if (creature_has_status(target, Status::LegLocked))
@@ -73,7 +73,7 @@ void tarantallegra_effect (int caster, int target)
 //	}
 	else
 	{
-		add_game_message(Grammar::Name_possessive(target) + " feet dance!");
+		add_game_message(Grammar::Your(target) + " feet dance!");
 		inflict_status(target, Status::Dancing, 4);
 	}
 }
