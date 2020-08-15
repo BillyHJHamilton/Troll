@@ -5,45 +5,45 @@
 namespace Grammar
 {
 
-std::string You (int creature_index)
+std::string You (Creature::Handle creature)
 {
-	if (creature_is_player(creature_index))
+	if (creature.is_player())
 	{
 		return "You";
 	}
 	else
 	{
-		return creature_name(creature_index);
+		return creature.name();
 	}
 }
 
-std::string you (int creature_index)
+std::string you (Creature::Handle creature)
 {
-	if (creature_is_player(creature_index))
+	if (creature.is_player())
 	{
 		return "you";
 	}
 	else
 	{
-		return creature_name(creature_index);
+		return creature.name();
 	}
 }
 
-std::string You_are (int creature_index)
+std::string You_are (Creature::Handle creature)
 {
-	if (creature_is_player(creature_index))
+	if (creature.is_player())
 	{
 		return "You are";
 	}
 	else
 	{
-		return creature_name(creature_index) + " is";
+		return creature.name() + " is";
 	}
 }
 
-std::string verbs(std::string verb, int creature_index)
+std::string verbs(std::string verb, Creature::Handle creature)
 {
-	if (creature_is_player(creature_index))
+	if (creature.is_player())
 	{
 		return verb;
 	}
@@ -53,15 +53,15 @@ std::string verbs(std::string verb, int creature_index)
 	}
 }
 
-std::string Your(int creature_index)
+std::string Your(Creature::Handle creature)
 {
-	if (creature_is_player(creature_index))
+	if (creature.is_player())
 	{
 		return "Your";
 	}
 	else
 	{
-		return creature_name(creature_index) + "\'s";
+		return creature.name() + "\'s";
 	}
 }
 

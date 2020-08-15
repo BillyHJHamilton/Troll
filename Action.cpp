@@ -15,10 +15,10 @@
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
-bool check_distraction (int caster);
-bool check_miscast (int caster, Spell::Index spell);
-void do_miscast (int caster, Spell::Index spell, Vec2 target_pos);
-void do_successful_cast (int caster, Spell::Index spell, Vec2 target_pos);
+bool check_distraction (Creature::Handle caster);
+bool check_miscast (Creature::Handle caster, Spell::Index spell);
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos);
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos);
 
 //-------------------------------------------------------------------------------------------------
 // Interface functions
@@ -26,7 +26,7 @@ void do_successful_cast (int caster, Spell::Index spell, Vec2 target_pos);
 bool player_try_cast_spell (Spell::Index spell)
 {
 	// check if the player knows the spell
-	if (!creature_knows_spell(Creature::Player, spell))
+	if (!Player::handle().knows_spell(spell))
 	{
 		add_game_message("You don't know that spell.");
 		return false;
@@ -55,7 +55,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	return true;
 }
 
-void try_cast_spell (Spell::Index spell, int caster, Vec2 target_pos)
+void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos)
 {
 	// Update the screen because we'll do some animation for the spell
 	draw_screen();
@@ -85,25 +85,32 @@ void try_cast_spell (Spell::Index spell, int caster, Vec2 target_pos)
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
 
-bool check_distraction (int caster)
+bool check_distraction (Creature::Handle caster)
 {
 	// Simple percentage chance you won't get to cast at all
-	int distractedness = creature_distractedness(caster); 
+	int distraction_rate = caster.distractedness();
+
+	// Always a chance...
+	if (distraction_rate > 90)
+	{
+		distraction_rate = 90;
+	}
+
 	int distractedness_roll = random(0,99);
 	if (SHOW_SPELL_DEBUG)
 	{
-		std::cout << "Distraction Rate: " << distractedness
+		std::cout << "Distraction Rate: " << distraction_rate
 			 << "%    Roll: " << distractedness_roll << std::endl << " ";
 	}
 
-	return (distractedness_roll < distractedness);
+	return (distractedness_roll < distraction_rate);
 }
 
-bool check_miscast (int caster, Spell::Index spell)
+bool check_miscast (Creature::Handle caster, Spell::Index spell)
 {
 	// Chance you mess up the spell, based on its difficulty and your skill.
 	// This is done with float math since there's an exponent in the formula.
-	float miscast_rate = creature_miscast_rate_for_spell(caster, spell);
+	float miscast_rate = caster.miscast_rate_for_spell(spell);
 	float miscast_roll = random(0.0f, 100.0f);
 
 	if (SHOW_SPELL_DEBUG)
@@ -122,9 +129,9 @@ bool check_miscast (int caster, Spell::Index spell)
 	}
 }
 
-void do_miscast (int caster, Spell::Index spell, Vec2 target_pos)
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
 {
-	if (creature_visible(caster))
+	if (caster.visible())
 	{
 		std::string message = Grammar::You(caster) + " ";
 		message += Grammar::verbs("miscast", caster) + " ";
@@ -132,25 +139,18 @@ void do_miscast (int caster, Spell::Index spell, Vec2 target_pos)
 		add_game_message(std::move(message));
 
 		DrawView view = get_draw_view();
-		draw_tile_temp('X', creature_pos(caster), view, "yellow");
-		draw_tile_temp('X', creature_pos(caster), view, "black");
+		draw_tile_temp('X', caster.pos(), view, "yellow");
+		draw_tile_temp('X', caster.pos(), view, "black");
 	}
 
 	// todo - proper miscasts
 	//Miscast::perform(caster, target, spell_used);
 }
 
-void do_successful_cast (int caster, Spell::Index spell, Vec2 target_pos)
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
 {
-	std::string message;
-	if (creature_is_player(caster))
-	{
-		message = "You cast " + Spell::get_name(spell) + "!";
-	}
-	else
-	{
-		message = creature_name(caster) + " casts " + Spell::get_name(spell) + ".";
-	}
+	std::string message = Grammar::You(caster) + " " + Grammar::verbs("cast", caster)
+		+ " " + Spell::get_name(spell) + "!";
 	add_game_message(std::move(message));
 
 	if (Spell::get_accuracy(spell) == -1) // self-affecting spell

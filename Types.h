@@ -25,12 +25,13 @@ namespace Creature
 	enum Type : int;
 	struct Stats;
 	struct DerivedStats;
+	class Handle;
 }
 
 namespace Spell
 {
 	enum Index : int;
-	using EffectFunc = void(*)(int caster, int target);
+	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target);
 };
 
 namespace Status

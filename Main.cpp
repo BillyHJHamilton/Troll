@@ -53,7 +53,7 @@ void game_loop()
 	Map & map = g_map();
 
 	map.update_visibility(Player::pos(), player.vision_radius);
-	update_visible_creatures();
+	Creature::update_visible_creatures();
 	update_target();
 
 	draw_screen();
@@ -72,14 +72,14 @@ int main()
 	// Avoid any order dependency within a layer.
 
 	// Init functions run once when the program starts
-	init_creatures();
+	Creature::init();
 	init_draw();
 	init_random();
 	Spell::init();
 	Status::init();
 
 	// Clear functions run before start of each game
-	clear_creatures();
+	Creature::clear();
 	clear_input();
 	clear_target();
 

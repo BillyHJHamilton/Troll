@@ -10,13 +10,13 @@
 #include <iostream>
 #include <string>
 
-void vermillious_effect (int caster, int target)
+void vermillious_effect (Creature::Handle caster, Creature::Handle target)
 {
 	std::string message = Grammar::You_are(target) + " showered in sparks!";
 	add_game_message(std::move(message));
 }
 
-void flipendo_effect (int caster, int target)
+void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 {
 	// Push back
 	std::optional<LineItr> optional_line = Beam::get_latest_impact_line();
@@ -31,22 +31,22 @@ void flipendo_effect (int caster, int target)
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";
 			add_game_message(std::move(message));
-			damage_creature(target, 1);
+			target.take_damage(1);
 		}
 		else
 		{
-			int secondary_target = creature_at_pos(knock_pos);
+			Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
 			if (secondary_target != Creature::None)
 			{
 				std::string message = Grammar::You_are(target) + " knocked into "
 					+ Grammar::you(secondary_target) + "!";
 				add_game_message(std::move(message));
-				damage_creature(target, 1);
-				damage_creature(secondary_target, 1);
+				target.take_damage(1);
+				secondary_target.take_damage(1);
 			}
 			else
 			{
-				move_creature(target, knock_pos);
+				target.move(knock_pos);
 				std::string message = Grammar::You_are(target) + " knocked back!";
 				add_game_message(std::move(message));
 			}
@@ -56,12 +56,12 @@ void flipendo_effect (int caster, int target)
 
 }
 
-void tarantallegra_effect (int caster, int target)
+void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
 {
-	if (creature_has_status(target, Status::Dancing))
+	if (target.has_status(Status::Dancing))
 	{
 		add_game_message(Grammar::Your(target) + " feet quicken their dance!");
-		inflict_status(target, Status::Dancing, 4);
+		target.inflict_status(Status::Dancing, 4);
 	}
 //	else if (creature_has_status(target, Status::LegLocked))
 //	{
@@ -74,6 +74,6 @@ void tarantallegra_effect (int caster, int target)
 	else
 	{
 		add_game_message(Grammar::Your(target) + " feet dance!");
-		inflict_status(target, Status::Dancing, 4);
+		target.inflict_status(Status::Dancing, 4);
 	}
 }

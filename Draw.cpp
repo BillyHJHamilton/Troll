@@ -159,7 +159,7 @@ void update_screen ()
 	g_map().draw(view);
 	draw_creature(Creature::Player, view);
 	//g_player().draw(view);
-	draw_visible_creatures(view);
+	Creature::draw_visible_creatures(view);
 
 	// restore default font for printing text
 	terminal_font("");
@@ -200,29 +200,29 @@ void draw_screen ()
 
 int num_lines_for_visible_creature_stats ()
 {
-	int desired = static_cast<int>(g_visible_creatures.size() * 3);
+	int desired = static_cast<int>(Creature::get_visible_creatures().size() * 3);
 	int constexpr max_lines = 15;
 	return std::min(desired, max_lines);
 }
 
-static void format_creature_stats (std::stringstream & ss, int ci)
+static void format_creature_stats (std::stringstream & ss, Creature::Handle creature)
 {
-	if (creature_is_targeted(ci))
+	if (creature_is_targeted(creature))
 	{
 		ss << "[bkcolor=darkest red]";
 	}
-	ss << std::left << std::setw(16) << creature_name(ci);
-	if (creature_is_targeted(ci))
+	ss << std::left << std::setw(16) << creature.name();
+	if (creature_is_targeted(creature))
 	{
 		ss << "[/bkcolor]";
 	}
 
-	ss << std::right << std::setw(3) << creature_hp(ci);
+	ss << std::right << std::setw(3) << creature.hp();
 	ss << " / ";
-	ss << std::left << std::setw(3) << creature_max_hp(ci);
+	ss << std::left << std::setw(3) << creature.max_hp();
 	ss << std::endl;
 	ss << "[color=lighter yellow]";
-	ss << creature_status_string(ci);
+	ss << creature.status_string();
 	ss << "[/color]";
 }
 
@@ -231,7 +231,7 @@ void print_player_stats (Box draw_area)
 	std::stringstream ss;
 
 	ss << "XP     " << 125 << std::endl; // todo
-	ss << "Magic  " << creature_skill_magic(Creature::Player)  << std::endl;
+	ss << "Magic  " << Player::handle().skill_magic()  << std::endl;
 	ss << "Level  " << 4 << std::endl; // todo
 	ss << std::endl;
 
@@ -245,13 +245,14 @@ void print_visible_creature_stats (Box draw_area)
 {
 	std::stringstream ss;
 
-	for (int vci = 0; vci < g_visible_creatures.size(); vci++)
+	std::vector<Creature::Handle> visible_creatures = Creature::get_visible_creatures();
+	for (int vci = 0; vci < visible_creatures.size(); vci++)
 	{
-		int ci = g_visible_creatures[vci];
+		Creature::Handle ci = visible_creatures[vci];
 
 		format_creature_stats(ss, ci);
 
-		if (vci < g_visible_creatures.size() - 1)
+		if (vci < visible_creatures.size() - 1)
 		{
 			ss << std::endl << std::endl;
 		}

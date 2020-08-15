@@ -4,4 +4,4 @@
 
 bool player_try_cast_spell(Spell::Index spell);
 
-void try_cast_spell(Spell::Index spell, int caster, Vec2 target_pos);
+void try_cast_spell(Spell::Index spell, Creature::Handle caster, Vec2 target_pos);

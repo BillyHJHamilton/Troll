@@ -9,14 +9,9 @@
 Player global_player;
 Player & g_player () { return global_player; }
 
-/*void Player::draw (DrawView const & view)
-{
-	draw_tile('@', pos, view, "white");
-}*/
-
 Vec2 const & Player::pos ()
 {
-	return creature_pos(Creature::Player);
+	return handle().pos();
 }
 
 bool Player::try_move (Vec2 const & relative_move)
@@ -29,13 +24,13 @@ bool Player::try_move (Vec2 const & relative_move)
 	{
 		return false;
 	}
-	else if (creature_at_pos(new_pos) != Creature::None)
+	else if (Creature::creature_at_pos(new_pos) != Creature::None)
 	{
 		return false;
 	}
 	else
 	{
-		move_creature(Creature::Player, new_pos);
+		handle().move(new_pos);
 		return true;
 	}
 }

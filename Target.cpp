@@ -3,39 +3,38 @@
 #include "Creature.h"
 #include "Player.h"
 
-
 #include <algorithm>
 #include <cassert>
 
 TargetMode g_target_mode;
-int g_target_index;
+Creature::Handle g_target_creature;
 Vec2 g_target_pos;
 
 void clear_target ()
 {
 	g_target_mode = TargetMode::Automatic;
-	g_target_index = -1;
+	g_target_creature = Creature::None;
 }
 
 void update_target ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_index != -1)
+		if (g_target_creature != -1)
 		{
-			if (creature_visible(g_target_index))
+			if (g_target_creature.visible())
 			{
 				// track target
-				g_target_pos = creature_pos(g_target_index);
+				g_target_pos = g_target_creature.pos();
 			}
 			else
 			{
 				// lose target
-				g_target_index = -1;
+				g_target_creature = -1;
 			}
 		}
 
-		if (g_target_index == -1)
+		if (g_target_creature == -1)
 		{
 			// acquire target
 			cycle_target();
@@ -47,25 +46,26 @@ void cycle_target ()
 {
 	if (g_target_mode == TargetMode::Manual)
 	{
-		g_target_index = creature_at_pos(g_target_pos);
+		g_target_creature = Creature::creature_at_pos(g_target_pos);
 		g_target_mode = TargetMode::Automatic;
 	}
 	
-	if (g_visible_creatures.size() > 0)
+	std::vector<Creature::Handle> const & visible_creatures = Creature::get_visible_creatures();
+	if (visible_creatures.size() > 0)
 	{
 		int vci = -1; // visible creature index - that is, index on the vector
 
 		// see if the current target is in the list
-		if (g_target_index != -1)
+		if (g_target_creature != -1)
 		{
 			auto itr = std::find(
-				g_visible_creatures.begin(),
-				g_visible_creatures.end(),
-				g_target_index);
+				visible_creatures.begin(),
+				visible_creatures.end(),
+				g_target_creature);
 
-			if (itr != g_visible_creatures.end())
+			if (itr != visible_creatures.end())
 			{
-				vci = static_cast<int>(itr - g_visible_creatures.begin());
+				vci = static_cast<int>(itr - visible_creatures.begin());
 			}
 		}
 
@@ -73,17 +73,17 @@ void cycle_target ()
 		++ vci;
 
 		// wrap around
-		if (vci >= g_visible_creatures.size())
+		if (vci >= visible_creatures.size())
 		{
 			vci = 0;
 		}
 
-		g_target_index = g_visible_creatures[vci];
-		g_target_pos = creature_pos(g_target_index);
+		g_target_creature = visible_creatures[vci];
+		g_target_pos = g_target_creature.pos();
 	}
 	else
 	{
-		g_target_index = -1;
+		g_target_creature = -1;
 	}
 }
 
@@ -91,7 +91,7 @@ void move_target_pos (Vec2 dir)
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_index == Creature::None)
+		if (g_target_creature == Creature::None)
 		{
 			g_target_pos = Player::pos();
 		}
@@ -100,16 +100,16 @@ void move_target_pos (Vec2 dir)
 	g_target_pos += dir;
 }
 
-bool creature_is_targeted (int creature_index)
+bool creature_is_targeted (Creature::Handle creature)
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		return creature_index == g_target_index;
+		return creature == g_target_creature;
 	}
 	else if (g_target_mode == TargetMode::Manual)
 	{
-		return creature_valid(creature_index)
-			&& creature_pos(creature_index) == g_target_pos;
+		return creature.valid()
+			&& creature.pos() == g_target_pos;
 	}
 	else
 	{
@@ -126,7 +126,7 @@ bool pos_is_targeted (Vec2 const & global_pos)
 	}
 	else if (g_target_mode == TargetMode::Automatic)
 	{
-		return creature_valid(g_target_index)
+		return g_target_creature.valid()
 			&& g_target_pos == global_pos;
 	}
 	else
@@ -140,9 +140,9 @@ std::optional<Vec2> get_target_pos ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		if (creature_valid(g_target_index))
+		if (g_target_creature.valid())
 		{
-			return creature_pos(g_target_index);
+			return g_target_creature.pos();
 		}
 		else
 		{

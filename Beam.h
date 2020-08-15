@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Types.h"
 #include "Geometry.h"
+#include "Types.h"
+#include "Creature.h"
 
 #include <optional>
 #include <string>
@@ -22,13 +23,13 @@ namespace Beam
 		Vec2 pos;
 		Vec2 trajectory; // may be any non-zero length
 		Beam::Type type;
-		int caster;
+		Creature::Handle caster;
 		bool caster_aimed;
 		int intended_target;
 		bool done;
 	};
 
-	void shoot_spell (Spell::Index spell, int caster, Vec2 target_pos, bool caster_aimed);
+	void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed);
 
 	std::optional<LineItr> get_latest_impact_line ();
 }

@@ -2,6 +2,8 @@
 
 #include "Types.h"
 
+#include "Creature.h"
+
 #include <string>
 
 namespace Status
@@ -33,7 +35,7 @@ namespace Status
 	int max_severity(Status::Index status);
 	std::string abbrev(Status::Index status);
 
-	void apply_to_derived_stats (Status::Index status, int creature_index,
+	void apply_to_derived_stats (Status::Index status, Creature::Handle creature_index,
 		Creature::DerivedStats & derived_stats);
 };
 

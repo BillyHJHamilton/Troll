@@ -11,6 +11,9 @@
 #include <cassert>
 #include <sstream>
 
+namespace Creature
+{
+
 //-------------------------------------------------------------------------------------------------
 
 // The gingerbread array stores prototype objects which can be copied to spawn creatures
@@ -28,7 +31,7 @@ void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gen
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
 }
 
-void init_creatures ()
+void init ()
 {
 	//																			  mag  hp  spells
 	mix_gingerbread(Creature::Player,		 "Player",       '@', Gender::Female, 10,  10, "VM FP TA");
@@ -66,19 +69,21 @@ static Creature::DerivedStats s_derived_stats [MAX_CREATURES];
 static Spell::Bitset s_spells_known [MAX_CREATURES];
 static int s_max_creature_index;
 
-static Creature::Stats & get_creature (int index)
+std::vector<Creature::Handle> s_visible_creatures;
+
+static Creature::Stats & get_creature_stats (Creature::Handle creature)
 {
-	assert(creature_valid(index));
-	return s_creatures[index];
+	assert(creature.valid());
+	return s_creatures[creature];
 }
 
-static Creature::DerivedStats & get_derived_stats (int index)
+static Creature::DerivedStats & get_derived_stats (Creature::Handle creature)
 {
-	assert(creature_valid(index));
-	return s_derived_stats[index];
+	assert(creature.valid());
+	return s_derived_stats[creature];
 }
 
-void clear_creatures ()
+void clear ()
 {
 	// empty creature arrays
 	for (Creature::Stats & c : s_creatures)
@@ -90,137 +95,122 @@ void clear_creatures ()
 
 	s_max_creature_index = 0;
 
-	g_visible_creatures.clear();
-	g_visible_creatures.reserve(MAX_CREATURES);
+	s_visible_creatures.clear();
+	s_visible_creatures.reserve(MAX_CREATURES);
 }
 
 //-------------------------------------------------------------------------------------------------
-// Iterator over valid creature indices
+// Creature Handle - Simple accessor functions
 
-Creature::IndexItr::IndexItr ()
-	: current(0)
+bool Handle::valid () const
 {
+	return index >= 0
+		&& index < s_max_creature_index
+		&& s_creatures[index].type != Creature::None;
 }
 
-int Creature::IndexItr::get () const
+Creature::Type Handle::type () const
 {
-	return current;
+	return get_creature_stats(index).type;
 }
 
-void Creature::IndexItr::advance ()
+std::string Handle::name () const
 {
-	++ current;
-	while (!creature_valid(current) && current < s_max_creature_index)
-	{
-		++ current;
-	}
+	return get_creature_stats(index).name;
 }
 
-bool Creature::IndexItr::finished () const
+Gender Handle::gender () const
 {
-	return current >= s_max_creature_index;
+	return get_creature_stats(index).gender;
 }
 
-//-------------------------------------------------------------------------------------------------
-// Simple accessor functions
-
-bool creature_valid(int creature_index)
+int Handle::skill_magic () const
 {
-	return creature_index >= 0
-		&& creature_index < s_max_creature_index
-		&& s_creatures[creature_index].type != Creature::None;
+	return get_creature_stats(index).skill_magic;
 }
 
-Creature::Type creature_type (int creature_index)
+int Handle::max_hp () const
 {
-	return get_creature(creature_index).type;
+	return get_creature_stats(index).max_hp;
 }
 
-std::string creature_name (int creature_index)
+int Handle::hp () const
 {
-	return get_creature(creature_index).name;
+	return get_creature_stats(index).hp;
 }
 
-Gender creature_gender (int creature_index)
+Vec2 const & Handle::pos () const
 {
-	return get_creature(creature_index).gender;
+	return get_creature_stats(index).pos;
 }
 
-int creature_skill_magic (int creature_index)
+bool Handle::has_status (Status::Index status) const
 {
-	return get_creature(creature_index).skill_magic;
+	return s_creature_status[index][status] > 0;
 }
 
-int creature_max_hp(int creature_index)
+int Handle::status_severity (Status::Index status) const
 {
-	return get_creature(creature_index).max_hp;
+	return s_creature_status[index][status];
 }
 
-int creature_hp(int creature_index)
+int Handle::distractedness () const
 {
-	return get_creature(creature_index).hp;
+	return get_derived_stats(index).distractedness;
 }
 
-Vec2 const & creature_pos (int creature_index)
+int Handle::miscastiness () const
 {
-	return get_creature(creature_index).pos;
+	return get_derived_stats(index).miscastiness;
 }
 
-bool creature_has_status (int creature_index, Status::Index status)
+int Handle::evasion () const
 {
-	return s_creature_status[creature_index][status] > 0;
+	return get_derived_stats(index).evasion;
 }
 
-int creature_status_severity (int creature_index, Status::Index status)
+int Handle::accuracy () const
 {
-	return s_creature_status[creature_index][status];
+	return get_derived_stats(index).accuracy;
 }
 
-int creature_distractedness (int creature_index)
+bool Handle::knows_spell (Spell::Index spell) const
 {
-	return get_derived_stats(creature_index).distractedness;
-}
-
-int creature_miscastiness (int creature_index)
-{
-	return get_derived_stats(creature_index).miscastiness;
-}
-
-int creature_evasion (int creature_index)
-{
-	return get_derived_stats(creature_index).evasion;
-}
-
-int creature_accuracy (int creature_index)
-{
-	return get_derived_stats(creature_index).accuracy;
-}
-
-bool creature_knows_spell (int creature_index, Spell::Index spell)
-{
-	Spell::Bitset const & spell_bitset = s_spells_known[creature_index];
+	Spell::Bitset const & spell_bitset = s_spells_known[index];
 	return spell_bitset.test(spell);
 }
 
 //-------------------------------------------------------------------------------------------------
-// More complex accessor functions
+// Creature Handle - Complex accessor functions
 
-bool creature_visible(int creature_index)
+bool Handle::is_player () const
 {
-	if (!creature_valid(creature_index))
+	if (Handle(index).type() == Creature::Player)
+	{
+		assert(index == Creature::Player);
+		return true;
+	}
+	else
+	{
+		assert(index != Creature::Player);
+		return false;
+	}
+}
+
+bool Handle::visible () const
+{
+	if (!valid())
 	{
 		return false;
 	}
 
 	Map const & map = g_map();
-	Vec2 pos = creature_pos(creature_index);
-
-	if (!map.contains(pos))
+	if (!map.contains(pos()))
 	{
 		return false; // it's off the map
 	}
 
-	Visibility v = g_map().get_visibility(pos);
+	Visibility v = g_map().get_visibility(pos());
 	if (v == Visibility::Visible)
 	{
 		return true;
@@ -231,45 +221,15 @@ bool creature_visible(int creature_index)
 	}
 }
 
-int creature_at_pos (Vec2 pos)
-{
-	// search creature array
-	for (int i = 0; i < s_max_creature_index; i++)
-	{
-		if (creature_pos(i) == pos)
-		{
-			return i;
-		}
-	}
-
-	return Creature::None;
-}
-
-bool creature_is_player (int creature_index)
-{
-	if (creature_type(creature_index) == Creature::Player)
-	{
-		assert(creature_index == Creature::Player);
-		return true;
-	}
-	else
-	{
-		assert(creature_index != Creature::Player);
-		return false;
-	}
-}
-
-float creature_miscast_rate_for_spell (int creature_index, Spell::Index spell)
+float Handle::miscast_rate_for_spell (Spell::Index spell) const
 {
 	// Miscastiness effectively applies a penalty to your magic skill.
-	int miscastiness = creature_miscastiness(creature_index);
-	int skill_magic = creature_skill_magic(creature_index);
-	int effective_skill_magic = skill_magic - miscastiness;
+	int effective_skill_magic = skill_magic() - miscastiness();
 
 	return Spell::get_miscast_rate(spell, effective_skill_magic);
 }
 
-std::string creature_status_string (int creature_index)
+std::string Handle::status_string () const
 {
 	std::stringstream outs;
 	int num_out = 0;
@@ -277,11 +237,11 @@ std::string creature_status_string (int creature_index)
 	while (i < Status::Count && num_out < 6)
 	{
 		Status::Index si = static_cast<Status::Index>(i);
-		if (creature_has_status(creature_index, si))
+		if (has_status(si))
 		{
 			if (num_out < 5)
 			{
-				int severity = creature_status_severity(creature_index, si);
+				int severity = status_severity(si);
 				outs << Status::abbrev(si);
 				outs << "(" << severity << ")  ";
 			}
@@ -296,9 +256,9 @@ std::string creature_status_string (int creature_index)
 	return outs.str();
 }
 
-std::vector<Spell::Index> creature_spells_known (int creature_index)
+std::vector<Spell::Index> Handle::spells_known () const
 {
-	Spell::Bitset const & spell_bitset = s_spells_known[creature_index];
+	Spell::Bitset const & spell_bitset = s_spells_known[index];
 	std::vector<Spell::Index> spell_list;
 	for (int i = 0; i < Spell::Index::Count; i++)
 	{
@@ -311,15 +271,144 @@ std::vector<Spell::Index> creature_spells_known (int creature_index)
 }
 
 //-------------------------------------------------------------------------------------------------
-// Mutator functions
+// Creature Handle - Mutator functions
 
-int spawn_creature (Creature::Type type, Vec2 const & pos)
+void Handle::take_damage (int damage)
+{
+	Creature::Stats & c = get_creature_stats(index);
+	c.hp -= damage;
+
+	// todo: die, I guess
+	// or we could come back at the end of the round to "collect" dead creatures.
+}
+
+void Handle::move (Vec2 const & new_pos)
+{
+	get_creature_stats(index).pos = new_pos;
+}
+
+void Handle::inflict_status (Status::Index status, int severity)
+{
+	if (!has_status(status))
+	{
+		s_creature_status[index][status] = severity;
+	}
+	else
+	{
+		s_creature_status[index][status] += severity;
+	}
+
+	if (s_creature_status[index][status] > Status::max_severity(status))
+	{
+		s_creature_status[index][status] = Status::max_severity(status);
+	}
+
+	update_derived_stats();
+}
+
+void Handle::reduce_status (Status::Index status, int reduction)
+{
+	if (!has_status(status))
+	{
+		//cerr << "Can't reduce non-afflicted status " << (int)the_status << endl;
+		return;
+	}
+	else
+	{
+		s_creature_status[index][status] -= reduction;
+		if (s_creature_status[index][status] <= 0)
+		{
+			s_creature_status[index][status] = 0;
+			// Status::print_cure_message(creature, status); // todo maybe
+		}
+	}
+
+	update_derived_stats();
+}
+
+void Handle::cure_status (Status::Index status)
+{
+	reduce_status(status, Status::max_severity(status));
+}
+
+void Handle::cure_all ()
+{
+	// blank all statuses (with no message)
+	s_creature_status[index] = std::vector<int>(Status::Count, 0);
+	get_creature_stats(index).hp = max_hp();
+}
+
+void Handle::update_derived_stats ()
+{
+	Creature::DerivedStats & ds = get_derived_stats(index);
+	
+	ds.distractedness = 0;
+	ds.miscastiness = 0;
+	ds.evasion = 0;
+	ds.accuracy = 0;
+	ds.shield_strength = 0;
+
+	for (int i = 0; i < Status::Count; i++)
+	{
+		Status::Index si = static_cast<Status::Index>(i);
+		if (has_status(si))
+		{
+			Status::apply_to_derived_stats(si, *this, ds);
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// Creature Handle Iterator
+
+HandleItr::HandleItr ()
+	: current(0)
+{ }
+
+Creature::Handle HandleItr::get () const
+{
+	return current;
+}
+
+void HandleItr::advance()
+{
+	++ current;
+	while (!current.valid()
+		&& current < s_max_creature_index)
+	{
+		++ current;
+	}
+}
+
+bool HandleItr::finished () const
+{
+	return current >= s_max_creature_index;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Global Creature interface
+
+Creature::Handle creature_at_pos (Vec2 pos)
+{
+	// search creature array
+	for (Creature::Handle i = 0; i < s_max_creature_index; ++ i)
+	{
+		if (i.pos() == pos)
+		{
+			return i;
+		}
+	}
+
+	return Creature::None;
+}
+
+Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos)
 {
 	// find creature number
 	int new_index = -1;
 	for (int i = 0; i < s_max_creature_index; i++)
 	{
-		if (!creature_valid(i))
+		if (!Handle(i).valid())
 		{
 			new_index = i;
 			break;
@@ -338,96 +427,11 @@ int spawn_creature (Creature::Type type, Vec2 const & pos)
 	s_creatures[new_index] = s_gingerbread[type];
 	s_creatures[new_index].pos = pos;
 	s_spells_known[new_index] = s_gingerbread_spells[type];
-	creature_cure_all(new_index);
-	update_derived_stats(new_index);
+	Handle(new_index).cure_all();
+	Handle(new_index).update_derived_stats();
 
 	// return the index of the new creature
-	return new_index;
-}
-
-void damage_creature (int creature_index, int damage)
-{
-	Creature::Stats & c = get_creature(creature_index);
-	c.hp -= damage;
-
-	// todo: die, I guess
-	// or we could come back at the end of the round to "collect" dead creatures.
-}
-
-void move_creature (int creature_index, Vec2 const & new_pos)
-{
-	get_creature(creature_index).pos = new_pos;
-}
-
-void inflict_status (int creature_index, Status::Index status, int severity)
-{
-	if (!creature_has_status(creature_index, status))
-	{
-		s_creature_status[creature_index][status] = severity;
-	}
-	else
-	{
-		s_creature_status[creature_index][status] += severity;
-	}
-
-	if (s_creature_status[creature_index][status] > Status::max_severity(status))
-	{
-		s_creature_status[creature_index][status] = Status::max_severity(status);
-	}
-
-	update_derived_stats(creature_index);
-}
-
-void reduce_status (int creature_index, Status::Index status, int reduction)
-{
-	if (!creature_has_status(creature_index, status))
-	{
-		//cerr << "Can't reduce non-afflicted status " << (int)the_status << endl;
-		return;
-	}
-	else
-	{
-		s_creature_status[creature_index][status] -= reduction;
-		if (s_creature_status[creature_index][status] <= 0)
-		{
-			s_creature_status[creature_index][status] = 0;
-			// Status::print_cure_message(creature_index, status); // todo maybe
-		}
-	}
-
-	update_derived_stats(creature_index);
-}
-
-void cure_status (int creature_index, Status::Index status)
-{
-	reduce_status(creature_index, status, Status::max_severity(status));
-}
-
-void creature_cure_all (int creature_index)
-{
-	// blank all statuses (with no message)
-	s_creature_status[creature_index] = std::vector<int>(Status::Count, 0);
-	get_creature(creature_index).hp = get_creature(creature_index).max_hp;
-}
-
-void update_derived_stats (int creature_index)
-{
-	Creature::DerivedStats & ds = get_derived_stats(creature_index);
-	
-	ds.distractedness = 0;
-	ds.miscastiness = 0;
-	ds.evasion = 0;
-	ds.accuracy = 0;
-	ds.shield_strength = 0;
-
-	for (int i = 0; i < Status::Count; i++)
-	{
-		Status::Index si = static_cast<Status::Index>(i);
-		if (creature_has_status(creature_index, si))
-		{
-			Status::apply_to_derived_stats(si, creature_index, ds);
-		}
-	}
+	return Handle(new_index);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -435,28 +439,26 @@ void update_derived_stats (int creature_index)
 // creature array and checking their visibility.
 // We skip over position 0 in the array, which should always contain the player.
 
-std::vector<int> g_visible_creatures; // by index
-
 void update_visible_creatures ()
 {
-	g_visible_creatures.clear();
-	assert(creature_is_player(0)); // we are skipping index 0 on this premise
-	for (int i = 1; i < s_max_creature_index; i++)
+	s_visible_creatures.clear();
+	assert(Handle(0).is_player()); // we are skipping index 0 on this premise
+	for (Creature::Handle creature = 1; creature < s_max_creature_index; ++ creature)
 	{
-		if (creature_visible(i))
+		if (creature.visible())
 		{
-			g_visible_creatures.push_back(i);
+			s_visible_creatures.push_back(creature);
 		}
 	}
 }
 
-void draw_creature (int creature_index, DrawView const & view)
+void draw_creature (Creature::Handle creature, DrawView const & view)
 {
-	Vec2 const & pos = creature_pos(creature_index);
+	Vec2 const & pos = creature.pos();
 	if (view.contains_global_pos(pos))
 	{
-		int code = s_creatures[creature_index].codepoint;
-		if (creature_is_targeted(creature_index))
+		int code = s_creatures[creature].codepoint;
+		if (creature_is_targeted(creature))
 		{
 			draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
 		}
@@ -469,9 +471,15 @@ void draw_creature (int creature_index, DrawView const & view)
 
 void draw_visible_creatures (DrawView const & view)
 {
-	for (int i : g_visible_creatures)
+	for (int i : s_visible_creatures)
 	{
 		draw_creature(i, view);
 	}
 }
 
+std::vector<Creature::Handle> const & get_visible_creatures ()
+{
+	return s_visible_creatures;
+}
+
+} // namespace Creature

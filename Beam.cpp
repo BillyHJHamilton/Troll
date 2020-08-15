@@ -17,13 +17,13 @@ static std::optional<LineItr> s_impact_line;
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
 
-static Beam::Data make_spell_beam (Spell::Index, int caster, Vec2 target_pos, bool caster_aimed);
+static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_pos, bool caster_aimed);
 static void shoot_beam (Beam::Data & beam);
 static void shoot_along_line (Beam::Data & beam);
 static void test_for_impact (Beam::Data & beam, LineItr const & line);
 static std::string beam_description (Beam::Data const & beam);
-static int get_hit_chance (Beam::Data const & beam, int target);
-static void hit_creature (Beam::Data const & beam, int target, LineItr const & line);
+static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
+static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineItr const & line);
 
 static std::string get_colour (Beam::Data const & beam);
 static int get_codepoint (Beam::Data const & beam);
@@ -33,7 +33,7 @@ static Spell::EffectFunc get_effect_func (Beam::Data const & beam);
 // ------------------------------------------------------------------------------------------------
 // interface function implementations
 
-void shoot_spell (Spell::Index spell, int caster, Vec2 target_pos, bool caster_aimed)
+void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
 {
 	Spell::create_and_bind_instance(spell, caster);
 	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed);
@@ -48,18 +48,18 @@ std::optional<LineItr> get_latest_impact_line ()
 // ------------------------------------------------------------------------------------------------
 // helper function implementations
 
-Beam::Data make_spell_beam (Spell::Index, int caster, Vec2 target_pos, bool caster_aimed)
+Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
 {
 	int intended_target = Creature::None;
 	if (caster_aimed)
 	{
-		intended_target = creature_at_pos(target_pos);
+		intended_target = Creature::creature_at_pos(target_pos);
 	}
 
 	return Beam::Data
 	{
-		creature_pos(caster),
-		target_pos - creature_pos(caster),
+		caster.pos(),
+		target_pos - caster.pos(),
 		Beam::Type::Spell,
 		caster,
 		caster_aimed,
@@ -135,7 +135,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 	}
 
 	// might hit creature
-	int creature_in_path = creature_at_pos(beam.pos);
+	int creature_in_path = Creature::creature_at_pos(beam.pos);
 	if (creature_in_path != Creature::None)
 	{
 		// check accuracy
@@ -174,11 +174,11 @@ static std::string beam_description(Beam::Data const & beam)
 	}
 }
 
-static int get_hit_chance(Beam::Data const & beam, int target)
+static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 {
 	int base_accuracy;
-	int caster_accuracy_factor;
-	int target_evasion_divisor;
+	Creature::Handle caster_accuracy_factor;
+	Creature::Handle target_evasion_divisor;
 
 	if (beam.type == Beam::Type::Spell)
 	{
@@ -197,29 +197,29 @@ static int get_hit_chance(Beam::Data const & beam, int target)
 		// if not aimed by caster, don't factor in caster's accuracy.
 		caster_accuracy_factor = 100;
 	}
-	else if (creature_accuracy(beam.caster) < -90)
+	else if (beam.caster.accuracy() < -90)
 	{
 		// minimum caster accuracy is 10%, even if status effects are heavily stacked
 		caster_accuracy_factor = 10;
 	}
-	else if (creature_accuracy(beam.caster) > 100 && target != beam.intended_target)
+	else if (beam.caster.accuracy() > 100 && target != beam.intended_target)
 	{
 		// don't apply accuracy bonus if the target is not the intended target
 		caster_accuracy_factor = 100;
 	}
 	else
 	{
-		caster_accuracy_factor = 100 + creature_accuracy(beam.caster);
+		caster_accuracy_factor = 100 + beam.caster.accuracy();
 	}
 
 	// factor in target evasion, capped to prevent divide by (or near-certain hit)
-	if (creature_evasion(target) < -80)
+	if (target.evasion() < -80)
 	{
 		target_evasion_divisor = 20;
 	}
 	else
 	{
-		target_evasion_divisor = 100 + creature_evasion(target);
+		target_evasion_divisor = 100 + target.evasion();
 	}
 
 	assert(base_accuracy != 0);
@@ -242,7 +242,7 @@ static int get_hit_chance(Beam::Data const & beam, int target)
 	}
 }
 
-void hit_creature(Beam::Data const & beam, int target, LineItr const & line)
+void hit_creature(Beam::Data const & beam, Creature::Handle target, LineItr const & line)
 {
 	// todo - exception for firing into watertrap
 
@@ -254,7 +254,7 @@ void hit_creature(Beam::Data const & beam, int target, LineItr const & line)
 	Spell::EffectFunc effect_func = get_effect_func(beam);
 
 	// stash the impact line - sorry for hack
-	Vec2 hit_pos = creature_pos(target);
+	Vec2 hit_pos = target.pos();
 	LineItr line_temp = line;
 	while (!line_temp.finished())
 	{
@@ -264,7 +264,7 @@ void hit_creature(Beam::Data const & beam, int target, LineItr const & line)
 	s_impact_line = LineItr(hit_pos, some_end_pos);
 
 	// deal damage and then apply effect
-	damage_creature(target, damage);
+	target.take_damage(damage);
 	if (effect_func != nullptr)
 	{
 		effect_func(beam.caster, target);

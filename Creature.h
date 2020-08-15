@@ -10,12 +10,13 @@
 // This keeps the code simple as we can use the same functions for player and NPC.
 // Concerns that apply *only* to the player, such as XP, will be handled elsewhere.
 
-// Individual creatures are identified by index (a simple int) throughout the program.
+// Individual creatures are identified by a Creature::Handle throughout the program.
+// This can be treated as an int, but also provides an interface for that creature.
 // The index of Creature::Player == 0 is reserved for the player.
-// Don't store the indices to check a creature's identity, since a removed creature's
-// index may be reused.  If necessary we can add a separate ID for each individual.
+// Don't store the handle to check a creature's identity, since a removed creature's
+// handle may be reused.  If necessary we can add a separate ID for each individual.
 
-// Each creature has a type (Creature::Type) enum.  Don't confuse index with type.
+// Each creature has a type (Creature::Type) enum.  Don't confuse handle with type.
 // There may be multiple creatures of the same type, though hopefully not for named
 // characters like Neville or Dumbledore.
 
@@ -61,64 +62,85 @@ namespace Creature
 		int shield_strength;
 	};
 
-	class IndexItr
+	// Creature::Handle
+	// This is simply a glorified array index that automatically forwards
+	// opreations to the correct creature in the creature array.
+	// This approach lets us keep const correctness on creature operations.
+	class Handle
+	{
+		int index;
+	public:
+		// int interface
+		Handle () : index(Creature::None) { }
+		Handle (int const i) : index(i) { }
+		operator int () { return index; }
+		operator int const () const { return index; }
+		Creature::Handle & operator++ () { ++ index; return *this; }
+
+		// Simple accessors
+		bool valid () const;
+		Creature::Type type () const;
+		std::string name () const;
+		Gender gender () const;
+		int skill_magic () const;
+		int max_hp () const;
+		int hp () const;
+		Vec2 const & pos () const;
+		bool has_status (Status::Index status) const;
+		int status_severity (Status::Index status) const;
+		int distractedness () const;
+		int miscastiness () const;
+		int evasion () const;
+		int accuracy () const;
+		bool knows_spell (Spell::Index spell) const;
+
+		// Complex accessors
+		bool is_player () const;
+		bool visible () const;
+		float miscast_rate_for_spell (Spell::Index spell) const;
+		std::string status_string () const;
+		std::vector<Spell::Index> spells_known () const;
+
+		// Mutators
+		void take_damage (int damage);
+		void move (Vec2 const & new_pos);
+		void inflict_status (Status::Index status, int severity);
+		void reduce_status (Status::Index status, int reduction);
+		void cure_status (Status::Index status);
+		void cure_all (); // heals status and hp
+		
+		void update_derived_stats ();
+	};
+
+	// Iterator over all valid creatures handles
+	class HandleItr
 	{
 	public:
-		IndexItr();
-		int get() const;
+		HandleItr();
+		Creature::Handle get() const;
 		void advance();
 		bool finished () const;
 		int operator++ () { advance(); return current; }
 		int operator* () const { return get(); }
+		Creature::Handle * operator->() { return &current; }
 		explicit operator bool () const { return !finished(); }
 	private:
-		int current;
+		Creature::Handle current;
 	};
+
+	// -----------------------------------------------------------------------------------------------
+	// Global interface
+
+	void init ();
+	void clear ();
+
+	Creature::Handle creature_at_pos (Vec2 pos);
+
+	Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos);
+
+	// Visible creature operations
+	void update_visible_creatures ();
+	void draw_creature (Creature::Handle creature_index, DrawView const & view);
+	void draw_visible_creatures (DrawView const & view);
+	std::vector<Creature::Handle> const & get_visible_creatures ();
 };
-
-extern std::vector<int> g_visible_creatures;
-
-void init_creatures ();
-void clear_creatures ();
-
-// Simple accessors
-bool creature_valid (int creature_index);
-Creature::Type creature_type (int creature_index);
-std::string creature_name (int creature_index);
-Gender creature_gender (int creature_index);
-int creature_skill_magic (int creature_index);
-int creature_max_hp (int creature_index);
-int creature_hp (int creature_index);
-Vec2 const & creature_pos (int creature_index);
-bool creature_has_status (int creature_index, Status::Index status);
-int creature_status_severity (int creature_index, Status::Index status);
-int creature_distractedness (int creature_index);
-int creature_miscastiness (int creature_index);
-int creature_evasion (int creature_index);
-int creature_accuracy (int creature_index);
-bool creature_knows_spell (int creature_index, Spell::Index spell);
-
-// Complex accessors
-int creature_at_pos (Vec2 pos);
-bool creature_is_player (int creature_index);
-bool creature_visible (int creature_index);
-float creature_miscast_rate_for_spell (int creature_index, Spell::Index spell);
-std::string creature_status_string (int creature_index);
-std::vector<Spell::Index> creature_spells_known (int creature_index);
-
-// Mutators
-int spawn_creature (Creature::Type type, Vec2 const & pos);
-void damage_creature (int creature_index, int damage);
-void move_creature (int creature_index, Vec2 const & new_pos);
-void inflict_status (int creature_index, Status::Index status, int severity);
-void reduce_status (int creature_index, Status::Index status, int reduction);
-void cure_status (int creature_index, Status::Index status);
-void creature_cure_all (int creature_index); // heals status and hp
-
-void update_derived_stats (int creature_index);
-
-// Visible creature operations
-void update_visible_creatures ();
-void draw_creature (int creature_index, DrawView const & view);
-void draw_visible_creatures (DrawView const & view);
-

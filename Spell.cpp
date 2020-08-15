@@ -41,9 +41,9 @@ int get_difficulty (Spell::Index spell_index)
 	return s_spell_list[spell_index].difficulty;
 }
 
-int get_damage (Spell::Index spell_index, int caster)
+int get_damage (Spell::Index spell_index, Creature::Handle caster)
 {
-	int skill_magic = creature_skill_magic(caster);
+	int skill_magic = caster.skill_magic();
 
 	if (s_spell_list[spell_index].damage >= 0)
 		return s_spell_list[spell_index].damage;
@@ -128,14 +128,14 @@ float get_miscast_rate (Spell::Index spell, int skill_magic)
 
 static Spell::Instance s_current_spell_instance;
 
-void create_and_bind_instance (Spell::Index spell, int caster)
+void create_and_bind_instance (Spell::Index spell, Creature::Handle caster)
 {
 	s_current_spell_instance =
 	{
 		Spell::get_colour(spell),
 		Spell::get_name(spell).at(0),
 		Spell::get_damage(spell, caster),
-		creature_skill_magic(caster) * Spell::get_difficulty(spell),
+		caster.skill_magic() * Spell::get_difficulty(spell),
 		Spell::get_accuracy(spell),
 		Spell::get_effect_func(spell)
 	};
@@ -149,7 +149,7 @@ Spell::Instance & get_current_instance ()
 	return s_current_spell_instance;
 }
 
-void execute_effect(Spell::Index spell_index, int caster, int target)
+void execute_effect(Spell::Index spell_index, Creature::Handle caster, Creature::Handle target)
 {
 	Spell::EffectFunc func = s_spell_list[spell_index].effect_func;
 	if (func != nullptr)

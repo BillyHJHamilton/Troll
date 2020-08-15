@@ -15,20 +15,20 @@ static bool constexpr SHOW_BOT_DEBUG = true;
 // ------------------------------------------------------------------------------------------------
 // Helper function declarations
 
-Spell::Index choose_spell (int caster);
-Spell::Index highest_predicted_damage_spell (int caster, int target,
+Spell::Index choose_spell (Creature::Handle caster);
+Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
-float estimated_damage_output (Spell::Index spell, int caster, int target);
-bool spell_is_useless (Spell::Index spell, int caster, int target);
+float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
+bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
 
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
 void do_all_bot_turns ()
 {
-	for (Creature::IndexItr itr; itr; ++itr)
+	for (Creature::HandleItr itr; itr; ++itr)
 	{
-		if (creature_is_player(*itr))
+		if (itr->is_player())
 		{
 			continue;
 		}
@@ -36,13 +36,13 @@ void do_all_bot_turns ()
 	}
 }
 
-void do_turn (int creature)
+void do_turn (Creature::Handle creature)
 {
-	bool player_is_visible = check_los(g_map(), creature_pos(creature), Player::pos());
+	bool player_is_visible = check_los(g_map(), creature.pos(), Player::pos());
 
 	if (player_is_visible)
 	{
-		std::vector<Spell::Index> spell_list = creature_spells_known(creature);
+		std::vector<Spell::Index> spell_list = creature.spells_known();
 		if (spell_list.size() > 0)
 		{
 			Spell::Index spell = random_from_vector(spell_list);
@@ -54,11 +54,11 @@ void do_turn (int creature)
 // ------------------------------------------------------------------------------------------------
 // Helper function implementations
 
-Spell::Index choose_spell (int caster)
+Spell::Index choose_spell (Creature::Handle caster)
 {
-	int target = Creature::Player;
+	Creature::Handle target = Creature::Player;
 	Spell::Index spell_chosen = Spell::None;
-	std::vector<Spell::Index> spell_list = creature_spells_known(caster);
+	std::vector<Spell::Index> spell_list = caster.spells_known();
 
 	// 50% chance of doing attack with best predicted damage
 	if (coinflip())
@@ -100,7 +100,7 @@ Spell::Index choose_spell (int caster)
 	{
 		spell_chosen = random_from_vector(spell_list);
 		if ( !spell_is_useless(spell_chosen, caster, target)
-			 && random(0.0f, 100.0f) > creature_miscast_rate_for_spell(caster, spell_chosen) )
+			 && random(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
 		{
 			return spell_chosen;
 		}
@@ -120,7 +120,7 @@ Spell::Index choose_spell (int caster)
 	return spell_chosen;
 }
 
-Spell::Index highest_predicted_damage_spell (int caster, int target,
+Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list)
 {
 	Spell::Index best_spell = Spell::None;
@@ -138,7 +138,7 @@ Spell::Index highest_predicted_damage_spell (int caster, int target,
 	return best_spell;
 }
 
-float estimated_damage_output (Spell::Index spell, int caster, int target)
+float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target)
 {
 	float estimate;
 
@@ -152,7 +152,7 @@ float estimated_damage_output (Spell::Index spell, int caster, int target)
 	estimate = estimate * Spell::get_accuracy(spell) / 100.0f;
 
 	// Factor in miscast rate
-	float good_cast_rate = 100.0f - creature_miscast_rate_for_spell(caster, spell);
+	float good_cast_rate = 100.0f - caster.miscast_rate_for_spell(spell);
 	estimate = estimate * (good_cast_rate / 100.0f);
 
 	// We don't factor in distraction, because it is the same for all spells
@@ -165,10 +165,10 @@ float estimated_damage_output (Spell::Index spell, int caster, int target)
 	return estimate;
 }
 
-bool spell_is_useless (Spell::Index spell, int caster, int target)
+bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target)
 {
 	// if we have virtually no chance of casting it, it's useless
-	float miscast_rate = creature_miscast_rate_for_spell(caster, spell);
+	float miscast_rate = caster.miscast_rate_for_spell(spell);
 	if (miscast_rate >= 99.0)
 		return true;
 	

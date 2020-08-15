@@ -64,7 +64,7 @@ namespace Spell
 	std::string get_colour (Spell::Index spell_index);
 	int get_difficulty (Spell::Index spell_index);
 	int get_dark (Spell::Index spell_index);
-	int get_damage (Spell::Index spell_index, int caster);
+	int get_damage (Spell::Index spell_index, Creature::Handle caster);
 	int get_accuracy (Spell::Index spell_index);
 	EffectFunc get_effect_func (Spell::Index spell_index);
 	Miscast::Category get_miscast_category (Spell::Index spell_index);
@@ -74,8 +74,8 @@ namespace Spell
 
 	float get_miscast_rate (Spell::Index spell, int skill_magic);
 
-	void create_and_bind_instance (Spell::Index spell, int caster);
+	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
 	Spell::Instance & get_current_instance ();
 
-	void execute_effect (Spell::Index spell_index, int caster, int target);
+	void execute_effect (Spell::Index spell_index, Creature::Handle caster, Creature::Handle target);
 }

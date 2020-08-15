@@ -38,14 +38,14 @@ std::string abbrev(Status::Index status)
 	return s_status_data[status].abbrev;
 }
 
-void apply_to_derived_stats (Status::Index status, int creature_index,
+void apply_to_derived_stats (Status::Index status, Creature::Handle creature,
 	Creature::DerivedStats & derived_stats)
 {
 	Status::Data sd = s_status_data[status];
 	if (sd.calc_func != nullptr)
 	{
-		int severity = creature_status_severity(creature_index, status);
-		sd.calc_func(creature_index, derived_stats, severity);
+		int severity = creature.status_severity(status);
+		sd.calc_func(creature, derived_stats, severity);
 	}
 }
 
