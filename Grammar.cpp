@@ -29,6 +29,24 @@ std::string you (Creature::Handle creature)
 	}
 }
 
+std::string you_pl(Creature::Handle creature)
+{
+	if (creature.is_player())
+	{
+		return "you";
+	}
+	else
+	{
+		switch (creature.gender())
+		{
+			case Gender::Male:		return "he";
+			case Gender::Female:	return "she";
+			case Gender::Neuter:
+			default:				return "it";
+		}
+	}
+}
+
 std::string You_are (Creature::Handle creature)
 {
 	if (creature.is_player())
@@ -65,8 +83,19 @@ std::string Your(Creature::Handle creature)
 	}
 }
 
-// With pronoun
 std::string your(Creature::Handle creature)
+{
+	if (creature.is_player())
+	{
+		return "your";
+	}
+	else
+	{
+		return creature.name() + "\'s";
+	}
+}
+
+std::string your_pr(Creature::Handle creature)
 {
 	if (creature.is_player())
 	{
@@ -78,8 +107,8 @@ std::string your(Creature::Handle creature)
 		{
 			case Gender::Male:		return "his";
 			case Gender::Female:	return "her";
-			default:
-			case Gender::Neuter:	return "its";
+			case Gender::Neuter:
+			default:				return "its";
 		}
 	}
 }
