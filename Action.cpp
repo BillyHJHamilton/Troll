@@ -23,6 +23,16 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 targe
 //-------------------------------------------------------------------------------------------------
 // Interface functions
 
+bool player_try_move(Vec2 const& relative_move)
+{
+	bool const moved = g_player().handle().try_move(relative_move);
+	if (moved)
+	{
+		g_player().acted = true;
+	}
+	return moved;
+}
+
 bool player_try_cast_spell (Spell::Index spell)
 {
 	// check if the player knows the spell
@@ -52,6 +62,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	// we now continue to the generic spell-casting function
 	try_cast_spell(spell, Creature::Player, *target_pos);
 
+	g_player().acted = true;
 	return true;
 }
 

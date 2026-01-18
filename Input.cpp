@@ -114,7 +114,7 @@ void handle_next_input ()
 		if (is_directional(key))
 		{
 			Vec2 dir = parse_directional(key);
-			Player::try_move(dir);
+			player_try_move(dir);
 			return;
 		}
 
@@ -124,11 +124,11 @@ void handle_next_input ()
 			return;
 		}
 
-		if (key == TK_SPACE)
-		{
-			Bot::do_all_bot_turns();
-			return;
-		}
+		//if (key == TK_SPACE)
+		//{
+		//	Bot::do_all_bot_turns();
+		//	return;
+		//}
 
 		if (key == TK_H)
 		{

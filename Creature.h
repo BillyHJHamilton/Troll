@@ -42,24 +42,24 @@ namespace Creature
 
 	struct Stats
 	{
-		Type type;
-		char const * name;
-		int codepoint; // letter to display
-		Gender gender;
-		int skill_magic;
-		int max_hp;
+		Type type = Creature::None;
+		char const * name = nullptr;
+		int codepoint = 0; // letter to display
+		Gender gender = Gender::Male;
+		int skill_magic = 0;
+		int max_hp = 0;
 
-		int hp;
-		Vec2 pos;
+		int hp = 0;
+		Vec2 pos = {0,0};
 	};
 
 	struct DerivedStats
 	{
-		int distractedness;
-		int miscastiness;
-		int evasion;
-		int accuracy;
-		int shield_strength;
+		int distractedness = 0;
+		int miscastiness = 0;
+		int evasion = 0;
+		int accuracy = 0;
+		int shield_strength = 0;
 	};
 
 	// Creature::Handle
@@ -105,10 +105,12 @@ namespace Creature
 		// Mutators
 		void take_damage (int damage);
 		void move (Vec2 const & new_pos);
+		bool try_move(Vec2 const& relative_move);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
 		void cure_status (Status::Index status);
 		void cure_all (); // heals status and hp
+		void invalidate();
 		
 		void update_derived_stats ();
 	};
@@ -117,7 +119,7 @@ namespace Creature
 	class HandleItr
 	{
 	public:
-		HandleItr();
+		HandleItr(int start_at); // start at 0 to include player, or 1 to skip player
 		Creature::Handle get() const;
 		void advance();
 		bool finished () const;
@@ -143,5 +145,6 @@ namespace Creature
 	void update_visible_creatures ();
 	void draw_creature (Creature::Handle creature_index, DrawView const & view);
 	void draw_visible_creatures (DrawView const & view);
+	void remove_defeated_creatures ();
 	std::vector<Creature::Handle> const & get_visible_creatures ();
 };

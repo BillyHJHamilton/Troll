@@ -8,12 +8,17 @@ struct DrawView;
 
 struct Player
 {
+	//--------------------------------------------------------------------------
+	// Player-specific data
+
 	int vision_radius = 8;
 
+	bool acted = false;
+
+	//--------------------------------------------------------------------------
+	// Static interface
+
 	static Vec2 const & pos ();
-
-	static bool try_move (Vec2 const & relative_move);
-
 	static Creature::Handle handle () { return 0; }
 };
 

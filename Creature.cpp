@@ -3,6 +3,7 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Global.h"
+#include "Grammar.h"
 #include "Map.h"
 #include "Spell.h"
 #include "Status.h"
@@ -35,8 +36,8 @@ void init ()
 {
 	//																			  mag  hp  spells
 	mix_gingerbread(Creature::Player,		 "Player",       '@', Gender::Female, 10,  10, "VM FP TA");
-	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   10, "VM FP");
-	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  10, "VM TA");
+	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   7, "VM FP");
+	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  5, "VM TA");
 }
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
@@ -88,7 +89,7 @@ void clear ()
 	// empty creature arrays
 	for (Creature::Stats & c : s_creatures)
 	{
-		c.type = Creature::None;
+		c = Creature::Stats{};
 	}
 
 	s_creature_status = make_grid(MAX_CREATURES, Status::Count, 0);
@@ -292,6 +293,26 @@ void Handle::move (Vec2 const & new_pos)
 	get_creature_stats(index).pos = new_pos;
 }
 
+bool Handle::try_move(Vec2 const& relative_move)
+{
+	Vec2 new_pos = pos() + relative_move;
+	Map const& map = g_map();
+
+	if (map.tile_is_solid(new_pos))
+	{
+		return false;
+	}
+	else if (Creature::creature_at_pos(new_pos) != Creature::None)
+	{
+		return false;
+	}
+	else
+	{
+		move(new_pos);
+		return true;
+	}
+}
+
 void Handle::inflict_status (Status::Index status, int severity)
 {
 	if (!has_status(status))
@@ -343,6 +364,11 @@ void Handle::cure_all ()
 	get_creature_stats(index).hp = max_hp();
 }
 
+void Handle::invalidate()
+{
+	s_creatures[index].type = Creature::None;
+}
+
 void Handle::update_derived_stats ()
 {
 	Creature::DerivedStats & ds = get_derived_stats(index);
@@ -366,9 +392,15 @@ void Handle::update_derived_stats ()
 //-------------------------------------------------------------------------------------------------
 // Creature Handle Iterator
 
-HandleItr::HandleItr ()
-	: current(0)
-{ }
+HandleItr::HandleItr(int start_at)
+	: current(start_at)
+{
+	while (!current.valid()
+		&& current < s_max_creature_index)
+	{
+		++current;
+	}
+}
 
 Creature::Handle HandleItr::get () const
 {
@@ -395,12 +427,11 @@ bool HandleItr::finished () const
 
 Creature::Handle creature_at_pos (Vec2 pos)
 {
-	// search creature array
-	for (Creature::Handle i = 0; i < s_max_creature_index; ++ i)
+	for (Creature::HandleItr itr(0); itr; ++itr)
 	{
-		if (i.pos() == pos)
+		if (itr->pos() == pos)
 		{
-			return i;
+			return *itr;
 		}
 	}
 
@@ -448,11 +479,11 @@ void update_visible_creatures ()
 {
 	s_visible_creatures.clear();
 	assert(Handle(0).is_player()); // we are skipping index 0 on this premise
-	for (Creature::Handle creature = 1; creature < s_max_creature_index; ++ creature)
+	for (Creature::HandleItr itr(1); itr; ++itr)
 	{
-		if (creature.visible())
+		if (itr->visible())
 		{
-			s_visible_creatures.push_back(creature);
+			s_visible_creatures.push_back(*itr);
 		}
 	}
 }
@@ -479,6 +510,22 @@ void draw_visible_creatures (DrawView const & view)
 	for (int i : s_visible_creatures)
 	{
 		draw_creature(i, view);
+	}
+}
+
+void remove_defeated_creatures()
+{
+	for (Creature::HandleItr itr(1); itr; ++itr)
+	{
+		if (itr->hp() <= 0)
+		{
+			if (itr->visible())
+			{
+				add_game_message(Grammar::You(*itr) + " " + Grammar::verbs("faint", *itr) + ".");
+			}
+
+			itr->invalidate();
+		}
 	}
 }
 

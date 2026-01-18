@@ -26,7 +26,7 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 
 void do_all_bot_turns ()
 {
-	for (Creature::HandleItr itr; itr; ++itr)
+	for (Creature::HandleItr itr(0); itr; ++itr)
 	{
 		if (itr->is_player())
 		{

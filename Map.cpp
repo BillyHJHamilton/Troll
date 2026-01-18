@@ -166,11 +166,11 @@ void Map::draw_map_tile (Vec2 global_pos, DrawView const & view, bool ignore_vis
 	{
 		if (pos_is_targeted(global_pos))
 		{
-			draw_tile_bg(code, global_pos, view, "dark grey", TARGET_COLOUR);
+			draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
 		}
 		else
 		{
-			draw_tile(code, global_pos, view, "dark grey");
+			draw_tile(code, global_pos, view, "darker grey");
 		}
 	}
 }

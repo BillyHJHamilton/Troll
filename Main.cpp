@@ -1,5 +1,6 @@
 #include "BearLibTerminal.h"
 
+#include "Bot.h"
 #include "Creature.h"
 #include "Config.h"
 #include "Draw.h"
@@ -54,6 +55,13 @@ void game_loop()
 	{
 		Player& player = g_player();
 		Map& map = g_map();
+
+		if (player.acted)
+		{
+			Bot::do_all_bot_turns();
+			Creature::remove_defeated_creatures();
+			player.acted = false;
+		}
 
 		map.update_visibility(Player::pos(), player.vision_radius);
 		Creature::update_visible_creatures();
