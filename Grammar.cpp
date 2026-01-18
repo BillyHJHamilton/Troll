@@ -65,4 +65,23 @@ std::string Your(Creature::Handle creature)
 	}
 }
 
+// With pronoun
+std::string your(Creature::Handle creature)
+{
+	if (creature.is_player())
+	{
+		return "your";
+	}
+	else
+	{
+		switch (creature.gender())
+		{
+			case Gender::Male:		return "his";
+			case Gender::Female:	return "her";
+			default:
+			case Gender::Neuter:	return "its";
+		}
+	}
+}
+
 } // namespace Grammar
