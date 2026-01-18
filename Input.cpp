@@ -189,7 +189,9 @@ bool is_keyboard_key (int tk_code) // still used?
 bool is_directional (int tk_code)
 {
 	return (tk_code >= TK_RIGHT && tk_code <= TK_UP)
-		|| (tk_code >= TK_KP_1 && tk_code <= TK_KP_9 && tk_code != TK_KP_5);
+		|| (tk_code >= TK_KP_1 && tk_code <= TK_KP_9 && tk_code != TK_KP_5)
+		|| tk_code == TK_HOME || tk_code == TK_END
+		|| tk_code == TK_PAGEUP || tk_code == TK_PAGEDOWN;
 }
 
 Vec2 parse_directional (int tk_code)
@@ -201,6 +203,7 @@ Vec2 parse_directional (int tk_code)
 		return {1,0};
 		break;
 	case TK_KP_9:
+	case TK_PAGEUP:
 		return {1,-1};
 		break;
 	case TK_KP_8:
@@ -208,6 +211,7 @@ Vec2 parse_directional (int tk_code)
 		return {0,-1};
 		break;
 	case TK_KP_7:
+	case TK_HOME:
 		return {-1,-1};
 		break;
 	case TK_KP_4:
@@ -215,6 +219,7 @@ Vec2 parse_directional (int tk_code)
 		return {-1,0};
 		break;
 	case TK_KP_1:
+	case TK_END:
 		return {-1,1};
 		break;
 	case TK_KP_2:
@@ -222,6 +227,7 @@ Vec2 parse_directional (int tk_code)
 		return {0,1};
 		break;
 	case TK_KP_3:
+	case TK_PAGEDOWN:
 		return {1,1};
 		break;
 	default:

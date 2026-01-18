@@ -1,0 +1,38 @@
+// ------------------------------------------------------------------------------------------------
+// ColorScope helper class
+
+// Realized this wouldn't work because print to a stringstream not terminal directly
+
+class ColourScope
+{
+public:
+	ColourScope(const char* colour_string)
+	{
+		old_colour = terminal_state(TK_COLOR);
+		terminal_color(colour_string);
+	}
+
+	~ColourScope()
+	{
+		terminal_color((color_t)old_colour);
+	}
+private:
+	int old_colour;
+};
+
+class BackgroundColourScope
+{
+public:
+	BackgroundColourScope(char* colour_string)
+	{
+		old_colour = terminal_state(TK_BKCOLOR);
+		terminal_bkcolor(colour_string);
+	}
+
+	~BackgroundColourScope()
+	{
+		terminal_bkcolor((color_t)old_colour);
+	}
+private:
+	int old_colour;
+};

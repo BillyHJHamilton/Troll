@@ -205,6 +205,28 @@ int num_lines_for_visible_creature_stats ()
 	return std::min(desired, max_lines);
 }
 
+static const char* get_hp_colour(Creature::Handle creature)
+{
+	const float hp_percent = creature.hp_percent();
+
+	if (hp_percent > 0.99f)
+	{
+		return "[color=white]";
+	}
+	else if (hp_percent >= 0.499f)
+	{
+		return "[color=light yellow]";
+	}
+	else if (hp_percent >= 0.249f)
+	{
+		return "[color=light orange]";
+	}
+	else
+	{
+		return "[color=light red]";
+	}
+}
+
 static void format_creature_stats (std::stringstream & ss, Creature::Handle creature)
 {
 	if (creature_is_targeted(creature))
@@ -217,9 +239,12 @@ static void format_creature_stats (std::stringstream & ss, Creature::Handle crea
 		ss << "[/bkcolor]";
 	}
 
+	ss << get_hp_colour(creature);
 	ss << std::right << std::setw(3) << creature.hp();
 	ss << " / ";
 	ss << std::left << std::setw(3) << creature.max_hp();
+	ss << "[/color]";
+
 	ss << std::endl;
 	ss << "[color=lighter yellow]";
 	ss << creature.status_string();

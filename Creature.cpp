@@ -139,6 +139,11 @@ int Handle::hp () const
 	return get_creature_stats(index).hp;
 }
 
+float Handle::hp_percent() const
+{
+	return (float)(hp()) / (float)(max_hp());
+}
+
 Vec2 const & Handle::pos () const
 {
 	return get_creature_stats(index).pos;

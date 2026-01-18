@@ -75,6 +75,7 @@ void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_po
 	bool is_miscast = check_miscast(caster, spell);
 	if ( is_miscast )
 	{
+		do_miscast(caster, spell, target_pos);
 		return;
 	}
 
