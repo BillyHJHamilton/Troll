@@ -39,24 +39,33 @@ int s_selection = 0;
 const char* const c_doc_title =
 	"\n"
 	"  --------------------------------------\n\n"
-	"  TTTTTTT  RRRR     OOO    L      L\n"
-	"     T     R   R   O   O   L      L\n"
-	"     T     R  R   O     O  L      L\n"
-	"     T     RRR    O     O  L      L\n"
-	"     T     R  R    O   O   L      L\n"
+	"  TTTTTTT  RRRR     OOO    L      L     \n"
+	"     T     R   R   O   O   L      L     \n"
+	"     T     R  R   O     O  L      L     \n"
+	"     T     RRR    O     O  L      L     \n"
+	"     T     R  R    O   O   L      L     \n"
 	"     T     R   R    OOO    LLLLLL LLLLLL\n\n"
 	"  --------------------------------------\n"
-	"       The Revenge of Luna Lovegood\n"
+	"       The Revenge of Luna Lovegood     \n"
 	"  --------------------------------------\n";
 
 const char* const c_doc_help =
-	"Move - Arrow keys or numpad \n"
-	"Diagonals - Numpad or home/end/pgup/pgdn \n"
-	"Cycle target - Tab \n"
-	"Cast spell - Hold shift, type 2-letter abbreviation \n"
-	"Target position - Hold shift, use movement keys \n"
-	"List spells - (todo) \n\n"
-	"(press enter)";
+	"How To Play\n"
+	"\n"
+	"Movement:\n"
+	"  To move, use the arrow keys or numpad.\n"
+	"  If you have no numpad, use Home/End/PgUp/PgDn for diagonals.\n"
+	"\n"
+	"Spellcasting:\n"
+	"  To cast a spell, hold Shift and type the spell's two-letter abbreviation.\n"
+	"  To see your spells, press ? (shift /).\n"
+	"\n"
+	"Spell Targeting:\n"
+	"  Your current target is highlighted on the map.\n"
+	"  To cycle between targets, press Tab.\n"
+	"  To target a square manually, hold shift and use the move controls.\n"
+	"\n"
+	"To show these instructions again, press 'h'.\n";
 
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
@@ -79,6 +88,7 @@ void show_title()
 {
 	open_menu(Document);
 	s_document_content = c_doc_title;
+	s_on_complete = show_help;
 }
 
 void show_help()
@@ -216,13 +226,14 @@ void draw_selected_spell()
 
 	std::stringstream ss;
 	ss << Spell::get_name(s) << "\n\n";
-	ss << "Difficulty:  " << std::setw(3) << std::left << Spell::get_difficulty(s)
+	ss << std::setw(13) << std::left << "Difficulty:"
+		<< std::setw(3) << std::left << Spell::get_difficulty(s)
 		<< " (" << std::fixed << std::setprecision(0) << base_success << "%)\n";
-	ss << "Accuracy:    " << Spell::get_accuracy(s) << "\n";
+	ss << std::setw(13) << std::left << "Accuracy:" << Spell::get_accuracy(s) << "\n";
 
 	if (damage > 0)
 	{
-		ss << "Damage:      " << damage << "\n";
+		ss << std::setw(13) << std::left << "Damage:" << damage << "\n";
 	}
 
 	dimensions_t dim = terminal_print(40, 2, ss.str().c_str());

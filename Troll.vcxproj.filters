@@ -147,5 +147,8 @@
     <Text Include="Scaps.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="CodingStandard.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

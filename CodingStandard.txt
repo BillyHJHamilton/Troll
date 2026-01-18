@@ -24,8 +24,7 @@ STYLE
 
 LANGUAGE FEATURES
 - goto considered acceptable
-- use const as much as possible
-- don't make Hitler sad (https://www.youtube.com/watch?v=ZWRRXP-XFvY)
+- use const as much as possible (https://www.youtube.com/watch?v=ZWRRXP-XFvY)
 - use constexpr as much as possible
 - don't throw exceptions
 - no lambdas
