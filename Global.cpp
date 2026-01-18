@@ -5,10 +5,12 @@
 #include "Player.h"
 
 bool g_quit_flag;
+GameMode g_game_mode;
 
 void setup_global()
 {
 	g_quit_flag = false;
+	g_game_mode = GameMode::Normal;
 
 	Map & map = g_map();
 	Box map_box = make_box(0, 0, 100, 100);

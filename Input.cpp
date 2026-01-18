@@ -7,6 +7,7 @@
 #include "Draw.h"
 #include "Geometry.h"
 #include "Global.h"
+#include "Menu.h"
 #include "Player.h"
 #include "Spell.h"
 #include "Target.h"
@@ -66,12 +67,25 @@ void handle_next_input ()
 	//int shift = terminal_check(TK_SHIFT);
 
 	//-----------------------------------------------------------
+	// Global input - All Game modes
 
 	if (key == TK_CLOSE) // X button in the corner
 	{
 		handle_input_close();
 		return;	
 	}
+
+	//-----------------------------------------------------------
+	// Menu input - Redirect to menu
+	
+	if (g_game_mode == GameMode::Menu)
+	{
+		Menu::handle_input(key);
+		return;
+	}
+
+	//-----------------------------------------------------------
+	// Game input - Toggling spell mode on/off
 
 	// enter spellcasting mode when shift is pressed down
 	if (key == TK_SHIFT)
@@ -92,7 +106,8 @@ void handle_next_input ()
 		return;
 	}
 
-	//-------------------------------------------
+	//-----------------------------------------------------------
+	// Game input - In normal mode
 
 	if (s_input_mode == InputMode::Normal)
 	{
@@ -112,13 +127,21 @@ void handle_next_input ()
 		if (key == TK_SPACE)
 		{
 			Bot::do_all_bot_turns();
+			return;
+		}
+
+		if (key == TK_H)
+		{
+			Menu::show_help();
+			return;
 		}
 
 		// unhandled
 		return;
 	}
 
-	//-------------------------------------------
+	//-----------------------------------------------------------
+	// Game input - in spellcasting mode
 
 	if (s_input_mode == InputMode::Spellcasting)
 	{

@@ -28,6 +28,11 @@ namespace Creature
 	class Handle;
 }
 
+namespace Menu
+{
+	enum Id : int;
+}
+
 namespace Spell
 {
 	enum Index : int;
@@ -46,5 +51,5 @@ enum class Visibility : byte;
 
 namespace Miscast
 {
-	enum Category;
+	enum Category : int;
 }

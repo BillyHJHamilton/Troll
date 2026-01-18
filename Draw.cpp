@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "Input.h"
 #include "Map.h"
+#include "Menu.h"
 #include "Player.h"
 #include "Target.h"
 
@@ -151,8 +152,6 @@ void print_game_messages(Box const & box)
 
 void update_screen ()
 {
-	terminal_clear();
-
 	DrawView view = get_draw_view();
 
 	terminal_font("tile");
@@ -194,7 +193,17 @@ void update_screen ()
 
 void draw_screen ()
 {
-	update_screen();
+	terminal_clear();
+
+	if (g_game_mode == GameMode::Menu)
+	{
+		Menu::update_screen();
+	}
+	else
+	{
+		update_screen();
+	}
+
 	terminal_refresh();
 }
 

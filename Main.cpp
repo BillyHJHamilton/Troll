@@ -7,6 +7,7 @@
 #include "Geometry.h"
 #include "Global.h"
 #include "Map.h"
+#include "Menu.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -49,15 +50,17 @@ void test_line_drawing()
 
 void game_loop()
 {
-	Player & player = g_player();
-	Map & map = g_map();
+	if (g_game_mode == GameMode::Normal)
+	{
+		Player& player = g_player();
+		Map& map = g_map();
 
-	map.update_visibility(Player::pos(), player.vision_radius);
-	Creature::update_visible_creatures();
-	update_target();
+		map.update_visibility(Player::pos(), player.vision_radius);
+		Creature::update_visible_creatures();
+		update_target();
+	}
 
 	draw_screen();
-
 	handle_next_input();
 }
 
