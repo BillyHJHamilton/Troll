@@ -20,8 +20,8 @@ void setup_global()
 	spawn_creature(Creature::Player, {4,4});
 	spawn_creature(Creature::Neville_0, {6,9});
 	spawn_creature(Creature::ColinCreevy_0, {14,15});
-	spawn_creature(Creature::ColinCreevy_0, {14,17});
-	spawn_creature(Creature::ColinCreevy_0, {16,15});
-	spawn_creature(Creature::ColinCreevy_0, {15,16});
-	spawn_creature(Creature::ColinCreevy_0, {8,13});
+//	spawn_creature(Creature::ColinCreevy_0, {14,17});
+//	spawn_creature(Creature::ColinCreevy_0, {16,15});
+//	spawn_creature(Creature::ColinCreevy_0, {15,16});
+//	spawn_creature(Creature::ColinCreevy_0, {8,13});
 }
