@@ -89,6 +89,8 @@ int main()
 	// Setup functions run at the start of each game, after all clear functions
 	setup_global();
 
+	Menu::show_title();
+
 	while (!g_quit_flag)
 	{
 		game_loop();

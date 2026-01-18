@@ -197,6 +197,7 @@
     <ClInclude Include="Status.h" />
     <ClInclude Include="Target.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="VectorUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Scaps.txt" />

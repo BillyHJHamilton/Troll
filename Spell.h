@@ -59,6 +59,7 @@ namespace Spell
 	// functions
 	void init();
 
+	bool is_valid_index(Spell::Index index);
 	std::string get_name (Spell::Index spell_index);
 	std::string get_abbrev (Spell::Index spell_index);
 	std::string get_colour (Spell::Index spell_index);

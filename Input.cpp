@@ -159,6 +159,12 @@ void handle_next_input ()
 			return;
 		}
 
+		if (key == TK_SLASH)
+		{
+			Menu::show_spells_known();
+			return;
+		}
+
 		// unhandled
 		return;
 	}
