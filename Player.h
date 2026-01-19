@@ -15,6 +15,7 @@ struct Player
 
 	bool acted = false;
 	bool game_over = false;
+	Creature::Type defeated_by = (Creature::Type)-1;
 
 	//--------------------------------------------------------------------------
 	// Static interface

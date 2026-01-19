@@ -264,7 +264,7 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineItr cons
 	s_impact_line = LineItr(hit_pos, some_end_pos);
 
 	// deal damage and then apply effect
-	target.take_damage(damage);
+	target.take_damage(damage, beam.caster);
 	if (effect_func != nullptr)
 	{
 		effect_func(beam.caster, target);

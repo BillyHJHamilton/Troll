@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <unordered_map>
 
 #include "Bot.h"
 #include "Draw.h"
@@ -12,6 +13,7 @@
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
+#include "VectorUtil.h"
 
 namespace Creature
 {
@@ -72,7 +74,7 @@ static Spell::Bitset s_spells_known [MAX_CREATURES];
 static int s_max_creature_index;
 
 std::vector<Creature::Handle> s_visible_creatures;
-std::vector<Creature::Handle> s_fainting_creatures;
+std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
 
 static Creature::Stats & get_creature_stats (Creature::Handle creature)
 {
@@ -281,7 +283,7 @@ std::vector<Spell::Index> Handle::spells_known () const
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Mutator functions
 
-void Handle::take_damage (int damage)
+void Handle::take_damage (int damage, Creature::Handle instigator)
 {
 	Creature::Stats & c = get_creature_stats(index);
 	c.hp -= damage;
@@ -289,7 +291,7 @@ void Handle::take_damage (int damage)
 	if (c.hp <= 0)
 	{
 		c.hp = 0;
-		s_fainting_creatures.push_back(*this);
+		s_fainting_creatures.try_emplace(*this, instigator.valid() ? instigator.type() : Type::None);
 	}
 }
 
@@ -433,6 +435,15 @@ bool HandleItr::finished () const
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
 
+const char* name_from_type(Creature::Type type)
+{
+	if (type >= 0 && type <= Creature::Type::Count)
+	{
+		return s_gingerbread[type].name;
+	}
+	return "no one";
+}
+
 Creature::Handle creature_at_pos (Vec2 pos)
 {
 	for (Creature::HandleItr itr(0); itr; ++itr)
@@ -525,12 +536,20 @@ void draw_visible_creatures (DrawView const & view)
 
 void remove_defeated_creatures()
 {
-	for (Creature::Handle creature : s_fainting_creatures)
+	for (std::pair<int,int> const& pair : s_fainting_creatures)
 	{
-		add_game_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+		Handle creature = pair.first;
+		Creature::Type const instigator_type = (Creature::Type)pair.second;
+
+		if (creature.visible() || instigator_type == Type::Player)
+		{
+			add_game_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+		}
+
 		if (creature.is_player())
 		{
 			g_player().game_over = true;
+			g_player().defeated_by = instigator_type;
 		}
 		else
 		{

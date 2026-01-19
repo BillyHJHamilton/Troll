@@ -31,7 +31,7 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";
 			add_game_message(std::move(message));
-			target.take_damage(1);
+			target.take_damage(1, caster);
 		}
 		else
 		{
@@ -41,8 +41,8 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 				std::string message = Grammar::You_are(target) + " knocked into "
 					+ Grammar::you(secondary_target) + "!";
 				add_game_message(std::move(message));
-				target.take_damage(1);
-				secondary_target.take_damage(1);
+				target.take_damage(1, caster);
+				secondary_target.take_damage(1, caster);
 			}
 			else
 			{

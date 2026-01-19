@@ -68,11 +68,6 @@ const char* const c_doc_help =
 	"\n"
 	"To show these instructions again, press 'h'.\n";
 
-const char* const c_doc_game_over =
-	"Game Over\n\n"
-	"Your adventure has come to at an end.\n\n"
-	"(press enter)";
-
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
@@ -106,7 +101,10 @@ void show_help()
 void show_game_over()
 {
 	open_menu(Document);
-	s_document_content = c_doc_game_over;
+	s_document_content = "Game Over.\n\nYou were defeated by ";
+	s_document_content += Creature::name_from_type(g_player().defeated_by);
+	s_document_content += ".";
+
 	s_on_complete = Game::reset;
 }
 

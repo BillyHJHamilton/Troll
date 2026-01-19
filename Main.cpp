@@ -1,28 +1,18 @@
 #include "BearLibTerminal.h"
 
-#include "Creature.h"
 #include "Config.h"
-#include "Draw.h"
-#include "Input.h"
 #include "Geometry.h"
 #include "Game.h"
 #include "Global.h"
-#include "Map.h"
-#include "Menu.h"
-#include "Random.h"
-#include "Spell.h"
-#include "Status.h"
-#include "Target.h"
 
 // To do:
 // - Improved enemy AI
-//  - Take a turn to wake up and see player.
 //  - Move towards player's last location if out of range.
 //  - Pathfinding...
 //  - EQS / find good attack position
 // - XP and level up
 // - Map generation
-// - Improved turn and action timing
+// - Multiple floors / levels
 
 void test_line_drawing()
 {

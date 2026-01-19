@@ -104,7 +104,7 @@ namespace Creature
 		std::vector<Spell::Index> spells_known () const;
 
 		// Mutators
-		void take_damage (int damage);
+		void take_damage (int damage, Creature::Handle instigator);
 		void move (Vec2 const & new_pos);
 		bool try_move(Vec2 const& relative_move);
 		void inflict_status (Status::Index status, int severity);
@@ -138,6 +138,7 @@ namespace Creature
 	void init ();
 	void clear ();
 
+	const char* name_from_type(Creature::Type type);
 	Creature::Handle creature_at_pos (Vec2 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos);

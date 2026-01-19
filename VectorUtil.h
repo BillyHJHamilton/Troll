@@ -117,6 +117,15 @@ namespace Util
 	//	}
 	//}
 
+	template<typename VectorItemType>
+	void AddUnique(std::vector<VectorItemType>& vec, const VectorItemType& item)
+	{
+		if (!Contains(vec, item))
+		{
+			vec.push_back(item);
+		}
+	}
+
 	// Adds the second vector to the end of the first vector.  Second vector is unchanged.
 	template<typename VectorItemType>
 	void Append(std::vector<VectorItemType>& first, const std::vector<VectorItemType>& second)
