@@ -39,16 +39,16 @@ int s_selection = 0;
 
 const char* const c_doc_title =
 	"\n"
-	"  --------------------------------------\n\n"
-	"  TTTTTTT  RRRR     OOO    L      L     \n"
-	"     T     R   R   O   O   L      L     \n"
-	"     T     R  R   O     O  L      L     \n"
-	"     T     RRR    O     O  L      L     \n"
-	"     T     R  R    O   O   L      L     \n"
-	"     T     R   R    OOO    LLLLLL LLLLLL\n\n"
-	"  --------------------------------------\n"
-	"       The Revenge of Luna Lovegood     \n"
-	"  --------------------------------------\n";
+	"  ------------------------------------\n\n"
+	"  TTTTTTT RRRR    OOO    L      L     \n"
+	"     T    R   R  O   O   L      L     \n"
+	"     T    R  R  O     O  L      L     \n"
+	"     T    RRR   O     O  L      L     \n"
+	"     T    R  R   O   O   L      L     \n"
+	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
+	"  ------------------------------------\n"
+	"      The Revenge Of Luna Lovegood    \n"
+	"  ------------------------------------\n";
 
 const char* const c_doc_help =
 	"How To Play\n"
