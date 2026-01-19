@@ -2,7 +2,9 @@
 
 #include "Creature.h"
 #include "Draw.h"
+#include "Geometry.h"
 #include "Grammar.h"
+#include "Random.h"
 
 #include <vector>
 
@@ -93,6 +95,16 @@ void calc_dancing(Creature::Handle creature, Creature::DerivedStats & ds, int se
 
 void endround_dancing(Creature::Handle creature)
 {
+	// Random movement
+	if (random(0, 2 + creature.status_severity(Dancing) > 2))
+	{
+		Vec2 move_dir = { random(-1,1), random(-1,1) };
+		if (move_dir != Vec2{0,0})
+		{
+			creature.try_move(move_dir);
+		}
+	}
+
 	creature.reduce_status(Dancing, 1);
 }
 

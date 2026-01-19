@@ -13,6 +13,7 @@
 // - XP and level up
 // - Map generation
 // - Multiple floors / levels
+// - Items
 
 void test_line_drawing()
 {

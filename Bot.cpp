@@ -6,6 +6,7 @@
 #include "Global.h"
 #include "Grammar.h"
 #include "Map.h"
+#include "Math.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -25,6 +26,7 @@ static std::vector<Brain> s_brains;
 // Helper function declarations
 
 bool is_aware(Creature::Handle const creature);
+void move_towards(Creature::Handle creature, Vec2 dest);
 Spell::Index choose_spell (Creature::Handle caster);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
@@ -56,6 +58,7 @@ void init_brain(Creature::Handle handle)
 void do_turn (Creature::Handle creature)
 {
 	constexpr int creature_vision = 8; // Add variable/function later if desired.
+	Brain& brain = s_brains[creature];
 
 	bool player_is_visible = check_los(g_map(), creature.pos(), Player::pos())
 		&& check_within_range(creature.pos(), Player::pos(), creature_vision);
@@ -77,13 +80,15 @@ void do_turn (Creature::Handle creature)
 			}
 		}
 
-		s_brains[creature].awareness = c_max_awareness;
+		brain.awareness = c_max_awareness;
+		brain.last_seen = Player::pos();
 	}
 	else
 	{
 		if (is_aware(creature))
 		{
-			--s_brains[creature].awareness;
+			--brain.awareness;
+			move_towards(creature, brain.last_seen);
 		}
 	}
 }
@@ -94,6 +99,29 @@ void do_turn (Creature::Handle creature)
 bool is_aware(Creature::Handle const creature)
 {
 	return s_brains[creature].awareness > 0;
+}
+
+void move_towards(Creature::Handle creature, Vec2 dest)
+{
+	// TODO proper pathfinding
+
+	Vec2 const to_dest = dest - creature.pos();
+	Vec2 const move_dir = {
+		Math::Sign(to_dest.x),
+		Math::Sign(to_dest.y)
+	};
+
+	bool moved = creature.try_move(move_dir);
+
+	if (!moved)
+	{
+		moved = creature.try_move({ move_dir.x, 0 });
+	}
+
+	if (!moved)
+	{
+		moved = creature.try_move({ 0, move_dir.y });
+	}
 }
 
 Spell::Index choose_spell (Creature::Handle caster)
