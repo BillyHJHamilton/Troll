@@ -162,6 +162,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Grammar.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Draw.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Grammar.h" />

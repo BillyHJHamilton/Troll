@@ -9,6 +9,11 @@
 Player global_player;
 Player & g_player () { return global_player; }
 
+void Player::clear()
+{
+	global_player = Player();
+}
+
 Vec2 const & Player::pos ()
 {
 	return handle().pos();

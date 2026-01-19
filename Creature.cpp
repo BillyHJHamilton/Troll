@@ -345,7 +345,10 @@ void Handle::reduce_status (Status::Index status, int reduction)
 		if (s_creature_status[index][status] <= 0)
 		{
 			s_creature_status[index][status] = 0;
-			// Status::print_cure_message(creature, status); // todo maybe
+			if (visible())
+			{
+				Status::print_cure_message(*this, status);
+			}
 		}
 	}
 

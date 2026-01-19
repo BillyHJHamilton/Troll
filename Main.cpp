@@ -1,39 +1,20 @@
 #include "BearLibTerminal.h"
 
-#include "Bot.h"
 #include "Creature.h"
 #include "Config.h"
 #include "Draw.h"
 #include "Input.h"
 #include "Geometry.h"
+#include "Game.h"
 #include "Global.h"
 #include "Map.h"
 #include "Menu.h"
-#include "Player.h"
 #include "Random.h"
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
 
 // To do:
-// X Map
-// X Draw screen
-// X Visibility (algorithm could be improved)
-// X Basic movement
-// X Not walk through walls
-// X Screen layout
-// X Non-player character
-// X Targeting
-// X Spell parsing
-// X Spell casting
-// X Spell effects
-// X Message printing
-// X Dynamic stat display
-// X Status effects
-// X Spell accuracy/failure
-// X Spell animations
-// X Manual targeting
-// - AI firing back
 // - Turn and action timing
 // - Check spells known
 // - Map generation
@@ -49,59 +30,19 @@ void test_line_drawing()
 	}
 }
 
-void game_loop()
-{
-	if (g_game_mode == GameMode::Normal)
-	{
-		Player& player = g_player();
-		Map& map = g_map();
-
-		if (player.acted)
-		{
-			Bot::do_all_bot_turns();
-			Creature::remove_defeated_creatures();
-			player.acted = false;
-		}
-
-		map.update_visibility(Player::pos(), player.vision_radius);
-		Creature::update_visible_creatures();
-		update_target();
-	}
-
-	draw_screen();
-	handle_next_input();
-}
-
 int main()
 {
     terminal_open();
   
 	config_terminal();
 
-	// Initialization is in several layers (init, clear, setup).
-	// Alphabetize the init's in each layer.
-	// Avoid any order dependency within a layer.
+	Game::init();
 
-	// Init functions run once when the program starts
-	Creature::init();
-	init_draw();
-	init_random();
-	Spell::init();
-	Status::init();
-
-	// Clear functions run before start of each game
-	Creature::clear();
-	clear_input();
-	clear_target();
-
-	// Setup functions run at the start of each game, after all clear functions
-	setup_global();
-
-	Menu::show_title();
+	Game::reset();
 
 	while (!g_quit_flag)
 	{
-		game_loop();
+		Game::update();
 	}
   
     terminal_close();

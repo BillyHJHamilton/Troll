@@ -7,6 +7,7 @@
 
 #include "Creature.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Global.h"
 #include "Input.h"
 #include "Player.h"
@@ -67,6 +68,11 @@ const char* const c_doc_help =
 	"\n"
 	"To show these instructions again, press 'h'.\n";
 
+const char* const c_doc_game_over =
+	"Game Over\n\n"
+	"Your adventure has come to at an end.\n\n"
+	"(press enter)";
+
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
@@ -95,6 +101,13 @@ void show_help()
 {
 	open_menu(Document);
 	s_document_content = c_doc_help;
+}
+
+void show_game_over()
+{
+	open_menu(Document);
+	s_document_content = c_doc_game_over;
+	s_on_complete = Game::reset;
 }
 
 void show_spells_known()

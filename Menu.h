@@ -12,9 +12,9 @@ namespace Menu
 		Count
 	};
 
-	// Go to menu mode and open a specific menu.
 	void show_title();
 	void show_help();
+	void show_game_over();
 	void show_spells_known();
 
 	// Return to normal gameplay

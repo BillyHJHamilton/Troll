@@ -11,13 +11,14 @@ struct Player
 	//--------------------------------------------------------------------------
 	// Player-specific data
 
-	int vision_radius = 8;
+	static int constexpr vision_radius = 8;
 
 	bool acted = false;
 
 	//--------------------------------------------------------------------------
 	// Static interface
 
+	static void clear();
 	static Vec2 const & pos ();
 	static Creature::Handle handle () { return 0; }
 };
