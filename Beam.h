@@ -20,12 +20,14 @@ namespace Beam
 
 	struct Data
 	{
+		Vec2 start_pos;
 		Vec2 pos;
 		Vec2 trajectory; // may be any non-zero length
 		Beam::Type type;
 		Creature::Handle caster;
-		bool caster_aimed;
+		int max_range;
 		int intended_target;
+		bool caster_aimed;
 		bool done;
 	};
 

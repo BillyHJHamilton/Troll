@@ -38,6 +38,7 @@ namespace Spell
 
 		int damage;
 		int accuracy; // out of 100.
+		int range;
 
 		EffectFunc effect_func;
 		Miscast::Category miscast_category;
@@ -67,6 +68,7 @@ namespace Spell
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
 	int get_accuracy (Spell::Index spell_index);
+	int get_range (Spell::Index spell_index);
 	EffectFunc get_effect_func (Spell::Index spell_index);
 	Miscast::Category get_miscast_category (Spell::Index spell_index);
 	Spell::Index get_index_by_name (std::string const & spell_name);

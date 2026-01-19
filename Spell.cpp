@@ -10,10 +10,10 @@ namespace Spell
 {
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc	Effect function				Miscast type
-	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		65,	&vermillious_effect,		Miscast::Beam },
-	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	3,		55,	&flipendo_effect,			Miscast::Beam },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		70,	&tarantallegra_effect,		Miscast::Beam }
+{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc Rng	Effect function				Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		65,	3,	&vermillious_effect,		Miscast::Beam },
+	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	3,		55,	9,	&flipendo_effect,			Miscast::Beam },
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		70,	7,	&tarantallegra_effect,		Miscast::Beam }
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
@@ -97,6 +97,11 @@ int get_damage (Spell::Index spell_index, Creature::Handle caster)
 int get_accuracy (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].accuracy;
+}
+
+int get_range(Spell::Index spell_index)
+{
+	return s_spell_list[spell_index].range;
 }
 
 EffectFunc get_effect_func (Spell::Index spell_index)

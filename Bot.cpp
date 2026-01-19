@@ -76,7 +76,15 @@ void do_turn (Creature::Handle creature)
 			if (spell_list.size() > 0)
 			{
 				Spell::Index spell = random_from_vector(spell_list);
-				try_cast_spell(spell, creature, Player::pos());
+				if (check_within_range(creature.pos(),
+					Player::pos(), Spell::get_range(spell)))
+				{
+					try_cast_spell(spell, creature, Player::pos());
+				}
+				else
+				{
+					move_towards(creature, Player::pos());
+				}
 			}
 		}
 

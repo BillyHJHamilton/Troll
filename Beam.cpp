@@ -48,7 +48,7 @@ std::optional<LineItr> get_latest_impact_line ()
 // ------------------------------------------------------------------------------------------------
 // helper function implementations
 
-Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
+Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
 {
 	int intended_target = Creature::None;
 	if (caster_aimed)
@@ -59,11 +59,13 @@ Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_p
 	return Beam::Data
 	{
 		caster.pos(),
+		caster.pos(),
 		target_pos - caster.pos(),
 		Beam::Type::Spell,
 		caster,
-		caster_aimed,
+		Spell::get_range(spell),
 		intended_target,
+		caster_aimed,
 		false
 	};
 }
@@ -95,23 +97,23 @@ void shoot_along_line (Beam::Data & beam)
 		// update position
 		beam.pos = *line_itr;
 
-		// do animation
-		Visibility tile_vis = g_map().get_visibility(beam.pos);
-		if (tile_vis == Visibility::Visible)
+		bool const out_of_range = !check_within_range(beam.start_pos, beam.pos, beam.max_range);
+		if (out_of_range)
 		{
-			draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+			beam.done = true;
 		}
-		
-		// see if we hit anything; this may change done to true
-		test_for_impact(beam, line_itr);
+		else
+		{
+			// do animation
+			Visibility tile_vis = g_map().get_visibility(beam.pos);
+			if (tile_vis == Visibility::Visible)
+			{
+				draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+			}
 
-		// Not sure we want max range.
-		// If we do, it needs to follow Pyhtagorus; or we go to square LOS...
-		//++ beam.dist_travelled;
-		//if (beam.dist_travelled >= Beam::get_range(beam))
-		//{
-		//	beam.done = true;
-		//}
+			// see if we hit anything; this may change done to true
+			test_for_impact(beam, line_itr);
+		}
 	}
 	while (!beam.done && line_itr.steps_left > 0);
 }

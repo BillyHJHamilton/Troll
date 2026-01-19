@@ -58,6 +58,13 @@ bool player_try_cast_spell (Spell::Index spell)
 		return false;
 	}
 
+	// check for out of range
+	if (!check_within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
+	{
+		add_game_message("The target is out of range.");
+		return false;
+	}
+
 	// Having confirmed it is plausible for the player to try to cast the spell,
 	// we now continue to the generic spell-casting function
 	try_cast_spell(spell, Creature::Player, *target_pos);
