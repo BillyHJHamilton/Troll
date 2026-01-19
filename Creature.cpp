@@ -1,6 +1,9 @@
-#include "BearLibTerminal.h"
-
 #include "Creature.h"
+
+#include <cassert>
+#include <sstream>
+
+#include "Bot.h"
 #include "Draw.h"
 #include "Global.h"
 #include "Grammar.h"
@@ -8,9 +11,6 @@
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
-
-#include <cassert>
-#include <sstream>
 
 namespace Creature
 {
@@ -35,7 +35,7 @@ void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gen
 void init ()
 {
 	//																			  mag  hp  spells
-	mix_gingerbread(Creature::Player,		 "Player",       '@', Gender::Female, 10,  10, "VM FP TA");
+	mix_gingerbread(Creature::Player,		 "You",          '@', Gender::Female, 10,  10, "VM FP TA");
 	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   7, "VM FP");
 	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  5, "VM TA");
 }
@@ -469,6 +469,8 @@ Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos)
 	Handle(new_index).cure_all();
 	Handle(new_index).update_derived_stats();
 
+	Bot::init_brain(new_index);
+
 	// return the index of the new creature
 	return Handle(new_index);
 }
@@ -522,10 +524,10 @@ void remove_defeated_creatures()
 	{
 		if (itr->hp() <= 0)
 		{
-			if (itr->visible())
-			{
-				add_game_message(Grammar::You(*itr) + " " + Grammar::verbs("faint", *itr) + ".");
-			}
+			//if (itr->visible())
+			//{
+			add_game_message(Grammar::You(*itr) + " " + Grammar::verbs("faint", *itr) + ".");
+			//}
 
 			itr->invalidate();
 		}

@@ -15,9 +15,14 @@
 #include "Target.h"
 
 // To do:
-// - Turn and action timing
-// - Check spells known
+// - Improved enemy AI
+//  - Take a turn to wake up and see player.
+//  - Move towards player's last location if out of range.
+//  - Pathfinding...
+//  - EQS / find good attack position
+// - XP and level up
 // - Map generation
+// - Improved turn and action timing
 
 void test_line_drawing()
 {

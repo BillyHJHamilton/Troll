@@ -8,7 +8,8 @@
 // Creatures are people and other living beings in the game.
 // Most creatures are the "bad guys", but there is also a creature for the player.
 // This keeps the code simple as we can use the same functions for player and NPC.
-// Concerns that apply *only* to the player, such as XP, will be handled elsewhere.
+// Concerns that only apply to the player, like XP, will be in the Player module.
+// Concerns that only apply to NPCs are in the Bot module.
 
 // Individual creatures are identified by a Creature::Handle throughout the program.
 // This can be treated as an int, but also provides an interface for that creature.

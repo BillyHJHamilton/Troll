@@ -2,19 +2,28 @@
 
 #include "Action.h"
 #include "Creature.h"
+#include "Draw.h"
+#include "Grammar.h"
 #include "Map.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
+#include "VectorUtil.h"
 
 namespace Bot
 {
 
 static bool constexpr SHOW_BOT_DEBUG = true;
 
+// Number of turns a bot will remain "aware" after losing sight of player.
+static int constexpr c_max_awareness = 10;
+
+static std::vector<Brain> s_brains;
+
 // ------------------------------------------------------------------------------------------------
 // Helper function declarations
 
+bool is_aware(Creature::Handle const creature);
 Spell::Index choose_spell (Creature::Handle caster);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
@@ -24,14 +33,29 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
+void init_brain(Creature::Handle handle)
+{
+	// Technically we leave an empty brain for the player.
+	// It's not worth the confusingness of offsetting the indices.
+
+	if (Util::IsValidIndex(s_brains, handle))
+	{
+		s_brains[handle] = Brain{};
+	}
+	else
+	{
+		s_brains.reserve(handle + 1);
+		while (s_brains.size() < handle + 1)
+		{
+			s_brains.emplace_back();
+		}
+	}
+}
+
 void do_all_bot_turns ()
 {
-	for (Creature::HandleItr itr(0); itr; ++itr)
+	for (Creature::HandleItr itr(1); itr; ++itr)
 	{
-		if (itr->is_player())
-		{
-			continue;
-		}
 		do_turn(*itr);
 	}
 }
@@ -45,17 +69,39 @@ void do_turn (Creature::Handle creature)
 
 	if (player_is_visible)
 	{
-		std::vector<Spell::Index> spell_list = creature.spells_known();
-		if (spell_list.size() > 0)
+		if (!is_aware(creature))
 		{
-			Spell::Index spell = random_from_vector(spell_list);
-			try_cast_spell(spell, creature, Player::pos());
+			// Spend a turn noticing the player.
+			add_game_message(Grammar::You(creature) + " sees you!");
+		}
+		else
+		{
+			std::vector<Spell::Index> spell_list = creature.spells_known();
+			if (spell_list.size() > 0)
+			{
+				Spell::Index spell = random_from_vector(spell_list);
+				try_cast_spell(spell, creature, Player::pos());
+			}
+		}
+
+		s_brains[creature].awareness = c_max_awareness;
+	}
+	else
+	{
+		if (is_aware(creature))
+		{
+			--s_brains[creature].awareness;
 		}
 	}
 }
 
 // ------------------------------------------------------------------------------------------------
 // Helper function implementations
+
+bool is_aware(Creature::Handle const creature)
+{
+	return s_brains[creature].awareness > 0;
+}
 
 Spell::Index choose_spell (Creature::Handle caster)
 {
