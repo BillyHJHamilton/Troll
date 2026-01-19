@@ -16,6 +16,5 @@ namespace Bot
 
 	void init_brain(Creature::Handle creature);
 
-	void do_all_bot_turns ();
 	void do_turn (Creature::Handle creature_index);
 }

@@ -87,20 +87,24 @@ void end_turn()
 {
 	g_player().acted = false;
 
-	Bot::do_all_bot_turns();
+	Status::do_endround(Player::handle());
+	Creature::remove_defeated_creatures();
 
-	for (Creature::HandleItr itr(0); itr; ++itr)
+	// Now all other creatures act.
+	for (Creature::HandleItr itr(1);
+		itr && !g_player().game_over;
+		++itr)
 	{
+		Bot::do_turn(*itr);
 		Status::do_endround(*itr);
+		Creature::remove_defeated_creatures();
 	}
 
-	if (Player::handle().hp() <= 0)
+	if (g_player().game_over)
 	{
 		game_over();
 		return;
 	}
-
-	Creature::remove_defeated_creatures();
 }
 
 void game_over()

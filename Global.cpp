@@ -5,6 +5,7 @@
 #include "Player.h"
 
 bool g_quit_flag;
+bool g_game_over;
 GameMode g_game_mode;
 
 void setup_global()

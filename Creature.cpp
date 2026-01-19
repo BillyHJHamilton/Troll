@@ -8,6 +8,7 @@
 #include "Global.h"
 #include "Grammar.h"
 #include "Map.h"
+#include "Player.h"
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
@@ -71,6 +72,7 @@ static Spell::Bitset s_spells_known [MAX_CREATURES];
 static int s_max_creature_index;
 
 std::vector<Creature::Handle> s_visible_creatures;
+std::vector<Creature::Handle> s_fainting_creatures;
 
 static Creature::Stats & get_creature_stats (Creature::Handle creature)
 {
@@ -284,8 +286,11 @@ void Handle::take_damage (int damage)
 	Creature::Stats & c = get_creature_stats(index);
 	c.hp -= damage;
 
-	// todo: die, I guess
-	// or we could come back at the end of the round to "collect" dead creatures.
+	if (c.hp <= 0)
+	{
+		c.hp = 0;
+		s_fainting_creatures.push_back(*this);
+	}
 }
 
 void Handle::move (Vec2 const & new_pos)
@@ -520,18 +525,19 @@ void draw_visible_creatures (DrawView const & view)
 
 void remove_defeated_creatures()
 {
-	for (Creature::HandleItr itr(1); itr; ++itr)
+	for (Creature::Handle creature : s_fainting_creatures)
 	{
-		if (itr->hp() <= 0)
+		add_game_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+		if (creature.is_player())
 		{
-			//if (itr->visible())
-			//{
-			add_game_message(Grammar::You(*itr) + " " + Grammar::verbs("faint", *itr) + ".");
-			//}
-
-			itr->invalidate();
+			g_player().game_over = true;
+		}
+		else
+		{
+			creature.invalidate();
 		}
 	}
+	s_fainting_creatures.clear();
 }
 
 std::vector<Creature::Handle> const & get_visible_creatures ()

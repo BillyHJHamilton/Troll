@@ -3,6 +3,7 @@
 #include "Action.h"
 #include "Creature.h"
 #include "Draw.h"
+#include "Global.h"
 #include "Grammar.h"
 #include "Map.h"
 #include "Player.h"
@@ -49,14 +50,6 @@ void init_brain(Creature::Handle handle)
 		{
 			s_brains.emplace_back();
 		}
-	}
-}
-
-void do_all_bot_turns ()
-{
-	for (Creature::HandleItr itr(1); itr; ++itr)
-	{
-		do_turn(*itr);
 	}
 }
 

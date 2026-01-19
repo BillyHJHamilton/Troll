@@ -14,6 +14,7 @@ struct Player
 	static int constexpr vision_radius = 8;
 
 	bool acted = false;
+	bool game_over = false;
 
 	//--------------------------------------------------------------------------
 	// Static interface
