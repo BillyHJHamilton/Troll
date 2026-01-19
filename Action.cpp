@@ -25,7 +25,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 targe
 
 bool player_try_move(Vec2 const& relative_move)
 {
-	bool const moved = g_player().handle().try_move(relative_move);
+	bool const moved = g_player().handle().try_move(relative_move, MoveMode::Walk);
 	if (moved)
 	{
 		g_player().acted = true;

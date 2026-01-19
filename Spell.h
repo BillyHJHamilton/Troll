@@ -21,6 +21,7 @@ namespace Spell
 		Vermillious = 0,
 		Flipendo,
 		Tarantallegra,
+		LocomotorMortis,
 
 		Count
 	};

@@ -14,6 +14,9 @@ namespace Beam
 
 static std::optional<LineItr> s_impact_line;
 
+int constexpr c_accuracy_loss = 3; // per square
+int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
+
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
 
@@ -38,6 +41,13 @@ void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, 
 	Spell::create_and_bind_instance(spell, caster);
 	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed);
 	shoot_beam(beam);
+}
+
+int accuracy_at_range(int base_accuracy, Vec2 start, Vec2 end)
+{
+	int const dist = (int)euclidean_distance(start, end);
+	int const loss = dist * c_accuracy_loss;
+	return std::max(c_min_ranged_accuracy, base_accuracy - loss);
 }
 
 std::optional<LineItr> get_latest_impact_line ()
@@ -150,7 +160,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 				<< "; roll: " << accuracy_roll << std::endl;
 		}
 
-		if (hit_chance < accuracy_roll)
+		if (accuracy_roll < hit_chance)
 		{
 			hit_creature(beam, creature_in_path, line);
 			beam.done = true;
@@ -194,6 +204,9 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 		base_accuracy = 50;
 	}
 
+	// Range falloff
+	int const range_accuracy = accuracy_at_range(base_accuracy, beam.start_pos, beam.pos);
+
 	if (beam.caster == Creature::None || !beam.caster_aimed)
 	{
 		// if not aimed by caster, don't factor in caster's accuracy.
@@ -214,7 +227,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 		caster_accuracy_factor = 100 + beam.caster.accuracy();
 	}
 
-	// factor in target evasion, capped to prevent divide by (or near-certain hit)
+	// factor in target evasion, capped to prevent divide by zero (or near-certain hit)
 	if (target.evasion() < -80)
 	{
 		target_evasion_divisor = 20;
@@ -224,11 +237,11 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 		target_evasion_divisor = 100 + target.evasion();
 	}
 
-	assert(base_accuracy != 0);
-	assert(caster_accuracy_factor != 0);
-	assert(target_evasion_divisor != 0);
+	assert(range_accuracy > 0);
+	assert(caster_accuracy_factor > 0);
+	assert(target_evasion_divisor > 0);
 
-	int hit_chance = (base_accuracy * caster_accuracy_factor) / target_evasion_divisor;
+	int const hit_chance = (range_accuracy * caster_accuracy_factor) / target_evasion_divisor;
 
 	if (hit_chance < 1)
 	{

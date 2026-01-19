@@ -33,6 +33,8 @@ namespace Beam
 
 	void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed);
 
+	int accuracy_at_range (int base_accuracy, Vec2 start, Vec2 end);
+
 	std::optional<LineItr> get_latest_impact_line ();
 }
 

@@ -1,6 +1,7 @@
 #include "Bot.h"
 
 #include "Action.h"
+#include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Global.h"
@@ -119,16 +120,16 @@ void move_towards(Creature::Handle creature, Vec2 dest)
 		Math::Sign(to_dest.y)
 	};
 
-	bool moved = creature.try_move(move_dir);
+	bool moved = creature.try_move(move_dir, MoveMode::Walk);
 
 	if (!moved)
 	{
-		moved = creature.try_move({ move_dir.x, 0 });
+		moved = creature.try_move({ move_dir.x, 0 }, MoveMode::Walk);
 	}
 
 	if (!moved)
 	{
-		moved = creature.try_move({ 0, move_dir.y });
+		moved = creature.try_move({ 0, move_dir.y }, MoveMode::Walk);
 	}
 }
 
@@ -227,7 +228,9 @@ float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Crea
 	estimate = static_cast<float>(Spell::get_damage(spell, caster));
 
 	// Factor in accuracy
-	estimate = estimate * Spell::get_accuracy(spell) / 100.0f;
+	int const accuracy = Beam::accuracy_at_range(Spell::get_accuracy(spell),
+		caster.pos(), target.pos());
+	estimate = estimate * (accuracy / 100.0f);
 
 	// Factor in miscast rate
 	float good_cast_rate = 100.0f - caster.miscast_rate_for_spell(spell);

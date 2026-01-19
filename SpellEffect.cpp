@@ -63,17 +63,51 @@ void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
 		add_game_message(Grammar::Your(target) + " feet quicken their dance!");
 		target.inflict_status(Status::Dancing, 4);
 	}
-//	else if (creature_has_status(target, Status::LegLocked))
-//	{
-//		reduce_status(target, Status::LEG_LOCKED, 4);
-//		if (creature_has_status(target, Status::LegLocked))
-//		{
-//			add_game_message(format_Name_possessive(target) + " legs partially loosen.");		
-//		}
-//	}
 	else
 	{
-		add_game_message(Grammar::Your(target) + " feet dance!");
-		target.inflict_status(Status::Dancing, 4);
+		int apply_amount = 4;
+		if (target.has_status(Status::LegLocked))
+		{
+			apply_amount -= target.status_severity(Status::LegLocked);
+			target.reduce_status(Status::LegLocked, 4);
+		}
+
+		if (target.has_status(Status::LegLocked))
+		{
+			add_game_message(Grammar::Your(target) + " legs partially loosen.");
+		}
+		else
+		{
+			add_game_message(Grammar::Your(target) + " feet dance!");
+			target.inflict_status(Status::Dancing, apply_amount);
+		}
+	}
+}
+
+void locomotor_mortis_effect(Creature::Handle caster, Creature::Handle target)
+{
+	if (target.has_status(Status::LegLocked))
+	{
+		add_game_message(Grammar::Your(target) + " legs are more tightly locked together!");
+		target.inflict_status(Status::LegLocked, 4);
+	}
+	else
+	{
+		int apply_amount = 4;
+		if (target.has_status(Status::Dancing))
+		{
+			apply_amount -= target.status_severity(Status::LegLocked);
+			target.reduce_status(Status::Dancing, 4);
+		}
+
+		if (target.has_status(Status::Dancing))
+		{
+			add_game_message(Grammar::Your(target) + " feet dance more slowly.");
+		}
+		else
+		{
+			add_game_message(Grammar::Your(target) + " legs are locked together!");
+			target.inflict_status(Status::LegLocked, apply_amount);
+		}
 	}
 }

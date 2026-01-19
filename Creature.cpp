@@ -10,6 +10,7 @@
 #include "Grammar.h"
 #include "Map.h"
 #include "Player.h"
+#include "Random.h"
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
@@ -38,9 +39,9 @@ void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gen
 void init ()
 {
 	//																			  mag  hp  spells
-	mix_gingerbread(Creature::Player,		 "You",          '@', Gender::Female, 10,  10, "VM FP TA");
-	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   7, "VM FP");
-	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  5, "VM TA");
+	mix_gingerbread(Creature::Player,		 "You",          '@', Gender::Female, 10,  10, "VM FP TA LM");
+	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   7, "VM TA");
+	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  5, "VM LM");
 }
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
@@ -184,6 +185,11 @@ int Handle::accuracy () const
 	return get_derived_stats(index).accuracy;
 }
 
+int Handle::walk_failure () const
+{
+	return std::min(90, get_derived_stats(index).walk_failure);
+}
+
 bool Handle::knows_spell (Spell::Index spell) const
 {
 	Spell::Bitset const & spell_bitset = s_spells_known[index];
@@ -300,7 +306,7 @@ void Handle::move (Vec2 const & new_pos)
 	get_creature_stats(index).pos = new_pos;
 }
 
-bool Handle::try_move(Vec2 const& relative_move)
+bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 {
 	Vec2 new_pos = pos() + relative_move;
 	Map const& map = g_map();
@@ -315,6 +321,26 @@ bool Handle::try_move(Vec2 const& relative_move)
 	}
 	else
 	{
+		if (move_mode == MoveMode::Walk)
+		{
+			int const failure = walk_failure();
+			int const roll = random(0, 99);
+			if (SHOW_CREATURE_DEBUG && failure > 0)
+			{
+				std::cout << "Walk failure (" << name() << "): " << failure
+					<< "; roll: " << roll << std::endl;
+			}
+
+			if (roll < failure)
+			{
+				if (is_player())
+				{
+					add_game_message("You fail to walk.");
+				}
+				return true;
+			}
+		}
+
 		move(new_pos);
 		return true;
 	}
@@ -383,11 +409,7 @@ void Handle::update_derived_stats ()
 {
 	Creature::DerivedStats & ds = get_derived_stats(index);
 	
-	ds.distractedness = 0;
-	ds.miscastiness = 0;
-	ds.evasion = 0;
-	ds.accuracy = 0;
-	ds.shield_strength = 0;
+	ds = DerivedStats{};
 
 	for (int i = 0; i < Status::Count; i++)
 	{

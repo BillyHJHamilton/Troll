@@ -23,11 +23,19 @@
 
 struct DrawView;
 
+static bool constexpr SHOW_CREATURE_DEBUG = true;
+
 enum class Gender
 {
 	Male,
 	Female,
 	Neuter
+};
+
+enum class MoveMode
+{
+	Walk,
+	Forced
 };
 
 namespace Creature
@@ -61,6 +69,7 @@ namespace Creature
 		int evasion = 0;
 		int accuracy = 0;
 		int shield_strength = 0;
+		int walk_failure = 0;
 	};
 
 	// Creature::Handle
@@ -94,6 +103,7 @@ namespace Creature
 		int miscastiness () const;
 		int evasion () const;
 		int accuracy () const;
+		int walk_failure() const;
 		bool knows_spell (Spell::Index spell) const;
 
 		// Complex accessors
@@ -106,7 +116,7 @@ namespace Creature
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);
 		void move (Vec2 const & new_pos);
-		bool try_move(Vec2 const& relative_move);
+		bool try_move(Vec2 const& relative_move, MoveMode move_mode);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
 		void cure_status (Status::Index status);

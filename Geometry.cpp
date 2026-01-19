@@ -27,6 +27,14 @@ bool check_within_range(Vec2 p0, Vec2 p1, int max_range)
 	return squared_distance <= squared_max_range;
 }
 
+float euclidean_distance(Vec2 p0, Vec2 p1)
+{
+	int const dx = p0.x - p1.x;
+	int const dy = p0.y - p1.y;
+	double const squared_distance = (float)(dx * dx + dy * dy);
+	return (float)(sqrt(squared_distance));
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Boxen
 

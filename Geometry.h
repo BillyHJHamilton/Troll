@@ -71,6 +71,9 @@ inline Vec2 componentwise_max(Vec2 a, Vec2 b);
 // returns true if euclidean distance <= range
 bool check_within_range(Vec2 p0, Vec2 p1, int max_range);
 
+// don't use this if you could use the above, of course
+float euclidean_distance(Vec2 p0, Vec2 p1);
+
 using Axis = int;
 Axis constexpr AXIS_X = 0;
 Axis constexpr AXIS_Y = 1;

@@ -16,6 +16,7 @@ namespace Status
 	{
 		Shield = 0,
 		Dancing,
+		LegLocked,
 		Tickled,
 		TongueTied,
 

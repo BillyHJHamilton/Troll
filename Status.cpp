@@ -13,12 +13,15 @@ namespace Status
 
 // functions for calculating stat effects of each status.
 void calc_dancing(Creature::Handle creature, Creature::DerivedStats & ds, int severity);
+void calc_leg_locked(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 
 // functions for updating each status at end of round
 void endround_dancing(Creature::Handle creature);
+void endround_leg_locked(Creature::Handle creature);
 
 // functions for printing message when a status is removed
 void cure_dancing(Creature::Handle const creature);
+void cure_leg_locked(Creature::Handle const creature);
 
 Status::Data s_status_data [Status::Count];
 
@@ -26,6 +29,7 @@ void init ()
 {
 	s_status_data[Status::Shield] = {"Shield", nullptr, nullptr, nullptr};
 	s_status_data[Status::Dancing] = {"Dance", &calc_dancing, &endround_dancing, &cure_dancing};
+	s_status_data[Status::LegLocked] = { "LegLk", &calc_leg_locked, &endround_leg_locked, &cure_leg_locked };
 	s_status_data[Status::Tickled] = {"Tickle", nullptr, nullptr, nullptr};
 	s_status_data[Status::TongueTied] = {"TngTie", nullptr, nullptr, nullptr};
 }
@@ -101,7 +105,7 @@ void endround_dancing(Creature::Handle creature)
 		Vec2 move_dir = { random(-1,1), random(-1,1) };
 		if (move_dir != Vec2{0,0})
 		{
-			creature.try_move(move_dir);
+			creature.try_move(move_dir, MoveMode::Forced);
 		}
 	}
 
@@ -111,6 +115,26 @@ void endround_dancing(Creature::Handle creature)
 void cure_dancing(Creature::Handle const creature)
 {
 	add_game_message(Grammar::Your(creature) + " feet stop dancing.");
+}
+
+
+// ------------------------------------------------------------------------------------------------
+// Leg Locked
+
+void calc_leg_locked(Creature::Handle creature, Creature::DerivedStats& ds, int severity)
+{
+	ds.evasion -= 25;
+	ds.walk_failure += 15 + (8 * severity);
+}
+
+void endround_leg_locked(Creature::Handle creature)
+{
+	creature.reduce_status(LegLocked, 1);
+}
+
+void cure_leg_locked(Creature::Handle const creature)
+{
+	add_game_message(Grammar::Your(creature) + " legs are no longer locked together.");
 }
 
 } // namespace status
