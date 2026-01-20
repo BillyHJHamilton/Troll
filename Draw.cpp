@@ -15,7 +15,7 @@
 
 static int constexpr ANIMATION_STEP_MS = 25;
 
-static std::list<std::string> game_messages;
+static std::list<GameMessage> s_game_messages;
 static int constexpr MAX_GAME_MESSAGES = 100;
 
 static int constexpr TILE_WIDTH_FACTOR = 2;
@@ -54,7 +54,7 @@ TerminalLayer::~TerminalLayer ()
 
 void init_draw ()
 {
-	game_messages.clear();
+	s_game_messages.clear();
 }
 
 DrawView get_draw_view ()
@@ -108,18 +108,18 @@ void print_in_box (Box const & box, char const * const str, int align)
 
 void add_game_message(std::string && message)
 {
-	game_messages.push_back(message);
+	s_game_messages.push_back({g_turn_number, message});
 
 	// dump old messages...
-	if (game_messages.size() > MAX_GAME_MESSAGES)
+	if (s_game_messages.size() > MAX_GAME_MESSAGES)
 	{
-		game_messages.pop_front();
+		s_game_messages.pop_front();
 	}
 }
 
 void run_game_message(std::string && message)
 {
-	game_messages.back().append(message);
+	s_game_messages.back().text.append(message);
 }
 
 void print_game_messages(Box const & box)
@@ -129,25 +129,37 @@ void print_game_messages(Box const & box)
 	// Start with most recent message and keep adding more at the beginning as long as it will fit.
 
 	int lines_left = box.size.y;
-	
-	std::string combined_message;
-	for (auto itr = game_messages.rbegin();
-		 itr != game_messages.rend();
-		 ++ itr)
-	{
-		dimensions_t next_size = terminal_measure_ext(box.size.x, box.size.y, itr->c_str());
-		lines_left -= next_size.height;
-		if (lines_left < 0)
-		{
-			break;
-		}
-		else
-		{
-			combined_message = *itr + "\n" + combined_message;
-		}
-	};
 
-	print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
+	if (!s_game_messages.empty())
+	{
+		int newest_time = s_game_messages.back().turn_number;
+
+		std::string combined_message;
+		for (auto itr = s_game_messages.rbegin();
+			itr != s_game_messages.rend();
+			++itr)
+		{
+			dimensions_t next_size = terminal_measure_ext(box.size.x, box.size.y, itr->text.c_str());
+			lines_left -= next_size.height;
+			if (lines_left < 0)
+			{
+				break;
+			}
+			else
+			{
+				if (itr->turn_number < newest_time)
+				{
+					combined_message = "[color=grey]" + itr->text + "[/color]\n" + combined_message;
+				}
+				else
+				{
+					combined_message = itr->text + "\n" + combined_message;
+				}
+			}
+		};
+
+		print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
+	}
 }
 
 void update_screen ()

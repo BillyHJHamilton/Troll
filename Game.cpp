@@ -78,6 +78,10 @@ void reset()
 	clear();
 	setup();
 	Menu::show_title();
+
+	--g_turn_number;
+	add_game_message("Welcome to TROLL.  Press h to see controls.");
+	++g_turn_number;
 }
 
 //------------------------------------------------------------------------------
@@ -105,6 +109,8 @@ void end_turn()
 		game_over();
 		return;
 	}
+
+	++g_turn_number;
 }
 
 void game_over()

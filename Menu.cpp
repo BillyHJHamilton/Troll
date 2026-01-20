@@ -48,7 +48,9 @@ const char* const c_doc_title =
 	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
 	"  ------------------------------------\n"
 	"      The Revenge Of Luna Lovegood    \n"
-	"  ------------------------------------\n";
+	"  ------------------------------------\n"
+	"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+	"  (press enter)";
 
 const char* const c_doc_help =
 	"How To Play\n"
@@ -89,7 +91,7 @@ void show_title()
 {
 	open_menu(Document);
 	s_document_content = c_doc_title;
-	s_on_complete = show_help;
+	//s_on_complete = show_help;
 }
 
 void show_help()

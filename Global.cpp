@@ -6,11 +6,13 @@
 
 bool g_quit_flag;
 bool g_game_over;
+int g_turn_number;
 GameMode g_game_mode;
 
 void setup_global()
 {
 	g_quit_flag = false;
+	g_turn_number = 0;
 	g_game_mode = GameMode::Normal;
 
 	Map & map = g_map();

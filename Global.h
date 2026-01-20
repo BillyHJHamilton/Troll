@@ -12,4 +12,5 @@ enum class GameMode : int
 
 extern bool g_quit_flag;
 extern int g_tile_width_factor;
+extern int g_turn_number;
 extern GameMode g_game_mode;

@@ -14,6 +14,12 @@ struct DrawView
 		{ return view_area().contains(global_pos); }
 };
 
+struct GameMessage
+{
+	int turn_number;
+	std::string text;
+};
+
 void init_draw ();
 
 DrawView get_draw_view ();
