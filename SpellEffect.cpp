@@ -10,13 +10,16 @@
 #include <iostream>
 #include <string>
 
-void vermillious_effect (Creature::Handle caster, Creature::Handle target)
+namespace Spell
+{
+
+void vermillious (Creature::Handle caster, Creature::Handle target)
 {
 	std::string message = Grammar::You_are(target) + " showered in sparks!";
 	Draw::add_message(std::move(message));
 }
 
-void flipendo_effect (Creature::Handle caster, Creature::Handle target)
+void flipendo (Creature::Handle caster, Creature::Handle target)
 {
 	// Push back
 	std::optional<LineItr> optional_line = Beam::get_latest_impact_line();
@@ -56,7 +59,7 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 
 }
 
-void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
+void tarantallegra (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::Dancing))
 	{
@@ -84,7 +87,7 @@ void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
 	}
 }
 
-void locomotor_mortis_effect(Creature::Handle caster, Creature::Handle target)
+void locomotor_mortis(Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::LegLocked))
 	{
@@ -110,4 +113,6 @@ void locomotor_mortis_effect(Creature::Handle caster, Creature::Handle target)
 			target.inflict_status(Status::LegLocked, apply_amount);
 		}
 	}
+}
+
 }

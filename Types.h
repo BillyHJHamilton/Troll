@@ -37,6 +37,11 @@ namespace Menu
 	enum Id : int;
 }
 
+namespace Miscast
+{
+	enum Category : int;
+}
+
 namespace Spell
 {
 	enum Index : int;

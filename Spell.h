@@ -6,11 +6,6 @@
 #include <string>
 #include <vector>
 
-namespace Miscast // todo
-{
-	enum Category : int;
-};
-
 static bool constexpr SHOW_SPELL_DEBUG = true;
 
 namespace Spell

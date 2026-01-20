@@ -10,11 +10,11 @@ namespace Spell
 {
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc Rng	Effect function				Miscast type
-	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		85,	4,	&vermillious_effect,		Miscast::Beam },
-	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	2,		70,	8,	&flipendo_effect,			Miscast::Beam },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		90,	8,	&tarantallegra_effect,		Miscast::Beam },
-	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",		15,	0,	0,		85,	8,	&locomotor_mortis_effect,	Miscast::Beam },
+{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc Rng	Effect function			Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		85,	4,	&vermillious,			Miscast::Beam },
+	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	2,		70,	8,	&flipendo,				Miscast::Beam },
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
+	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",		15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =

@@ -30,6 +30,8 @@ enum class Gender : byte
 	Neuter
 };
 
+// Walk movement can be disrupted by the walk_failure stat.
+// Forced movement is not disrupted in this way.
 enum class MoveMode : byte
 {
 	Walk,
