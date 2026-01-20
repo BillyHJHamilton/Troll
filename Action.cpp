@@ -115,7 +115,7 @@ bool check_distraction (Creature::Handle caster)
 		distraction_rate = 90;
 	}
 
-	int distractedness_roll = random(0,99);
+	int distractedness_roll = Random::in_range(0,99);
 	if (SHOW_SPELL_DEBUG)
 	{
 		std::cout << "Distraction Rate: " << distraction_rate
@@ -130,7 +130,7 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 	// Chance you mess up the spell, based on its difficulty and your skill.
 	// This is done with float math since there's an exponent in the formula.
 	float miscast_rate = caster.miscast_rate_for_spell(spell);
-	float miscast_roll = random(0.0f, 100.0f);
+	float miscast_roll = Random::in_range(0.0f, 100.0f);
 
 	if (SHOW_SPELL_DEBUG)
 	{

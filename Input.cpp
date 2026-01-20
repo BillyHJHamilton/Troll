@@ -15,6 +15,9 @@
 #include <cassert>
 #include <iostream>
 
+namespace Input
+{
+
 enum class InputMode
 {
 	Normal,
@@ -51,7 +54,7 @@ void handle_spellcode_complete ();
 //-------------------------------------------------------------------------------------------------
 // Interface function implementations
 
-void clear_input ()
+void clear ()
 {
 	blank_spell_input();
 	s_input_mode = InputMode::Normal;
@@ -333,4 +336,6 @@ void handle_spellcode_complete ()
 void handle_input_close()
 {
 	g_quit_flag = true;
+}
+
 }

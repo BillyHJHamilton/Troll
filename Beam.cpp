@@ -152,7 +152,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 	{
 		// check accuracy
 		int hit_chance = get_hit_chance(beam, creature_in_path);
-		int accuracy_roll = random(0,99);
+		int accuracy_roll = Random::in_range(0,99);
 
 		if (SHOW_SPELL_DEBUG)
 		{

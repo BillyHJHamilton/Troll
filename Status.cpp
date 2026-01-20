@@ -100,9 +100,9 @@ void calc_dancing(Creature::Handle creature, Creature::DerivedStats & ds, int se
 void endround_dancing(Creature::Handle creature)
 {
 	// Random movement
-	if (random(0, 2 + creature.status_severity(Dancing) > 2))
+	if (Random::in_range(0, 2 + creature.status_severity(Dancing) > 2))
 	{
-		Vec2 move_dir = { random(-1,1), random(-1,1) };
+		Vec2 move_dir = { Random::in_range(-1,1), Random::in_range(-1,1) };
 		if (move_dir != Vec2{0,0})
 		{
 			creature.try_move(move_dir, MoveMode::Forced);

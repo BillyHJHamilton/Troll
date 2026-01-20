@@ -229,7 +229,7 @@ void update_screen()
 
 	// spells area
 	Box spell_area = make_box(93, 1, 27, 30);
-	std::string spell_preview = get_spell_preview_string();
+	std::string spell_preview = Input::get_spell_preview_string();
 	print_in_box(spell_area, spell_preview.c_str());
 	/*	print_in_box(spell_area,
 			"Spells:\n"

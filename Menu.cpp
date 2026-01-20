@@ -133,7 +133,7 @@ void close()
 {
 	s_current_menu_type = None;
 	g_game_mode = GameMode::Normal;
-	clear_input();
+	Input::clear();
 }
 
 void update_screen()

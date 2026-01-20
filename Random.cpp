@@ -3,6 +3,9 @@
 #include <cassert>
 #include <random>
 
+namespace Random
+{
+
 std::mt19937 generator;
 
 std::mt19937 & get_generator()
@@ -10,7 +13,7 @@ std::mt19937 & get_generator()
 	return generator;
 }
 
-void init_random ()
+void init ()
 {
 	// use the heavy-duty (cryptographically secure) generator to seed the
 	// Mersenne Twister generator (faster and adequate for games). 
@@ -18,19 +21,19 @@ void init_random ()
 	generator = std::mt19937(r());
 }
 
-float random (float min, float max)
+float in_range (float min, float max)
 {
 	std::uniform_real_distribution<float> dist(min, max);
 	return dist(generator);
 }
 
-int random (int min, int max)
+int in_range (int min, int max)
 {
 	std::uniform_int_distribution<int> dist(min, max);
 	return dist(generator);
 }
 
-std::size_t random_index (std::size_t size)
+std::size_t index (std::size_t size)
 {
 	std::uniform_int_distribution<std::size_t> dist(0, size-1);
 	return dist(generator);
@@ -49,5 +52,5 @@ bool one_in (int x)
 	return dist(generator) == 1;
 }
 
-
+}
 

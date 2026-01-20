@@ -1,7 +1,10 @@
 #pragma once
 #include "Geometry.h"
 
-void clear_input ();
+namespace Input
+{
+	void clear();
 
-void handle_next_input ();
-std::string get_spell_preview_string();
+	void handle_next_input();
+	std::string get_spell_preview_string();
+}

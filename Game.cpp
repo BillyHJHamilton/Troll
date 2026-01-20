@@ -32,7 +32,7 @@ void init()
 {
 	Creature::init();
 	Draw::init();
-	init_random();
+	Random::init();
 	Spell::init();
 	Status::init();
 }
@@ -41,7 +41,7 @@ void init()
 void clear()
 {
 	Creature::clear();
-	clear_input();
+	Input::clear();
 	Player::clear();
 	clear_target();
 }
@@ -65,7 +65,7 @@ void update()
 	}
 
 	Draw::draw_screen();
-	handle_next_input();
+	Input::handle_next_input();
 
 	if (player.acted)
 	{

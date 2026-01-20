@@ -324,7 +324,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 		if (move_mode == MoveMode::Walk)
 		{
 			int const failure = walk_failure();
-			int const roll = random(0, 99);
+			int const roll = Random::in_range(0, 99);
 			if (SHOW_CREATURE_DEBUG && failure > 0)
 			{
 				std::cout << "Walk failure (" << name() << "): " << failure

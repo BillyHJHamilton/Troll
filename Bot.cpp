@@ -76,7 +76,7 @@ void do_turn (Creature::Handle creature)
 			std::vector<Spell::Index> spell_list = creature.spells_known();
 			if (spell_list.size() > 0)
 			{
-				Spell::Index spell = random_from_vector(spell_list);
+				Spell::Index spell = Random::from_vector(spell_list);
 				if (check_within_range(creature.pos(),
 					Player::pos(), Spell::get_range(spell)))
 				{
@@ -140,7 +140,7 @@ Spell::Index choose_spell (Creature::Handle caster)
 	std::vector<Spell::Index> spell_list = caster.spells_known();
 
 	// 50% chance of doing attack with best predicted damage
-	if (coinflip())
+	if (Random::coinflip())
 	{
 		if (SHOW_BOT_DEBUG)
 		{
@@ -177,9 +177,9 @@ Spell::Index choose_spell (Creature::Handle caster)
 	int num_tries = static_cast<int>(5*spell_list.size());
 	while (i < num_tries)
 	{
-		spell_chosen = random_from_vector(spell_list);
+		spell_chosen = Random::from_vector(spell_list);
 		if ( !spell_is_useless(spell_chosen, caster, target)
-			 && random(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
+			 && Random::in_range(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
 		{
 			return spell_chosen;
 		}
