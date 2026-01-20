@@ -5,8 +5,8 @@
 #include "Action.h"
 #include "Bot.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Geometry.h"
-#include "Global.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Spell.h"
@@ -35,6 +35,8 @@ enum class SpellInputState
 static InputMode s_input_mode;
 static char s_spellcode [3];
 static Spell::Index s_selected_spell;
+
+bool s_quit_flag = false;
 
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
@@ -81,7 +83,7 @@ void handle_next_input ()
 	//-----------------------------------------------------------
 	// Menu input - Redirect to menu
 	
-	if (g_game_mode == GameMode::Menu)
+	if (Game::get_mode() == GameMode::Menu)
 	{
 		Menu::handle_input(key);
 		return;
@@ -203,6 +205,11 @@ std::string get_spell_preview_string ()
 		assert(false);
 		return "";
 	}
+}
+
+bool is_quitting()
+{
+	return s_quit_flag;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -335,7 +342,7 @@ void handle_spellcode_complete ()
 
 void handle_input_close()
 {
-	g_quit_flag = true;
+	s_quit_flag = true;
 }
 
 }

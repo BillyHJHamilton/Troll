@@ -3,7 +3,6 @@
 
 #include "Creature.h"
 #include "Draw.h"
-#include "Global.h"
 #include "Map.h"
 
 Player global_player;

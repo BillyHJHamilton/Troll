@@ -7,4 +7,6 @@ namespace Input
 
 	void handle_next_input();
 	std::string get_spell_preview_string();
+
+	bool is_quitting();
 }

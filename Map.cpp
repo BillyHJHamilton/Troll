@@ -2,7 +2,6 @@
 #include "Map.h"
 
 #include "Draw.h"
-#include "Global.h"
 #include "Target.h"
 
 #include <cassert>

@@ -1,7 +1,7 @@
 #include "Draw.h"
 
 #include "Creature.h"
-#include "Global.h"
+#include "Game.h"
 #include "Input.h"
 #include "Map.h"
 #include "Menu.h"
@@ -126,7 +126,7 @@ void print_in_box (Box const & box, char const * const str, int align)
 
 void add_message(std::string && message)
 {
-	s_game_messages.push_back({g_turn_number, message});
+	s_game_messages.push_back({Game::get_turn_number(), message});
 
 	// dump old messages...
 	if (s_game_messages.size() > MAX_GAME_MESSAGES)
@@ -184,7 +184,7 @@ void draw_screen ()
 {
 	terminal_clear();
 
-	if (g_game_mode == GameMode::Menu)
+	if (Game::get_mode() == GameMode::Menu)
 	{
 		Menu::update_screen();
 	}

@@ -2,7 +2,7 @@
 
 #include "Geometry.h"
 #include "Game.h"
-#include "Global.h"
+#include "Input.h"
 
 // To do:
 // - Grey out messages from previous turns so you can see what's new
@@ -55,7 +55,7 @@ int main()
 
 	Game::reset();
 
-	while (!g_quit_flag)
+	while (!Input::is_quitting())
 	{
 		Game::update();
 	}

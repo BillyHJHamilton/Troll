@@ -4,7 +4,6 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
-#include "Global.h"
 #include "Grammar.h"
 #include "Map.h"
 #include "Math.h"

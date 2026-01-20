@@ -8,7 +8,6 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Game.h"
-#include "Global.h"
 #include "Input.h"
 #include "Player.h"
 #include "Spell.h"
@@ -132,7 +131,7 @@ void show_spells_known()
 void close()
 {
 	s_current_menu_type = None;
-	g_game_mode = GameMode::Normal;
+	Game::set_mode(GameMode::Normal);
 	Input::clear();
 }
 
@@ -188,7 +187,7 @@ void reset_list()
 void open_menu(Type type)
 {
 	s_current_menu_type = type;
-	g_game_mode = GameMode::Menu;
+	Game::set_mode(GameMode::Menu);
 	s_on_complete = nullptr;
 }
 

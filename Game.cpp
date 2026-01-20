@@ -2,7 +2,6 @@
 
 #include "Bot.h"
 #include "Draw.h"
-#include "Global.h"
 #include "Input.h"
 #include "Player.h"
 #include "Map.h"
@@ -14,6 +13,9 @@
 
 namespace Game
 {
+
+int s_turn_number;
+GameMode s_game_mode;
 
 //------------------------------------------------------------------------------
 // Helper function declarations.
@@ -49,7 +51,23 @@ void clear()
 // Setup runs at the start of each game, after all clear functions.
 void setup()
 {
-	setup_global();
+	s_turn_number = 0;
+	s_game_mode = GameMode::Normal;
+
+	Map& map = g_map();
+	Box map_box = make_box(0, 0, 100, 100);
+	map.init(map_box, Terrain::Wall);
+	map.fill_box(make_box(4, 4, 15, 15), Terrain::Open);
+	map.fill_box(make_box(7, 5, 4, 1), Terrain::Wall);
+	map.clear_visibility();
+
+	spawn_creature(Creature::Player, { 4,4 });
+	spawn_creature(Creature::Neville_0, { 6,9 });
+	spawn_creature(Creature::ColinCreevy_0, { 14,15 });
+	//	spawn_creature(Creature::ColinCreevy_0, {14,17});
+	//	spawn_creature(Creature::ColinCreevy_0, {16,15});
+	//	spawn_creature(Creature::ColinCreevy_0, {15,16});
+	//	spawn_creature(Creature::ColinCreevy_0, {8,13});
 }
 
 void update()
@@ -57,7 +75,7 @@ void update()
 	Player& player = g_player();
 	Map& map = g_map();
 
-	if (g_game_mode == GameMode::Normal)
+	if (s_game_mode == GameMode::Normal)
 	{
 		map.update_visibility(Player::pos(), player.vision_radius);
 		Creature::update_visible_creatures();
@@ -79,9 +97,24 @@ void reset()
 	setup();
 	Menu::show_title();
 
-	--g_turn_number;
+	--s_turn_number;
 	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
-	++g_turn_number;
+	++s_turn_number;
+}
+
+GameMode get_mode()
+{
+	return s_game_mode;
+}
+
+void set_mode(GameMode mode)
+{
+	s_game_mode = mode;
+}
+
+int get_turn_number()
+{
+	return s_turn_number;
 }
 
 //------------------------------------------------------------------------------
@@ -110,7 +143,7 @@ void end_turn()
 		return;
 	}
 
-	++g_turn_number;
+	++s_turn_number;
 }
 
 void game_over()
