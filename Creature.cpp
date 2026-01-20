@@ -537,7 +537,7 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 	if (view.contains_global_pos(pos))
 	{
 		int code = s_creatures[creature].codepoint;
-		if (creature_is_targeted(creature))
+		if (Target::is_target(creature))
 		{
 			Draw::draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
 		}

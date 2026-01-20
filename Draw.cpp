@@ -271,12 +271,12 @@ const char* get_hp_colour(Creature::Handle creature)
 
 void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 {
-	if (creature_is_targeted(creature))
+	if (Target::is_target(creature))
 	{
 		ss << "[bkcolor=darkest red]";
 	}
 	ss << std::left << std::setw(16) << creature.name();
-	if (creature_is_targeted(creature))
+	if (Target::is_target(creature))
 	{
 		ss << "[/bkcolor]";
 	}

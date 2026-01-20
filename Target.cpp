@@ -6,17 +6,20 @@
 #include <algorithm>
 #include <cassert>
 
+namespace Target
+{
+
 TargetMode g_target_mode;
 Creature::Handle g_target_creature;
 Vec2 g_target_pos;
 
-void clear_target ()
+void clear ()
 {
 	g_target_mode = TargetMode::Automatic;
 	g_target_creature = Creature::None;
 }
 
-void update_target ()
+void update ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -37,12 +40,12 @@ void update_target ()
 		if (g_target_creature == -1)
 		{
 			// acquire target
-			cycle_target();
+			cycle();
 		}
 	}
 }
 
-void cycle_target ()
+void cycle ()
 {
 	if (g_target_mode == TargetMode::Manual)
 	{
@@ -87,7 +90,7 @@ void cycle_target ()
 	}
 }
 
-void move_target_pos (Vec2 dir)
+void move (Vec2 dir)
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -100,7 +103,7 @@ void move_target_pos (Vec2 dir)
 	g_target_pos += dir;
 }
 
-bool creature_is_targeted (Creature::Handle creature)
+bool is_target (Creature::Handle creature)
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -118,7 +121,7 @@ bool creature_is_targeted (Creature::Handle creature)
 	}
 }
 
-bool pos_is_targeted (Vec2 const & global_pos)
+bool is_target (Vec2 const & global_pos)
 {
 	if (g_target_mode == TargetMode::Manual)
 	{
@@ -136,7 +139,7 @@ bool pos_is_targeted (Vec2 const & global_pos)
 	}
 }
 
-std::optional<Vec2> get_target_pos ()
+std::optional<Vec2> get_pos ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -158,4 +161,6 @@ std::optional<Vec2> get_target_pos ()
 		assert(false); // unhandled case
 		return Vec2 {0,0};
 	}
+}
+
 }

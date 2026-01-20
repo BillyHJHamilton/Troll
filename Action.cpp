@@ -43,7 +43,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	// targeting
-	std::optional<Vec2> target_pos = get_target_pos();
+	std::optional<Vec2> target_pos = Target::get_pos();
 
 	if (!target_pos.has_value())
 	{

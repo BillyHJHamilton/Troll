@@ -123,7 +123,7 @@ void handle_next_input ()
 
 		if (key == TK_TAB)
 		{
-			cycle_target();
+			Target::cycle();
 			return;
 		}
 
@@ -158,7 +158,7 @@ void handle_next_input ()
 		if (is_directional(key))
 		{
 			Vec2 dir = parse_directional(key);
-			move_target_pos(dir);
+			Target::move(dir);
 			return;
 		}
 

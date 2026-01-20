@@ -43,7 +43,7 @@ void clear()
 	Creature::clear();
 	Input::clear();
 	Player::clear();
-	clear_target();
+	Target::clear();
 }
 
 // Setup runs at the start of each game, after all clear functions.
@@ -61,7 +61,7 @@ void update()
 	{
 		map.update_visibility(Player::pos(), player.vision_radius);
 		Creature::update_visible_creatures();
-		update_target();
+		Target::update();
 	}
 
 	Draw::draw_screen();

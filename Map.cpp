@@ -153,7 +153,7 @@ void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_v
 	Visibility v = get_visibility(global_pos);
 	if (ignore_visibility || v == Visibility::Visible)
 	{
-		if (pos_is_targeted(global_pos))
+		if (Target::is_target(global_pos))
 		{
 			Draw::draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
 		}
@@ -164,7 +164,7 @@ void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_v
 	}
 	else if (v == Visibility::Explored)
 	{
-		if (pos_is_targeted(global_pos))
+		if (Target::is_target(global_pos))
 		{
 			Draw::draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
 		}

@@ -18,11 +18,14 @@ extern Vec2 g_target_pos;
 
 char const * const TARGET_COLOUR = "darkest red";
 
-void clear_target ();
-void update_target ();
-void cycle_target ();
-void move_target_pos (Vec2 dir);
+namespace Target
+{
+	void clear();
+	void update();
+	void cycle();
+	void move(Vec2 dir);
 
-bool creature_is_targeted (Creature::Handle creature);
-bool pos_is_targeted (Vec2 const & global_pos);
-std::optional<Vec2> get_target_pos ();
+	bool is_target(Creature::Handle creature);
+	bool is_target(Vec2 const& global_pos);
+	std::optional<Vec2> get_pos();
+}
