@@ -13,11 +13,19 @@
 #include <sstream>
 #include <list>
 
-static int constexpr ANIMATION_STEP_MS = 25;
+namespace Draw
+{
+
+struct GameMessage
+{
+	int turn_number;
+	std::string text;
+};
 
 static std::list<GameMessage> s_game_messages;
 static int constexpr MAX_GAME_MESSAGES = 100;
 
+static int constexpr ANIMATION_STEP_MS = 25;
 static int constexpr TILE_WIDTH_FACTOR = 2;
 
 // ------------------------------------------------------------------------------------------------
@@ -50,14 +58,24 @@ TerminalLayer::~TerminalLayer ()
 }
 
 // ------------------------------------------------------------------------------------------------
-// Drawing functions
+// Internal function declarations
 
-void init_draw ()
+void update_screen();
+int num_lines_for_visible_creature_stats();
+const char* get_hp_colour(Creature::Handle creature);
+void format_creature_stats(std::stringstream& ss, Creature::Handle creature);
+void print_player_stats(Box draw_area);
+void print_visible_creature_stats(Box draw_area);
+
+// ------------------------------------------------------------------------------------------------
+// Draw interface functions
+
+void init ()
 {
 	s_game_messages.clear();
 }
 
-DrawView get_draw_view ()
+View get_view ()
 {
 	int constexpr view_size = 31;
 	Box viewport = make_box(0,0,view_size, view_size);
@@ -67,10 +85,10 @@ DrawView get_draw_view ()
 	Vec2 constexpr half_vec {half_size, half_size};
 	Vec2 start = Player::pos() - half_vec;
 
-	return DrawView{viewport, start};
+	return View{viewport, start};
 }
 
-void draw_tile (int code, Vec2 const & global_pos, DrawView const & view,
+void draw_tile (int code, Vec2 const & global_pos, Draw::View const & view,
 	char const * const colour)
 {
 	terminal_color(colour);
@@ -80,7 +98,7 @@ void draw_tile (int code, Vec2 const & global_pos, DrawView const & view,
 	terminal_put(viewport_pos.x * TILE_WIDTH_FACTOR, viewport_pos.y, code);
 }
 
-void draw_tile_bg (int code, Vec2 const & global_pos, DrawView const & view,
+void draw_tile_bg (int code, Vec2 const & global_pos, Draw::View const & view,
 	char const * const colour, char const * const bg_colour)
 {
 	terminal_bkcolor(bg_colour);
@@ -88,7 +106,7 @@ void draw_tile_bg (int code, Vec2 const & global_pos, DrawView const & view,
 	terminal_bkcolor("black");
 }
 
-void draw_tile_temp (int code, Vec2 const & global_pos, DrawView const & view,
+void draw_tile_temp (int code, Vec2 const & global_pos, Draw::View const & view,
 	char const * const colour)
 {
 	TerminalLayer layer_scope(TerminalLayer::Animation);
@@ -106,7 +124,7 @@ void print_in_box (Box const & box, char const * const str, int align)
 	terminal_print_ext(box.min.x, box.min.y, box.size.x, box.size.y, align, str);
 }
 
-void add_game_message(std::string && message)
+void add_message(std::string && message)
 {
 	s_game_messages.push_back({g_turn_number, message});
 
@@ -117,12 +135,12 @@ void add_game_message(std::string && message)
 	}
 }
 
-void run_game_message(std::string && message)
+void run_message(std::string && message)
 {
 	s_game_messages.back().text.append(message);
 }
 
-void print_game_messages(Box const & box)
+void print_messages(Box const & box)
 {
 	// We want to print as many messages as we can within the box available.
 	// To do this we will concatenate the messages to be printed into a single string.
@@ -162,9 +180,28 @@ void print_game_messages(Box const & box)
 	}
 }
 
-void update_screen ()
+void draw_screen ()
 {
-	DrawView view = get_draw_view();
+	terminal_clear();
+
+	if (g_game_mode == GameMode::Menu)
+	{
+		Menu::update_screen();
+	}
+	else
+	{
+		update_screen();
+	}
+
+	terminal_refresh();
+}
+
+// ------------------------------------------------------------------------------------------------
+// Internal function implementations
+
+void update_screen()
+{
+	Draw::View view = get_view();
 
 	terminal_font("tile");
 	g_map().draw(view);
@@ -187,46 +224,30 @@ void update_screen ()
 	// game message area
 	int message_top = 8 + creature_lines;
 	int message_lines = 22 - creature_lines;
-	Box message_area = make_box(63,message_top,60,message_lines);
-	print_game_messages(message_area);
+	Box message_area = make_box(63, message_top, 60, message_lines);
+	print_messages(message_area);
 
 	// spells area
 	Box spell_area = make_box(93, 1, 27, 30);
 	std::string spell_preview = get_spell_preview_string();
 	print_in_box(spell_area, spell_preview.c_str());
-/*	print_in_box(spell_area,
-		"Spells:\n"
-		"RL  Relashio\n"
-		"FP  Flipendo\n"
-		"MW  Mimblewimble\n"
-		"RS  Rictusempra\n"
-	);*/
+	/*	print_in_box(spell_area,
+			"Spells:\n"
+			"RL  Relashio\n"
+			"FP  Flipendo\n"
+			"MW  Mimblewimble\n"
+			"RS  Rictusempra\n"
+		);*/
 }
 
-void draw_screen ()
-{
-	terminal_clear();
-
-	if (g_game_mode == GameMode::Menu)
-	{
-		Menu::update_screen();
-	}
-	else
-	{
-		update_screen();
-	}
-
-	terminal_refresh();
-}
-
-int num_lines_for_visible_creature_stats ()
+int num_lines_for_visible_creature_stats()
 {
 	int desired = static_cast<int>(Creature::get_visible_creatures().size() * 3);
 	int constexpr max_lines = 15;
 	return std::min(desired, max_lines);
 }
 
-static const char* get_hp_colour(Creature::Handle creature)
+const char* get_hp_colour(Creature::Handle creature)
 {
 	const float hp_percent = creature.hp_percent();
 
@@ -248,7 +269,7 @@ static const char* get_hp_colour(Creature::Handle creature)
 	}
 }
 
-static void format_creature_stats (std::stringstream & ss, Creature::Handle creature)
+void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 {
 	if (creature_is_targeted(creature))
 	{
@@ -272,12 +293,12 @@ static void format_creature_stats (std::stringstream & ss, Creature::Handle crea
 	ss << "[/color]";
 }
 
-void print_player_stats (Box draw_area)
+void print_player_stats(Box draw_area)
 {
 	std::stringstream ss;
 
 	ss << "XP     " << 125 << std::endl; // todo
-	ss << "Magic  " << Player::handle().skill_magic()  << std::endl;
+	ss << "Magic  " << Player::handle().skill_magic() << std::endl;
 	ss << "Level  " << 4 << std::endl; // todo
 	ss << std::endl;
 
@@ -287,7 +308,7 @@ void print_player_stats (Box draw_area)
 	print_in_box(draw_area, player_status_string.c_str());
 }
 
-void print_visible_creature_stats (Box draw_area)
+void print_visible_creature_stats(Box draw_area)
 {
 	std::stringstream ss;
 
@@ -306,4 +327,6 @@ void print_visible_creature_stats (Box draw_area)
 
 	std::string creature_status_string = ss.str();
 	print_in_box(draw_area, creature_status_string.c_str());
+}
+
 }

@@ -8,8 +8,6 @@
 //int constexpr MAP_WIDTH = 100;
 //int constexpr MAP_HEIGHT = 100;
 
-struct DrawView;
-
 enum class Terrain : byte
 {
 	Open = 0,
@@ -52,8 +50,8 @@ public:
 	void clear_visibility();
 	void update_visibility(Vec2 const & viewer, int max_radius);
 
-	void draw_map_tile (Vec2 global_pos, DrawView const & view, bool ignore_visibility);
-	void draw(DrawView const & view, bool ignore_visibility=false);
+	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility);
+	void draw(Draw::View const & view, bool ignore_visibility=false);
 
 	inline Vec2 global_to_local(Vec2 const & global) const { return global - map_box.min; }
 	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box{Vec2{0,0}, map_box.size}.contains(local_pos); }

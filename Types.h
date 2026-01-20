@@ -15,8 +15,6 @@ Grid<T> make_grid (int x, int y, T value)
 
 struct Vec2;
 struct Box;
-
-struct DrawView;
 struct Map;
 struct Player;
 
@@ -26,6 +24,11 @@ namespace Creature
 	struct Stats;
 	struct DerivedStats;
 	class Handle;
+}
+
+namespace Draw
+{
+	struct View;
 }
 
 namespace Menu

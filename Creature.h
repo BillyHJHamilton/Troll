@@ -21,8 +21,6 @@
 // There may be multiple creatures of the same type, though hopefully not for named
 // characters like Neville or Dumbledore.
 
-struct DrawView;
-
 static bool constexpr SHOW_CREATURE_DEBUG = true;
 
 enum class Gender
@@ -155,8 +153,8 @@ namespace Creature
 
 	// Visible creature operations
 	void update_visible_creatures ();
-	void draw_creature (Creature::Handle creature_index, DrawView const & view);
-	void draw_visible_creatures (DrawView const & view);
+	void draw_creature (Creature::Handle creature_index, Draw::View const & view);
+	void draw_visible_creatures (Draw::View const & view);
 	void remove_defeated_creatures ();
 	std::vector<Creature::Handle> const & get_visible_creatures ();
 };

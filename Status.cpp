@@ -114,7 +114,7 @@ void endround_dancing(Creature::Handle creature)
 
 void cure_dancing(Creature::Handle const creature)
 {
-	add_game_message(Grammar::Your(creature) + " feet stop dancing.");
+	Draw::add_message(Grammar::Your(creature) + " feet stop dancing.");
 }
 
 
@@ -134,7 +134,7 @@ void endround_leg_locked(Creature::Handle creature)
 
 void cure_leg_locked(Creature::Handle const creature)
 {
-	add_game_message(Grammar::Your(creature) + " legs are no longer locked together.");
+	Draw::add_message(Grammar::Your(creature) + " legs are no longer locked together.");
 }
 
 } // namespace status

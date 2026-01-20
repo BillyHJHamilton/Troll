@@ -3,9 +3,6 @@
 #include "Geometry.h"
 #include "Types.h"
 
-struct Map;
-struct DrawView;
-
 struct Player
 {
 	//--------------------------------------------------------------------------

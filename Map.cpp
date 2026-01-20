@@ -145,7 +145,7 @@ void Map::update_visibility(Vec2 const & viewer, int max_radius)
 	}
 }
 
-void Map::draw_map_tile (Vec2 global_pos, DrawView const & view, bool ignore_visibility)
+void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility)
 {
 	Terrain t = get_terrain(global_pos);
 	int code = terrain_character(t);
@@ -155,29 +155,29 @@ void Map::draw_map_tile (Vec2 global_pos, DrawView const & view, bool ignore_vis
 	{
 		if (pos_is_targeted(global_pos))
 		{
-			draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
+			Draw::draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
 		}
 		else
 		{
-			draw_tile(code, global_pos, view, "white");
+			Draw::draw_tile(code, global_pos, view, "white");
 		}
 	}
 	else if (v == Visibility::Explored)
 	{
 		if (pos_is_targeted(global_pos))
 		{
-			draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
+			Draw::draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
 		}
 		else
 		{
-			draw_tile(code, global_pos, view, "darker grey");
+			Draw::draw_tile(code, global_pos, view, "darker grey");
 		}
 	}
 }
 
 // viewport - box on the screen (in wide tiles) where the map will be drawn
 // start - upper left position of the map to draw
-void Map::draw (DrawView const & view, bool ignore_visibility)
+void Map::draw (Draw::View const & view, bool ignore_visibility)
 {
 	Box draw_area = map_box.intersection(view.view_area());
 

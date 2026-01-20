@@ -31,7 +31,7 @@ void game_over();
 void init()
 {
 	Creature::init();
-	init_draw();
+	Draw::init();
 	init_random();
 	Spell::init();
 	Status::init();
@@ -64,7 +64,7 @@ void update()
 		update_target();
 	}
 
-	draw_screen();
+	Draw::draw_screen();
 	handle_next_input();
 
 	if (player.acted)
@@ -80,7 +80,7 @@ void reset()
 	Menu::show_title();
 
 	--g_turn_number;
-	add_game_message("Welcome to TROLL.  Press h to see controls.");
+	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
 	++g_turn_number;
 }
 

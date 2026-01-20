@@ -38,7 +38,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	// check if the player knows the spell
 	if (!Player::handle().knows_spell(spell))
 	{
-		add_game_message("You don't know that spell.");
+		Draw::add_message("You don't know that spell.");
 		return false;
 	}
 
@@ -47,21 +47,21 @@ bool player_try_cast_spell (Spell::Index spell)
 
 	if (!target_pos.has_value())
 	{
-		add_game_message("No target.");
+		Draw::add_message("No target.");
 		return false;
 	}
 
 	// check for self-targeting
 	if (target_pos == Player::pos() && Spell::get_accuracy(spell) != -1)
 	{
-		add_game_message("Don't shoot that spell at yourself.");
+		Draw::add_message("Don't shoot that spell at yourself.");
 		return false;
 	}
 
 	// check for out of range
 	if (!check_within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
 	{
-		add_game_message("The target is out of range.");
+		Draw::add_message("The target is out of range.");
 		return false;
 	}
 
@@ -76,13 +76,13 @@ bool player_try_cast_spell (Spell::Index spell)
 void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos)
 {
 	// Update the screen because we'll do some animation for the spell
-	draw_screen();
+	Draw::draw_screen();
 
 	// 1. Distractedness
 	bool is_distracted = check_distraction(caster);
 	if (is_distracted)
 	{
-		add_game_message(Grammar::You_are(caster) + " too distracted to cast a spell!");
+		Draw::add_message(Grammar::You_are(caster) + " too distracted to cast a spell!");
 		return;
 	}
 
@@ -155,11 +155,11 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
 		std::string message = Grammar::You(caster) + " ";
 		message += Grammar::verbs("miscast", caster) + " ";
 		message += Spell::get_name(spell) + "!";
-		add_game_message(std::move(message));
+		Draw::add_message(std::move(message));
 
-		DrawView view = get_draw_view();
-		draw_tile_temp('X', caster.pos(), view, "yellow");
-		draw_tile_temp('X', caster.pos(), view, "black");
+		Draw::View view = Draw::get_view();
+		Draw::draw_tile_temp('X', caster.pos(), view, "yellow");
+		Draw::draw_tile_temp('X', caster.pos(), view, "black");
 	}
 
 	// todo - proper miscasts
@@ -170,7 +170,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 targe
 {
 	std::string message = Grammar::You(caster) + " " + Grammar::verbs("cast", caster)
 		+ " " + Spell::get_name(spell) + "!";
-	add_game_message(std::move(message));
+	Draw::add_message(std::move(message));
 
 	if (Spell::get_accuracy(spell) == -1) // self-affecting spell
 	{

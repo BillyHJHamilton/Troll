@@ -13,7 +13,7 @@
 void vermillious_effect (Creature::Handle caster, Creature::Handle target)
 {
 	std::string message = Grammar::You_are(target) + " showered in sparks!";
-	add_game_message(std::move(message));
+	Draw::add_message(std::move(message));
 }
 
 void flipendo_effect (Creature::Handle caster, Creature::Handle target)
@@ -30,7 +30,7 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 		if (g_map().tile_is_solid(knock_pos))
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";
-			add_game_message(std::move(message));
+			Draw::add_message(std::move(message));
 			target.take_damage(1, caster);
 		}
 		else
@@ -40,7 +40,7 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 			{
 				std::string message = Grammar::You_are(target) + " knocked into "
 					+ Grammar::you(secondary_target) + "!";
-				add_game_message(std::move(message));
+				Draw::add_message(std::move(message));
 				target.take_damage(1, caster);
 				secondary_target.take_damage(1, caster);
 			}
@@ -48,7 +48,7 @@ void flipendo_effect (Creature::Handle caster, Creature::Handle target)
 			{
 				target.move(knock_pos);
 				std::string message = Grammar::You_are(target) + " knocked back!";
-				add_game_message(std::move(message));
+				Draw::add_message(std::move(message));
 			}
 		}
 	}
@@ -60,7 +60,7 @@ void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::Dancing))
 	{
-		add_game_message(Grammar::Your(target) + " feet quicken their dance!");
+		Draw::add_message(Grammar::Your(target) + " feet quicken their dance!");
 		target.inflict_status(Status::Dancing, 4);
 	}
 	else
@@ -74,11 +74,11 @@ void tarantallegra_effect (Creature::Handle caster, Creature::Handle target)
 
 		if (target.has_status(Status::LegLocked))
 		{
-			add_game_message(Grammar::Your(target) + " legs partially loosen.");
+			Draw::add_message(Grammar::Your(target) + " legs partially loosen.");
 		}
 		else
 		{
-			add_game_message(Grammar::Your(target) + " feet dance!");
+			Draw::add_message(Grammar::Your(target) + " feet dance!");
 			target.inflict_status(Status::Dancing, apply_amount);
 		}
 	}
@@ -88,7 +88,7 @@ void locomotor_mortis_effect(Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::LegLocked))
 	{
-		add_game_message(Grammar::Your(target) + " legs are more tightly locked together!");
+		Draw::add_message(Grammar::Your(target) + " legs are more tightly locked together!");
 		target.inflict_status(Status::LegLocked, 4);
 	}
 	else
@@ -102,11 +102,11 @@ void locomotor_mortis_effect(Creature::Handle caster, Creature::Handle target)
 
 		if (target.has_status(Status::Dancing))
 		{
-			add_game_message(Grammar::Your(target) + " feet dance more slowly.");
+			Draw::add_message(Grammar::Your(target) + " feet dance more slowly.");
 		}
 		else
 		{
-			add_game_message(Grammar::Your(target) + " legs are locked together!");
+			Draw::add_message(Grammar::Your(target) + " legs are locked together!");
 			target.inflict_status(Status::LegLocked, apply_amount);
 		}
 	}

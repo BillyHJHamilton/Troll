@@ -335,7 +335,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 			{
 				if (is_player())
 				{
-					add_game_message("You fail to walk.");
+					Draw::add_message("You fail to walk.");
 				}
 				return true;
 			}
@@ -531,7 +531,7 @@ void update_visible_creatures ()
 	}
 }
 
-void draw_creature (Creature::Handle creature, DrawView const & view)
+void draw_creature (Creature::Handle creature, Draw::View const & view)
 {
 	Vec2 const & pos = creature.pos();
 	if (view.contains_global_pos(pos))
@@ -539,16 +539,16 @@ void draw_creature (Creature::Handle creature, DrawView const & view)
 		int code = s_creatures[creature].codepoint;
 		if (creature_is_targeted(creature))
 		{
-			draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
+			Draw::draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
 		}
 		else
 		{
-			draw_tile(code, pos, view, "white");
+			Draw::draw_tile(code, pos, view, "white");
 		}
 	}
 }
 
-void draw_visible_creatures (DrawView const & view)
+void draw_visible_creatures (Draw::View const & view)
 {
 	for (int i : s_visible_creatures)
 	{
@@ -565,7 +565,7 @@ void remove_defeated_creatures()
 
 		if (creature.visible() || instigator_type == Type::Player)
 		{
-			add_game_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+			Draw::add_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
 		}
 
 		if (creature.is_player())

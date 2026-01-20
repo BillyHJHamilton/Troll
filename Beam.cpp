@@ -96,7 +96,7 @@ void shoot_along_line (Beam::Data & beam)
 	LineItr line_itr(beam.pos, end);
 
 	// init for animation
-	DrawView view = get_draw_view();
+	Draw::View view = Draw::get_view();
 	int codepoint = get_codepoint(beam);
 	std::string colour = get_colour(beam);
 
@@ -118,7 +118,7 @@ void shoot_along_line (Beam::Data & beam)
 			Visibility tile_vis = g_map().get_visibility(beam.pos);
 			if (tile_vis == Visibility::Visible)
 			{
-				draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+				Draw::draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
 			}
 
 			// see if we hit anything; this may change done to true
@@ -140,7 +140,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 	{
 		if (map.get_visibility(beam.pos) == Visibility::Visible)
 		{
-			add_game_message("The " + beam_description(beam) + " hits the wall.");
+			Draw::add_message("The " + beam_description(beam) + " hits the wall.");
 		}
 		beam.done = true;
 		return;
@@ -168,7 +168,7 @@ void test_for_impact (Beam::Data & beam, LineItr const & line)
 		}
 		else
 		{
-			add_game_message("The " + beam_description(beam) + " misses "
+			Draw::add_message("The " + beam_description(beam) + " misses "
 				+ Grammar::you(creature_in_path) + ".");
 		}
 	}
