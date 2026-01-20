@@ -23,14 +23,14 @@
 
 static bool constexpr SHOW_CREATURE_DEBUG = true;
 
-enum class Gender
+enum class Gender : byte
 {
 	Male,
 	Female,
 	Neuter
 };
 
-enum class MoveMode
+enum class MoveMode : byte
 {
 	Walk,
 	Forced

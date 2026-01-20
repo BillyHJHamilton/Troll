@@ -13,9 +13,10 @@ Grid<T> make_grid (int x, int y, T value)
 	return std::vector<std::vector<T>>(x, std::vector<T>(y, value));
 }
 
+class Map;
+
 struct Vec2;
 struct Box;
-struct Map;
 struct Player;
 
 namespace Creature
@@ -47,8 +48,10 @@ namespace Status
 	enum Index : int;
 };
 
-enum class Gender;
-enum class TargetMode;
+enum class GameMode : byte;
+enum class Gender : byte;
+enum class MoveMode : byte;
+enum class TargetMode : byte;
 enum class Terrain : byte;
 enum class Visibility : byte;
 

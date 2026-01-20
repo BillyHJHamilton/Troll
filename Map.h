@@ -25,7 +25,7 @@ int terrain_character(Terrain t);
 bool terrain_permits_sight(Terrain t);
 bool terrain_is_solid(Terrain t);
 
-struct Map
+class Map
 {
 	// data
 	Box map_box;

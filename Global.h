@@ -1,10 +1,8 @@
 #pragma once
 
-struct Map;
-
 void setup_global();
 
-enum class GameMode : int
+enum class GameMode : byte
 {
 	Normal,
 	Menu

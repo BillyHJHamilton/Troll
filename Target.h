@@ -6,7 +6,7 @@
 
 #include <optional>
 
-enum class TargetMode : int
+enum class TargetMode : byte
 {
 	Automatic,
 	Manual
