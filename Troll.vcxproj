@@ -159,7 +159,6 @@
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="Beam.cpp" />
     <ClCompile Include="Bot.cpp" />
-    <ClCompile Include="Config.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -181,7 +180,6 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="Beam.h" />
     <ClInclude Include="Bot.h" />
-    <ClInclude Include="Config.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="Game.h" />
