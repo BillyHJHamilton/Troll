@@ -96,7 +96,7 @@ namespace Creature
 		int max_hp () const;
 		int hp () const;
 		float hp_percent() const;
-		Vec2 const & pos () const;
+		Vec2 pos () const;
 		bool has_status (Status::Index status) const;
 		int status_severity (Status::Index status) const;
 		int distractedness () const;

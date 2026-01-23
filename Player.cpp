@@ -5,15 +5,35 @@
 #include "Draw.h"
 #include "Map.h"
 
-Player global_player;
-Player & g_player () { return global_player; }
+namespace Player
+{
+
+Player::Data s_player_data;
 
 void Player::clear()
 {
-	global_player = Player();
+	s_player_data = Player::Data();
 }
 
-Vec2 const & Player::pos ()
+Vec2 pos()
 {
 	return handle().pos();
+}
+
+Player::Data& data()
+{
+	return s_player_data;
+}
+
+void set_acted(bool acted)
+{
+	s_player_data.acted = acted;
+}
+
+void set_game_over(Creature::Type defeated_by)
+{
+	s_player_data.game_over = true;
+	s_player_data.defeated_by = defeated_by;
+}
+
 }

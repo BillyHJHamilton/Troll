@@ -149,7 +149,7 @@ float Handle::hp_percent() const
 	return (float)(hp()) / (float)(max_hp());
 }
 
-Vec2 const & Handle::pos () const
+Vec2 Handle::pos () const
 {
 	return get_creature_stats(index).pos;
 }
@@ -569,8 +569,7 @@ void remove_defeated_creatures()
 
 		if (creature.is_player())
 		{
-			g_player().game_over = true;
-			g_player().defeated_by = instigator_type;
+			Player::set_game_over(instigator_type);
 		}
 		else
 		{

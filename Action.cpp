@@ -25,10 +25,10 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 targe
 
 bool player_try_move(Vec2 const& relative_move)
 {
-	bool const moved = g_player().handle().try_move(relative_move, MoveMode::Walk);
+	bool const moved = Player::handle().try_move(relative_move, MoveMode::Walk);
 	if (moved)
 	{
-		g_player().acted = true;
+		Player::data().acted = true;
 	}
 	return moved;
 }
@@ -69,7 +69,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	// we now continue to the generic spell-casting function
 	try_cast_spell(spell, Creature::Player, *target_pos);
 
-	g_player().acted = true;
+	Player::set_acted(true);
 	return true;
 }
 

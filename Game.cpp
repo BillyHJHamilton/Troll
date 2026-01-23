@@ -72,12 +72,11 @@ void setup()
 
 void update()
 {
-	Player& player = g_player();
 	Map& map = g_map();
 
 	if (s_game_mode == GameMode::Normal)
 	{
-		map.update_visibility(Player::pos(), player.vision_radius);
+		map.update_visibility(Player::pos(), Player::vision_radius);
 		Creature::update_visible_creatures();
 		Target::update();
 	}
@@ -85,7 +84,7 @@ void update()
 	Draw::draw_screen();
 	Input::handle_next_input();
 
-	if (player.acted)
+	if (Player::data().acted)
 	{
 		end_turn();
 	}
@@ -122,14 +121,14 @@ int get_turn_number()
 
 void end_turn()
 {
-	g_player().acted = false;
+	Player::set_acted(false);
 
 	Status::do_endround(Player::handle());
 	Creature::remove_defeated_creatures();
 
 	// Now all other creatures act.
 	for (Creature::HandleItr itr(1);
-		itr && !g_player().game_over;
+		itr && !Player::data().game_over;
 		++itr)
 	{
 		Bot::do_turn(*itr);
@@ -137,7 +136,7 @@ void end_turn()
 		Creature::remove_defeated_creatures();
 	}
 
-	if (g_player().game_over)
+	if (Player::data().game_over)
 	{
 		game_over();
 		return;

@@ -17,7 +17,6 @@ class Map;
 
 struct Vec2;
 struct Box;
-struct Player;
 
 namespace Creature
 {
@@ -40,6 +39,11 @@ namespace Menu
 namespace Miscast
 {
 	enum Category : int;
+}
+
+namespace Player
+{
+	struct Data;
 }
 
 namespace Spell
