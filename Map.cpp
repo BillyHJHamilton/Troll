@@ -2,9 +2,12 @@
 #include "Map.h"
 
 #include "Draw.h"
+#include "Line.h"
+#include "Random.h"
 #include "Target.h"
 
 #include <cassert>
+#include <iostream>
 
 static Map global_map;
 
@@ -117,9 +120,9 @@ void Map::clear_visibility()
 	}
 }
 
-void Map::update_visibility(Vec2 const & viewer, int max_radius)
+void Map::update_visibility(Vec2 const & viewer_global, int max_radius)
 {
-	// remove current sight
+	// Remove current sight.
 	for (Vec2 const & pos : map_box)
 	{
 		if (get_visibility(pos) == Visibility::Visible)
@@ -128,18 +131,60 @@ void Map::update_visibility(Vec2 const & viewer, int max_radius)
 		}
 	}
 
-	// add new sight within range
-	Vec2 min = {viewer.x - max_radius, viewer.y - max_radius};
-	Vec2 size = {2 * max_radius + 1, 2 * max_radius + 1};
-	Box vis_box = {min, size};
-
-	for (Vec2 const & pos : vis_box)
+	// Add new sight along every line in the cache.
+	int const num_lines = LineCache::get_num();
+	for (int line_id = 0; line_id < num_lines; ++line_id)
 	{
-		bool within_circle = check_within_range(viewer, pos, max_radius);
-
-		if (within_circle && check_los(*this, viewer, pos))
+		for (LineCache::Itr itr(viewer_global, line_id);
+			itr
+			  && check_within_range(viewer_global, *itr, max_radius)
+			  && contains(*itr);
+			++itr)
 		{
-			set_visibility(pos, Visibility::Visible);
+			set_visibility(*itr, Visibility::Visible);
+
+			Terrain t = get_terrain(*itr);
+			if (!terrain_permits_sight(t))
+			{
+				break;
+			}
+		}
+	}
+
+	// Hack to add visibility on walls that "should" be visible.
+	add_wall_visibility(viewer_global, AXIS_X,  1);
+	add_wall_visibility(viewer_global, AXIS_X, -1);
+	add_wall_visibility(viewer_global, AXIS_Y,  1);
+	add_wall_visibility(viewer_global, AXIS_Y, -1);
+}
+
+void Map::add_wall_visibility(Vec2 viewer_global, Axis a, int sign)
+{
+	for (int r = 6; r <= 7; ++r)
+	{
+		Vec2 open_pos = viewer_global;
+		open_pos[a] += (r * sign);
+		
+		if (contains(open_pos) &&
+			visibility[open_pos.x][open_pos.y] == Visibility::Visible)
+		{
+			Axis other_axis = get_other_axis(a);
+			Vec2 pos1 = open_pos;
+			Vec2 pos2 = open_pos;
+			pos1[other_axis] += 1;
+			pos2[other_axis] -= 1;
+
+			if (contains(pos1)
+				&& !terrain_permits_sight(get_terrain(pos1)))
+			{
+				set_visibility(pos1, Visibility::Visible);
+			}
+
+			if (contains(pos2)
+				&& !terrain_permits_sight(get_terrain(pos2)))
+			{
+				set_visibility(pos2, Visibility::Visible);
+			}
 		}
 	}
 }
@@ -190,11 +235,79 @@ void Map::draw (Draw::View const & view, bool ignore_visibility)
 	}
 }
 
-bool check_los(Map const & map, Vec2 const & p0, Vec2 const & p1)
+void Map::test_los_symmetry()
 {
-	LineItr itr(p0, p1);
-	itr.advance();				// skip starting point
-	while (itr.steps_left > 0)	// skip end point
+	std::cout << "LOS symmetry test: \n";
+
+	int constexpr tests = 200;
+	int errors = 0;
+	for (int i = 0; i < tests; ++i)
+	{
+		Vec2 p0 = Random::in_box(map_box);
+		Vec2 p1;
+		do
+		{
+			p1 = Random::in_box(map_box);
+		}
+		while (p0 == p1 || !check_within_range(p0, p1, 8));
+
+		bool los_0_to_1 = has_los(*this, p0, p1);
+		bool los_1_to_0 = has_los(*this, p1, p0);
+
+		if (los_0_to_1 != los_1_to_0)
+		{
+			++errors;
+			std::cout << "- Error: Line from (" << p0.x << ", " << p0.y
+				<< ") to (" << p1.x << ", " << p1.y << ") is "
+				<< ((los_0_to_1) ? "open" : "blocked") << " but reverse is "
+				<< ((los_1_to_0) ? "open" : "blocked") << ".\n";
+
+			for (BoxItr itr(map_box); itr; ++itr)
+			{
+				if (*itr == p0)
+				{
+					std::cout << '0';
+				}
+				else if (*itr == p1)
+				{
+					std::cout << '1';
+				}
+				else if (!terrain_permits_sight(get_terrain(*itr)))
+				{
+					std::cout << '=';
+				}
+				else
+				{
+					std::cout << '.';
+				}
+
+				if (itr->x == map_box.inner_max(0))
+				{
+					std::cout << '\n';
+				}
+			}
+
+			// Break here to debug.
+			if (los_0_to_1)
+			{
+				bool retry_0_to_1 = has_los(*this, p0, p1);
+			}
+			else
+			{
+				bool retry_1_to_0 = has_los(*this, p0, p1);
+			}
+		}
+	}
+
+	std::cout << errors << " errors out of " << tests << " tests.\n";
+}
+
+// helper function
+bool has_los_on_line(Map const& map, Vec2 p0, Vec2 p1, int line_id)
+{
+	LineCache::Itr itr(p0, line_id);
+	itr.advance();            // skip start point
+	while (itr && *itr != p1 && map.local_pos_valid(*itr)) // skip end point
 	{
 		Terrain t = map.get_terrain(*itr);
 		if (!terrain_permits_sight(t))
@@ -203,8 +316,26 @@ bool check_los(Map const & map, Vec2 const & p0, Vec2 const & p1)
 		}
 		itr.advance();
 	}
-
-	// no obstruction was met
 	return true;
+}
+
+int get_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
+{
+	std::vector<int> const& lines = LineCache::get_lines(p1 - p0);
+	for (int line_id : lines)
+	{
+		if (has_los_on_line(map, p0, p1, line_id))
+		{
+			return line_id;
+		}
+	}
+
+	// No open line was found.
+	return -1;
+}
+
+bool has_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
+{
+	return get_los(map, p0, p1) != -1;
 }
 

@@ -7,6 +7,7 @@
 #include "Map.h"
 #include "Status.h"
 
+#include <cassert>
 #include <iostream>
 #include <string>
 
@@ -22,11 +23,11 @@ void vermillious (Creature::Handle caster, Creature::Handle target)
 void flipendo (Creature::Handle caster, Creature::Handle target)
 {
 	// Push back
-	std::optional<LineItr> optional_line = Beam::get_latest_impact_line();
+	std::optional<LineCache::Itr> optional_line = Beam::get_latest_impact_line();
 	if (optional_line.has_value())
 	{
-		LineItr line = *optional_line;
-		++ line;
+		LineCache::Itr& line = *optional_line;
+		line.advance_and_loop();
 		Vec2 knock_pos = *line;
 
 		// check for collision

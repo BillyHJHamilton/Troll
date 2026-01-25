@@ -3,6 +3,7 @@
 #include<vector>
 #include<random>
 #include<algorithm>
+#include "Geometry.h"
 
 namespace Random
 {
@@ -11,6 +12,7 @@ namespace Random
 
 	int in_range (int min, int max);
 	float in_range (float min, float max);
+	Vec2 in_box(Box b);
 	std::size_t index (std::size_t size);
 	bool coinflip ();
 	bool one_in (int x);

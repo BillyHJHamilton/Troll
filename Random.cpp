@@ -33,6 +33,15 @@ int in_range (int min, int max)
 	return dist(generator);
 }
 
+Vec2 in_box(Box b)
+{
+	return
+	{
+		Random::in_range(b.min.x, b.inner_max().x),
+		Random::in_range(b.min.y, b.inner_max().y)
+	};
+}
+
 std::size_t index (std::size_t size)
 {
 	std::uniform_int_distribution<std::size_t> dist(0, size-1);

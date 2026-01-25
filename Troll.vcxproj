@@ -165,6 +165,7 @@
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Grammar.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Menu.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Grammar.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Menu.h" />
@@ -200,7 +202,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="CodingStandard.txt" />
-    <Text Include="Scaps.txt" />
+    <Text Include="Scraps\LineCache.txt" />
+    <Text Include="Scraps\Scaps.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

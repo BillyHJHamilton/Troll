@@ -77,6 +77,7 @@ float euclidean_distance(Vec2 p0, Vec2 p1);
 using Axis = int;
 Axis constexpr AXIS_X = 0;
 Axis constexpr AXIS_Y = 1;
+Axis get_other_axis(Axis a) { return 1 - a; }
 
 struct Box
 {
@@ -86,6 +87,10 @@ struct Box
 	// Note that the cell at max is NOT occupied by the box
 	Vec2 max () const { return min + size; }
 	int max(Axis a) const { return min[a] + size [a]; }
+
+	// The last cell included inside the box.
+	Vec2 inner_max() const { return max() - Vec2{1, 1}; }
+	int inner_max(Axis a) const { return max(a) - 1; }
 
 	bool contains (Vec2 const & v) const;
 	bool intersects (Box const & other) const;
@@ -100,36 +105,7 @@ inline Box make_box(int x, int y, int w, int h)
 	return { {x,y}, {w,h} };
 }
 
-// Class to traverse points of a line, using Bresenham's algorithm.
-// Usage example:
-//
-//	for(LineItr itr(p0, p1); !itr.finished(); ++itr)
-//	{
-//		draw_point(*itr);
-//	}
-class LineItr
-{
-public:
-	LineItr(Vec2 const & start, Vec2 const & end);
-
-	Vec2 current;
-	int steps_left;
-
-	void advance ();
-	bool finished () const { return steps_left < 0; }
-
-	// iterator-style functions
-	Vec2 const & operator*() const { return current; }
-	Vec2 const * operator->() const { return &current; }
-	Vec2 const & operator++() { advance(); return current; }
-	// post-increment not provided to avoid accidental copy
-
-private:
-	int dist_long;
-	int error;
-	Vec2 step [2];
-	int d_error [2];
-};
+//------------------------------------------------------------------------------
 
 // Class to iterate over all points on rectangle
 class BoxItr
@@ -146,6 +122,7 @@ public:
 	Vec2 const * operator->() const { return &current; }
 	Vec2 const & operator++() { advance(); return current; }
 	bool operator!= (BoxItr const & rhs) const { return current != rhs.current; } 
+	operator bool() const { return !finished(); }
 	// post-increment not provided to avoid accidental copy
 
 private:
@@ -155,3 +132,4 @@ private:
 // range-based for loop on box
 BoxItr begin(Box const & b);
 BoxItr end(Box const & b);
+

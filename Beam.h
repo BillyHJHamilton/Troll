@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Geometry.h"
+#include "Line.h"
 #include "Types.h"
 #include "Creature.h"
 
@@ -22,11 +23,11 @@ namespace Beam
 	{
 		Vec2 start_pos;
 		Vec2 pos;
-		Vec2 trajectory; // may be any non-zero length
 		Beam::Type type;
 		Creature::Handle caster;
+		Creature::Handle intended_target;
+		int trajectory; // index in the line cache
 		int max_range;
-		int intended_target;
 		bool caster_aimed;
 		bool done;
 	};
@@ -35,6 +36,6 @@ namespace Beam
 
 	int accuracy_at_range (int base_accuracy, Vec2 start, Vec2 end);
 
-	std::optional<LineItr> get_latest_impact_line ();
+	std::optional<LineCache::Itr> get_latest_impact_line ();
 }
 

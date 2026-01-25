@@ -209,8 +209,19 @@ void update_screen()
 	//g_player().draw(view);
 	Creature::draw_visible_creatures(view);
 
+	// LINE DEBUG
+	//std::optional<Vec2> target = Target::get_pos();
+	//if (target.has_value())
+	//{
+	//	for (LineItr itr = LineItr(Player::pos(), *target); itr; ++itr)
+	//	{
+	//		draw_tile('X', *itr, view, "yellow");
+	//	}
+	//}
+
 	// restore default font for printing text
 	terminal_font("");
+	terminal_color("white");
 
 	// player stat areas
 	Box player_stat_area = make_box(63, 1, 60, 6);

@@ -74,63 +74,7 @@ Box Box::intersection (Box const & other) const
 	return {new_min, new_max - new_min};
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Line Drawing
-
-LineItr::LineItr (Vec2 const & start, Vec2 const & end)
-	: current(start)
-{
-	// based on https://stackoverflow.com/questions/10060046/drawing-lines-with-bresenhams-line-algorithm
-
-	int const dx = end.x - start.x;
-	int const dy = end.y - start.y;
-
-	int const dist_x = std::abs(dx);
-	int const dist_y = std::abs(dy);
-
-	int const step_x = (dx > 0) ? 1 : -1;
-	int const step_y = (dy > 0) ? 1 : -1;
-
-	int dist_short;
-
-	if (dist_x > dist_y)
-	{
-		dist_long = dist_x;
-		dist_short = dist_y;
-
-		step[0] = {step_x, 0};		// step on one axis
-		step[1] = {step_x, step_y}; // step on both axes
-	}
-	else
-	{
-		dist_long = dist_y;
-		dist_short = dist_x;
-
-		step[0] = {0, step_y};		// step on one axis
-		step[1] = {step_x, step_y}; // step on both axes
-	}
-
-	d_error[0] = {dist_short};				// change in error when taking step on one axis
-	d_error[1] = {dist_short - dist_long};	// change in error when taking step on both axes
-
-	steps_left = dist_long;
-	error = dist_short;
-}
-
-void LineItr::advance()
-{
-	// based on https://stackoverflow.com/questions/10060046/drawing-lines-with-bresenhams-line-algorithm
-
-	int const error_too_big = error >= dist_long;
-	// dist_long / 2 makes nicer line, but does strange things to visibility
-
-	current += step[error_too_big];
-	error += d_error[error_too_big];
-
-	-- steps_left;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
+//-------------------------------------------------------------------------------------------------
 // Rectangle Traversal
 
 BoxItr::BoxItr (Box const & box)

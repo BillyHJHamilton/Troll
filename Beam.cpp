@@ -11,7 +11,8 @@
 namespace Beam
 {
 
-static std::optional<LineItr> s_impact_line;
+// Line already advanced to point of impact.  Used for Flipendo pushback.
+static std::optional<LineCache::Itr> s_impact_line;
 
 int constexpr c_accuracy_loss = 3; // per square
 int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
@@ -21,11 +22,10 @@ int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
 
 static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_pos, bool caster_aimed);
 static void shoot_beam (Beam::Data & beam);
-static void shoot_along_line (Beam::Data & beam);
-static void test_for_impact (Beam::Data & beam, LineItr const & line);
+static void test_for_impact (Beam::Data & beam, LineCache::Itr const & line);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
-static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineItr const & line);
+static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr const & line);
 
 static std::string get_colour (Beam::Data const & beam);
 static int get_codepoint (Beam::Data const & beam);
@@ -49,7 +49,7 @@ int accuracy_at_range(int base_accuracy, Vec2 start, Vec2 end)
 	return std::max(c_min_ranged_accuracy, base_accuracy - loss);
 }
 
-std::optional<LineItr> get_latest_impact_line ()
+std::optional<LineCache::Itr> get_latest_impact_line ()
 {
 	return s_impact_line;
 }
@@ -59,21 +59,29 @@ std::optional<LineItr> get_latest_impact_line ()
 
 Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
 {
-	int intended_target = Creature::None;
+	assert(caster.pos() != target_pos); // Should not be shooting beam with zero trajectory.
+
+	Creature::Handle intended_target = Creature::None;
 	if (caster_aimed)
 	{
 		intended_target = Creature::creature_at_pos(target_pos);
 	}
 
+	// Find line trajectory.
+	// TODO: Properly handle case where target is not in the line cache.
+	// Probably we should get the line earlier and abort on failure.
+	// For now it's just being set to 0 below.
+	const int trajectory = get_los(g_map(), caster.pos(), target_pos);
+
 	return Beam::Data
 	{
 		caster.pos(),
 		caster.pos(),
-		target_pos - caster.pos(),
 		Beam::Type::Spell,
 		caster,
-		Spell::get_range(spell),
 		intended_target,
+		(trajectory == -1) ? 0 : trajectory,
+		Spell::get_range(spell),
 		caster_aimed,
 		false
 	};
@@ -81,27 +89,17 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 ta
 
 void shoot_beam (Beam::Data & beam)
 {
-	// It keeps flying until it hits something
-	while (beam.done == false)
-	{
-		shoot_along_line(beam);
-	}
-}
-
-void shoot_along_line (Beam::Data & beam)
-{
-	Vec2 end = beam.pos + beam.trajectory;
-	assert(beam.pos != end); // zero trajectory will make infinite loop
-	LineItr line_itr(beam.pos, end);
+	LineCache::Itr line_itr(beam.pos, beam.trajectory);
 
 	// init for animation
 	Draw::View view = Draw::get_view();
 	int codepoint = get_codepoint(beam);
 	std::string colour = get_colour(beam);
 
-	do
+	while (!beam.done)
 	{
-		++ line_itr;
+		// It keeps flying until it hits something.
+		line_itr.advance_and_loop();
 
 		// update position
 		beam.pos = *line_itr;
@@ -124,10 +122,9 @@ void shoot_along_line (Beam::Data & beam)
 			test_for_impact(beam, line_itr);
 		}
 	}
-	while (!beam.done && line_itr.steps_left > 0);
 }
 
-void test_for_impact (Beam::Data & beam, LineItr const & line)
+void test_for_impact (Beam::Data & beam, LineCache::Itr const & line)
 {
 	Map const & map = g_map();
 
@@ -256,7 +253,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	}
 }
 
-void hit_creature(Beam::Data const & beam, Creature::Handle target, LineItr const & line)
+void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::Itr const & line)
 {
 	// todo - exception for firing into watertrap
 
@@ -267,15 +264,8 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineItr cons
 	int damage = get_damage(beam);
 	Spell::EffectFunc effect_func = get_effect_func(beam);
 
-	// stash the impact line - sorry for hack
-	Vec2 hit_pos = target.pos();
-	LineItr line_temp = line;
-	while (!line_temp.finished())
-	{
-		++ line_temp;
-	}
-	Vec2 some_end_pos = *line_temp + 5*beam.trajectory;
-	s_impact_line = LineItr(hit_pos, some_end_pos);
+	// stash a copy of the impact line (used by Flipendo pushback)
+	s_impact_line = line;
 
 	// deal damage and then apply effect
 	target.take_damage(damage, beam.caster);

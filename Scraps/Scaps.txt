@@ -36,3 +36,34 @@ public:
 private:
 	int old_colour;
 };
+
+-------------------------------------
+
+/*	// Check the other line mode and see if it gives the exact same result.
+	LineCache::Itr last_line({ 0,0 }, (int)s_line_cache.size() - 1);
+	LineItr other_line({ 0,0 }, end, LineItr::RoundDown);
+
+	bool both_same = true;
+	while (!other_line.finished())
+	{
+		assert(!last_line.finished());
+
+		if (*last_line != *other_line)
+		{
+			both_same = false;
+			break;
+		}
+
+		++last_line;
+		++other_line;
+	}
+
+	// If they were different, then add line to the cache in the other mode.
+	if (!both_same)
+	{
+		add_line_to_cache(end, LineItr::RoundDown);
+	}
+	else
+	{
+		std::cout << "Skipping line at " << end.x << "," << end.y << " because it's the same.\n";
+	}*/

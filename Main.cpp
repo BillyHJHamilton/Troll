@@ -15,17 +15,6 @@
 // - Multiple floors / levels
 // - Items
 
-void test_line_drawing()
-{
-	for (int y = 0; y <= 20; y += 2)
-	{
-		for (LineItr itr({0,10}, {10,y}); !itr.finished(); ++itr)
-		{
-			terminal_put(itr->x, itr->y, 'a'+y/2);
-		}
-	}
-}
-
 void config_terminal()
 {
 	char const* FONT1 = "FSEX302.ttf";

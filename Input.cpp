@@ -7,6 +7,7 @@
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
+#include "Map.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Spell.h"
@@ -138,6 +139,12 @@ void handle_next_input ()
 		if (key == TK_H)
 		{
 			Menu::show_help();
+			return;
+		}
+
+		if (key == TK_L)
+		{
+			g_map().test_los_symmetry();
 			return;
 		}
 

@@ -60,7 +60,7 @@ void do_turn (Creature::Handle creature)
 	constexpr int creature_vision = 8; // Add variable/function later if desired.
 	Brain& brain = s_brains[creature];
 
-	bool player_is_visible = check_los(g_map(), creature.pos(), Player::pos())
+	bool player_is_visible = has_los(g_map(), creature.pos(), Player::pos())
 		&& check_within_range(creature.pos(), Player::pos(), creature_vision);
 
 	if (player_is_visible)

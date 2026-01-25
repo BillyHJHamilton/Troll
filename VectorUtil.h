@@ -7,7 +7,7 @@
 namespace Util
 {
 	template<typename VectorItemType>
-	bool IsValidIndex(std::vector<VectorItemType> vector, int index)
+	bool IsValidIndex(std::vector<VectorItemType> const& vector, int index)
 	{
 		return index >= 0 && index < vector.size();
 	}
@@ -15,13 +15,13 @@ namespace Util
 	// Basic functions for searching.
 
 	template<typename VectorItemType, typename ValueType>
-	auto Find(std::vector<VectorItemType> vector, ValueType value)
+	auto Find(std::vector<VectorItemType> const& vector, ValueType value)
 	{
 		return std::find(vector.begin(), vector.end(), value);
 	}
 
 	template<typename VectorItemType, typename ValueType>
-	bool Contains(std::vector<VectorItemType>& vector, ValueType& value)
+	bool Contains(std::vector<VectorItemType> const& vector, ValueType& value)
 	{
 		auto itr = std::find(vector.begin(), vector.end(), value);
 		return itr != vector.end();
@@ -30,7 +30,7 @@ namespace Util
 	// Functions for searching an array of unique_ptrs when you have a normal pointer.
 
 	template<typename PointerType>
-	auto Find(std::vector<std::unique_ptr<PointerType>>& vector, PointerType* pointer)
+	auto Find(std::vector<std::unique_ptr<PointerType>> const& vector, PointerType* pointer)
 	{
 		return std::find_if(vector.begin(), vector.end(),
 			[pointer](std::unique_ptr<PointerType>& entry)

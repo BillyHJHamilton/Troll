@@ -1,0 +1,243 @@
+// Pretty nice implementation of a LineCache based on SPCVT.
+// But turned out it wasn't useful to me since it doesn't provide ture symmetrical LOS.
+
+namespace LineCache
+{
+
+// We will draw lines to points on the sides of a square.
+// The sides of the square will have length (2*range + 1).
+int constexpr c_max_range = 30; // 8
+int constexpr c_line_grid_dimension = (2 * c_max_range) + 1;
+int constexpr c_line_grid_area = c_line_grid_dimension * c_line_grid_dimension;
+
+// Cache of precomputed lines.
+Grid<Vec2> s_line_cache;
+
+// For each square in a grid around the origin, a list of cached lines that cross it.
+// - Outer array index is the line's lookup index (see get_lookup_index below).
+// - Inner array is the list of lines which cross that point.
+// Note: We don't include any entries at the origin, since EVERY line starts there.
+Grid<int> s_line_lookup;
+
+//------------------------------------------------------------------------------
+// Helper function declarations
+
+int get_lookup_index(Vec2 pos);
+void add_ring_of_lines_to_cache(int ring_dist);
+void add_line_to_cache(Vec2 end, LineItr::RoundMode mode);
+void add_line_to_cache_both_modes(Vec2 end);
+
+//------------------------------------------------------------------------------
+// Interface implementation
+
+void init()
+{
+	// Initialize lookup table with empty vectors.
+	s_line_lookup.resize(c_line_grid_area);
+
+	// Approximate guess; shouldn't have to resize more than once.
+	s_line_cache.reserve(c_line_grid_dimension*4);
+
+	// Add all the lines to the cache and lookup table,
+	// in a specific order so the first lines in the lookup are the nicest ones.
+	// Starting with straight lines...
+	add_line_to_cache({ 0, c_max_range}, LineItr::RoundUp);
+	add_line_to_cache({ 0,-c_max_range}, LineItr::RoundUp);
+	add_line_to_cache({ c_max_range, 0}, LineItr::RoundUp);
+	add_line_to_cache({-c_max_range, 0}, LineItr::RoundUp);
+
+	// Then the diagonals...
+	add_line_to_cache({ c_max_range, c_max_range}, LineItr::RoundUp);
+	add_line_to_cache({ c_max_range,-c_max_range}, LineItr::RoundUp);
+	add_line_to_cache({-c_max_range, c_max_range}, LineItr::RoundUp);
+	add_line_to_cache({-c_max_range,-c_max_range}, LineItr::RoundUp);
+
+	// And then, all the rest, sweeping from diagonal back to straight.
+	// And do it again at shorter ranges, in case there's any blind spots.
+	int constexpr max_rings = 1; // 2;
+	for (int r = c_max_range; r > 2 && r > c_max_range - max_rings; --r)
+	{
+		add_ring_of_lines_to_cache(r);
+		std::cout << "After ring at " << r << ", we have "
+			<< s_line_cache.size() << " lines cached.\n";
+	}
+	
+	// Some debug:
+	std::cout << "Cached " << s_line_cache.size() << " lines.\n\n";
+	for (int i = 0; i < s_line_lookup.size(); ++i)
+	{
+		const int n = (int)s_line_lookup[i].size();
+		std::cout << n << " ";
+		if (i % c_line_grid_dimension == (c_line_grid_dimension - 1))
+		{
+			std::cout << "\n";
+		}
+	}
+}
+
+std::vector<int> const& get_lines(Vec2 relative_pos)
+{
+	assert(s_line_lookup.size() == c_line_grid_area);
+
+	int lookup = get_lookup_index(relative_pos);
+
+	// If pos is invalid, return the empty cell at the centre of the grid.
+	if (!Util::IsValidIndex(s_line_lookup, lookup))
+	{
+		lookup = get_lookup_index({0,0});
+	}
+
+	return s_line_lookup.at(lookup);
+}
+
+//------------------------------------------------------------------------------
+// Helper function implementations
+
+int get_lookup_index(Vec2 pos)
+{
+	// Transform from range (-r,r) to (0, 2r)
+	int const adjusted_x = pos.x + c_max_range;
+	int const adjusted_y = pos.y + c_max_range;
+
+	// Map onto a one-dimensional array.
+	return adjusted_x + (c_line_grid_dimension * adjusted_y);
+}
+
+void add_ring_of_lines_to_cache(int ring_dist)
+{
+	for (int i = (ring_dist - 1); i > 0; --i)
+	{
+		add_line_to_cache_both_modes({  i, ring_dist });
+		add_line_to_cache_both_modes({ -i, ring_dist });
+		add_line_to_cache_both_modes({  i,-ring_dist });
+		add_line_to_cache_both_modes({ -i,-ring_dist });
+		add_line_to_cache_both_modes({  ring_dist, i });
+		add_line_to_cache_both_modes({  ring_dist,-i });
+		add_line_to_cache_both_modes({ -ring_dist, i });
+		add_line_to_cache_both_modes({ -ring_dist,-i });
+	}
+}
+
+void add_line_to_cache_both_modes(Vec2 end)
+{
+	add_line_to_cache(end, LineItr::Thong);
+	//add_line_to_cache(end, LineItr::RoundUp);
+	//add_line_to_cache(end, LineItr::RoundDown);
+}
+
+void add_line_to_cache(Vec2 end, LineItr::RoundMode mode)
+{
+	int const new_line_index = (int)s_line_cache.size();
+	std::vector<Vec2> new_line;
+	new_line.reserve(c_max_range);
+
+	int num_lookups_added = 0;
+
+	Vec2 start{ 0,0 };
+	LineItr itr(start, end, mode);
+	++itr; // Skip the origin since it's the same for all lines.
+	for (; itr; ++itr)
+	{
+		new_line.push_back(*itr);
+
+		int const lookup = get_lookup_index(*itr);
+
+		// A few checks to refrain from adding redundant lines at short range.
+		int const num_before = (int)s_line_lookup[lookup].size();
+		int const abs_x = std::abs(itr->x);
+		int const abs_y = std::abs(itr->y);
+		int const max_dist = std::max(abs_x, abs_y);
+
+		bool add_to_lookup = true;
+		if (num_before > 0)
+		{
+			if (abs_x == 0 || abs_y == 0 || abs_x == abs_y)
+			{
+				add_to_lookup = false;
+				goto end_of_loop;
+			}
+
+			// Trace along each previous line.
+			// See if it's the same as the new one, up to this point.
+			for (int i = 0; i < num_before; ++i)
+			{
+				bool was_different = false;
+				int const line_id = s_line_lookup.at(lookup).at(i);
+				std::vector<Vec2> const& other_line = s_line_cache.at(line_id);
+				for (int j = 0; j < new_line.size(); ++j)
+				{
+					if (other_line.at(j) != new_line.at(j))
+					{
+						was_different = true;
+						break;
+					}
+				}
+
+				if (!was_different)
+				{
+					add_to_lookup = false;
+					goto end_of_loop;
+				}
+			}
+		}
+	end_of_loop:
+
+		if (add_to_lookup)
+		{
+			s_line_lookup[lookup].push_back(new_line_index);
+			++num_lookups_added;
+		}
+	}
+
+	// If the line was useful, save it to the cache.
+	if (num_lookups_added > 0)
+	{
+		s_line_cache.emplace_back(std::move(new_line));
+	}
+}
+
+//------------------------------------------------------------------------------
+// Line Cache Iterator
+
+Itr::Itr(Vec2 start_pos, int line_id) :
+	start(start_pos),
+	current(start_pos),
+	id(line_id),
+	step(0)
+{
+}
+
+int Itr::steps_left() const
+{
+	return c_max_range - step;
+}
+
+void Itr::advance()
+{
+	++step;
+
+	if (finished())
+	{
+		return;
+	}
+
+	// Cached lines don't include start position since it's always (0,0).
+	int const new_index = step - 1;
+
+	Vec2 const offset = s_line_cache.at(id).at(new_index);
+	current = start + offset;
+}
+
+void Itr::advance_and_loop()
+{
+	if (step == c_max_range)
+	{
+		start = current;
+		step = 0;
+	}
+
+	advance();
+}
+
+} // namespace LineCache
+

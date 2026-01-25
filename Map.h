@@ -33,7 +33,7 @@ private:
 	Grid<Terrain> terrain;		 // hidden because local coords are confusing
 	Grid<Visibility> visibility; // hidden because local coords are confusing
 
-	 // functions
+	// functions
 public:
 	void init(Box const & box, Terrain fill);
 
@@ -48,7 +48,7 @@ public:
 	void fill_box(Box const & r, Terrain t);
 
 	void clear_visibility();
-	void update_visibility(Vec2 const & viewer, int max_radius);
+	void update_visibility(Vec2 const & viewer_global, int max_radius);
 
 	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility);
 	void draw(Draw::View const & view, bool ignore_visibility=false);
@@ -57,8 +57,19 @@ public:
 	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box{Vec2{0,0}, map_box.size}.contains(local_pos); }
 	inline bool contains(Box const & box) const { return map_box.contains(box); }
 	inline bool contains(Vec2 const & global_pos) const { return map_box.contains(global_pos); }
+
+	void test_los_symmetry();
+
+private:
+	void add_wall_visibility(Vec2 viewer_global, Axis a, int sign);
 };
 
 Map & g_map();
 
-bool check_los(Map const & map, Vec2 const & p0, Vec2 const & p1);
+// Returns the id of a clear line (in the cache) from p0 to p1.
+// If no clear line exists, returns -1.
+int get_los(Map const & map, Vec2 const & p0, Vec2 const & p1);
+
+// Checks whether get_los would find any line.
+// Use this if you don't plan to use the line you found.
+bool has_los(Map const& map, Vec2 const& p0, Vec2 const& p1);
