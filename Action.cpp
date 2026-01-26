@@ -59,7 +59,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	// check for out of range
-	if (!check_within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
+	if (!within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
 	{
 		Draw::add_message("The target is out of range.");
 		return false;

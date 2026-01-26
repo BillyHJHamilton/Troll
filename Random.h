@@ -12,7 +12,7 @@ namespace Random
 
 	int in_range (int min, int max);
 	float in_range (float min, float max);
-	Vec2 in_box(Box b);
+	Vec2 in_box(Box2 b);
 	std::size_t index (std::size_t size);
 	bool coinflip ();
 	bool one_in (int x);

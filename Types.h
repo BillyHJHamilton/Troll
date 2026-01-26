@@ -16,7 +16,7 @@ Grid<T> make_grid (int x, int y, T value)
 class Map;
 
 struct Vec2;
-struct Box;
+struct Box2;
 
 namespace Creature
 {

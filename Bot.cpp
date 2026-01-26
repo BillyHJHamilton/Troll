@@ -61,7 +61,7 @@ void do_turn (Creature::Handle creature)
 	Brain& brain = s_brains[creature];
 
 	bool player_is_visible = has_los(g_map(), creature.pos(), Player::pos())
-		&& check_within_range(creature.pos(), Player::pos(), creature_vision);
+		&& within_range(creature.pos(), Player::pos(), creature_vision);
 
 	if (player_is_visible)
 	{
@@ -76,7 +76,7 @@ void do_turn (Creature::Handle creature)
 			if (spell_list.size() > 0)
 			{
 				Spell::Index spell = Random::from_vector(spell_list);
-				if (check_within_range(creature.pos(),
+				if (within_range(creature.pos(),
 					Player::pos(), Spell::get_range(spell)))
 				{
 					try_cast_spell(spell, creature, Player::pos());

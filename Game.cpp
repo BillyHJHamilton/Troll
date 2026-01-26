@@ -57,11 +57,11 @@ void setup()
 	s_game_mode = GameMode::Normal;
 
 	Map& map = g_map();
-	Box map_box = make_box(0, 0, 24, 24);
+	Box2 map_box = Box2(0, 0, 24, 24);
 	map.init(map_box, Terrain::Wall);
-	map.fill_box(make_box(4, 4, 15, 15), Terrain::Open);
-	map.fill_box(make_box(7, 5, 4, 1), Terrain::Wall);
-	map.fill_box(make_box(14, 8, 1, 5), Terrain::Wall);
+	map.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
+	map.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);
+	map.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
 	map.clear_visibility();
 
 	spawn_creature(Creature::Player, { 4,4 });

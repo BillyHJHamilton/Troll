@@ -64,8 +64,8 @@ void update_screen();
 int num_lines_for_visible_creature_stats();
 const char* get_hp_colour(Creature::Handle creature);
 void format_creature_stats(std::stringstream& ss, Creature::Handle creature);
-void print_player_stats(Box draw_area);
-void print_visible_creature_stats(Box draw_area);
+void print_player_stats(Box2 draw_area);
+void print_visible_creature_stats(Box2 draw_area);
 
 // ------------------------------------------------------------------------------------------------
 // Draw interface functions
@@ -78,7 +78,7 @@ void init ()
 View get_view ()
 {
 	int constexpr view_size = 31;
-	Box viewport = make_box(0,0,view_size, view_size);
+	Box2 viewport = Box2(0,0,view_size, view_size);
 
 	// centre the view on the player
 	int constexpr half_size = view_size / 2;
@@ -119,7 +119,7 @@ void draw_tile_temp (int code, Vec2 const & global_pos, Draw::View const & view,
 	draw_tile(' ', global_pos, view, "white");
 }
 
-void print_in_box (Box const & box, char const * const str, int align)
+void print_in_box (Box2 const & box, char const * const str, int align)
 {
 	terminal_print_ext(box.min.x, box.min.y, box.size.x, box.size.y, align, str);
 }
@@ -140,7 +140,7 @@ void run_message(std::string && message)
 	s_game_messages.back().text.append(message);
 }
 
-void print_messages(Box const & box)
+void print_messages(Box2 const & box)
 {
 	// We want to print as many messages as we can within the box available.
 	// To do this we will concatenate the messages to be printed into a single string.
@@ -224,22 +224,22 @@ void update_screen()
 	terminal_color("white");
 
 	// player stat areas
-	Box player_stat_area = make_box(63, 1, 60, 6);
+	Box2 player_stat_area = Box2(63, 1, 60, 6);
 	print_player_stats(player_stat_area);
 
 	// creature stat areas
 	int creature_lines = num_lines_for_visible_creature_stats();
-	Box creature_stat_area = make_box(63, 8, 60, creature_lines);
+	Box2 creature_stat_area = Box2(63, 8, 60, creature_lines);
 	print_visible_creature_stats(creature_stat_area);
 
 	// game message area
 	int message_top = 8 + creature_lines;
 	int message_lines = 22 - creature_lines;
-	Box message_area = make_box(63, message_top, 60, message_lines);
+	Box2 message_area = Box2(63, message_top, 60, message_lines);
 	print_messages(message_area);
 
 	// spells area
-	Box spell_area = make_box(93, 1, 27, 30);
+	Box2 spell_area = Box2(93, 1, 27, 30);
 	std::string spell_preview = Input::get_spell_preview_string();
 	print_in_box(spell_area, spell_preview.c_str());
 	/*	print_in_box(spell_area,
@@ -304,7 +304,7 @@ void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 	ss << "[/color]";
 }
 
-void print_player_stats(Box draw_area)
+void print_player_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 
@@ -319,7 +319,7 @@ void print_player_stats(Box draw_area)
 	print_in_box(draw_area, player_status_string.c_str());
 }
 
-void print_visible_creature_stats(Box draw_area)
+void print_visible_creature_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 

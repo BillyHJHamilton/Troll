@@ -28,14 +28,14 @@ bool terrain_is_solid(Terrain t);
 class Map
 {
 	// data
-	Box map_box;
+	Box2 map_box;
 private:
 	Grid<Terrain> terrain;		 // hidden because local coords are confusing
 	Grid<Visibility> visibility; // hidden because local coords are confusing
 
 	// functions
 public:
-	void init(Box const & box, Terrain fill);
+	void init(Box2 const & box, Terrain fill);
 
 	Terrain get_terrain(Vec2 const & global_pos) const;
 	Visibility get_visibility(Vec2 const & global_pos) const;
@@ -45,7 +45,7 @@ public:
 	bool tile_is_solid(Vec2 const & global_pos) const;
 
 	void fill(Terrain t);
-	void fill_box(Box const & r, Terrain t);
+	void fill_box(Box2 const & r, Terrain t);
 
 	void clear_visibility();
 	void update_visibility(Vec2 const & viewer_global, int max_radius);
@@ -54,8 +54,8 @@ public:
 	void draw(Draw::View const & view, bool ignore_visibility=false);
 
 	inline Vec2 global_to_local(Vec2 const & global) const { return global - map_box.min; }
-	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box{Vec2{0,0}, map_box.size}.contains(local_pos); }
-	inline bool contains(Box const & box) const { return map_box.contains(box); }
+	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box2{Vec2{0,0}, map_box.size}.contains(local_pos); }
+	inline bool contains(Box2 const & box) const { return map_box.contains(box); }
 	inline bool contains(Vec2 const & global_pos) const { return map_box.contains(global_pos); }
 
 	void test_los_symmetry();

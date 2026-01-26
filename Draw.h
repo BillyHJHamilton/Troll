@@ -8,10 +8,10 @@ namespace Draw
 {
 	struct View
 	{
-		Box viewport; // on the screen
+		Box2 viewport; // on the screen
 		Vec2 start; // upper left corner of draw area in global coords
 
-		Box view_area() const { return { start, viewport.size }; }
+		Box2 view_area() const { return { start, viewport.size }; }
 		bool contains_global_pos(Vec2 const& global_pos) const
 		{
 			return view_area().contains(global_pos);
@@ -29,10 +29,10 @@ namespace Draw
 	void draw_tile_temp(int code, Vec2  const& global_pos, Draw::View const& view,
 		char const* const colour);
 
-	void print_in_box(Box const& box, char const* const str, int align = TK_ALIGN_LEFT);
+	void print_in_box(Box2 const& box, char const* const str, int align = TK_ALIGN_LEFT);
 	void add_message(std::string&& message);
 	void run_message(std::string&& message); // adds to most recent message
-	void print_messages(Box const& box);
+	void print_messages(Box2 const& box);
 
 	void draw_screen();
 }

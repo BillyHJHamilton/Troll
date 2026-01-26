@@ -33,7 +33,7 @@ int in_range (int min, int max)
 	return dist(generator);
 }
 
-Vec2 in_box(Box b)
+Vec2 in_box(Box2 b)
 {
 	return
 	{

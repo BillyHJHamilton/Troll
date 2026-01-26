@@ -1,5 +1,17 @@
 #pragma once
 
+//------------------------------------------------------------------------------
+// Axis names
+
+using Axis = int;
+Axis constexpr AXIS_X = 0;
+Axis constexpr AXIS_Y = 1;
+Axis constexpr AXIS_Z = 2;
+Axis get_other_axis(Axis a) { return 1 - a; } // only really valid for X/Y
+
+//------------------------------------------------------------------------------
+// Integer Vec2 class
+
 struct Vec2
 {
 	union
@@ -69,20 +81,112 @@ inline Vec2 componentwise_max(Vec2 a, Vec2 b);
 //enum class WalkDir : int { E, NE, N, NW, W, SW, S, SE };
 
 // returns true if euclidean distance <= range
-bool check_within_range(Vec2 p0, Vec2 p1, int max_range);
+bool within_range(Vec2 p0, Vec2 p1, int max_range);
 
 // don't use this if you could use the above, of course
 float euclidean_distance(Vec2 p0, Vec2 p1);
 
-using Axis = int;
-Axis constexpr AXIS_X = 0;
-Axis constexpr AXIS_Y = 1;
-Axis get_other_axis(Axis a) { return 1 - a; }
-
-struct Box
+// Support for unordered_map<Vec2>
+namespace std
 {
-	Vec2 min;
-	Vec2 size;
+	template <>
+	struct hash<Vec2>
+	{
+		size_t operator()(const Vec2& v) const
+		{
+			return static_cast<size_t>(v.x) & (static_cast<size_t>(v.y) << 32);
+		}
+	};
+}
+
+//------------------------------------------------------------------------------
+// Integer Vec3 class
+
+struct Vec3
+{
+	union
+	{
+		struct
+		{
+			int x;
+			int y;
+			int z;
+		};
+
+		int data[3];
+	};
+
+	int& operator[] (unsigned int n) { return data[n]; }
+	const int& operator[] (unsigned int n) const { return data[n]; }
+};
+
+inline bool operator== (Vec3 lhs, Vec3 rhs)
+{
+	return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+}
+
+inline bool operator!= (Vec3 lhs, Vec3 rhs)
+{
+	return !(operator==(lhs, rhs));
+}
+
+inline Vec3 operator+ (Vec3 lhs, Vec3 rhs)
+{
+	return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
+}
+
+inline Vec3 operator- (Vec3 lhs, Vec3 rhs)
+{
+	return { lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
+}
+
+inline Vec3 operator* (int lhs, Vec3 rhs)
+{
+	return { lhs * rhs.x, lhs * rhs.y, lhs * rhs.z };
+}
+
+inline Vec3 operator* (Vec3 lhs, int rhs)
+{
+	return { lhs.x * rhs, lhs.y * rhs, lhs.z * rhs };
+}
+
+inline Vec3 const& operator+= (Vec3& lhs, Vec3 rhs)
+{
+	lhs.x += rhs.x;
+	lhs.y += rhs.y;
+	lhs.z += rhs.z;
+	return lhs;
+}
+
+inline Vec3 const& operator-= (Vec3& lhs, Vec3 rhs)
+{
+	lhs.x -= rhs.x;
+	lhs.y -= rhs.y;
+	lhs.z -= rhs.z;
+	return lhs;
+}
+
+// Component-wise vector min and max
+inline Vec3 componentwise_min(Vec3 a, Vec3 b);
+inline Vec3 componentwise_max(Vec3 a, Vec3 b);
+
+// returns true if euclidean distance <= range
+bool within_range(Vec3 p0, Vec3 p1, int max_range);
+
+// don't use this if you could use the above, of course
+float euclidean_distance(Vec3 p0, Vec3 p1);
+
+//------------------------------------------------------------------------------
+// Integer Box 2D class
+
+struct Box2
+{
+	Box2() = default;
+	Box2(Vec2 m, Vec2 s) : min(m), size(s) {}
+	Box2(int x, int y, int w, int h) : min{x,y}, size{w,h} {}
+
+	Vec2 min = {0,0};
+	Vec2 size = {0,0};
 
 	// Note that the cell at max is NOT occupied by the box
 	Vec2 max () const { return min + size; }
@@ -93,17 +197,41 @@ struct Box
 	int inner_max(Axis a) const { return max(a) - 1; }
 
 	bool contains (Vec2 const & v) const;
-	bool intersects (Box const & other) const;
-	bool contains (Box const & other) const;
+	bool intersects (Box2 const & other) const;
+	bool contains (Box2 const & other) const;
 	int area () const { return size.x * size.y; }
 
-	Box intersection (Box const & other) const;
+	Box2 intersection (Box2 const & other) const;
 };
 
-inline Box make_box(int x, int y, int w, int h)
+//------------------------------------------------------------------------------
+// Integer Box 3D class
+
+struct Box3
 {
-	return { {x,y}, {w,h} };
-}
+	Box3() = default;
+	Box3(Vec3 m, Vec3 s) : min(m), size(s) {}
+	Box3(int x, int y, int z, int sx, int sy, int sz) :
+		min{x,y,z}, size{sx,sy,sz} {}
+
+	Vec3 min = {0,0,0};
+	Vec3 size = { 0,0,0 };
+
+	// Note that the cell at max is NOT occupied by the box
+	Vec3 max() const { return min + size; }
+	int max(Axis a) const { return min[a] + size[a]; }
+
+	// The last cell included inside the box.
+	Vec3 inner_max() const { return max() - Vec3{1, 1, 1}; }
+	int inner_max(Axis a) const { return max(a) - 1; }
+
+	bool contains(Vec3 const& v) const;
+	bool intersects(Box3 const& other) const;
+	bool contains(Box3 const& other) const;
+	int area() const { return size.x * size.y; }
+
+	Box3 intersection(Box3 const& other) const;
+};
 
 //------------------------------------------------------------------------------
 
@@ -111,7 +239,7 @@ inline Box make_box(int x, int y, int w, int h)
 class BoxItr
 {
 public:
-	BoxItr(Box const & b);
+	BoxItr(Box2 const & b);
 
 	Vec2 current;
 	void advance ();
@@ -126,10 +254,9 @@ public:
 	// post-increment not provided to avoid accidental copy
 
 private:
-	Box const & box;
+	Box2 const & box;
 };
 
 // range-based for loop on box
-BoxItr begin(Box const & b);
-BoxItr end(Box const & b);
-
+BoxItr begin(Box2 const & b);
+BoxItr end(Box2 const & b);

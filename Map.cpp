@@ -51,7 +51,7 @@ bool terrain_is_solid(Terrain t)
 //-------------------------------------------------------------------------------------------------
 // Map
 
-void Map::init(Box const & box, Terrain fill)
+void Map::init(Box2 const & box, Terrain fill)
 {
 	map_box = box;
 
@@ -103,7 +103,7 @@ void Map::fill(Terrain t)
 	}
 }
 
-void Map::fill_box(Box const & box, Terrain t)
+void Map::fill_box(Box2 const & box, Terrain t)
 {
 	assert(contains(box));
 	for (Vec2 const & pos : box)
@@ -137,7 +137,7 @@ void Map::update_visibility(Vec2 const & viewer_global, int max_radius)
 	{
 		for (LineCache::Itr itr(viewer_global, line_id);
 			itr
-			  && check_within_range(viewer_global, *itr, max_radius)
+			  && within_range(viewer_global, *itr, max_radius)
 			  && contains(*itr);
 			++itr)
 		{
@@ -223,7 +223,7 @@ void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_v
 // start - upper left position of the map to draw
 void Map::draw (Draw::View const & view, bool ignore_visibility)
 {
-	Box draw_area = map_box.intersection(view.view_area());
+	Box2 draw_area = map_box.intersection(view.view_area());
 
 	for (Vec2 const & map_pos : draw_area)
 	{
@@ -249,7 +249,7 @@ void Map::test_los_symmetry()
 		{
 			p1 = Random::in_box(map_box);
 		}
-		while (p0 == p1 || !check_within_range(p0, p1, 8));
+		while (p0 == p1 || !within_range(p0, p1, 8));
 
 		bool los_0_to_1 = has_los(*this, p0, p1);
 		bool los_1_to_0 = has_los(*this, p1, p0);

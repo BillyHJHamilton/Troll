@@ -104,7 +104,7 @@ void shoot_beam (Beam::Data & beam)
 		// update position
 		beam.pos = *line_itr;
 
-		bool const out_of_range = !check_within_range(beam.start_pos, beam.pos, beam.max_range);
+		bool const out_of_range = !within_range(beam.start_pos, beam.pos, beam.max_range);
 		if (out_of_range)
 		{
 			beam.done = true;
