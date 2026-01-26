@@ -319,7 +319,7 @@ void handle_input_spell_keys (char letter)
 	case SpellInputState::Success:
 		blank_spell_input();
 		s_selected_spell = Spell::None;
-		// and fall through to empty
+		[[fallthrough]];
 
 	case SpellInputState::Empty:
 		s_spellcode[0] = letter;
