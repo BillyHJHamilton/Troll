@@ -74,7 +74,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	// Probably we should get the line earlier and abort on failure.
 	// For now it's just being set to 0 below.
 
-	World& world = Game::get_world();
+	const World& world = World::read();
 	const int trajectory = world.get_los(caster.pos(), target_pos);
 
 	return Beam::Data
@@ -117,7 +117,7 @@ void shoot_beam (Beam::Data & beam)
 		{
 			// do animation
 			// TODO think better about drawing in 3D space and 2D screen
-			World& world = Game::get_world();
+			World const& world = World::read();
 			Visibility tile_vis = world.get_visibility(beam.pos);
 			if (tile_vis == Visibility::Visible)
 			{
@@ -132,7 +132,7 @@ void shoot_beam (Beam::Data & beam)
 
 void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 {
-	World const& world = Game::get_world();
+	World const& world = World::read();
 
 	// hit wall
 	if (world.is_solid(beam.pos))

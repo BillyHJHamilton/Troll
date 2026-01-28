@@ -221,7 +221,7 @@ bool Handle::visible () const
 		return false;
 	}
 
-	World const& world = Game::get_world();
+	World const& world = World::read();
 	Visibility v = world.get_visibility(pos());
 	return (v == Visibility::Visible);
 }
@@ -302,7 +302,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 	Vec2 new_pos = pos().xy() + relative_move;
 	Vec3 new_pos_3d = {new_pos.x, new_pos.y, pos().z};
 
-	World& world = Game::get_world();
+	World const& world = World::read();
 
 	int new_map_id = world.find_map(new_pos_3d);
 	if (new_map_id)

@@ -5,7 +5,6 @@
 #include "Draw.h"
 #include "Game.h"
 #include "Grammar.h"
-//#include "Map.h"
 #include "Status.h"
 #include "World.h"
 
@@ -33,7 +32,7 @@ void flipendo (Creature::Handle caster, Creature::Handle target)
 		Vec3 knock_pos = *line;
 
 		// check for collision
-		World& world = Game::get_world();
+		World const& world = World::read();
 		if (world.is_solid(knock_pos))
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";

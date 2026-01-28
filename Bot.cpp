@@ -62,7 +62,7 @@ void do_turn (Creature::Handle creature)
 	constexpr int creature_vision = 8; // Add variable/function later if desired.
 	Brain& brain = s_brains[creature];
 
-	World const& world = Game::get_world();
+	World const& world = World::read();
 	bool player_is_visible = world.has_los(creature.pos(), Player::pos())
 		&& within_range(creature.pos(), Player::pos(), creature_vision);
 

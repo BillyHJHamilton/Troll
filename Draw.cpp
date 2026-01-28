@@ -205,7 +205,7 @@ void update_screen()
 	Draw::View view = get_view();
 
 	terminal_font("tile");
-	Game::get_world().draw(view, /*ignore_visibility*/ false);
+	World::read().draw(view, /*ignore_visibility*/ false);
 	draw_creature(Creature::Player, view);
 	//g_player().draw(view);
 	Creature::draw_visible_creatures(view);

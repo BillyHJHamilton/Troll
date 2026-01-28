@@ -4,6 +4,23 @@
 #include "Line.h"
 #include "VectorUtil.h"
 
+World s_world;
+
+void World::clear()
+{
+	s_world = World();
+}
+
+World& World::edit()
+{
+	return s_world;
+}
+
+World const& World::read()
+{
+	return s_world;
+}
+
 int World::add_map(int z, Box2 box, Terrain fill)
 {
 	maps.emplace_back();

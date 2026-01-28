@@ -26,6 +26,4 @@ namespace Game
 	GameMode get_mode();
 	void set_mode(GameMode mode);
 	int get_turn_number();
-
-	World& get_world();
 }

@@ -18,7 +18,6 @@ namespace Game
 
 int s_turn_number;
 GameMode s_game_mode;
-World s_world;
 
 //------------------------------------------------------------------------------
 // Helper function declarations.
@@ -50,6 +49,7 @@ void clear()
 	Input::clear();
 	Player::clear();
 	Target::clear();
+	World::clear();
 }
 
 // Setup runs at the start of each game, after all clear functions.
@@ -57,11 +57,11 @@ void setup()
 {
 	s_turn_number = 0;
 	s_game_mode = GameMode::Normal;
-	s_world = World();
+	World& world = World::edit();
 
 	Box2 const map_box = Box2(0, 0, 24, 24);
-	int const map_id = s_world.add_map(0, map_box, Terrain::Wall);
-	Map& map = s_world.get_map(map_id);
+	int const map_id = world.add_map(0, map_box, Terrain::Wall);
+	Map& map = world.get_map(map_id);
 
 	// Add some default terrain.
 	map.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
@@ -77,7 +77,7 @@ void update()
 {
 	if (s_game_mode == GameMode::Normal)
 	{
-		s_world.update_visibility(Player::pos(), Player::vision_radius);
+		World::edit().update_visibility(Player::pos(), Player::vision_radius);
 		Creature::update_visible_creatures();
 		Target::update();
 	}
@@ -115,11 +115,6 @@ void set_mode(GameMode mode)
 int get_turn_number()
 {
 	return s_turn_number;
-}
-
-World& get_world()
-{
-	return s_world;
 }
 
 //------------------------------------------------------------------------------

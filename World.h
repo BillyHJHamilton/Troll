@@ -9,6 +9,10 @@
 class World
 {
 public:
+	static void clear();
+	static World& edit();
+	static World const& read();
+
 	int add_map(int z, Box2 box, Terrain fill);
 	int num_maps() const { return (int)maps.size(); }
 	Map& get_map(int index) { return maps.at(index); }
