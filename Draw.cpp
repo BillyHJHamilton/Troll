@@ -3,7 +3,6 @@
 #include "Creature.h"
 #include "Game.h"
 #include "Input.h"
-#include "Map.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Target.h"

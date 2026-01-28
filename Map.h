@@ -5,15 +5,6 @@
 
 #include <vector>
 
-//int constexpr MAP_WIDTH = 100;
-//int constexpr MAP_HEIGHT = 100;
-
-enum class Terrain : byte
-{
-	Open = 0,
-	Wall
-};
-
 enum class Visibility : byte
 {
 	Hidden = 0,
@@ -21,28 +12,24 @@ enum class Visibility : byte
 	Visible
 };
 
-int terrain_character(Terrain t);
-bool terrain_permits_sight(Terrain t);
-bool terrain_is_solid(Terrain t);
-
 class Map
 {
 	// functions
 public:
-	void init(int z, Box2 const& box, Terrain fill);
+	void init(int z, Box2 const& box, Terrain::Type fill);
 
 	int get_z() const { return global_z; }
 
-	Terrain get_terrain(Vec2 const & global_pos) const;
+	Terrain::Type get_terrain(Vec2 const & global_pos) const;
 	Visibility get_visibility(Vec2 const & global_pos, int current_step) const;
-	void set_terrain(Vec2 const & global_pos, Terrain t);
+	void set_terrain(Vec2 const & global_pos, Terrain::Type t);
 	void set_visibility(Vec2 const & global_pos, Visibility v, int current_step);
 
 	bool tile_is_solid(Vec2 const & global_pos) const;
 	bool tile_permits_sight(Vec2 const& global_pos) const;
 
-	void fill(Terrain t);
-	void fill_box(Box2 const & global_box, Terrain t);
+	void fill(Terrain::Type t);
+	void fill_box(Box2 const & global_box, Terrain::Type t);
 
 	void clear_visibility(int current_step);
 	void clean_explored_values(int current_step);
@@ -64,7 +51,7 @@ private:
 
 	// Data in local space.  Warning: Local coords may be confusing.
 	// Use the get/set functions if you want to do things in global space.
-	Grid<Terrain> terrain;
+	Grid<Terrain::Type> terrain;
 	Grid<int> visibility;
 };
 

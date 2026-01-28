@@ -21,6 +21,12 @@ struct Vec2;
 struct Vec3;
 struct Box2;
 
+enum class GameMode : byte;
+enum class Gender : byte;
+enum class MoveMode : byte;
+enum class TargetMode : byte;
+enum class Visibility : byte;
+
 namespace Creature
 {
 	enum Type : int;
@@ -60,14 +66,7 @@ namespace Status
 	enum Index : int;
 };
 
-enum class GameMode : byte;
-enum class Gender : byte;
-enum class MoveMode : byte;
-enum class TargetMode : byte;
-enum class Terrain : byte;
-enum class Visibility : byte;
-
-namespace Miscast
+namespace Terrain
 {
-	enum Category : int;
+	enum Type : byte;
 }

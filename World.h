@@ -13,12 +13,12 @@ public:
 	static World& edit();
 	static World const& read();
 
-	int add_map(int z, Box2 box, Terrain fill);
+	int add_map(int z, Box2 box, Terrain::Type fill);
 	int num_maps() const { return (int)maps.size(); }
 	Map& get_map(int index) { return maps.at(index); }
 	const Map& get_map(int index) const { return maps.at(index); }
 
-	Terrain get_terrain(Vec3 pos) const;
+	Terrain::Type get_terrain(Vec3 pos) const;
 	bool is_solid(Vec3 pos) const;
 	bool permits_sight(Vec3 pos) const;
 

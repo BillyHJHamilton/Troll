@@ -18,7 +18,7 @@ namespace Player
 
 	Vec3 pos ();
 	Data& data ();
-	Creature::Handle handle () { return 0; }
+	Creature::Handle handle();
 
 	void set_acted(bool acted);
 	void set_game_over(Creature::Type instigator);

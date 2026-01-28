@@ -5,7 +5,6 @@
 #include "Input.h"
 
 // To do:
-// - Grey out messages from previous turns so you can see what's new
 // - Improved enemy AI
 //  - Move towards player's last location if out of range.
 //  - Pathfinding...

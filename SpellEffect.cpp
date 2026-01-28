@@ -3,7 +3,6 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
-#include "Game.h"
 #include "Grammar.h"
 #include "Status.h"
 #include "World.h"

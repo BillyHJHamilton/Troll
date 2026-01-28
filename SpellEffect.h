@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 namespace Spell
 {
 	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target);

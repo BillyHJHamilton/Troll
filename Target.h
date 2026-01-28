@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Geometry.h"
-
 #include "Types.h"
+#include "Geometry.h"
 
 #include <optional>
 

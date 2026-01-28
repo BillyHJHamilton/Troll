@@ -7,7 +7,6 @@
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
-#include "Map.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Spell.h"

@@ -6,9 +6,7 @@
 
 #include "Bot.h"
 #include "Draw.h"
-#include "Game.h"
 #include "Grammar.h"
-#include "Map.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"

@@ -11,6 +11,7 @@
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
+#include "Terrain.h"
 #include "World.h"
 
 namespace Game

@@ -3,6 +3,7 @@
 #include "Draw.h"
 #include "Line.h"
 #include "Target.h"
+#include "Terrain.h"
 #include "VectorUtil.h"
 
 World s_world;
@@ -22,7 +23,7 @@ World const& World::read()
 	return s_world;
 }
 
-int World::add_map(int z, Box2 box, Terrain fill)
+int World::add_map(int z, Box2 box, Terrain::Type fill)
 {
 	maps.emplace_back();
 	maps.back().init(z, box, fill);
@@ -49,7 +50,7 @@ int World::find_map(Vec3 global_pos) const
 	return c_invalid;
 }
 
-Terrain World::get_terrain(Vec3 pos) const
+Terrain::Type World::get_terrain(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
@@ -117,8 +118,8 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 		{
 			set_visibility(*itr, Visibility::Visible);
 
-			Terrain t = get_terrain(*itr);
-			if (!terrain_permits_sight(t))
+			Terrain::Type t = get_terrain(*itr);
+			if (!Terrain::permits_sight(t))
 			{
 				break;
 			}
@@ -149,12 +150,12 @@ void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 			pos1[other_axis] += 1;
 			pos2[other_axis] -= 1;
 
-			if (!terrain_permits_sight(get_terrain(pos1)))
+			if (!Terrain::permits_sight(get_terrain(pos1)))
 			{
 				set_visibility(pos1, Visibility::Visible);
 			}
 
-			if (!terrain_permits_sight(get_terrain(pos2)))
+			if (!Terrain::permits_sight(get_terrain(pos2)))
 			{
 				set_visibility(pos2, Visibility::Visible);
 			}
@@ -236,8 +237,8 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibili
 	bool const drawable = (ignore_visibility || v == Visibility::Visible || v == Visibility::Explored);
 	if (drawable)
 	{
-		Terrain const t = get_terrain(pos);
-		int const code = terrain_character(t);
+		Terrain::Type const t = get_terrain(pos);
+		int const code = Terrain::get_character(t);
 		const char* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
 		const bool is_target = Target::is_target(pos);
 		if (is_target)

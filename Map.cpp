@@ -5,49 +5,12 @@
 #include "Line.h"
 #include "Random.h"
 #include "Target.h"
+#include "Terrain.h"
 
 #include <cassert>
 #include <iostream>
 
-//-------------------------------------------------------------------------------------------------
-// Terrain
-
-int constexpr SOLID_BLOCK = 9608;
-
-int terrain_character(Terrain t)
-{
-	switch(t)
-	{
-	case Terrain::Open: return '.';
-	case Terrain::Wall: return SOLID_BLOCK;
-	default: assert(false); return '?';
-	}
-}
-
-bool terrain_permits_sight(Terrain t)
-{
-	switch(t)
-	{
-	case Terrain::Open: return true;
-	case Terrain::Wall: return false;
-	default: assert(false); return false;
-	}
-}
-
-bool terrain_is_solid(Terrain t)
-{
-	switch(t)
-	{
-	case Terrain::Open: return false;
-	case Terrain::Wall: return true;
-	default: assert(false); return false;
-	}
-}
-
-//-------------------------------------------------------------------------------------------------
-// Map
-
-void Map::init(int z, Box2 const & box, Terrain fill)
+void Map::init(int z, Box2 const & box, Terrain::Type fill)
 {
 	global_z = z;
 	map_box = box;
@@ -56,7 +19,7 @@ void Map::init(int z, Box2 const & box, Terrain fill)
 	visibility = make_grid(box.size.x, box.size.y, c_invalid);
 }
 
-Terrain Map::get_terrain(Vec2 const & global_pos) const
+Terrain::Type Map::get_terrain(Vec2 const & global_pos) const
 {
 	Vec2 local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
@@ -82,7 +45,7 @@ Visibility Map::get_visibility(Vec2 const & global_pos, int current_step) const
 	}
 }
 
-void Map::set_terrain(Vec2 const & global_pos, Terrain t)
+void Map::set_terrain(Vec2 const & global_pos, Terrain::Type t)
 {
 	Vec2 local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
@@ -110,17 +73,17 @@ void Map::set_visibility(Vec2 const & global_pos, Visibility v, int current_step
 
 bool Map::tile_is_solid(Vec2 const & global_pos) const
 {
-	Terrain t = get_terrain(global_pos);
-	return terrain_is_solid(t);
+	Terrain::Type t = get_terrain(global_pos);
+	return Terrain::is_solid(t);
 }
 
 bool Map::tile_permits_sight(Vec2 const& global_pos) const
 {
-	Terrain t = get_terrain(global_pos);
-	return terrain_permits_sight(t);
+	Terrain::Type t = get_terrain(global_pos);
+	return Terrain::permits_sight(t);
 }
 
-void Map::fill(Terrain t)
+void Map::fill(Terrain::Type t)
 {
 	for (Vec2 const & pos : map_box)
 
@@ -130,7 +93,7 @@ void Map::fill(Terrain t)
 	}
 }
 
-void Map::fill_box(Box2 const & global_box, Terrain t)
+void Map::fill_box(Box2 const & global_box, Terrain::Type t)
 {
 	assert(contains(global_box));
 	for (Vec2 const & pos : global_box)
@@ -195,7 +158,7 @@ void Map::test_los_symmetry()
 				{
 					std::cout << '1';
 				}
-				else if (!terrain_permits_sight(get_terrain(*itr)))
+				else if (!Terrain::permits_sight(get_terrain(*itr)))
 				{
 					std::cout << '=';
 				}
@@ -232,8 +195,8 @@ bool has_los_on_line(Map const& map, Vec2 p0, Vec2 p1, int line_id)
 	itr.advance();            // skip start point
 	while (itr && *itr != p1 && map.local_pos_valid(*itr)) // skip end point
 	{
-		Terrain t = map.get_terrain(*itr);
-		if (!terrain_permits_sight(t))
+		Terrain::Type t = map.get_terrain(*itr);
+		if (!Terrain::permits_sight(t))
 		{
 			return false;
 		}

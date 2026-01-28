@@ -171,10 +171,12 @@
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="Source.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
     <ClCompile Include="Status.cpp" />
     <ClCompile Include="Target.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +200,7 @@
     <ClInclude Include="SpellEffect.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Target.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="VectorUtil.h" />
     <ClInclude Include="World.h" />

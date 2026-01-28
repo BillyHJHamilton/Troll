@@ -3,7 +3,6 @@
 
 #include "Creature.h"
 #include "Draw.h"
-#include "Map.h"
 
 namespace Player
 {
@@ -23,6 +22,11 @@ Vec3 pos()
 Player::Data& data()
 {
 	return s_player_data;
+}
+
+Creature::Handle Player::handle()
+{
+	return 0;
 }
 
 void set_acted(bool acted)
