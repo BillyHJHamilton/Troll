@@ -2,6 +2,7 @@
 
 #include "Draw.h"
 #include "Line.h"
+#include "Map.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -25,22 +26,37 @@ World const& World::read()
 
 int World::add_map(int z, Box2 box, Terrain::Type fill)
 {
-	maps.emplace_back();
-	maps.back().init(z, box, fill);
+	maps.emplace_back(std::make_shared<Map>());
+	maps.back()->init(z, box, fill);
 	return (int)maps.size() - 1;
+}
+
+int World::num_maps() const
+{
+	return (int)maps.size();
+}
+
+Map& World::edit_map(int index)
+{
+	return *maps.at(index);
+}
+
+const Map& World::read_map(int index) const
+{
+	return *maps.at(index);
 }
 
 int World::find_map(Vec3 global_pos) const
 {
 	if (Util::IsValidIndex(maps, temp_last_map)
-		&& maps[temp_last_map].contains(global_pos))
+		&& read_map(temp_last_map).contains(global_pos))
 	{
 		return temp_last_map;
 	}
 
 	for (int m = 0; m < maps.size(); ++m)
 	{
-		if (maps[m].contains(global_pos))
+		if (read_map(m).contains(global_pos))
 		{
 			temp_last_map = m;
 			return m;
@@ -55,7 +71,7 @@ Terrain::Type World::get_terrain(Vec3 pos) const
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		return maps[map_id].get_terrain(pos.xy());
+		return read_map(map_id).get_terrain(pos.xy());
 	}
 
 	return Terrain::Wall; // all walls outside the map
@@ -66,7 +82,7 @@ bool World::is_solid(Vec3 pos) const
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		return maps[map_id].tile_is_solid(pos.xy());
+		return read_map(map_id).tile_is_solid(pos.xy());
 	}
 
 	return true; // outside the map is solid
@@ -77,7 +93,7 @@ bool World::permits_sight(Vec3 pos) const
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		return maps[map_id].tile_permits_sight(pos.xy());
+		return read_map(map_id).tile_permits_sight(pos.xy());
 	}
 
 	return false; // off the map, it's unsightly
@@ -88,10 +104,15 @@ Visibility World::get_visibility(Vec3 pos) const
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		return maps[map_id].get_visibility(pos.xy(), visibility_step);
+		return read_map(map_id).get_visibility(pos.xy(), visibility_step);
 	}
 
 	return Visibility::Hidden; // out of map, out of sight
+}
+
+bool World::is_visible(Vec3 pos) const
+{
+	return get_visibility(pos) == Visibility::Visible;
 }
 
 void World::set_visibility(Vec3 pos, Visibility v)
@@ -99,7 +120,7 @@ void World::set_visibility(Vec3 pos, Visibility v)
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		maps[map_id].set_visibility(pos.xy(), v, visibility_step);
+		edit_map(map_id).set_visibility(pos.xy(), v, visibility_step);
 	}
 }
 
@@ -167,9 +188,9 @@ void World::advance_visibility_step()
 {
 	if (visibility_step == INT_MAX)
 	{
-		for (Map& map : maps)
+		for (int m = 0; m < maps.size(); ++m)
 		{
-			map.clean_explored_values(visibility_step);
+			edit_map(m).clean_explored_values(visibility_step);
 		}
 		visibility_step = 1;
 	}

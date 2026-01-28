@@ -65,8 +65,8 @@ void setup()
 	Box2 const map2_box = Box2(0, -10, 24, 10);
 	int const map2_id = world.add_map(0, map2_box, Terrain::Wall);
 
-	Map& map1 = world.get_map(map1_id);
-	Map& map2 = world.get_map(map2_id);
+	Map& map1 = world.edit_map(map1_id);
+	Map& map2 = world.edit_map(map2_id);
 
 	map1.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
 	map1.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);

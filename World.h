@@ -1,7 +1,9 @@
 #pragma once
 
+#include "Geometry.h"
 #include "Types.h"
-#include "Map.h"
+
+#include <memory>
 #include <vector>
 
 // World stores all the maps in the game.
@@ -14,16 +16,16 @@ public:
 	static World const& read();
 
 	int add_map(int z, Box2 box, Terrain::Type fill);
-	int num_maps() const { return (int)maps.size(); }
-	Map& get_map(int index) { return maps.at(index); }
-	const Map& get_map(int index) const { return maps.at(index); }
+	int num_maps() const;
+	Map& edit_map(int index);
+	const Map& read_map(int index) const;
 
 	Terrain::Type get_terrain(Vec3 pos) const;
 	bool is_solid(Vec3 pos) const;
 	bool permits_sight(Vec3 pos) const;
 
 	Visibility get_visibility(Vec3 pos) const;
-	bool is_visible(Vec3 pos) const { return get_visibility(pos) == Visibility::Visible; }
+	bool is_visible(Vec3 pos) const;
 	void set_visibility(Vec3 pos, Visibility v);
 	void update_visibility(Vec3 viewer, int vision_radius);
 
@@ -51,7 +53,7 @@ private:
 	void advance_visibility_step();
 	void draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibility) const;
 
-	std::vector<Map> maps;
+	std::vector<std::shared_ptr<Map>> maps;
 
 	// Anything with this number in the vis map is visible.
 	// Anything with another non-negative number is remembered.
