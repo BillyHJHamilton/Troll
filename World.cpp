@@ -105,8 +105,12 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 {
 	// TODO special cases aorund stairs
 
-	// Clear current sight but remember it was seen in the past
-	// TODO perhaps we don't need to do every map?
+	// Clear current sight but remember it was seen in the past.
+	// TODO Perhaps we don't need to do this for every map?
+	// If we remembered which ones had received sight previously, perhaps.
+	// Or perhaps we could do the "rotating LOS" hack, where we store the number
+	// of the frame when it was last seen, and only clear them when we're going to have
+	// integer overflow or something.
 	for (int m = 0; m < maps.size(); ++m)
 	{
 		maps[m].convert_visible_to_explored();

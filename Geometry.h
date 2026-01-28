@@ -30,8 +30,8 @@ struct Vec2
 	int &operator[] (unsigned int n) { return data[n]; }
 	const int &operator[] (unsigned int n) const { return data[n]; }
 
-	Vec3 xy0(); // add z of 0
-	Vec3 xyz(int z);
+	Vec3 xy0() const; // convert to Vec3 with z of 0
+	Vec3 xyz(int z) const; // convert to Vec3 with provided z
 };
 
 inline bool operator== (Vec2 const & lhs, Vec2 const & rhs)
@@ -124,7 +124,7 @@ struct Vec3
 	int& operator[] (unsigned int n) { return data[n]; }
 	const int& operator[] (unsigned int n) const { return data[n]; }
 
-	Vec2 xy() { return { x,y }; }
+	Vec2 xy() const { return { x,y }; }
 };
 
 inline bool operator== (Vec3 lhs, Vec3 rhs)
@@ -174,12 +174,12 @@ inline Vec3 const& operator-= (Vec3& lhs, Vec3 rhs)
 }
 
 // Conversion from vec2
-inline Vec3 Vec2::xy0()
+inline Vec3 Vec2::xy0() const
 {
 	return {x, y, 0};
 }
 
-inline Vec3 Vec2::xyz(int z)
+inline Vec3 Vec2::xyz(int z) const
 {
 	return {x, y, z};
 }

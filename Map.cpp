@@ -188,7 +188,7 @@ void Map::draw (Draw::View const & view, bool ignore_visibility) const
 	{
 		// make sure intersection function works right
 		assert(contains(map_pos));
-		assert(view.contains_global_pos(map_pos));
+		assert(view.contains_global_pos(map_pos.xyz(global_z)));
 
 		draw_map_tile(map_pos, view, ignore_visibility);
 	}

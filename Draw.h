@@ -13,9 +13,10 @@ namespace Draw
 		int z; // vertical slice to draw
 
 		Box2 view_area() const { return { start, viewport.size }; }
-		bool contains_global_pos(Vec2 const& global_pos) const
+		bool contains_global_pos(Vec3 const& global_pos) const
 		{
-			return view_area().contains(global_pos);
+			return view_area().contains(global_pos.xy())
+				&& global_pos.z == z;
 		}
 	};
 

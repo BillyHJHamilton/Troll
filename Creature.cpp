@@ -526,17 +526,17 @@ void update_visible_creatures ()
 
 void draw_creature (Creature::Handle creature, Draw::View const & view)
 {
-	Vec2 const & pos = creature.pos().xy(); // TODO think better about drawing in 2D/3D
+	Vec3 pos = creature.pos();
 	if (view.contains_global_pos(pos))
 	{
 		int code = s_creatures[creature].codepoint;
 		if (Target::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos, view, "white", TARGET_COLOUR);
+			Draw::draw_tile_bg(code, pos.xy(), view, "white", TARGET_COLOUR);
 		}
 		else
 		{
-			Draw::draw_tile(code, pos, view, "white");
+			Draw::draw_tile(code, pos.xy(), view, "white");
 		}
 	}
 }
