@@ -1,9 +1,7 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
-#include "Game.h"
 #include "Grammar.h"
-//#include "Map.h"
 #include "Random.h"
 #include "Spell.h"
 #include "World.h"
@@ -116,10 +114,8 @@ void shoot_beam (Beam::Data & beam)
 		else
 		{
 			// do animation
-			// TODO think better about drawing in 3D space and 2D screen
 			World const& world = World::read();
-			Visibility tile_vis = world.get_visibility(beam.pos);
-			if (tile_vis == Visibility::Visible)
+			if (world.is_visible(beam.pos))
 			{
 				Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
 			}

@@ -34,9 +34,9 @@ public:
 	int get_z() const { return global_z; }
 
 	Terrain get_terrain(Vec2 const & global_pos) const;
-	Visibility get_visibility(Vec2 const & global_pos) const;
+	Visibility get_visibility(Vec2 const & global_pos, int current_step) const;
 	void set_terrain(Vec2 const & global_pos, Terrain t);
-	void set_visibility(Vec2 const & global_pos, Visibility v);
+	void set_visibility(Vec2 const & global_pos, Visibility v, int current_step);
 
 	bool tile_is_solid(Vec2 const & global_pos) const;
 	bool tile_permits_sight(Vec2 const& global_pos) const;
@@ -44,11 +44,8 @@ public:
 	void fill(Terrain t);
 	void fill_box(Box2 const & global_box, Terrain t);
 
-	void clear_visibility();
-	void convert_visible_to_explored();
-
-	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility) const;
-	void draw(Draw::View const & view, bool ignore_visibility=false) const;
+	void clear_visibility(int current_step);
+	void clean_explored_values(int current_step);
 
 	inline Vec2 global_to_local(Vec2 const & global) const { return global - map_box.min; }
 	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box2{Vec2{0,0}, map_box.size}.contains(local_pos); }
@@ -60,15 +57,15 @@ public:
 
 private:
 	// Area occupied by this map in global space.
-	Box2 map_box;
+	Box2 map_box = {};
 
 	// All maps are flat, so it only needs a single z coordinate.
-	int global_z;
+	int global_z = 0;
 
 	// Data in local space.  Warning: Local coords may be confusing.
 	// Use the get/set functions if you want to do things in global space.
 	Grid<Terrain> terrain;
-	Grid<Visibility> visibility;
+	Grid<int> visibility;
 };
 
 // Returns the id of a clear line (in the cache) from p0 to p1.

@@ -2,6 +2,7 @@
 
 #include "Draw.h"
 #include "Line.h"
+#include "Target.h"
 #include "VectorUtil.h"
 
 World s_world;
@@ -67,7 +68,7 @@ bool World::is_solid(Vec3 pos) const
 		return maps[map_id].tile_is_solid(pos.xy());
 	}
 
-	return true; // consider the world outside any map to be solid.
+	return true; // outside the map is solid
 }
 
 bool World::permits_sight(Vec3 pos) const
@@ -86,7 +87,7 @@ Visibility World::get_visibility(Vec3 pos) const
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		return maps[map_id].get_visibility(pos.xy());
+		return maps[map_id].get_visibility(pos.xy(), visibility_step);
 	}
 
 	return Visibility::Hidden; // out of map, out of sight
@@ -97,24 +98,14 @@ void World::set_visibility(Vec3 pos, Visibility v)
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
-		maps[map_id].set_visibility(pos.xy(), v);
+		maps[map_id].set_visibility(pos.xy(), v, visibility_step);
 	}
 }
 
 void World::update_visibility(Vec3 viewer, int vision_radius)
 {
-	// TODO special cases aorund stairs
-
-	// Clear current sight but remember it was seen in the past.
-	// TODO Perhaps we don't need to do this for every map?
-	// If we remembered which ones had received sight previously, perhaps.
-	// Or perhaps we could do the "rotating LOS" hack, where we store the number
-	// of the frame when it was last seen, and only clear them when we're going to have
-	// integer overflow or something.
-	for (int m = 0; m < maps.size(); ++m)
-	{
-		maps[m].convert_visible_to_explored();
-	}
+	// Convert old vision to fog of war.
+	advance_visibility_step();
 
 	// Add new sight along every line in the cache.
 	int const num_lines = LineCache::get_num();
@@ -133,6 +124,8 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 			}
 		}
 	}
+
+	// TODO special cases around stairs
 
 	// Hack to add visibility on walls that "should" be visible.
 	wall_visibility_hack(viewer, AXIS_X, 1);
@@ -166,6 +159,22 @@ void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 				set_visibility(pos2, Visibility::Visible);
 			}
 		}
+	}
+}
+
+void World::advance_visibility_step()
+{
+	if (visibility_step == INT_MAX)
+	{
+		for (Map& map : maps)
+		{
+			map.clean_explored_values(visibility_step);
+		}
+		visibility_step = 1;
+	}
+	else
+	{
+		++visibility_step;
 	}
 }
 
@@ -213,11 +222,31 @@ bool World::has_los(Vec3 start, Vec3 end) const
 
 void World::draw(Draw::View view, bool ignore_visibility) const
 {
-	for (int m = 0; m < maps.size(); ++m)
+	// TODO special cases around staircases
+
+	for (Vec2 const& pos : view.view_area())
 	{
-		if (maps[m].get_z() == view.z)
+		draw_map_tile(pos.xyz(view.z), view, ignore_visibility);
+	}
+}
+
+void World::draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibility) const
+{
+	Visibility v = get_visibility(pos);
+	bool const drawable = (ignore_visibility || v == Visibility::Visible || v == Visibility::Explored);
+	if (drawable)
+	{
+		Terrain const t = get_terrain(pos);
+		int const code = terrain_character(t);
+		const char* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
+		const bool is_target = Target::is_target(pos);
+		if (is_target)
 		{
-			maps[m].draw(view, ignore_visibility);
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, TARGET_COLOUR);
+		}
+		else
+		{
+			Draw::draw_tile(code, pos.xy(), view, draw_colour);
 		}
 	}
 }

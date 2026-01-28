@@ -53,7 +53,7 @@ void Map::init(int z, Box2 const & box, Terrain fill)
 	map_box = box;
 
 	terrain = make_grid(box.size.x, box.size.y, fill);
-	visibility = make_grid(box.size.x, box.size.y, Visibility::Hidden);
+	visibility = make_grid(box.size.x, box.size.y, c_invalid);
 }
 
 Terrain Map::get_terrain(Vec2 const & global_pos) const
@@ -63,11 +63,23 @@ Terrain Map::get_terrain(Vec2 const & global_pos) const
 	return terrain[local.x][local.y];
 }
 
-Visibility Map::get_visibility(Vec2 const & global_pos) const
+Visibility Map::get_visibility(Vec2 const & global_pos, int current_step) const
 {
 	Vec2 local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	return visibility[local.x][local.y];
+	int const vis = visibility[local.x][local.y];
+	if (vis == current_step)
+	{
+		return Visibility::Visible;
+	}
+	else if (vis >= 0)
+	{
+		return Visibility::Explored;
+	}
+	else
+	{
+		return Visibility::Hidden;
+	}
 }
 
 void Map::set_terrain(Vec2 const & global_pos, Terrain t)
@@ -77,11 +89,23 @@ void Map::set_terrain(Vec2 const & global_pos, Terrain t)
 	terrain[local.x][local.y] = t;
 }
 
-void Map::set_visibility(Vec2 const & global_pos, Visibility v)
+void Map::set_visibility(Vec2 const & global_pos, Visibility v, int current_step)
 {
 	Vec2 local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	visibility[local.x][local.y] = v;
+	if (v == Visibility::Visible)
+	{
+		visibility[local.x][local.y] = current_step;
+	}
+	else if (v == Visibility::Explored)
+	{
+		assert(current_step > 0);
+		visibility[local.x][local.y] = 0;
+	}
+	else
+	{
+		visibility[local.x][local.y] = c_invalid;
+	}
 }
 
 bool Map::tile_is_solid(Vec2 const & global_pos) const
@@ -115,82 +139,22 @@ void Map::fill_box(Box2 const & global_box, Terrain t)
 	}
 }
 
-void Map::clear_visibility()
+void Map::clear_visibility(int current_step)
 {
 	for (Vec2 const & pos : map_box)
 	{
-		set_visibility(pos, Visibility::Hidden);
+		set_visibility(pos, Visibility::Hidden, current_step);
 	}
 }
 
-void Map::convert_visible_to_explored()
+void Map::clean_explored_values(int current_step)
 {
 	for (Vec2 const& pos : map_box)
 	{
-		if (get_visibility(pos) == Visibility::Visible)
+		if (get_visibility(pos, current_step) == Visibility::Visible)
 		{
-			set_visibility(pos, Visibility::Explored);
+			set_visibility(pos, Visibility::Explored, current_step);
 		}
-	}
-}
-
-void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility) const
-{
-	Vec3 const pos3 = global_pos.xyz(global_z);
-	const bool is_target = Target::is_target(pos3);
-
-	Terrain const t = get_terrain(global_pos);
-	int const code = terrain_character(t);
-
-	Visibility v = get_visibility(global_pos);
-	if (ignore_visibility || v == Visibility::Visible)
-	{
-		if (is_target)
-		{
-			Draw::draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
-		}
-		else
-		{
-			Draw::draw_tile(code, global_pos, view, "white");
-		}
-	}
-	else if (v == Visibility::Explored)
-	{
-		if (is_target)
-		{
-			Draw::draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
-		}
-		else
-		{
-			Draw::draw_tile(code, global_pos, view, "darker grey");
-		}
-	}
-}
-
-// viewport - box on the screen (in wide tiles) where the map will be drawn
-// start - upper left position of the map to draw
-void Map::draw (Draw::View const & view, bool ignore_visibility) const
-{
-	if (global_z != view.z)
-	{
-		// TODO special cases around staircases
-		return;
-	}
-
-	if (!map_box.intersects(view.view_area()))
-	{
-		return;
-	}
-
-	Box2 draw_area = map_box.intersection(view.view_area());
-
-	for (Vec2 const & map_pos : draw_area)
-	{
-		// make sure intersection function works right
-		assert(contains(map_pos));
-		assert(view.contains_global_pos(map_pos.xyz(global_z)));
-
-		draw_map_tile(map_pos, view, ignore_visibility);
 	}
 }
 

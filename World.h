@@ -23,6 +23,7 @@ public:
 	bool permits_sight(Vec3 pos) const;
 
 	Visibility get_visibility(Vec3 pos) const;
+	bool is_visible(Vec3 pos) const { return get_visibility(pos) == Visibility::Visible; }
 	void set_visibility(Vec3 pos, Visibility v);
 	void update_visibility(Vec3 viewer, int vision_radius);
 
@@ -47,8 +48,15 @@ public:
 
 private:
 	void wall_visibility_hack(Vec3 viewer, Axis a, int sign);
+	void advance_visibility_step();
+	void draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibility) const;
 
 	std::vector<Map> maps;
+
+	// Anything with this number in the vis map is visible.
+	// Anything with another non-negative number is remembered.
+	// Anything with negative number is unseen.
+	int visibility_step = 1;
 
 	// speed up map searches by first checking the one it was last time
 	mutable int temp_last_map = c_invalid;
