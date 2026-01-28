@@ -59,7 +59,7 @@ namespace Creature
 		int max_hp = 0;
 
 		int hp = 0;
-		Vec2 pos = {0,0};
+		Vec3 pos = {0,0,0};
 	};
 
 	struct DerivedStats
@@ -96,7 +96,7 @@ namespace Creature
 		int max_hp () const;
 		int hp () const;
 		float hp_percent() const;
-		Vec2 pos () const;
+		Vec3 pos () const;
 		bool has_status (Status::Index status) const;
 		int status_severity (Status::Index status) const;
 		int distractedness () const;
@@ -115,7 +115,7 @@ namespace Creature
 
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);
-		void move (Vec2 const & new_pos);
+		void move (Vec3 const & new_pos);
 		bool try_move(Vec2 const& relative_move, MoveMode move_mode);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
@@ -149,9 +149,9 @@ namespace Creature
 	void clear ();
 
 	const char* name_from_type(Creature::Type type);
-	Creature::Handle creature_at_pos (Vec2 pos);
+	Creature::Handle creature_at_pos (Vec3 pos);
 
-	Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos);
+	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);
 
 	// Visible creature operations
 	void update_visible_creatures ();

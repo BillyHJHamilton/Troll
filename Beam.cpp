@@ -1,10 +1,12 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Grammar.h"
-#include "Map.h"
+//#include "Map.h"
 #include "Random.h"
 #include "Spell.h"
+#include "World.h"
 
 #include <cassert>
 
@@ -12,7 +14,7 @@ namespace Beam
 {
 
 // Line already advanced to point of impact.  Used for Flipendo pushback.
-static std::optional<LineCache::Itr> s_impact_line;
+static std::optional<LineCache::Itr3D> s_impact_line;
 
 int constexpr c_accuracy_loss = 3; // per square
 int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
@@ -20,12 +22,12 @@ int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
 
-static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec2 target_pos, bool caster_aimed);
+static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec3 target_pos, bool caster_aimed);
 static void shoot_beam (Beam::Data & beam);
-static void test_for_impact (Beam::Data & beam, LineCache::Itr const & line);
+static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
-static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr const & line);
+static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line);
 
 static std::string get_colour (Beam::Data const & beam);
 static int get_codepoint (Beam::Data const & beam);
@@ -35,21 +37,21 @@ static Spell::EffectFunc get_effect_func (Beam::Data const & beam);
 // ------------------------------------------------------------------------------------------------
 // interface function implementations
 
-void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
+void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, bool caster_aimed)
 {
 	Spell::create_and_bind_instance(spell, caster);
 	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed);
 	shoot_beam(beam);
 }
 
-int accuracy_at_range(int base_accuracy, Vec2 start, Vec2 end)
+int accuracy_at_range(int base_accuracy, Vec3 start, Vec3 end)
 {
 	int const dist = (int)euclidean_distance(start, end);
 	int const loss = dist * c_accuracy_loss;
 	return std::max(c_min_ranged_accuracy, base_accuracy - loss);
 }
 
-std::optional<LineCache::Itr> get_latest_impact_line ()
+std::optional<LineCache::Itr3D> get_latest_impact_line ()
 {
 	return s_impact_line;
 }
@@ -57,7 +59,7 @@ std::optional<LineCache::Itr> get_latest_impact_line ()
 // ------------------------------------------------------------------------------------------------
 // helper function implementations
 
-Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 target_pos, bool caster_aimed)
+Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, bool caster_aimed)
 {
 	assert(caster.pos() != target_pos); // Should not be shooting beam with zero trajectory.
 
@@ -71,7 +73,9 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 ta
 	// TODO: Properly handle case where target is not in the line cache.
 	// Probably we should get the line earlier and abort on failure.
 	// For now it's just being set to 0 below.
-	const int trajectory = get_los(g_map(), caster.pos(), target_pos);
+
+	World& world = Game::get_world();
+	const int trajectory = world.get_los(caster.pos(), target_pos);
 
 	return Beam::Data
 	{
@@ -80,7 +84,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 ta
 		Beam::Type::Spell,
 		caster,
 		intended_target,
-		(trajectory == -1) ? 0 : trajectory,
+		(trajectory == c_invalid) ? 0 : trajectory,
 		Spell::get_range(spell),
 		caster_aimed,
 		false
@@ -89,7 +93,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec2 ta
 
 void shoot_beam (Beam::Data & beam)
 {
-	LineCache::Itr line_itr(beam.pos, beam.trajectory);
+	LineCache::Itr3D line_itr(beam.pos, beam.trajectory);
 
 	// init for animation
 	Draw::View view = Draw::get_view();
@@ -112,10 +116,12 @@ void shoot_beam (Beam::Data & beam)
 		else
 		{
 			// do animation
-			Visibility tile_vis = g_map().get_visibility(beam.pos);
+			// TODO think better about drawing in 3D space and 2D screen
+			World& world = Game::get_world();
+			Visibility tile_vis = world.get_visibility(beam.pos);
 			if (tile_vis == Visibility::Visible)
 			{
-				Draw::draw_tile_temp(codepoint, beam.pos, view, colour.c_str());
+				Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
 			}
 
 			// see if we hit anything; this may change done to true
@@ -124,17 +130,14 @@ void shoot_beam (Beam::Data & beam)
 	}
 }
 
-void test_for_impact (Beam::Data & beam, LineCache::Itr const & line)
+void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 {
-	Map const & map = g_map();
-
-	// shot off edge of map?
-	assert(map.contains(beam.pos));
+	World const& world = Game::get_world();
 
 	// hit wall
-	if (map.tile_is_solid(beam.pos))
+	if (world.is_solid(beam.pos))
 	{
-		if (map.get_visibility(beam.pos) == Visibility::Visible)
+		if (world.get_visibility(beam.pos) == Visibility::Visible)
 		{
 			Draw::add_message("The " + beam_description(beam) + " hits the wall.");
 		}
@@ -253,7 +256,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	}
 }
 
-void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::Itr const & line)
+void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line)
 {
 	// todo - exception for firing into watertrap
 

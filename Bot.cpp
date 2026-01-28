@@ -4,6 +4,7 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Grammar.h"
 #include "Map.h"
 #include "Math.h"
@@ -11,6 +12,7 @@
 #include "Random.h"
 #include "Spell.h"
 #include "VectorUtil.h"
+#include "World.h"
 
 namespace Bot
 {
@@ -26,7 +28,7 @@ static std::vector<Brain> s_brains;
 // Helper function declarations
 
 bool is_aware(Creature::Handle const creature);
-void move_towards(Creature::Handle creature, Vec2 dest);
+void move_towards(Creature::Handle creature, Vec3 dest);
 Spell::Index choose_spell (Creature::Handle caster);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
@@ -60,7 +62,8 @@ void do_turn (Creature::Handle creature)
 	constexpr int creature_vision = 8; // Add variable/function later if desired.
 	Brain& brain = s_brains[creature];
 
-	bool player_is_visible = has_los(g_map(), creature.pos(), Player::pos())
+	World const& world = Game::get_world();
+	bool player_is_visible = world.has_los(creature.pos(), Player::pos())
 		&& within_range(creature.pos(), Player::pos(), creature_vision);
 
 	if (player_is_visible)
@@ -109,11 +112,12 @@ bool is_aware(Creature::Handle const creature)
 	return s_brains[creature].awareness > 0;
 }
 
-void move_towards(Creature::Handle creature, Vec2 dest)
+void move_towards(Creature::Handle creature, Vec3 dest)
 {
 	// TODO proper pathfinding
+	// TODO and consider 3D cases
 
-	Vec2 const to_dest = dest - creature.pos();
+	Vec3 const to_dest = dest - creature.pos();
 	Vec2 const move_dir = {
 		Math::Sign(to_dest.x),
 		Math::Sign(to_dest.y)

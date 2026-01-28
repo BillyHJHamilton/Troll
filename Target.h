@@ -14,7 +14,7 @@ enum class TargetMode : byte
 
 extern TargetMode g_target_mode;
 extern Creature::Handle g_target_creature;
-extern Vec2 g_target_pos;
+extern Vec3 g_target_pos;
 
 char const * const TARGET_COLOUR = "darkest red";
 
@@ -26,6 +26,6 @@ namespace Target
 	void move(Vec2 dir);
 
 	bool is_target(Creature::Handle creature);
-	bool is_target(Vec2 const& global_pos);
-	std::optional<Vec2> get_pos();
+	bool is_target(Vec3 const& global_pos);
+	std::optional<Vec3> get_pos();
 }

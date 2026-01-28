@@ -13,6 +13,7 @@ namespace LineCache
 	void init();
 
 	std::vector<int> const& get_lines(Vec2 relative_pos);
+	std::vector<int> const& get_lines(Vec2 start, Vec2 end);
 	int get_num();
 
 	// Iterator using a cached line.
@@ -36,11 +37,40 @@ namespace LineCache
 		Vec2 operator++() { advance(); return current; }
 		// post-increment not provided to avoid accidental copy
 
-	private:
+	protected:
 		Vec2 start;
 		Vec2 current;
 		int id;
 		int step;
+	};
+
+	// Iterator which stores a 3D point for convenience.
+	// Logic is passthrough to 2D iterator.
+	class Itr3D
+	{
+	public:
+		Itr3D(Vec3 start_pos, int line_id) :
+			itr({ start_pos.x, start_pos.y }, line_id),
+			z(start_pos.z)
+		{}
+
+		int steps_left() const { return itr.steps_left(); }
+		bool finished() const { return itr.finished(); }
+		void advance() { itr.advance(); }
+		void advance_and_loop() { itr.advance_and_loop(); }
+
+		// iterator-style functions
+		operator bool() { return !finished(); }
+		Vec3 operator*() { return {itr->x, itr->y, z}; }
+		Vec3 operator++() { advance(); return operator*(); }
+		// post-increment not provided to avoid accidental copy
+		// can't easily provide ->, I fear.
+
+		LineCache::Itr to_2d() const { return itr; }
+
+	protected:
+		LineCache::Itr itr;
+		int z;
 	};
 }
 

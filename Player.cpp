@@ -15,7 +15,7 @@ void Player::clear()
 	s_player_data = Player::Data();
 }
 
-Vec2 pos()
+Vec3 pos()
 {
 	return handle().pos();
 }

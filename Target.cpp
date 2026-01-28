@@ -11,7 +11,7 @@ namespace Target
 
 TargetMode g_target_mode;
 Creature::Handle g_target_creature;
-Vec2 g_target_pos;
+Vec3 g_target_pos;
 
 void clear ()
 {
@@ -23,7 +23,7 @@ void update ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_creature != -1)
+		if (g_target_creature != c_invalid)
 		{
 			if (g_target_creature.visible())
 			{
@@ -33,11 +33,11 @@ void update ()
 			else
 			{
 				// lose target
-				g_target_creature = -1;
+				g_target_creature = c_invalid;
 			}
 		}
 
-		if (g_target_creature == -1)
+		if (g_target_creature == c_invalid)
 		{
 			// acquire target
 			cycle();
@@ -100,7 +100,7 @@ void move (Vec2 dir)
 		}
 		g_target_mode = TargetMode::Manual;
 	}
-	g_target_pos += dir;
+	g_target_pos += dir.xy0();
 }
 
 bool is_target (Creature::Handle creature)
@@ -121,7 +121,7 @@ bool is_target (Creature::Handle creature)
 	}
 }
 
-bool is_target (Vec2 const & global_pos)
+bool is_target (Vec3 const & global_pos)
 {
 	if (g_target_mode == TargetMode::Manual)
 	{
@@ -139,7 +139,7 @@ bool is_target (Vec2 const & global_pos)
 	}
 }
 
-std::optional<Vec2> get_pos ()
+std::optional<Vec3> get_pos ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
@@ -149,7 +149,7 @@ std::optional<Vec2> get_pos ()
 		}
 		else
 		{
-			return std::optional<Vec2>(); // none
+			return std::optional<Vec3>(); // none
 		}
 	}
 	else if (g_target_mode == TargetMode::Manual)
@@ -159,7 +159,7 @@ std::optional<Vec2> get_pos ()
 	else
 	{
 		assert(false); // unhandled case
-		return Vec2 {0,0};
+		return Vec3 {0,0,0};
 	}
 }
 

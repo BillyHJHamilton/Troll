@@ -12,7 +12,7 @@ namespace Bot
 	struct Brain
 	{
 		int awareness = 0;
-		Vec2 last_seen {0,0};
+		Vec3 last_seen {0,0,0};
 	};
 
 	void init_brain(Creature::Handle creature);

@@ -11,12 +11,14 @@
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
+#include "World.h"
 
 namespace Game
 {
 
 int s_turn_number;
 GameMode s_game_mode;
+World s_world;
 
 //------------------------------------------------------------------------------
 // Helper function declarations.
@@ -55,31 +57,27 @@ void setup()
 {
 	s_turn_number = 0;
 	s_game_mode = GameMode::Normal;
+	s_world = World();
 
-	Map& map = g_map();
-	Box2 map_box = Box2(0, 0, 24, 24);
-	map.init(map_box, Terrain::Wall);
+	Box2 const map_box = Box2(0, 0, 24, 24);
+	int const map_id = s_world.add_map(0, map_box, Terrain::Wall);
+	Map& map = s_world.get_map(map_id);
+
+	// Add some default terrain.
 	map.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
 	map.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);
 	map.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
-	map.clear_visibility();
 
-	spawn_creature(Creature::Player, { 4,4 });
-	spawn_creature(Creature::Neville_0, { 6,9 });
-	spawn_creature(Creature::ColinCreevy_0, { 13,15 });
-	//	spawn_creature(Creature::ColinCreevy_0, {14,17});
-	//	spawn_creature(Creature::ColinCreevy_0, {16,15});
-	//	spawn_creature(Creature::ColinCreevy_0, {15,16});
-	//	spawn_creature(Creature::ColinCreevy_0, {8,13});
+	spawn_creature(Creature::Player, {4,4});
+	spawn_creature(Creature::Neville_0, {6,9});
+	spawn_creature(Creature::ColinCreevy_0, {13,15});
 }
 
 void update()
 {
-	Map& map = g_map();
-
 	if (s_game_mode == GameMode::Normal)
 	{
-		map.update_visibility(Player::pos(), Player::vision_radius);
+		s_world.update_visibility(Player::pos(), Player::vision_radius);
 		Creature::update_visible_creatures();
 		Target::update();
 	}
@@ -117,6 +115,11 @@ void set_mode(GameMode mode)
 int get_turn_number()
 {
 	return s_turn_number;
+}
+
+World& get_world()
+{
+	return s_world;
 }
 
 //------------------------------------------------------------------------------

@@ -16,7 +16,7 @@ namespace Player
 
 	void clear();
 
-	Vec2 pos ();
+	Vec3 pos ();
 	Data& data ();
 	Creature::Handle handle () { return 0; }
 

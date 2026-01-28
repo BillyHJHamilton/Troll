@@ -3,9 +3,11 @@
 #include "Beam.h"
 #include "Creature.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Grammar.h"
-#include "Map.h"
+//#include "Map.h"
 #include "Status.h"
+#include "World.h"
 
 #include <cassert>
 #include <iostream>
@@ -23,15 +25,16 @@ void vermillious (Creature::Handle caster, Creature::Handle target)
 void flipendo (Creature::Handle caster, Creature::Handle target)
 {
 	// Push back
-	std::optional<LineCache::Itr> optional_line = Beam::get_latest_impact_line();
+	std::optional<LineCache::Itr3D> optional_line = Beam::get_latest_impact_line();
 	if (optional_line.has_value())
 	{
-		LineCache::Itr& line = *optional_line;
+		LineCache::Itr3D& line = *optional_line;
 		line.advance_and_loop();
-		Vec2 knock_pos = *line;
+		Vec3 knock_pos = *line;
 
 		// check for collision
-		if (g_map().tile_is_solid(knock_pos))
+		World& world = Game::get_world();
+		if (world.is_solid(knock_pos))
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";
 			Draw::add_message(std::move(message));

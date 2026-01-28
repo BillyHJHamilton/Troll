@@ -2,6 +2,8 @@
 
 #include <vector>
 
+static int constexpr c_invalid = -1;
+
 using byte = unsigned char;
 
 template<class T>
@@ -16,6 +18,7 @@ Grid<T> make_grid (int x, int y, T value)
 class Map;
 
 struct Vec2;
+struct Vec3;
 struct Box2;
 
 namespace Creature

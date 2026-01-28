@@ -9,10 +9,6 @@
 #include <cassert>
 #include <iostream>
 
-static Map global_map;
-
-Map & g_map () { return global_map; }
-
 //-------------------------------------------------------------------------------------------------
 // Terrain
 
@@ -51,8 +47,9 @@ bool terrain_is_solid(Terrain t)
 //-------------------------------------------------------------------------------------------------
 // Map
 
-void Map::init(Box2 const & box, Terrain fill)
+void Map::init(int z, Box2 const & box, Terrain fill)
 {
+	global_z = z;
 	map_box = box;
 
 	terrain = make_grid(box.size.x, box.size.y, fill);
@@ -91,6 +88,12 @@ bool Map::tile_is_solid(Vec2 const & global_pos) const
 {
 	Terrain t = get_terrain(global_pos);
 	return terrain_is_solid(t);
+}
+
+bool Map::tile_permits_sight(Vec2 const& global_pos) const
+{
+	Terrain t = get_terrain(global_pos);
+	return terrain_permits_sight(t);
 }
 
 void Map::fill(Terrain t)
@@ -189,15 +192,18 @@ void Map::add_wall_visibility(Vec2 viewer_global, Axis a, int sign)
 	}
 }
 
-void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility)
+void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility) const
 {
-	Terrain t = get_terrain(global_pos);
-	int code = terrain_character(t);
+	Vec3 const pos3 = global_pos.xyz(global_z);
+	const bool is_target = Target::is_target(pos3);
+
+	Terrain const t = get_terrain(global_pos);
+	int const code = terrain_character(t);
 
 	Visibility v = get_visibility(global_pos);
 	if (ignore_visibility || v == Visibility::Visible)
 	{
-		if (Target::is_target(global_pos))
+		if (is_target)
 		{
 			Draw::draw_tile_bg(code, global_pos, view, "white", TARGET_COLOUR);
 		}
@@ -208,7 +214,7 @@ void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_v
 	}
 	else if (v == Visibility::Explored)
 	{
-		if (Target::is_target(global_pos))
+		if (is_target)
 		{
 			Draw::draw_tile_bg(code, global_pos, view, "darker grey", TARGET_COLOUR);
 		}
@@ -221,8 +227,14 @@ void Map::draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_v
 
 // viewport - box on the screen (in wide tiles) where the map will be drawn
 // start - upper left position of the map to draw
-void Map::draw (Draw::View const & view, bool ignore_visibility)
+void Map::draw (Draw::View const & view, bool ignore_visibility) const
 {
+	if (global_z != view.z)
+	{
+		// TODO special cases around staircases
+		return;
+	}
+
 	Box2 draw_area = map_box.intersection(view.view_area());
 
 	for (Vec2 const & map_pos : draw_area)
@@ -321,7 +333,7 @@ bool has_los_on_line(Map const& map, Vec2 p0, Vec2 p1, int line_id)
 
 int get_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
 {
-	std::vector<int> const& lines = LineCache::get_lines(p1 - p0);
+	std::vector<int> const& lines = LineCache::get_lines(p0, p1);
 	for (int line_id : lines)
 	{
 		if (has_los_on_line(map, p0, p1, line_id))
@@ -331,11 +343,10 @@ int get_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
 	}
 
 	// No open line was found.
-	return -1;
+	return c_invalid;
 }
 
 bool has_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
 {
-	return get_los(map, p0, p1) != -1;
+	return get_los(map, p0, p1) != c_invalid;
 }
-

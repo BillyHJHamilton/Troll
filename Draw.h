@@ -10,6 +10,7 @@ namespace Draw
 	{
 		Box2 viewport; // on the screen
 		Vec2 start; // upper left corner of draw area in global coords
+		int z; // vertical slice to draw
 
 		Box2 view_area() const { return { start, viewport.size }; }
 		bool contains_global_pos(Vec2 const& global_pos) const

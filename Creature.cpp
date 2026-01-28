@@ -6,6 +6,7 @@
 
 #include "Bot.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Grammar.h"
 #include "Map.h"
 #include "Player.h"
@@ -14,6 +15,7 @@
 #include "Status.h"
 #include "Target.h"
 #include "VectorUtil.h"
+#include "World.h"
 
 namespace Creature
 {
@@ -149,7 +151,7 @@ float Handle::hp_percent() const
 	return (float)(hp()) / (float)(max_hp());
 }
 
-Vec2 Handle::pos () const
+Vec3 Handle::pos () const
 {
 	return get_creature_stats(index).pos;
 }
@@ -219,21 +221,9 @@ bool Handle::visible () const
 		return false;
 	}
 
-	Map const & map = g_map();
-	if (!map.contains(pos()))
-	{
-		return false; // it's off the map
-	}
-
-	Visibility v = g_map().get_visibility(pos());
-	if (v == Visibility::Visible)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	World const& world = Game::get_world();
+	Visibility v = world.get_visibility(pos());
+	return (v == Visibility::Visible);
 }
 
 float Handle::miscast_rate_for_spell (Spell::Index spell) const
@@ -300,21 +290,34 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 	}
 }
 
-void Handle::move (Vec2 const & new_pos)
+void Handle::move (Vec3 const & new_pos)
 {
 	get_creature_stats(index).pos = new_pos;
 }
 
 bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 {
-	Vec2 new_pos = pos() + relative_move;
-	Map const& map = g_map();
+	// TODO move properly in global 3D space, between floors, etc.
 
-	if (map.tile_is_solid(new_pos))
+	Vec2 new_pos = pos().xy() + relative_move;
+	Vec3 new_pos_3d = {new_pos.x, new_pos.y, pos().z};
+
+	World& world = Game::get_world();
+
+	int new_map_id = world.find_map(new_pos_3d);
+	if (new_map_id)
+	{
+		return false; // don't let characters walk right off the map
+	}
+
+	Map const& new_map = world.get_map(new_map_id);
+
+	// TODO mightn't it be more convenient if we could just check this globally from the world?
+	if (new_map.tile_is_solid(new_pos))
 	{
 		return false;
 	}
-	else if (Creature::creature_at_pos(new_pos) != Creature::None)
+	else if (Creature::creature_at_pos(new_pos_3d) != Creature::None)
 	{
 		return false;
 	}
@@ -340,7 +343,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 			}
 		}
 
-		move(new_pos);
+		move(new_pos_3d);
 		return true;
 	}
 }
@@ -465,7 +468,7 @@ const char* name_from_type(Creature::Type type)
 	return "no one";
 }
 
-Creature::Handle creature_at_pos (Vec2 pos)
+Creature::Handle creature_at_pos (Vec3 pos)
 {
 	for (Creature::HandleItr itr(0); itr; ++itr)
 	{
@@ -478,10 +481,10 @@ Creature::Handle creature_at_pos (Vec2 pos)
 	return Creature::None;
 }
 
-Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos)
+Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 {
 	// find creature number
-	int new_index = -1;
+	int new_index = c_invalid;
 	for (int i = 0; i < s_max_creature_index; i++)
 	{
 		if (!Handle(i).valid())
@@ -491,13 +494,13 @@ Creature::Handle spawn_creature (Creature::Type type, Vec2 const & pos)
 		}
 	}
 
-	if (new_index == -1 && s_max_creature_index < MAX_CREATURES)
+	if (new_index == c_invalid && s_max_creature_index < MAX_CREATURES)
 	{
 		new_index = s_max_creature_index;
 		++ s_max_creature_index;
 	}
 
-	assert(new_index != -1); // if this fails, increase creature memory budget
+	assert(new_index != c_invalid); // if this fails, increase creature memory budget
 
 	// allocate new creature on the arrays
 	s_creatures[new_index] = s_gingerbread[type];
@@ -532,7 +535,7 @@ void update_visible_creatures ()
 
 void draw_creature (Creature::Handle creature, Draw::View const & view)
 {
-	Vec2 const & pos = creature.pos();
+	Vec2 const & pos = creature.pos().xy(); // TODO think better about drawing in 2D/3D
 	if (view.contains_global_pos(pos))
 	{
 		int code = s_creatures[creature].codepoint;
@@ -557,6 +560,8 @@ void draw_visible_creatures (Draw::View const & view)
 
 void remove_defeated_creatures()
 {
+	int num_removed = 0;
+
 	for (std::pair<int,int> const& pair : s_fainting_creatures)
 	{
 		Handle creature = pair.first;
@@ -573,10 +578,16 @@ void remove_defeated_creatures()
 		}
 		else
 		{
+			++num_removed;
 			creature.invalidate();
 		}
 	}
 	s_fainting_creatures.clear();
+
+	if (num_removed > 0)
+	{
+		update_visible_creatures();
+	}
 }
 
 std::vector<Creature::Handle> const & get_visible_creatures ()

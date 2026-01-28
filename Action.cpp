@@ -17,8 +17,8 @@
 
 bool check_distraction (Creature::Handle caster);
 bool check_miscast (Creature::Handle caster, Spell::Index spell);
-void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos);
-void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos);
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos);
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos);
 
 //-------------------------------------------------------------------------------------------------
 // Interface functions
@@ -43,7 +43,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	// targeting
-	std::optional<Vec2> target_pos = Target::get_pos();
+	std::optional<Vec3> target_pos = Target::get_pos();
 
 	if (!target_pos.has_value())
 	{
@@ -73,7 +73,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	return true;
 }
 
-void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec2 target_pos)
+void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos)
 {
 	// Update the screen because we'll do some animation for the spell
 	Draw::draw_screen();
@@ -148,7 +148,7 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 	}
 }
 
-void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 {
 	if (caster.visible())
 	{
@@ -158,15 +158,15 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
 		Draw::add_message(std::move(message));
 
 		Draw::View view = Draw::get_view();
-		Draw::draw_tile_temp('X', caster.pos(), view, "yellow");
-		Draw::draw_tile_temp('X', caster.pos(), view, "black");
+		Draw::draw_tile_temp('X', caster.pos().xy(), view, "yellow");
+		Draw::draw_tile_temp('X', caster.pos().xy(), view, "black");
 	}
 
 	// todo - proper miscasts
 	//Miscast::perform(caster, target, spell_used);
 }
 
-void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec2 target_pos)
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 {
 	std::string message = Grammar::You(caster) + " " + Grammar::verbs("cast", caster)
 		+ " " + Spell::get_name(spell) + "!";

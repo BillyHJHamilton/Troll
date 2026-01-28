@@ -120,6 +120,11 @@ std::vector<int> const& get_lines(Vec2 relative_pos)
 	return s_line_lookup.at(lookup);
 }
 
+std::vector<int> const& get_lines(Vec2 start, Vec2 end)
+{
+	return get_lines(end - start);
+}
+
 int get_num()
 {
 	return (int)s_line_cache.size();
@@ -133,7 +138,7 @@ int get_lookup_index(Vec2 pos)
 	if (pos.x < -c_max_range || pos.x > c_max_range ||
 		pos.y < -c_max_range || pos.y > c_max_range)
 	{
-		return -1;
+		return c_invalid;
 	}
 
 	// Transform from range (-r,r) to (0, 2r)

@@ -7,6 +7,7 @@
 #include "Menu.h"
 #include "Player.h"
 #include "Target.h"
+#include "World.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -83,9 +84,9 @@ View get_view ()
 	// centre the view on the player
 	int constexpr half_size = view_size / 2;
 	Vec2 constexpr half_vec {half_size, half_size};
-	Vec2 start = Player::pos() - half_vec;
+	Vec2 const start = Player::pos().xy() - half_vec;
 
-	return View{viewport, start};
+	return View{viewport, start, Player::pos().z};
 }
 
 void draw_tile (int code, Vec2 const & global_pos, Draw::View const & view,
@@ -204,7 +205,7 @@ void update_screen()
 	Draw::View view = get_view();
 
 	terminal_font("tile");
-	g_map().draw(view);
+	Game::get_world().draw(view, /*ignore_visibility*/ false);
 	draw_creature(Creature::Player, view);
 	//g_player().draw(view);
 	Creature::draw_visible_creatures(view);

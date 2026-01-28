@@ -175,6 +175,7 @@
     <ClCompile Include="SpellEffect.cpp" />
     <ClCompile Include="Status.cpp" />
     <ClCompile Include="Target.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h" />
@@ -199,6 +200,7 @@
     <ClInclude Include="Target.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="VectorUtil.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CodingStandard.txt" />

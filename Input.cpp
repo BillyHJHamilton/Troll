@@ -142,11 +142,11 @@ void handle_next_input ()
 			return;
 		}
 
-		if (key == TK_L)
-		{
-			g_map().test_los_symmetry();
-			return;
-		}
+		//if (key == TK_L)
+		//{
+		//	g_map().test_los_symmetry();
+		//	return;
+		//}
 
 		// unhandled
 		return;

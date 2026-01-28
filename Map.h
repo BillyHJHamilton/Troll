@@ -27,15 +27,11 @@ bool terrain_is_solid(Terrain t);
 
 class Map
 {
-	// data
-	Box2 map_box;
-private:
-	Grid<Terrain> terrain;		 // hidden because local coords are confusing
-	Grid<Visibility> visibility; // hidden because local coords are confusing
-
 	// functions
 public:
-	void init(Box2 const & box, Terrain fill);
+	void init(int z, Box2 const& box, Terrain fill);
+
+	int get_z() const { return global_z; }
 
 	Terrain get_terrain(Vec2 const & global_pos) const;
 	Visibility get_visibility(Vec2 const & global_pos) const;
@@ -43,6 +39,7 @@ public:
 	void set_visibility(Vec2 const & global_pos, Visibility v);
 
 	bool tile_is_solid(Vec2 const & global_pos) const;
+	bool tile_permits_sight(Vec2 const& global_pos) const;
 
 	void fill(Terrain t);
 	void fill_box(Box2 const & r, Terrain t);
@@ -50,21 +47,31 @@ public:
 	void clear_visibility();
 	void update_visibility(Vec2 const & viewer_global, int max_radius);
 
-	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility);
-	void draw(Draw::View const & view, bool ignore_visibility=false);
+	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility) const;
+	void draw(Draw::View const & view, bool ignore_visibility=false) const;
 
 	inline Vec2 global_to_local(Vec2 const & global) const { return global - map_box.min; }
 	inline bool local_pos_valid(Vec2 const & local_pos) const { return Box2{Vec2{0,0}, map_box.size}.contains(local_pos); }
-	inline bool contains(Box2 const & box) const { return map_box.contains(box); }
 	inline bool contains(Vec2 const & global_pos) const { return map_box.contains(global_pos); }
+	inline bool contains(Vec3 const& global_pos) const { return global_pos.z == global_z && map_box.contains({global_pos.x, global_pos.y}); }
+	inline bool contains(Box2 const& box) const { return map_box.contains(box); }
 
 	void test_los_symmetry();
 
 private:
 	void add_wall_visibility(Vec2 viewer_global, Axis a, int sign);
-};
 
-Map & g_map();
+	// Area occupied by this map in global space.
+	Box2 map_box;
+
+	// All maps are flat, so it only needs a single z coordinate.
+	int global_z;
+
+	// Data in local space.  Warning: Local coords may be confusing.
+	// Use the get/set functions if you want to do things in global space.
+	Grid<Terrain> terrain;
+	Grid<Visibility> visibility;
+};
 
 // Returns the id of a clear line (in the cache) from p0 to p1.
 // If no clear line exists, returns -1.
