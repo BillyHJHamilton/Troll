@@ -42,10 +42,10 @@ public:
 	bool tile_permits_sight(Vec2 const& global_pos) const;
 
 	void fill(Terrain t);
-	void fill_box(Box2 const & r, Terrain t);
+	void fill_box(Box2 const & global_box, Terrain t);
 
 	void clear_visibility();
-	void update_visibility(Vec2 const & viewer_global, int max_radius);
+	void convert_visible_to_explored();
 
 	void draw_map_tile (Vec2 global_pos, Draw::View const & view, bool ignore_visibility) const;
 	void draw(Draw::View const & view, bool ignore_visibility=false) const;
@@ -59,8 +59,6 @@ public:
 	void test_los_symmetry();
 
 private:
-	void add_wall_visibility(Vec2 viewer_global, Axis a, int sign);
-
 	// Area occupied by this map in global space.
 	Box2 map_box;
 

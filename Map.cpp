@@ -106,10 +106,10 @@ void Map::fill(Terrain t)
 	}
 }
 
-void Map::fill_box(Box2 const & box, Terrain t)
+void Map::fill_box(Box2 const & global_box, Terrain t)
 {
-	assert(contains(box));
-	for (Vec2 const & pos : box)
+	assert(contains(global_box));
+	for (Vec2 const & pos : global_box)
 	{
 		set_terrain(pos, t);
 	}
@@ -123,71 +123,13 @@ void Map::clear_visibility()
 	}
 }
 
-void Map::update_visibility(Vec2 const & viewer_global, int max_radius)
+void Map::convert_visible_to_explored()
 {
-	// Remove current sight.
-	for (Vec2 const & pos : map_box)
+	for (Vec2 const& pos : map_box)
 	{
 		if (get_visibility(pos) == Visibility::Visible)
 		{
 			set_visibility(pos, Visibility::Explored);
-		}
-	}
-
-	// Add new sight along every line in the cache.
-	int const num_lines = LineCache::get_num();
-	for (int line_id = 0; line_id < num_lines; ++line_id)
-	{
-		for (LineCache::Itr itr(viewer_global, line_id);
-			itr
-			  && within_range(viewer_global, *itr, max_radius)
-			  && contains(*itr);
-			++itr)
-		{
-			set_visibility(*itr, Visibility::Visible);
-
-			Terrain t = get_terrain(*itr);
-			if (!terrain_permits_sight(t))
-			{
-				break;
-			}
-		}
-	}
-
-	// Hack to add visibility on walls that "should" be visible.
-	add_wall_visibility(viewer_global, AXIS_X,  1);
-	add_wall_visibility(viewer_global, AXIS_X, -1);
-	add_wall_visibility(viewer_global, AXIS_Y,  1);
-	add_wall_visibility(viewer_global, AXIS_Y, -1);
-}
-
-void Map::add_wall_visibility(Vec2 viewer_global, Axis a, int sign)
-{
-	for (int r = 6; r <= 7; ++r)
-	{
-		Vec2 open_pos = viewer_global;
-		open_pos[a] += (r * sign);
-		
-		if (contains(open_pos) &&
-			visibility[open_pos.x][open_pos.y] == Visibility::Visible)
-		{
-			Axis other_axis = get_other_axis(a);
-			Vec2 pos1 = open_pos;
-			Vec2 pos2 = open_pos;
-			pos1[other_axis] += 1;
-			pos2[other_axis] -= 1;
-
-			if (contains(pos1)
-				&& !terrain_permits_sight(get_terrain(pos1)))
-			{
-				set_visibility(pos1, Visibility::Visible);
-			}
-
-			if (contains(pos2)
-				&& !terrain_permits_sight(get_terrain(pos2)))
-			{
-				set_visibility(pos2, Visibility::Visible);
-			}
 		}
 	}
 }
@@ -232,6 +174,11 @@ void Map::draw (Draw::View const & view, bool ignore_visibility) const
 	if (global_z != view.z)
 	{
 		// TODO special cases around staircases
+		return;
+	}
+
+	if (!map_box.intersects(view.view_area()))
+	{
 		return;
 	}
 

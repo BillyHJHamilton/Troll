@@ -23,6 +23,7 @@ public:
 	bool permits_sight(Vec3 pos) const;
 
 	Visibility get_visibility(Vec3 pos) const;
+	void set_visibility(Vec3 pos, Visibility v);
 	void update_visibility(Vec3 viewer, int vision_radius);
 
 	// Find index of the first map (hopefully only) containing the given position.
@@ -45,6 +46,8 @@ public:
 	void draw(Draw::View view, bool ignore_visibility) const;
 
 private:
+	void wall_visibility_hack(Vec3 viewer, Axis a, int sign);
+
 	std::vector<Map> maps;
 
 	// speed up map searches by first checking the one it was last time

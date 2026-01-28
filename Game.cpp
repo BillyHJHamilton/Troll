@@ -59,14 +59,21 @@ void setup()
 	s_game_mode = GameMode::Normal;
 	World& world = World::edit();
 
-	Box2 const map_box = Box2(0, 0, 24, 24);
-	int const map_id = world.add_map(0, map_box, Terrain::Wall);
-	Map& map = world.get_map(map_id);
+	Box2 const map1_box = Box2(0, 0, 24, 24);
+	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
+	Box2 const map2_box = Box2(0, -10, 24, 10);
+	int const map2_id = world.add_map(0, map2_box, Terrain::Wall);
 
-	// Add some default terrain.
-	map.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
-	map.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);
-	map.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
+	Map& map1 = world.get_map(map1_id);
+	Map& map2 = world.get_map(map2_id);
+
+	map1.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
+	map1.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);
+	map1.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
+	map1.fill_box(Box2(4, 0, 1, 5), Terrain::Open);
+
+	map2.fill_box(Box2(1, -9, 9, 9), Terrain::Open);
+	map2.set_terrain({4,-1}, Terrain::Open);
 
 	spawn_creature(Creature::Player, {4,4});
 	spawn_creature(Creature::Neville_0, {6,9});

@@ -304,16 +304,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 
 	World const& world = World::read();
 
-	int new_map_id = world.find_map(new_pos_3d);
-	if (new_map_id)
-	{
-		return false; // don't let characters walk right off the map
-	}
-
-	Map const& new_map = world.get_map(new_map_id);
-
-	// TODO mightn't it be more convenient if we could just check this globally from the world?
-	if (new_map.tile_is_solid(new_pos))
+	if (world.is_solid(new_pos_3d))
 	{
 		return false;
 	}
