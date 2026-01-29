@@ -62,7 +62,7 @@ private:
 	void add_stairs_visibility(Vec3 viewer);
 	void wall_visibility_hack(Vec3 viewer, Axis a, int sign);
 	void advance_visibility_step();
-	void draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibility) const;
+	void draw_map_tile(Vec3 pos, Draw::View const& view) const;
 
 	std::vector<std::shared_ptr<Map>> maps;
 

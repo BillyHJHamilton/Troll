@@ -291,22 +291,33 @@ void World::draw(Draw::View view) const
 {
 	for (Vec2 const& pos : view.view_area())
 	{
-		draw_map_tile(pos.xyz(view.z), view, view.ignore_visibility);
+		draw_map_tile(pos.xyz(view.z), view);
 	}
 
 	for (Vec3 tile : view.peek_tiles)
 	{
-		draw_map_tile(tile, view, view.ignore_visibility);
+		draw_map_tile(tile, view);
 	}
 }
 
-void World::draw_map_tile(Vec3 pos, Draw::View const& view, bool ignore_visibility) const
+void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 {
 	Visibility v = get_visibility(pos);
-	bool const drawable = (ignore_visibility || v == Visibility::Visible || v == Visibility::Explored);
+	bool const drawable = (view.ignore_visibility || v == Visibility::Visible || v == Visibility::Explored);
 	if (drawable)
 	{
-		Terrain::Type const t = get_terrain(pos);
+		Terrain::Type t = get_terrain(pos);
+
+		// stairs hack - show other stairs when peeking to prevent +- confusion
+		if (t == Terrain::UpStairs && Util::Contains(view.peek_tiles, pos))
+		{
+			t = Terrain::DownStairs;
+		}
+		else if (t == Terrain::DownStairs && Util::Contains(view.peek_tiles, pos))
+		{
+			t = Terrain::UpStairs;
+		}
+
 		int const code = Terrain::get_character(t);
 		const char* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
 		const bool is_target = Target::is_target(pos);
