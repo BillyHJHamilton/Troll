@@ -102,6 +102,65 @@ void Map::fill_box(Box2 const & global_box, Terrain::Type t)
 	}
 }
 
+void Map::add_stairs(Vec2 global_pos, Stairs::Direction dir)
+{
+	assert(!has_stairs(global_pos));
+	set_terrain(global_pos, Stairs::get_terrain(dir));
+	stairs.push_back({global_pos, dir});
+}
+
+Stairs::Direction Map::get_stairs(Vec2 global_pos) const
+{
+	for (const Stairs::Data& data : stairs)
+	{
+		if (data.start_pos == global_pos)
+		{
+			return data.direction;
+		}
+	}
+
+	return Stairs::None;
+}
+
+bool Map::has_stairs(Vec2 global_pos) const
+{
+	return get_stairs(global_pos) != Stairs::None;
+}
+
+void Map::add_corresponding_stairs(const Map& other)
+{
+	bool add_up;
+	if (other.get_z() == get_z() + 1)
+	{
+		// Other level is above this one.
+		// We will add up stairs corresponding to its down stairs;
+		add_up = true;
+	}
+	else if (other.get_z() == get_z() - 1)
+	{
+		// Other level is below this one.
+		// We will add down stairs corresponding to its up stairs.
+		add_up = false;
+	}
+	else
+	{
+		// Level is not one z away.  We can do nothing.
+		return;
+	}
+
+	for (const Stairs::Data& data : other.stairs)
+	{
+		if (add_up != Stairs::is_up(data.direction))
+		{
+			Vec2 this_end = data.start_pos + Stairs::relative_move(data.direction).xy();
+			if (contains(this_end))
+			{
+				add_stairs(this_end, Stairs::corresponding_direction(data.direction));
+			}
+		}
+	}
+}
+
 void Map::clear_visibility(int current_step)
 {
 	for (Vec2 const & pos : map_box)
@@ -121,73 +180,6 @@ void Map::clean_explored_values(int current_step)
 	}
 }
 
-void Map::test_los_symmetry()
-{
-	std::cout << "LOS symmetry test: \n";
-
-	int constexpr tests = 200;
-	int errors = 0;
-	for (int i = 0; i < tests; ++i)
-	{
-		Vec2 p0 = Random::in_box(map_box);
-		Vec2 p1;
-		do
-		{
-			p1 = Random::in_box(map_box);
-		}
-		while (p0 == p1 || !within_range(p0, p1, 8));
-
-		bool los_0_to_1 = has_los(*this, p0, p1);
-		bool los_1_to_0 = has_los(*this, p1, p0);
-
-		if (los_0_to_1 != los_1_to_0)
-		{
-			++errors;
-			std::cout << "- Error: Line from (" << p0.x << ", " << p0.y
-				<< ") to (" << p1.x << ", " << p1.y << ") is "
-				<< ((los_0_to_1) ? "open" : "blocked") << " but reverse is "
-				<< ((los_1_to_0) ? "open" : "blocked") << ".\n";
-
-			for (BoxItr itr(map_box); itr; ++itr)
-			{
-				if (*itr == p0)
-				{
-					std::cout << '0';
-				}
-				else if (*itr == p1)
-				{
-					std::cout << '1';
-				}
-				else if (!Terrain::permits_sight(get_terrain(*itr)))
-				{
-					std::cout << '=';
-				}
-				else
-				{
-					std::cout << '.';
-				}
-
-				if (itr->x == map_box.inner_max(0))
-				{
-					std::cout << '\n';
-				}
-			}
-
-			// Break here to debug.
-			if (los_0_to_1)
-			{
-				bool retry_0_to_1 = has_los(*this, p0, p1);
-			}
-			else
-			{
-				bool retry_1_to_0 = has_los(*this, p0, p1);
-			}
-		}
-	}
-
-	std::cout << errors << " errors out of " << tests << " tests.\n";
-}
-
 // helper function
 bool has_los_on_line(Map const& map, Vec2 p0, Vec2 p1, int line_id)
 {
@@ -203,24 +195,4 @@ bool has_los_on_line(Map const& map, Vec2 p0, Vec2 p1, int line_id)
 		itr.advance();
 	}
 	return true;
-}
-
-int get_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
-{
-	std::vector<int> const& lines = LineCache::get_lines(p0, p1);
-	for (int line_id : lines)
-	{
-		if (has_los_on_line(map, p0, p1, line_id))
-		{
-			return line_id;
-		}
-	}
-
-	// No open line was found.
-	return c_invalid;
-}
-
-bool has_los(Map const& map, Vec2 const& p0, Vec2 const& p1)
-{
-	return get_los(map, p0, p1) != c_invalid;
 }

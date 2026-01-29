@@ -99,6 +99,39 @@ bool World::permits_sight(Vec3 pos) const
 	return false; // off the map, it's unsightly
 }
 
+Stairs::Direction World::get_stairs(Vec3 pos) const
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return read_map(map_id).get_stairs(pos.xy());
+	}
+
+	return Stairs::None; // no stairs off the map
+}
+
+bool World::has_stairs(Vec3 pos) const
+{
+	return get_stairs(pos) != Stairs::None;
+}
+
+int World::get_stairs_dz(Vec3 old_pos, Vec2 new_pos) const
+{
+	Stairs::Direction dir = get_stairs(old_pos);
+	if (dir != Stairs::None)
+	{
+		// Check if we moved in the direction of the stairs.
+		Vec2 const this_move = new_pos - old_pos.xy();
+		Vec3 const stairs_move = Stairs::relative_move(dir);
+		if (this_move == stairs_move.xy())
+		{
+			return stairs_move.z;
+		}
+	}
+
+	return 0;
+}
+
 Visibility World::get_visibility(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
@@ -133,7 +166,9 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 	int const num_lines = LineCache::get_num();
 	for (int line_id = 0; line_id < num_lines; ++line_id)
 	{
-		for (LineCache::Itr3D itr(viewer, line_id);
+		LineCache::Itr3D itr(viewer, line_id);
+		++itr; // skip start pos
+		for (;
 			itr && within_range(viewer, *itr, vision_radius);
 			++itr)
 		{
@@ -147,13 +182,23 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 		}
 	}
 
-	// TODO special cases around stairs
+	add_stairs_visibility(viewer);
 
 	// Hack to add visibility on walls that "should" be visible.
 	wall_visibility_hack(viewer, AXIS_X, 1);
 	wall_visibility_hack(viewer, AXIS_X, -1);
 	wall_visibility_hack(viewer, AXIS_Y, 1);
 	wall_visibility_hack(viewer, AXIS_Y, -1);
+}
+
+void World::add_stairs_visibility(Vec3 viewer)
+{
+	Stairs::Direction dir = get_stairs(viewer);
+	if (dir != Stairs::None)
+	{
+		Vec3 const stairs_pos = viewer + Stairs::relative_move(dir);
+		set_visibility(stairs_pos, Visibility::Visible);
+	}
 }
 
 void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
@@ -163,7 +208,7 @@ void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 		Vec3 open_pos = viewer;
 		open_pos[a] += (r * sign);
 
-		if (get_visibility({ open_pos.x,open_pos.y }) == Visibility::Visible)
+		if (is_visible(open_pos))
 		{
 			Axis other_axis = get_other_axis(a);
 			Vec3 pos1 = open_pos;
@@ -242,13 +287,16 @@ bool World::has_los(Vec3 start, Vec3 end) const
 	return (get_los(start, end) != c_invalid);
 }
 
-void World::draw(Draw::View view, bool ignore_visibility) const
+void World::draw(Draw::View view) const
 {
-	// TODO special cases around staircases
-
 	for (Vec2 const& pos : view.view_area())
 	{
-		draw_map_tile(pos.xyz(view.z), view, ignore_visibility);
+		draw_map_tile(pos.xyz(view.z), view, view.ignore_visibility);
+	}
+
+	for (Vec3 tile : view.peek_tiles)
+	{
+		draw_map_tile(tile, view, view.ignore_visibility);
 	}
 }
 

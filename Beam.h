@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Creature.h"
 #include "Geometry.h"
 #include "Line.h"
 #include "Types.h"
-#include "Creature.h"
+#include "WorldLineItr.h"
 
 #include <optional>
 #include <string>

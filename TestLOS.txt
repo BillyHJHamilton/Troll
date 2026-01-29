@@ -1,0 +1,68 @@
+
+
+void Map::test_los_symmetry()
+{
+	std::cout << "LOS symmetry test: \n";
+
+	int constexpr tests = 200;
+	int errors = 0;
+	for (int i = 0; i < tests; ++i)
+	{
+		Vec2 p0 = Random::in_box(map_box);
+		Vec2 p1;
+		do
+		{
+			p1 = Random::in_box(map_box);
+		}
+		while (p0 == p1 || !within_range(p0, p1, 8));
+
+		bool los_0_to_1 = has_los(*this, p0, p1);
+		bool los_1_to_0 = has_los(*this, p1, p0);
+
+		if (los_0_to_1 != los_1_to_0)
+		{
+			++errors;
+			std::cout << "- Error: Line from (" << p0.x << ", " << p0.y
+				<< ") to (" << p1.x << ", " << p1.y << ") is "
+				<< ((los_0_to_1) ? "open" : "blocked") << " but reverse is "
+				<< ((los_1_to_0) ? "open" : "blocked") << ".\n";
+
+			for (BoxItr itr(map_box); itr; ++itr)
+			{
+				if (*itr == p0)
+				{
+					std::cout << '0';
+				}
+				else if (*itr == p1)
+				{
+					std::cout << '1';
+				}
+				else if (!Terrain::permits_sight(get_terrain(*itr)))
+				{
+					std::cout << '=';
+				}
+				else
+				{
+					std::cout << '.';
+				}
+
+				if (itr->x == map_box.inner_max(0))
+				{
+					std::cout << '\n';
+				}
+			}
+
+			// Break here to debug.
+			if (los_0_to_1)
+			{
+				bool retry_0_to_1 = has_los(*this, p0, p1);
+			}
+			else
+			{
+				bool retry_1_to_0 = has_los(*this, p0, p1);
+			}
+		}
+	}
+
+	std::cout << errors << " errors out of " << tests << " tests.\n";
+}

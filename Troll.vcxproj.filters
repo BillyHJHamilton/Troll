@@ -89,6 +89,12 @@
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Stairs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldLineItr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -163,6 +169,12 @@
     <ClInclude Include="Terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stairs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldLineItr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CodingStandard.txt">
@@ -172,6 +184,9 @@
       <Filter>Resource Files\Scraps</Filter>
     </Text>
     <Text Include="Scraps\Scaps.txt">
+      <Filter>Resource Files\Scraps</Filter>
+    </Text>
+    <Text Include="TestLOS.txt">
       <Filter>Resource Files\Scraps</Filter>
     </Text>
   </ItemGroup>

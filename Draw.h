@@ -11,13 +11,11 @@ namespace Draw
 		Box2 viewport; // on the screen
 		Vec2 start; // upper left corner of draw area in global coords
 		int z; // vertical slice to draw
+		bool ignore_visibility;
+		std::vector<Vec3> peek_tiles; // used for stairs
 
 		Box2 view_area() const { return { start, viewport.size }; }
-		bool contains_global_pos(Vec3 const& global_pos) const
-		{
-			return view_area().contains(global_pos.xy())
-				&& global_pos.z == z;
-		}
+		bool contains_global_pos(Vec3 const& global_pos) const;
 	};
 
 	void init();

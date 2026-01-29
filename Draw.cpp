@@ -5,7 +5,9 @@
 #include "Input.h"
 #include "Menu.h"
 #include "Player.h"
+#include "Stairs.h"
 #include "Target.h"
+#include "VectorUtil.h"
 #include "World.h"
 
 #include <algorithm>
@@ -75,17 +77,43 @@ void init ()
 	s_game_messages.clear();
 }
 
+bool View::contains_global_pos(Vec3 const& global_pos) const
+{
+	return view_area().contains(global_pos.xy())
+		&& (global_pos.z == z || Util::Contains(peek_tiles, global_pos));
+}
+
 View get_view ()
 {
 	int constexpr view_size = 31;
 	Box2 viewport = Box2(0,0,view_size, view_size);
 
-	// centre the view on the player
+	// Centre the view on the player
 	int constexpr half_size = view_size / 2;
 	Vec2 constexpr half_vec {half_size, half_size};
-	Vec2 const start = Player::pos().xy() - half_vec;
+	Vec3 const viewer = Player::pos();
+	Vec2 const start = viewer.xy() - half_vec;
 
-	return View{viewport, start, Player::pos().z};
+	// Add stairs exception
+	World const& world = World::read();
+	Stairs::Direction dir = world.get_stairs(viewer);
+	std::vector<Vec3> peek_tiles;
+	if (dir != Stairs::None)
+	{
+		Vec3 const stairs_pos = viewer + Stairs::relative_move(dir);
+		peek_tiles.push_back(stairs_pos);
+	}
+
+	View view
+	{
+		viewport,
+		start,
+		viewer.z,
+		false, // ignore visibility
+		peek_tiles
+	};
+
+	return view;
 }
 
 void draw_tile (int code, Vec2 const & global_pos, Draw::View const & view,
@@ -204,9 +232,8 @@ void update_screen()
 	Draw::View view = get_view();
 
 	terminal_font("tile");
-	World::read().draw(view, /*ignore_visibility*/ false);
+	World::read().draw(view);
 	draw_creature(Creature::Player, view);
-	//g_player().draw(view);
 	Creature::draw_visible_creatures(view);
 
 	// LINE DEBUG

@@ -59,12 +59,18 @@ namespace Spell
 {
 	enum Index : int;
 	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target);
-};
+}
+
+namespace Stairs
+{
+	enum Direction : byte;
+	struct Data;
+}
 
 namespace Status
 {
 	enum Index : int;
-};
+}
 
 namespace Terrain
 {

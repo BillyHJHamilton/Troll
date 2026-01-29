@@ -295,12 +295,11 @@ void Handle::move (Vec3 const & new_pos)
 
 bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 {
-	// TODO move properly in global 3D space, between floors, etc.
+	World const& world = World::read();
 
 	Vec2 new_pos = pos().xy() + relative_move;
 	Vec3 new_pos_3d = {new_pos.x, new_pos.y, pos().z};
-
-	World const& world = World::read();
+	new_pos_3d.z += world.get_stairs_dz(pos(), new_pos);
 
 	if (world.is_solid(new_pos_3d))
 	{

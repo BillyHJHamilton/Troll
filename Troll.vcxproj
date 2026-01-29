@@ -174,10 +174,12 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
+    <ClCompile Include="Stairs.cpp" />
     <ClCompile Include="Status.cpp" />
     <ClCompile Include="Target.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="World.cpp" />
+    <ClCompile Include="WorldLineItr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h" />
@@ -198,17 +200,20 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />
+    <ClInclude Include="Stairs.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Target.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="VectorUtil.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="WorldLineItr.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CodingStandard.txt" />
     <Text Include="Scraps\LineCache.txt" />
     <Text Include="Scraps\Scaps.txt" />
+    <Text Include="TestLOS.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
