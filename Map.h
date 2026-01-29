@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "Stairs.h"
 
+#include <unordered_map>
 #include <vector>
 
 enum class Visibility : byte
@@ -60,5 +61,5 @@ private:
 	Grid<int> visibility;
 
 	// List of stairs on the level.
-	std::vector<Stairs::Data> stairs;
+	std::unordered_map<Vec2,Stairs::Direction> stairs;
 };

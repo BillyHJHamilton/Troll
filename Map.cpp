@@ -3,6 +3,7 @@
 
 #include "Draw.h"
 #include "Line.h"
+#include "MapUtil.h"
 #include "Random.h"
 #include "Target.h"
 #include "Terrain.h"
@@ -106,17 +107,15 @@ void Map::add_stairs(Vec2 global_pos, Stairs::Direction dir)
 {
 	assert(!has_stairs(global_pos));
 	set_terrain(global_pos, Stairs::get_terrain(dir));
-	stairs.push_back({global_pos, dir});
+	stairs.emplace(global_pos, dir);
 }
 
 Stairs::Direction Map::get_stairs(Vec2 global_pos) const
 {
-	for (const Stairs::Data& data : stairs)
+	const Stairs::Direction* ptr = Util::Find(stairs, global_pos);
+	if (ptr)
 	{
-		if (data.start_pos == global_pos)
-		{
-			return data.direction;
-		}
+		return *ptr;
 	}
 
 	return Stairs::None;
@@ -148,14 +147,16 @@ void Map::add_corresponding_stairs(const Map& other)
 		return;
 	}
 
-	for (const Stairs::Data& data : other.stairs)
+	for (const auto& pair : other.stairs)
 	{
-		if (add_up != Stairs::is_up(data.direction))
+		Vec2 const start_pos = pair.first;
+		Stairs::Direction const dir = pair.second;
+		if (add_up != Stairs::is_up(dir))
 		{
-			Vec2 this_end = data.start_pos + Stairs::relative_move(data.direction).xy();
+			Vec2 this_end = start_pos + Stairs::relative_move(dir).xy();
 			if (contains(this_end))
 			{
-				add_stairs(this_end, Stairs::corresponding_direction(data.direction));
+				add_stairs(this_end, Stairs::corresponding_direction(dir));
 			}
 		}
 	}
