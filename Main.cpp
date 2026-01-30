@@ -5,13 +5,11 @@
 #include "Input.h"
 
 // To do:
+// - Map generation
 // - Improved enemy AI
-//  - Move towards player's last location if out of range.
-//  - Pathfinding...
+//  - Pathfinding
 //  - EQS / find good attack position
 // - XP and level up
-// - Map generation
-// - Multiple floors / levels
 // - Items
 
 void config_terminal()
