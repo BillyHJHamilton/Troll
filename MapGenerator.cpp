@@ -58,6 +58,8 @@ void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)
 
 void MapGenerator::Generate()
 {
+	std::cout << "\nGenerating level.\n";
+
 	PlaceSeedRooms();
 
 	PlaceRooms();

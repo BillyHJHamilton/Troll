@@ -84,10 +84,13 @@ void setup()
 		int const map_id = world.add_map(z, map1_box, Terrain::Wall);
 
 		MapGenerator::Parameters param{};
-		param.DownStairsToAdd = 0;
 		if (z == 6)
 		{
 			param.UpStairsToAdd = 0;
+		}
+		else
+		{
+			param.UpStairsToAdd = Random::in_range(2,5);
 		}
 
 		MapGenerator& generator = world.edit_map(map_id).get_generator();

@@ -29,7 +29,7 @@ public:
 		int MinFacingStairsProximity = 6; // 3 + min room dimension
 
 		int UpStairsToAdd = 2;
-		int DownStairsToAdd = 2;
+		int DownStairsToAdd = 0;
 	};
 
 	MapGenerator(Map& map);
