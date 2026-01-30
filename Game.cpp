@@ -70,9 +70,10 @@ void setup()
 	// Now try to find a place for the player...
 	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
 	{
-		if (!world.is_solid((*itr).xyz(0)))
+		Vec3 pos = itr->xy0();
+		if (!world.is_solid(pos) && !world.has_stairs(pos))
 		{
-			spawn_creature(Creature::Player, {4,4});
+			spawn_creature(Creature::Player, pos);
 			break;
 		}
 	}
