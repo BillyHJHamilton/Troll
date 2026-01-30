@@ -205,6 +205,14 @@ struct Box2
 	Box2(Vec2 m, Vec2 s) : min(m), size(s) {}
 	Box2(int x, int y, int w, int h) : min{x,y}, size{w,h} {}
 
+	static Box2 spanning(Vec2 p0, Vec2 p1)
+	{
+		Box2 b;
+		b.min = componentwise_min(p0, p1);
+		b.size = componentwise_max(p0, p1) - b.min + Vec2{1,1};
+		return b;
+	}
+
 	Vec2 min = {0,0};
 	Vec2 size = {0,0};
 
