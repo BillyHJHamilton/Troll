@@ -76,14 +76,12 @@ void setup()
 	map1.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
 	map1.fill_box(Box2(4, 0, 1, 5), Terrain::Open);
 	map1.add_stairs({6,3}, Stairs::UpNorth);
-	map1.set_terrain({6,2}, Terrain::UpStairs); // fake stairs...
 
 	map2.fill_box(Box2(1, -9, 9, 9), Terrain::Open);
 	map2.set_terrain({4,-1}, Terrain::Open);
 
 	map3.fill_box(Box2(1,1,12,1), Terrain::Open);
 	map3.add_corresponding_stairs(map1);
-	map3.set_terrain({6,3}, Terrain::DownStairs); // fake stairs...
 
 	spawn_creature(Creature::Player, {4,4});
 	spawn_creature(Creature::Neville_0, {6,9});

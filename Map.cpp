@@ -107,6 +107,7 @@ void Map::add_stairs(Vec2 global_pos, Stairs::Direction dir)
 {
 	assert(!has_stairs(global_pos));
 	set_terrain(global_pos, Stairs::get_terrain(dir));
+	set_terrain(global_pos + Stairs::relative_move(dir).xy(), Stairs::get_terrain(dir));
 	stairs.emplace(global_pos, dir);
 }
 
