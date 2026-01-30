@@ -95,6 +95,9 @@
     <ClCompile Include="WorldLineItr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -176,6 +179,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MapUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

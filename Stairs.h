@@ -12,14 +12,10 @@ namespace Stairs
 		UpWest,   UpSouth,   UpEast,   UpNorth
 	};
 
-	struct Data
-	{
-		Vec2 start_pos;
-		Direction direction;
-	};
-
 	bool is_up(Direction dir);
 	Vec3 relative_move(Direction dir);
+	Vec2 joining_vector(Direction dir);
 	Terrain::Type get_terrain(Direction dir);
 	Direction corresponding_direction(Direction dir);
+	Box2 get_box(Vec2 start_pos, Direction dir);
 }

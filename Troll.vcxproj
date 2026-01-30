@@ -171,6 +171,7 @@
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="Room.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Beam.h" />
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Creature.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
@@ -199,6 +201,7 @@
     <ClInclude Include="MiscastCategory.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="Room.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />
     <ClInclude Include="Stairs.h" />

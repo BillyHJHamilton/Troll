@@ -31,6 +31,11 @@ Vec3 relative_move(Direction dir)
 	}
 }
 
+Vec2 joining_vector(Direction dir)
+{
+	return -1 * relative_move(dir).xy();
+}
+
 Terrain::Type get_terrain(Direction dir)
 {
 	return is_up(dir) ? Terrain::UpStairs : Terrain::DownStairs;
@@ -53,6 +58,11 @@ Direction corresponding_direction(Direction dir)
 			assert(false);
 			return None;
 	}
+}
+
+Box2 get_box(Vec2 start_pos, Direction dir)
+{
+	return Box2::spanning(start_pos, start_pos + Stairs::relative_move(dir).xy());
 }
 
 } // namespace Stairs

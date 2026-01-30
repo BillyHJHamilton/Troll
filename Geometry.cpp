@@ -96,6 +96,13 @@ bool Box2::intersects (const Box2 &other) const
 		return true;
 }
 
+bool Box2::intersects_or_adjacent (const Box2 &other) const
+{
+	// To check for adjacency, check for intersection with a slightly larger box.
+	Box2 temp = Box2(min.x - 1, min.y - 1, size.x + 2, size.y + 2);
+	return temp.intersects(other);
+}
+
 bool Box2::contains (const Box2 &other) const
 {
 	if (other.min.x < min.x
@@ -105,6 +112,12 @@ bool Box2::contains (const Box2 &other) const
 		return false;
 	else
 		return true;
+}
+
+bool Box2::overlaps_on_axis(Box2 const & other, Axis axis) const
+{
+	return other.max()[axis] > min[axis]
+		&& other.min[axis] < max()[axis];
 }
 
 Box2 Box2::intersection (Box2 const & other) const

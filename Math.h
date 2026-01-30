@@ -32,6 +32,14 @@ namespace Math
 		return (x > c_FloatEpsilon) ? 1 : (x < -c_FloatEpsilon) ? -1 : 0;
 	}
 
+	// from stackoverflow : )
+	inline bool SameSign(int x, int y)
+	{
+		int const a = (x >= 0); // it was a nice one-liner but visual studio emitted spurious warnings.
+		int const b = (y < 0);  // splitting to three lines fixed it.
+		return a ^ b;
+	}
+
 	inline bool FloatIsZero(float x)
 	{
 		return abs(x) < c_FloatEpsilon;

@@ -24,6 +24,7 @@ struct Box2;
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
+enum class RoomType : byte;
 enum class TargetMode : byte;
 enum class Visibility : byte;
 
@@ -64,7 +65,6 @@ namespace Spell
 namespace Stairs
 {
 	enum Direction : byte;
-	struct Data;
 }
 
 namespace Status

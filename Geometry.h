@@ -226,7 +226,9 @@ struct Box2
 
 	bool contains (Vec2 const & v) const;
 	bool intersects (Box2 const & other) const;
+	bool intersects_or_adjacent (Box2 const & other) const;
 	bool contains (Box2 const & other) const;
+	bool overlaps_on_axis(Box2 const & other, Axis a) const;
 	int area () const { return size.x * size.y; }
 
 	Box2 intersection (Box2 const & other) const;
