@@ -6,6 +6,13 @@
 
 namespace Util
 {
+	// Get the size and convert to int (to suppress size_t warnings).
+	template<class T>
+	inline int Size(std::vector<T> const& vector)
+	{
+		return static_cast<int>(vector.size());
+	}
+
 	template<typename VectorItemType>
 	bool IsValidIndex(std::vector<VectorItemType> const& vector, int index)
 	{

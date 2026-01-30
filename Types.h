@@ -16,6 +16,8 @@ Grid<T> make_grid (int x, int y, T value)
 }
 
 class Map;
+class MapGenerator;
+class World;
 
 struct Vec2;
 struct Vec3;
@@ -65,6 +67,7 @@ namespace Spell
 namespace Stairs
 {
 	enum Direction : byte;
+	using Pair = std::pair<Vec2,Stairs::Direction>;
 }
 
 namespace Status

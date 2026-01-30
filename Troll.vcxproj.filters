@@ -98,6 +98,9 @@
     <ClCompile Include="Room.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MapGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -185,6 +188,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MapGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

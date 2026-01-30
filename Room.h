@@ -37,7 +37,7 @@ public:
 	Vec2 SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const;
 	std::vector<Room> FindPossibleJoiningDownStairs() const;
 
-	bool AnyRoomVetoes(const std::vector<Room> &roomVec);
+	bool AnyRoomVetoes(const std::vector<Room> &roomVec) const;
 
 	void AddToMap(Map &map) const;
 

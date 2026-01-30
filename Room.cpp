@@ -297,7 +297,7 @@ std::vector<Room> Room::FindPossibleJoiningDownStairs() const
 	return output;
 }
 
-bool Room::AnyRoomVetoes(const std::vector<Room> &roomVec)
+bool Room::AnyRoomVetoes(const std::vector<Room> &roomVec) const
 {
 	for (const Room &room : roomVec)
 	{
@@ -311,20 +311,12 @@ bool Room::AnyRoomVetoes(const std::vector<Room> &roomVec)
 
 void Room::AddToMap(Map &map) const
 {
-	// TODO Do we need to consider global vs local positions?
-	// I guess rooms are probably generated in global space, right?
+	// Room positions are all in global space.
 
 	// todo could probably make this better polymorphic design
 	if (m_RoomType == RoomType::Stairs)
 	{
-		if (Stairs::is_up(m_StairsDirection))
-		{
-			map.fill_box(m_Box, Terrain::UpStairs);
-		}
-		else
-		{
-			map.fill_box(m_Box, Terrain::DownStairs);
-		}
+		map.add_stairs(StairsLocalEnd(), m_StairsDirection);
 		return;
 	}
 

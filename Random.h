@@ -13,20 +13,20 @@ namespace Random
 	int in_range (int min, int max);
 	float in_range (float min, float max);
 	Vec2 in_box(Box2 b);
-	std::size_t index (std::size_t size);
+	int index (int size);
 	bool coinflip ();
 	bool one_in (int x);
 
 	template<class T>
-	std::size_t index (std::vector<T> v)
+	int index (std::vector<T> v)
 	{
-		return random_index(v.size());
+		return Random::index((int)v.size());
 	}
 
 	template<class T>
 	T from_vector (std::vector<T> v)
 	{
-		return v.at(Random::index(v.size()));
+		return v.at(Random::index((int)v.size()));
 	}
 
 	template<class T>

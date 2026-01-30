@@ -42,9 +42,9 @@ Vec2 in_box(Box2 b)
 	};
 }
 
-std::size_t index (std::size_t size)
+int index (int size)
 {
-	std::uniform_int_distribution<std::size_t> dist(0, size-1);
+	std::uniform_int_distribution<int> dist(0, size-1);
 	return dist(generator);
 }
 

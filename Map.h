@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "Stairs.h"
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -20,6 +21,9 @@ class Map
 public:
 	void init(int z, Box2 const& box, Terrain::Type fill);
 
+	MapGenerator& get_generator();
+
+	Box2 get_box() const { return map_box; }
 	int get_z() const { return global_z; }
 
 	inline Vec2 global_to_local(Vec2 const & global) const { return global - map_box.min; }
@@ -48,7 +52,7 @@ public:
 	void clear_visibility(int current_step);
 	void clean_explored_values(int current_step);
 
-private:
+protected:
 	// Area occupied by this map in global space.
 	Box2 map_box = {};
 
@@ -62,4 +66,6 @@ private:
 
 	// List of stairs on the level.
 	std::unordered_map<Vec2,Stairs::Direction> stairs;
+
+	std::shared_ptr<MapGenerator> generator;
 };

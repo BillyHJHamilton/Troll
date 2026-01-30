@@ -1,9 +1,9 @@
-#include "BearLibTerminal.h"
 #include "Map.h"
 
 #include "Draw.h"
 #include "Line.h"
 #include "MapUtil.h"
+#include "MapGenerator.h"
 #include "Random.h"
 #include "Target.h"
 #include "Terrain.h"
@@ -18,6 +18,16 @@ void Map::init(int z, Box2 const & box, Terrain::Type fill)
 
 	terrain = make_grid(box.size.x, box.size.y, fill);
 	visibility = make_grid(box.size.x, box.size.y, c_invalid);
+}
+
+MapGenerator& Map::get_generator()
+{
+	if (!generator)
+	{
+		generator = std::make_shared<MapGenerator>(*this);
+	}
+
+	return *generator;
 }
 
 Terrain::Type Map::get_terrain(Vec2 const & global_pos) const
@@ -148,7 +158,7 @@ void Map::add_corresponding_stairs(const Map& other)
 		return;
 	}
 
-	for (const auto& pair : other.stairs)
+	for (const Stairs::Pair& pair : other.stairs)
 	{
 		Vec2 const start_pos = pair.first;
 		Stairs::Direction const dir = pair.second;

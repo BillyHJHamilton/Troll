@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Line.h"
 #include "Map.h"
+#include "MapGenerator.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Random.h"
@@ -61,7 +62,22 @@ void setup()
 	s_game_mode = GameMode::Normal;
 	World& world = World::edit();
 
-	Box2 const map1_box = Box2(0, 0, 24, 24);
+	Box2 const map1_box = Box2(0, 0, 30, 30);
+	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
+	MapGenerator& gen1 = world.edit_map(0).get_generator();
+	gen1.Generate();
+
+	// Now try to find a place for the player...
+	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
+	{
+		if (!world.is_solid((*itr).xyz(0)))
+		{
+			spawn_creature(Creature::Player, {4,4});
+			break;
+		}
+	}
+
+/*	Box2 const map1_box = Box2(0, 0, 24, 24);
 	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
 	Box2 const map2_box = Box2(0, -10, 24, 10);
 	int const map2_id = world.add_map(0, map2_box, Terrain::Wall);
@@ -85,7 +101,7 @@ void setup()
 
 	spawn_creature(Creature::Player, {4,4});
 	spawn_creature(Creature::Neville_0, {6,9});
-	spawn_creature(Creature::ColinCreevy_0, {13,15});
+	spawn_creature(Creature::ColinCreevy_0, {13,15});*/
 }
 
 void update()

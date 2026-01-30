@@ -1,4 +1,6 @@
 #include "Stairs.h"
+
+#include "Random.h"
 #include "Terrain.h"
 
 #include <cassert>
@@ -63,6 +65,36 @@ Direction corresponding_direction(Direction dir)
 Box2 get_box(Vec2 start_pos, Direction dir)
 {
 	return Box2::spanning(start_pos, start_pos + Stairs::relative_move(dir).xy());
+}
+
+Stairs::Direction random_up_direction()
+{
+	switch (Random::in_range(0,3))
+	{
+		case 0: return Stairs::UpEast;
+		case 1: return Stairs::UpNorth;
+		case 2: return Stairs::UpWest;
+		case 3: return Stairs::UpSouth;
+
+		default:
+			assert(false);
+			return Stairs::None;
+	}
+}
+
+Stairs::Direction random_down_direction()
+{
+	switch (Random::in_range(0,3))
+	{
+		case 0: return Stairs::DownEast;
+		case 1: return Stairs::DownNorth;
+		case 2: return Stairs::DownWest;
+		case 3: return Stairs::DownSouth;
+
+		default:
+			assert(false);
+			return Stairs::None;
+	}
 }
 
 } // namespace Stairs
