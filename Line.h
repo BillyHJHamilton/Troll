@@ -10,6 +10,10 @@
 
 namespace LineCache
 {
+	// Constant used to indicate a trajectory up/down stairs rather than in a
+	// horizontal direction.  Value will be this number + (int)Stairs::Direction.
+	int constexpr c_stairs_line = -2;
+
 	void init();
 
 	std::vector<int> const& get_lines(Vec2 relative_pos);

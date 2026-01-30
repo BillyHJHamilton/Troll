@@ -4,6 +4,7 @@
 #include "Grammar.h"
 #include "Random.h"
 #include "Spell.h"
+#include "Stairs.h"
 #include "World.h"
 
 #include <cassert>
@@ -22,7 +23,10 @@ int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
 
 static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec3 target_pos, bool caster_aimed);
 static void shoot_beam (Beam::Data & beam);
-static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line);
+static void shoot_beam_on_line (Beam::Data & beam);
+static void shoot_beam_on_stairs (Beam::Data & beam);
+static void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, std::string& colour, LineCache::Itr3D const& line_itr);
+static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line_itr);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
 static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line);
@@ -91,6 +95,18 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 
 void shoot_beam (Beam::Data & beam)
 {
+	if (beam.trajectory == LineCache::c_stairs_line)
+	{
+		shoot_beam_on_stairs(beam);
+	}
+	else
+	{
+		shoot_beam_on_line(beam);
+	}
+}
+
+void shoot_beam_on_line (Beam::Data & beam)
+{
 	LineCache::Itr3D line_itr(beam.pos, beam.trajectory);
 
 	// init for animation
@@ -106,23 +122,68 @@ void shoot_beam (Beam::Data & beam)
 		// update position
 		beam.pos = *line_itr;
 
-		bool const out_of_range = !within_range(beam.start_pos, beam.pos, beam.max_range);
-		if (out_of_range)
-		{
-			beam.done = true;
-		}
-		else
-		{
-			// do animation
-			World const& world = World::read();
-			if (world.is_visible(beam.pos))
-			{
-				Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
-			}
+		sweep_beam_on_current_pos(beam, view, codepoint, colour, line_itr);
+	}
+}
 
-			// see if we hit anything; this may change done to true
-			test_for_impact(beam, line_itr);
+void shoot_beam_on_stairs (Beam::Data & beam)
+{
+	// init for animation
+	Draw::View view = Draw::get_view();
+	int codepoint = get_codepoint(beam);
+	std::string colour = get_colour(beam);
+
+	World const& world = World::read();
+	Stairs::Direction dir = world.get_stairs(beam.pos);
+
+	assert(dir != Stairs::None);
+
+	Vec3 const move = Stairs::relative_move(dir);
+	beam.pos += move;
+
+	// Make a fake line iterator for the horizontal impact (needed for Flipendo).
+	Vec2 const move2d = move.xy();
+	int const fake_line_id = LineCache::get_lines(move2d).at(0);
+	LineCache::Itr3D fake_line(beam.pos, fake_line_id);
+
+	sweep_beam_on_current_pos(beam, view, codepoint, colour, fake_line);
+
+	// If it didn't hit anything, hit the ceiling/floor.
+	if (!beam.done)
+	{
+		if (world.is_visible(beam.pos))
+		{
+			if (move.z > 0)
+			{
+				Draw::add_message("The " + beam_description(beam) + " hits the ceiling.");
+			}
+			else
+			{
+				Draw::add_message("The " + beam_description(beam) + " hits the floor.");
+			}
 		}
+		beam.done = true;
+	}
+}
+
+void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, std::string& colour, LineCache::Itr3D const& line_itr)
+{
+	bool const out_of_range = !within_range(beam.start_pos, beam.pos, beam.max_range);
+	if (out_of_range)
+	{
+		beam.done = true;
+	}
+	else
+	{
+		// do animation
+		World const& world = World::read();
+		if (world.is_visible(beam.pos))
+		{
+			Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
+		}
+
+		// see if we hit anything; this may change done to true
+		test_for_impact(beam, line_itr);
 	}
 }
 
@@ -133,7 +194,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	// hit wall
 	if (world.is_solid(beam.pos))
 	{
-		if (world.get_visibility(beam.pos) == Visibility::Visible)
+		if (world.is_visible(beam.pos))
 		{
 			Draw::add_message("The " + beam_description(beam) + " hits the wall.");
 		}

@@ -249,7 +249,13 @@ int World::get_los(Vec3 start, Vec3 end) const
 {
 	if (start.z != end.z)
 	{
-		// Todo: special cases for stairs.
+		Stairs::Direction const dir = get_stairs(start);
+		if (dir != Stairs::None &&
+			start + Stairs::relative_move(dir) == end)
+		{
+			return LineCache::c_stairs_line;
+		}
+
 		return c_invalid;
 	}
 

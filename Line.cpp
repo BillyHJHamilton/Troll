@@ -7,7 +7,6 @@
 
 namespace LineCache
 {
-
 // We will draw lines through each point in a square.
 // The lines will all be extended to length 8 for simplicity/consistency.
 //
