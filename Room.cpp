@@ -270,7 +270,7 @@ Vec2 Room::SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const
 	return output;
 }
 
-std::vector<Room> Room::FindPossibleJoiningDownStairs() const
+std::vector<Room> Room::FindPossibleJoiningStairs(bool goingUp) const
 {
 	std::vector<Room> output;
 
@@ -284,15 +284,17 @@ std::vector<Room> Room::FindPossibleJoiningDownStairs() const
 	for (int pos = m_Box.min.x; pos < m_Box.max(AXIS_X); ++pos)
 	{
 		output.push_back(MakeStairs(Vec2{pos, m_Box.min.y - 1},
-			Stairs::Direction::DownNorth));
+			goingUp ? Stairs::UpNorth : Stairs::DownNorth));
 		output.push_back(MakeStairs(Vec2{pos, m_Box.max(AXIS_Y)},
-			Stairs::Direction::DownSouth));
+			goingUp ? Stairs::UpSouth : Stairs::Direction::DownSouth));
 	}
 	// left and right
 	for (int pos = m_Box.min.y; pos < m_Box.max(AXIS_Y); ++pos)
 	{
-		MakeStairs(Vec2{m_Box.min.x - 1, pos}, Stairs::Direction::DownWest);
-		MakeStairs(Vec2{m_Box.max(AXIS_X), pos}, Stairs::Direction::DownEast);
+		output.push_back(MakeStairs(Vec2{m_Box.min.x - 1, pos},
+			goingUp ? Stairs::UpWest : Stairs::DownWest));
+		output.push_back(MakeStairs(Vec2{m_Box.max(AXIS_X), pos},
+			goingUp ? Stairs::UpEast : Stairs::DownEast));
 	}
 	return output;
 }

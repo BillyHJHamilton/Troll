@@ -43,7 +43,7 @@ Terrain::Type get_terrain(Direction dir)
 	return is_up(dir) ? Terrain::UpStairs : Terrain::DownStairs;
 }
 
-Direction corresponding_direction(Direction dir)
+Direction reverse(Direction dir)
 {
 	switch(dir)
 	{

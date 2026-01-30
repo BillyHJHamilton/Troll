@@ -35,7 +35,7 @@ public:
 	bool VetoesRoom(Room const &newRoom) const;
 	std::vector<Room> FindPossibleJoiningCorridors(Room const & other) const;
 	Vec2 SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const;
-	std::vector<Room> FindPossibleJoiningDownStairs() const;
+	std::vector<Room> FindPossibleJoiningStairs(bool goingUp) const;
 
 	bool AnyRoomVetoes(const std::vector<Room> &roomVec) const;
 
@@ -60,5 +60,5 @@ private:
 	RoomType m_RoomType;
 
 	Axis m_CorridorAxis = AXIS_X;
-	Stairs::Direction m_StairsDirection = Stairs::Direction::DownEast;
+	Stairs::Direction m_StairsDirection = Stairs::None;
 };

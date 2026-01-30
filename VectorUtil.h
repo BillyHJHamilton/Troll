@@ -13,6 +13,13 @@ namespace Util
 		return static_cast<int>(vector.size());
 	}
 
+	// Get index of the last item added to the back of the vector.
+	template<class T>
+	inline int LastIndex(std::vector<T> const& vector)
+	{
+		return Size(vector) - 1;
+	}
+
 	template<typename VectorItemType>
 	bool IsValidIndex(std::vector<VectorItemType> const& vector, int index)
 	{

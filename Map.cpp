@@ -167,7 +167,7 @@ void Map::add_corresponding_stairs(const Map& other)
 			Vec2 this_end = start_pos + Stairs::relative_move(dir).xy();
 			if (contains(this_end))
 			{
-				add_stairs(this_end, Stairs::corresponding_direction(dir));
+				add_stairs(this_end, Stairs::reverse(dir));
 			}
 		}
 	}

@@ -46,6 +46,7 @@ public:
 	void add_stairs(Vec2 global_pos, Stairs::Direction dir);
 	Stairs::Direction get_stairs(Vec2 global_pos) const;
 	bool has_stairs(Vec2 global_pos) const;
+	std::unordered_map<Vec2,Stairs::Direction> const& get_stairs_map() const { return stairs; }
 
 	void add_corresponding_stairs(const Map& other);
 

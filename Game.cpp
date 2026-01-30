@@ -77,6 +77,24 @@ void setup()
 		}
 	}
 
+	// Now let's create a number of additional levels on top!
+	for (int z = 1; z <= 6; ++z)
+	{
+		int const map_id = world.add_map(z, map1_box, Terrain::Wall);
+
+		MapGenerator::Parameters param{};
+		param.DownStairsToAdd = 0;
+		if (z == 6)
+		{
+			param.UpStairsToAdd = 0;
+		}
+
+		MapGenerator& generator = world.edit_map(map_id).get_generator();
+		generator.SetParameters(param);
+		generator.AddConnectingStairsAsSeedRooms(world.read_map(map_id - 1));
+		generator.Generate();
+	}
+
 /*	Box2 const map1_box = Box2(0, 0, 24, 24);
 	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
 	Box2 const map2_box = Box2(0, -10, 24, 10);
