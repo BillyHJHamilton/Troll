@@ -7,19 +7,9 @@
 #include "Terrain.h"
 #include "VectorUtil.h"
 
-int constexpr c_MinRoomDimension = 3;
-int constexpr c_MaxRoomDimension = 7;
-int constexpr c_MinRoomArea = 3*3;
-int constexpr c_MaxRoomArea = 6*6;
-
-int constexpr c_MinNumRooms = 8;
-int constexpr c_MaxNumRooms = 20;
-
-int constexpr c_MinStairsProximity = 4;
-int constexpr c_MinFacingStairsProximity = 3 + c_MinRoomDimension;
-
-MapGenerator::MapGenerator(Map& owner)
+MapGenerator::MapGenerator(Map& owner, Parameters parameters)
 	: m_Map(owner)
+	, m_Param(parameters)
 {
 }
 
@@ -82,7 +72,7 @@ int MapGenerator::FindRoomAtPos(Vec2 pos)
 void MapGenerator::PlaceRooms()
 {
 	// Other rooms
-	int numRooms = Random::in_range(c_MinNumRooms,c_MaxNumRooms);
+	int numRooms = Random::in_range(m_Param.MinNumRooms, m_Param.MaxNumRooms);
 
 	int constexpr c_MaxAttempts = 1000;
 	int attempts = 0;
@@ -405,40 +395,41 @@ void MapGenerator::PlaceUpStairs()
 Vec2 MapGenerator::RandRoomSize()
 {
 	Vec2 size{
-		Random::in_range(c_MinRoomDimension, c_MaxRoomDimension),
-		Random::in_range(c_MinRoomDimension, c_MaxRoomDimension)
+		Random::in_range(m_Param.MinRoomDimension, m_Param.MaxRoomDimension),
+		Random::in_range(m_Param.MinRoomDimension, m_Param.MaxRoomDimension)
 	};
 
-	while (size.x * size.y > c_MaxRoomArea)
+	while (size.x * size.y > m_Param.MaxRoomArea)
 	{
-		if (Random::coinflip() && size.x > c_MinRoomDimension)
+		if (Random::coinflip() && size.x > m_Param.MinRoomDimension)
 		{
 			-- size.x;
 		}
-		else if (size.y > c_MinRoomDimension)
+		else if (size.y > m_Param.MinRoomDimension)
 		{
 			-- size.y;
 		}
 		else
 		{
-			std::cerr << "Minimum room is too large: x = " << size.x << "; y = " << size.y << "; max area = " << c_MaxRoomArea << std::endl;
+			std::cerr << "Minimum room is too large: x = " << size.x << "; y = " << size.y
+				<< "; max area = " << m_Param.MaxRoomArea << std::endl;
 			break;
 		}
 	}
 
-	while (size.x * size.y < c_MinRoomArea)
+	while (size.x * size.y < m_Param.MinRoomArea)
 	{
-		if (Random::coinflip() && size.x < c_MaxRoomDimension)
+		if (Random::coinflip() && size.x < m_Param.MaxRoomDimension)
 		{
 			++ size.x;
 		}
-		else if (size.y < c_MaxRoomDimension)
+		else if (size.y < m_Param.MaxRoomDimension)
 		{
 			++ size.y;
 		}
 		else
 		{
-			std::cerr << "Maximum room is too small: x = " << size.x << "; y = " << size.y << "; min area = " << c_MinRoomArea << std::endl;
+			std::cerr << "Maximum room is too small: x = " << size.x << "; y = " << size.y << "; min area = " << m_Param.MinRoomArea << std::endl;
 			break;
 		}
 	}
@@ -446,10 +437,12 @@ Vec2 MapGenerator::RandRoomSize()
 	return size;
 }
 
-Vec2 MapGenerator::RandRoomPos(Vec2 size)
+Vec2 MapGenerator::RandRoomPos(Vec2 roomSize)
 {
 	Box2 valid_area = m_Map.get_box();
-	valid_area.size -= {size};
+	valid_area.min += {m_Param.MapBorder, m_Param.MapBorder};
+	valid_area.size -= {m_Param.MapBorder, m_Param.MapBorder};
+	valid_area.size -= {roomSize};
 	return Random::in_box(valid_area);
 }
 
@@ -468,25 +461,27 @@ Stairs::Pair MapGenerator::RandStairsPos(bool isUp)
 	Axis const otherAxis = get_other_axis(stairsAxis);
 
 	Box2 map_box = m_Map.get_box();
+	int const smallBorder = 1 + m_Param.MapBorder;
+	int const largeBorder = smallBorder + m_Param.MaxRoomDimension;
 
 	Vec2 stairsPos;
 	stairsPos[otherAxis] = Random::in_range(
-		map_box.min[otherAxis] + 2,
-		map_box.inner_max(otherAxis) - 2);
+		map_box.min[otherAxis] + smallBorder,
+		map_box.inner_max(otherAxis) - smallBorder);
 
 	// Make sure not to put the stairs too close to the edge of the map
 	// such that it's impossible to fit a nice big room in there.
 	if (Stairs::joining_vector(dir)[stairsAxis] > 0)
 	{
 		stairsPos[stairsAxis] = Random::in_range(
-			map_box.min[stairsAxis] + 2,
-			map_box.inner_max(stairsAxis) - 2 - c_MaxRoomDimension);
+			map_box.min[stairsAxis] + smallBorder,
+			map_box.inner_max(stairsAxis) - largeBorder);
 	}
 	else
 	{
 		stairsPos[stairsAxis] = Random::in_range(
-			map_box.min[stairsAxis] + 2 + c_MaxRoomDimension,
-			map_box.inner_max(stairsAxis) - 2);
+			map_box.min[stairsAxis] + largeBorder,
+			map_box.inner_max(stairsAxis) - smallBorder);
 	}
 
 	return Stairs::Pair(stairsPos, dir);
@@ -525,7 +520,7 @@ bool MapGenerator::IsBadlyPlacedStairs(Room const& new_stairs)
 	Stairs::Direction dir = new_stairs.GetStairsDirection();
 	Vec2 stairsStart = new_stairs.StairsLocalEnd();
 	Vec2 stairsVec = Stairs::relative_move(dir).xy();
-	Vec2 stairsGoTowards = stairsStart + (c_MaxRoomDimension + 2)*stairsVec;
+	Vec2 stairsGoTowards = stairsStart + (m_Param.MaxRoomDimension + 2)*stairsVec;
 	if (!m_Map.contains(stairsGoTowards))
 	{
 		return true;
@@ -551,7 +546,7 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 	Vec2 p0 = new_stairs.StairsLocalEnd();
 	Vec2 p1 = other_stairs.StairsLocalEnd();
 
-	if(within_range(p0, p1, c_MinStairsProximity))
+	if(within_range(p0, p1, m_Param.MinStairsProximity))
 	{
 		return true;
 	}
@@ -568,7 +563,7 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 		// If so, there's no problem.
 		Axis otherAxis = get_other_axis(a0);
 		int sideDiff = abs(p0[otherAxis] - p1[otherAxis]);
-		if (sideDiff < c_MinRoomDimension + 2)
+		if (sideDiff < m_Param.MinRoomDimension + 2)
 		{
 			// They're close to lined up.
 			// But maybe they are facing away from each other?
@@ -580,7 +575,7 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 				// They are not facing away from each other.
 				// So check if the distance is adequate.
 				int facingDist = abs(p0[a0] - p1[a0]);
-				if (facingDist < c_MinFacingStairsProximity)
+				if (facingDist < m_Param.MinFacingStairsProximity)
 				{
 					// Extremely Problematic!
 					return true;
