@@ -324,7 +324,7 @@ void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 	{
 		ss << "[bkcolor=darkest red]";
 	}
-	ss << std::left << std::setw(16) << creature.name();
+	ss << std::left << std::setw(16) << creature.short_name();
 	if (Target::is_target(creature))
 	{
 		ss << "[/bkcolor]";

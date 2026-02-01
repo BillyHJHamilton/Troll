@@ -1,0 +1,107 @@
+--------------------------------------------------------------------------------
+# Creature Identity
+--------------------------------------------------------------------------------
+
+There are three levels of creature identity:
+
+(1) Creature - Instance of a character in the game.
+
+(2) Creature Type - The creature's immutable base statblock.
+ - Though some parts may be mutable, like spells known with obliviate.
+ - Basically a cookie-cutter used to spawn a creature.
+
+(3) Creature Identity - Identity of a named character, e.g., Hermione Granger.
+ - There may be multiple "Types" with the same identity, representing different ages or versions of the character.
+ - We normally only want to spawn one version at a time.
+ - We may need to find and clean up the weaker version to make up for the stronger one.
+  -- Though we should try to avoid an exploit where you go deliberately spawn the strong characters
+     and then go back and take advantage of empty rooms below!
+
+The question is what data should be stored at each level.
+For example, the name and gender would usually be consistent per Creature Identity...
+ ...until we want to spawn in female!Harry from some specific AU, I suppose.
+
+So perhaps in the IDEAL world, the creature type could inherit from the identity,
+but also overload it if necessary.
+
+Ultimately it's not a big deal if we duplicate some data.
+So it might be easiest to simply stat everything in the Type,
+and keep the Identity as a mere enum (or NameHash).
+
+Data that we might want about creature types:
+ - Type ID (enum like Creature::Hermione_1, or hash of string like "Hermione_1")
+ - Character identity (again, either enum or hash)
+ - Difficulty Level (used for placement)
+ - Probability (weight factor for spawning)
+ - Long name ("Hermione Granger", "Draco Malfoy", "Professor Snape")
+ - Short name ("Hermione", "Malfoy", "Snape")
+ - Codepoint (letter to display)
+ - Colour
+ - Gender
+ - Max HP
+ - Magic skill
+ - Spells known
+ - Tags (a feature for later)
+ - Num spawned (for generics, but prob a separate table)
+
+Is any of that non-const?  I think only Spells Known.
+So rather than cloning the creature stats, really we could flyweight them.
+
+The special case is that the Player stats all change over time.
+But even still, we could maybe hack that somehow.
+Like by making the player entry in the type table mutable.
+
+Later we'll also want dialogue/taunts.  But that will be its own system.
+
+Metadata about creature identities:
+ - ID of current one alive, if any
+ - Level of the strongest variant spawned so far
+   (They aren't allowed to repeat or regress.)
+
+--------------------------------------------------------------------------------
+# Creature Spawning
+--------------------------------------------------------------------------------
+
+So, how should it work?
+
+The main question of interest is how to resolve conflicts between multiple versions of the same character.
+The overall goal is that you could meet First Year Hermione early in the game,
+and then meet Fifth Year Hermione later in the game,
+but not be able to meet them out of order or at the same time.
+
+A big problem is that the player may rush or wander through levels in the "wrong" order.
+
+Some ideas:
+
+(1) At startup, assign characters to each map.
+    When you enter a level, spawn the characters for it.
+    If they have a pre-duplicate still active, unspawn it at that time.
+
+(2) At startup, spawn base levels of characters throughout the world.
+    When you defeat a character, spawn their next version into an appropriate map.
+
+(3) Do nothing at startup.
+    When you enter a level, choose characters to spawn in it.
+    Lower the probability of undefeated existing characters, to zero if in close proximity to player.
+    If chosen, despawn and replace the old version.
+
+Overall, I lean towards option 3.
+
+Some questions:
+
+- Do we start with the list of creatures, choose which ones to spawn and then choose where to put them?
+  Or do we start by wanting to spawn something, and find a creature of the right level?
+  I think the latter is more likely the way to go about it.
+
+- How do we choose which one from the list to spawn?
+  Each of them has a probability.  How do we weight by level?
+  I guess that each Map has an intended Difficulty, and we reduce weight by how far it is from it.
+  I'm not sure what the perfect mapping is.  Maybe similar to how we do spell casting odds.
+  Probably under-level should be higher probability than over-level.
+
+- Do we ever spawn additional creatures later?
+  Probably, but I'm not sure how/when yet, or if the difficulty level changes.
+
+It seems like I've decided on an overall approach.
+
+

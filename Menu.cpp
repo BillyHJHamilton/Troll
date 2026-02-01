@@ -103,7 +103,7 @@ void show_game_over()
 {
 	open_menu(Document);
 	s_document_content = "Game Over.\n\nYou were defeated by ";
-	s_document_content += Creature::name_from_type(Player::data().defeated_by);
+	s_document_content += Creature::long_name_from_type(Player::data().defeated_by);
 	s_document_content += ".";
 
 	s_on_complete = Game::reset;

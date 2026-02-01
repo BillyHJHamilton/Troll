@@ -9,7 +9,7 @@
 // Most creatures are the "bad guys", but there is also a creature for the player.
 // This keeps the code simple as we can use the same functions for player and NPC.
 // Concerns that only apply to the player, like XP, will be in the Player module.
-// Concerns that only apply to NPCs are in the Bot module.
+// Concerns for AI that only apply to NPCs are in the Bot module.
 
 // Individual creatures are identified by a Creature::Handle throughout the program.
 // This can be treated as an int, but also provides an interface for that creature.
@@ -49,15 +49,32 @@ namespace Creature
 		Count
 	};
 
+	enum class Identity : int
+	{
+		Generic = -1,
+		Player = 0,
+		Neville,
+		ColinCreevy,
+		Count
+	};
+
 	struct Stats
 	{
-		Type type = Creature::None;
-		char const * name = nullptr;
+		Identity identity = Identity::Generic;
+		float difficulty = 0.0f;
+		float probability = 1.0f;
+		char const * short_name = nullptr;
+		char const * long_name = nullptr;
+		char const * colour = nullptr;
 		int codepoint = 0; // letter to display
-		Gender gender = Gender::Male;
 		int skill_magic = 0;
 		int max_hp = 0;
+		Gender gender = Gender::Male;
+	};
 
+	struct Instance
+	{
+		Type type = Creature::None;
 		int hp = 0;
 		Vec3 pos = {0,0,0};
 	};
@@ -90,7 +107,8 @@ namespace Creature
 		// Simple accessors
 		bool valid () const;
 		Creature::Type type () const;
-		std::string name () const;
+		std::string short_name () const;
+		std::string long_name () const;
 		Gender gender () const;
 		int skill_magic () const;
 		int max_hp () const;
@@ -148,7 +166,15 @@ namespace Creature
 	void init ();
 	void clear ();
 
-	const char* name_from_type(Creature::Type type);
+	void mix_gingerbread (
+		Creature::Type type, Creature::Identity identity, int difficulty, int probability,
+		char const * short_name, char const * long_name,
+		int codepoint, char const * colour, Gender gender,
+		int magic_skill, int max_hp, std::string spell_string);
+	void init_gingerbread();
+
+	const char* short_name_from_type(Creature::Type type);
+	const char* long_name_from_type(Creature::Type type);
 	Creature::Handle creature_at_pos (Vec3 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);

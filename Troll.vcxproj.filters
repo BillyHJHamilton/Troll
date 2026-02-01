@@ -101,6 +101,9 @@
     <ClCompile Include="MapGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Gingerbread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -195,7 +198,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CodingStandard.txt">
+    <Text Include="Docs\CodingStandard.txt">
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Scraps\LineCache.txt">
@@ -206,6 +209,12 @@
     </Text>
     <Text Include="TestLOS.txt">
       <Filter>Resource Files\Scraps</Filter>
+    </Text>
+    <Text Include="Docs\Game Design Goals.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Docs\Creature Identity and Spawning.txt">
+      <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
 </Project>

@@ -20,27 +20,25 @@ namespace Creature
 
 //-------------------------------------------------------------------------------------------------
 
-// The gingerbread array stores prototype objects which can be copied to spawn creatures
-// of different kinds.  (It is called gingerbread because they are like cookie cutters.)
+// The gingerbread array stores the invariant stats for each creature type.
+// (It is called gingerbread because they are like cookie cutters.)
 // Note that the first entry in the array is reserved for the player.
+// This is the one entry of the array that will change during play (as player levels up).
 
 static Creature::Stats s_gingerbread [Creature::Count];
 static Spell::Bitset s_gingerbread_spells [Creature::Count]; 
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string);
 
-void mix_gingerbread (Creature::Type type, char const * name, int codepoint, Gender gender, int magic, int hp, std::string spell_string)
+void mix_gingerbread (
+	Creature::Type type, Creature::Identity identity, float difficulty, float probability,
+	char const * short_name, char const * long_name,
+	int codepoint, char const * colour, Gender gender,
+	int magic_skill, int max_hp, std::string spell_string)
 {
-	s_gingerbread[type] = {type, name, codepoint, gender, magic, hp, hp, {0,0}};
+	s_gingerbread[type] = { identity, difficulty, probability,
+		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
-}
-
-void init ()
-{
-	//																			  mag  hp  spells
-	mix_gingerbread(Creature::Player,		 "You",          '@', Gender::Female, 10,  10, "VM FP TA LM");
-	mix_gingerbread(Creature::Neville_0,	 "Neville",		 'N', Gender::Male,	  0,   7, "VM TA");
-	mix_gingerbread(Creature::ColinCreevy_0, "Colin Creevy", 'C', Gender::Male,   10,  5, "VM LM");
 }
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
@@ -58,6 +56,11 @@ void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell
 	}
 }
 
+void init ()
+{
+	init_gingerbread(); // Implemented in Gingerbread.cpp
+}
+
 //-------------------------------------------------------------------------------------------------
 
 // Individual creatures are stored in the s_creatures array.
@@ -67,7 +70,7 @@ void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell
 // This means the Creature::Player constant applies to *both* gingerbread *and* g_creatures.
 
 int constexpr MAX_CREATURES = 200;
-static Creature::Stats s_creatures [MAX_CREATURES];
+static Creature::Instance s_creatures [MAX_CREATURES];
 static Grid<int> s_creature_status; // [creature][status]
 static Creature::DerivedStats s_derived_stats [MAX_CREATURES];
 static Spell::Bitset s_spells_known [MAX_CREATURES];
@@ -76,10 +79,18 @@ static int s_max_creature_index;
 std::vector<Creature::Handle> s_visible_creatures;
 std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
 
-static Creature::Stats & get_creature_stats (Creature::Handle creature)
+static Creature::Instance & get_creature_instance (Creature::Handle creature)
 {
 	assert(creature.valid());
 	return s_creatures[creature];
+}
+
+static Creature::Stats & get_creature_stats (Creature::Handle creature)
+{
+	assert(creature.valid());
+	Type const t = creature.type();
+	assert(t > Creature::Type::None && t < Creature::Type::Count);
+	return s_gingerbread[creature.type()];
 }
 
 static Creature::DerivedStats & get_derived_stats (Creature::Handle creature)
@@ -91,9 +102,9 @@ static Creature::DerivedStats & get_derived_stats (Creature::Handle creature)
 void clear ()
 {
 	// empty creature arrays
-	for (Creature::Stats & c : s_creatures)
+	for (Creature::Instance & c : s_creatures)
 	{
-		c = Creature::Stats{};
+		c = Creature::Instance{};
 	}
 
 	s_creature_status = make_grid(MAX_CREATURES, Status::Count, 0);
@@ -116,12 +127,17 @@ bool Handle::valid () const
 
 Creature::Type Handle::type () const
 {
-	return get_creature_stats(index).type;
+	return get_creature_instance(index).type;
 }
 
-std::string Handle::name () const
+std::string Handle::short_name () const
 {
-	return get_creature_stats(index).name;
+	return get_creature_stats(index).short_name;
+}
+
+std::string Handle::long_name () const
+{
+	return get_creature_stats(index).long_name;
 }
 
 Gender Handle::gender () const
@@ -141,7 +157,7 @@ int Handle::max_hp () const
 
 int Handle::hp () const
 {
-	return get_creature_stats(index).hp;
+	return get_creature_instance(index).hp;
 }
 
 float Handle::hp_percent() const
@@ -151,7 +167,7 @@ float Handle::hp_percent() const
 
 Vec3 Handle::pos () const
 {
-	return get_creature_stats(index).pos;
+	return get_creature_instance(index).pos;
 }
 
 bool Handle::has_status (Status::Index status) const
@@ -220,8 +236,7 @@ bool Handle::visible () const
 	}
 
 	World const& world = World::read();
-	Visibility v = world.get_visibility(pos());
-	return (v == Visibility::Visible);
+	return world.is_visible(pos());
 }
 
 float Handle::miscast_rate_for_spell (Spell::Index spell) const
@@ -278,7 +293,7 @@ std::vector<Spell::Index> Handle::spells_known () const
 
 void Handle::take_damage (int damage, Creature::Handle instigator)
 {
-	Creature::Stats & c = get_creature_stats(index);
+	Creature::Instance & c = get_creature_instance(index);
 	c.hp -= damage;
 
 	if (c.hp <= 0)
@@ -290,7 +305,7 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 
 void Handle::move (Vec3 const & new_pos)
 {
-	get_creature_stats(index).pos = new_pos;
+	get_creature_instance(index).pos = new_pos;
 }
 
 bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
@@ -317,7 +332,7 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 			int const roll = Random::in_range(0, 99);
 			if (SHOW_CREATURE_DEBUG && failure > 0)
 			{
-				std::cout << "Walk failure (" << name() << "): " << failure
+				std::cout << "Walk failure (" << short_name() << "): " << failure
 					<< "; roll: " << roll << std::endl;
 			}
 
@@ -387,7 +402,7 @@ void Handle::cure_all ()
 {
 	// blank all statuses (with no message)
 	s_creature_status[index] = std::vector<int>(Status::Count, 0);
-	get_creature_stats(index).hp = max_hp();
+	get_creature_instance(index).hp = max_hp();
 }
 
 void Handle::invalidate()
@@ -447,11 +462,20 @@ bool HandleItr::finished () const
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
 
-const char* name_from_type(Creature::Type type)
+const char* short_name_from_type(Creature::Type type)
 {
 	if (type >= 0 && type <= Creature::Type::Count)
 	{
-		return s_gingerbread[type].name;
+		return s_gingerbread[type].short_name;
+	}
+	return "no one";
+}
+
+const char* long_name_from_type(Creature::Type type)
+{
+	if (type >= 0 && type <= Creature::Type::Count)
+	{
+		return s_gingerbread[type].long_name;
 	}
 	return "no one";
 }
@@ -491,8 +515,12 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	assert(new_index != c_invalid); // if this fails, increase creature memory budget
 
 	// allocate new creature on the arrays
-	s_creatures[new_index] = s_gingerbread[type];
-	s_creatures[new_index].pos = pos;
+	s_creatures[new_index] =
+	{
+		type,
+		s_gingerbread[type].max_hp,
+		pos
+	};
 	s_spells_known[new_index] = s_gingerbread_spells[type];
 	Handle(new_index).cure_all();
 	Handle(new_index).update_derived_stats();
@@ -526,14 +554,18 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 	Vec3 pos = creature.pos();
 	if (view.contains_global_pos(pos))
 	{
-		int code = s_creatures[creature].codepoint;
+		Creature::Type const type = creature.type();
+		int const code = s_gingerbread[type].codepoint;
+		char const * creature_colour = s_gingerbread[type].colour ?
+			s_gingerbread[type].colour : "white";
+
 		if (Target::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, "white", TARGET_COLOUR);
+			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, TARGET_COLOUR);
 		}
 		else
 		{
-			Draw::draw_tile(code, pos.xy(), view, "white");
+			Draw::draw_tile(code, pos.xy(), view, creature_colour);
 		}
 	}
 }

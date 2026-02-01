@@ -13,7 +13,7 @@ std::string You (Creature::Handle creature)
 	}
 	else
 	{
-		return creature.name();
+		return creature.short_name();
 	}
 }
 
@@ -25,7 +25,7 @@ std::string you (Creature::Handle creature)
 	}
 	else
 	{
-		return creature.name();
+		return creature.short_name();
 	}
 }
 
@@ -55,7 +55,7 @@ std::string You_are (Creature::Handle creature)
 	}
 	else
 	{
-		return creature.name() + " is";
+		return creature.short_name() + " is";
 	}
 }
 
@@ -79,7 +79,7 @@ std::string Your(Creature::Handle creature)
 	}
 	else
 	{
-		return creature.name() + "\'s";
+		return creature.short_name() + "\'s";
 	}
 }
 
@@ -91,7 +91,7 @@ std::string your(Creature::Handle creature)
 	}
 	else
 	{
-		return creature.name() + "\'s";
+		return creature.short_name() + "\'s";
 	}
 }
 

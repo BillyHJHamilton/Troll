@@ -160,6 +160,7 @@
     <ClCompile Include="Beam.cpp" />
     <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Creature.cpp" />
+    <ClCompile Include="Gingerbread.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Geometry.cpp" />
@@ -216,7 +217,9 @@
     <ClInclude Include="WorldLineItr.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CodingStandard.txt" />
+    <Text Include="Docs\CodingStandard.txt" />
+    <Text Include="Docs\Creature Identity and Spawning.txt" />
+    <Text Include="Docs\Game Design Goals.txt" />
     <Text Include="Scraps\LineCache.txt" />
     <Text Include="Scraps\Scaps.txt" />
     <Text Include="TestLOS.txt" />
