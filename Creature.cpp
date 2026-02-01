@@ -5,8 +5,10 @@
 #include <unordered_map>
 
 #include "Bot.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Math.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -17,6 +19,21 @@
 
 namespace Creature
 {
+
+//-------------------------------------------------------------------------------------------------
+// Metadata about creature identities.
+
+struct IdentityMetadata
+{
+	// Creature of this identity who currently exists, if any.
+	Creature::Handle current_handle = Creature::None;
+
+	// Strongest variant of this identity spawned so far.
+	// They aren't allowed to repeat or regress within a game.
+	float spawned_difficulty = -1.0f;
+};
+
+IdentityMetadata s_identity_metadata [(int)Identity::Count]; 
 
 //-------------------------------------------------------------------------------------------------
 
@@ -59,6 +76,11 @@ void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell
 void init ()
 {
 	init_gingerbread(); // Implemented in Gingerbread.cpp
+
+	for (int i = 0; i < (int)Creature::Identity::Count; ++i)
+	{
+		s_identity_metadata[i] = {};
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -128,6 +150,11 @@ bool Handle::valid () const
 Creature::Type Handle::type () const
 {
 	return get_creature_instance(index).type;
+}
+
+Creature::Identity Handle::identity () const
+{
+	return get_creature_stats(index).identity;
 }
 
 std::string Handle::short_name () const
@@ -407,6 +434,14 @@ void Handle::cure_all ()
 
 void Handle::invalidate()
 {
+	if (identity() != Identity::Generic)
+	{
+		if (s_identity_metadata[(int)identity()].current_handle == *this)
+		{
+			s_identity_metadata[(int)identity()].current_handle = Creature::None;
+		}
+	}
+
 	s_creatures[index].type = Creature::None;
 }
 
@@ -495,6 +530,12 @@ Creature::Handle creature_at_pos (Vec3 pos)
 
 Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 {
+	if (type <= Creature::None || type >= Creature::Count)
+	{
+		DebugBreak("Spawning invalid creature type");
+		return Creature::None;
+	}
+
 	// find creature number
 	int new_index = c_invalid;
 	for (int i = 0; i < s_max_creature_index; i++)
@@ -527,11 +568,103 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 
 	Bot::init_brain(new_index);
 
+	// update identity metadata
+	Identity const identity = s_gingerbread[type].identity;
+	if (identity != Identity::Generic)
+	{
+		IdentityMetadata& metadata = s_identity_metadata[(int)identity];
+
+		if (metadata.current_handle != Creature::None)
+		{
+			// Force unspawn the old instance, and spawn the new one.
+			std::cout << "Unspawning old instance of " << s_gingerbread[type].short_name
+				<< " to spawn new instance.\n";
+			metadata.current_handle.invalidate();
+		}
+
+		if (s_gingerbread[type].difficulty <= metadata.spawned_difficulty)
+		{
+			std::cout << "Warning: Spawning " << s_gingerbread[type].short_name
+				<< " at lower or equal difficulty than last time.\n"
+				<< " - New=" << s_gingerbread[type].difficulty
+				<< ", old=" << metadata.spawned_difficulty << "\n";
+		}
+
+		metadata.current_handle = new_index;
+		metadata.spawned_difficulty = s_gingerbread[type].difficulty;
+	}
+
 	// return the index of the new creature
 	return Handle(new_index);
 }
 
+Creature::Type find_type_to_spawn(float target_difficulty)
+{
+	std::vector<Type> options;
+	std::vector<float> weights;
+	options.reserve(Creature::Count);
+	weights.reserve(Creature::Count);
+
+	float constexpr c_max_over_level = 2.0f;
+	float constexpr c_max_under_level = 4.0f;
+
+	// Probability is multiplied by this factor for each level over/under target.
+	float constexpr c_over_level_factor = 0.5f;
+	float constexpr c_under_level_factor = 0.75f;
+
+	for (int type = 1; // skip player
+		type < Creature::Type::Count;
+		++type)
+	{
+		Stats const& stats = get_creature_stats(type);
+		Identity const identity = stats.identity;
+		IdentityMetadata const& metadata = s_identity_metadata[(int)identity];
+
+		// Exclusions
+		if (stats.probability <= 0.0f ||
+			metadata.current_handle != Creature::None ||
+			metadata.spawned_difficulty > stats.difficulty ||
+			Math::FloatGreater(stats.difficulty, target_difficulty + c_max_over_level) ||
+			Math::FloatLess(stats.difficulty, target_difficulty - c_max_under_level))
+		{
+			continue;
+		}
+
+		// Weight modifications
+		float probability = stats.probability;
+
+		if (Math::FloatGreater(stats.difficulty, target_difficulty))
+		{
+			float const difference = stats.difficulty - target_difficulty;
+			probability *= pow(c_over_level_factor, difference);
+		}
+		else if (Math::FloatLess(stats.difficulty, target_difficulty))
+		{
+			float const difference = target_difficulty - stats.difficulty;
+			probability *= pow(c_under_level_factor, difference);
+		}
+
+		if (probability > 0.0f)
+		{
+			options.push_back((Creature::Type)type);
+			weights.push_back(probability);
+		}
+	}
+
+	if (Util::Size(options) > 0)
+	{
+		int const choice = Random::weighted_index(weights);
+		assert(Util::IsValidIndex(options, choice));
+		return options.at(choice);
+	}
+	else
+	{
+		return Creature::None;
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
+// Visible creatures operations.
 // We maintain a collection of creatures visible to the player to avoid iterating over the entire
 // creature array and checking their visibility.
 // We skip over position 0 in the array, which should always contain the player.

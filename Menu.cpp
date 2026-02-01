@@ -31,7 +31,7 @@ std::string s_document_content;
 struct ListOption
 {
 	std::string text;
-	int value;
+	int value = 0;
 };
 std::vector<ListOption> s_option_list;
 int s_selection = 0;

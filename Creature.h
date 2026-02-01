@@ -46,6 +46,9 @@ namespace Creature
 		Player = 0,
 		Neville_0,
 		ColinCreevy_0,
+
+		Hufflepuff_1,
+
 		Count
 	};
 
@@ -107,6 +110,7 @@ namespace Creature
 		// Simple accessors
 		bool valid () const;
 		Creature::Type type () const;
+		Creature::Identity identity () const;
 		std::string short_name () const;
 		std::string long_name () const;
 		Gender gender () const;
@@ -178,6 +182,8 @@ namespace Creature
 	Creature::Handle creature_at_pos (Vec3 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);
+
+	Creature::Type find_type_to_spawn (float target_difficulty);
 
 	// Visible creature operations
 	void update_visible_creatures ();

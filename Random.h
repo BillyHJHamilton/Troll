@@ -14,6 +14,7 @@ namespace Random
 	float in_range (float min, float max);
 	Vec2 in_box(Box2 b);
 	int index (int size);
+	int weighted_index(const std::vector<float> &weights);
 	bool coinflip ();
 	bool one_in (int x);
 
