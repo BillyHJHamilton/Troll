@@ -30,6 +30,8 @@ static int constexpr MAX_GAME_MESSAGES = 100;
 static int constexpr ANIMATION_STEP_MS = 25;
 static int constexpr TILE_WIDTH_FACTOR = 2;
 
+bool s_los_cheat = false;
+
 // ------------------------------------------------------------------------------------------------
 // TerminalLayer helper class
 
@@ -224,12 +226,21 @@ void draw_screen ()
 	terminal_refresh();
 }
 
+void toggle_los_cheat()
+{
+	s_los_cheat = 1 - s_los_cheat;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Internal function implementations
 
 void update_screen()
 {
 	Draw::View view = get_view();
+	if (s_los_cheat)
+	{
+		view.ignore_visibility = true;
+	}
 
 	terminal_font("tile");
 	World::read().draw(view);

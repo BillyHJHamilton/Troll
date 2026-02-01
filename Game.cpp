@@ -79,24 +79,34 @@ void setup()
 	}
 
 	// Now let's create a number of additional levels on top!
-	for (int z = 1; z <= 6; ++z)
+	int constexpr c_num_levels = 6;
+	for (int z = 1; z <= c_num_levels; ++z)
 	{
 		int const map_id = world.add_map(z, map1_box, Terrain::Wall);
 
 		MapGenerator::Parameters param{};
-		if (z == 6)
+		if (z == c_num_levels)
 		{
 			param.UpStairsToAdd = 0;
 		}
 		else
 		{
-			param.UpStairsToAdd = Random::in_range(2,5);
+			param.UpStairsToAdd = Random::in_range(2,3);
 		}
 
 		MapGenerator& generator = world.edit_map(map_id).get_generator();
 		generator.SetParameters(param);
 		generator.AddConnectingStairsAsSeedRooms(world.read_map(map_id - 1));
 		generator.Generate();
+
+		// Post-process to remove failed stairs from previous level.
+		// This is very inelegant (and leaves invalid rooms in the MapGenerator metadata)
+		// but a better solution would be more difficult to implement.
+		for (Stairs::Pair pair : generator.GetFailedStairs())
+		{
+			Vec2 other_end = pair.first + Stairs::relative_move(pair.second).xy();
+			world.edit_map(map_id - 1).remove_stairs(other_end);
+		}
 	}
 
 /*	Box2 const map1_box = Box2(0, 0, 24, 24);

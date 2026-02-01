@@ -82,6 +82,15 @@ void Map::set_visibility(Vec2 const & global_pos, Visibility v, int current_step
 	}
 }
 
+void Map::set_all_explored()
+{
+	for (BoxItr itr(map_box); itr; ++itr)
+	{
+		// using current step 1 because it's not important for Explored
+		set_visibility(*itr, Visibility::Explored, 1);
+	}
+}
+
 bool Map::tile_is_solid(Vec2 const & global_pos) const
 {
 	Terrain::Type t = get_terrain(global_pos);
@@ -170,6 +179,17 @@ void Map::add_corresponding_stairs(const Map& other)
 				add_stairs(this_end, Stairs::reverse(dir));
 			}
 		}
+	}
+}
+
+void Map::remove_stairs(Vec2 global_pos)
+{
+	Stairs::Direction dir = get_stairs(global_pos);
+	if (dir != Stairs::None)
+	{
+		stairs.erase(global_pos);
+		set_terrain(global_pos, Terrain::Wall);
+		set_terrain(global_pos + Stairs::relative_move(dir).xy(), Terrain::Wall);
 	}
 }
 

@@ -47,7 +47,7 @@ void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)
 			{
 				Stairs::Direction const reverse = Stairs::reverse(dir);
 				Room new_stairs = Room::MakeStairs(this_end, reverse);
-				if (IsValidRoom(new_stairs))
+				if (IsValidRoom(new_stairs, /*check border*/ true))
 				{
 					m_SeedRooms.push_back(new_stairs);
 				}
@@ -103,6 +103,8 @@ int MapGenerator::FindRoomAtPos(Vec2 pos)
 
 void MapGenerator::PlaceSeedRooms()
 {
+	m_FailedStairs.clear();
+
 	if (Util::Size(m_SeedRooms) == 0)
 	{
 		// Add a random chamber as our seed room.
@@ -112,7 +114,7 @@ void MapGenerator::PlaceSeedRooms()
 
 	for (Room const& room : m_SeedRooms)
 	{
-		assert(IsValidRoom(room));
+		assert(IsValidRoom(room, /*check border*/ false));
 	}
 
 	// Copy the seeds into the main room vector.
@@ -123,10 +125,11 @@ void MapGenerator::PlaceSeedRooms()
 	int seedStairs = 0;
 	int seedCorridors = 0;
 	int seedChambers = 0;
+	int failedStairs = 0;
 	int landingChambers = 0;
 	int landingCorridors = 0;
 
-	for (int r = 0; r < totalSeedRooms; ++r)
+	for (int r = totalSeedRooms - 1; r >= 0; --r)
 	{	
 		if (m_RoomVec[r].IsCorridor())
 		{
@@ -138,14 +141,30 @@ void MapGenerator::PlaceSeedRooms()
 		}
 		else if (m_RoomVec[r].IsStairs())
 		{
-			++seedStairs;
+			// Give each seed staircase a landing room, if we can.
+			bool const success = TryAddLanding(m_RoomVec[r], landingChambers, landingCorridors);
 
-			// Additionally, give each seed staircase a landing room, if we can.
-			TryAddLanding(m_RoomVec[r], landingChambers, landingCorridors);
+			// If we failed to place a landing room, the staircase will end up disconnected.
+			// Remove it and note it in the failed rooms list.
+			if (success)
+			{
+				++seedStairs;
+			}
+			else
+			{
+				Stairs::Pair data{
+					m_RoomVec[r].StairsLocalEnd(),
+					m_RoomVec[r].GetStairsDirection()
+				};
+				m_FailedStairs.push_back(data);
+				Util::RemoveSwap(m_RoomVec, r);
+				++failedStairs;
+			}
 		}
 	}
 
-	std::cout << "Seed rooms: " << seedStairs << " stairs, "
+	std::cout << "Seed rooms: " << seedStairs << " stairs ("
+		<< failedStairs << " failed), "
 		<< seedChambers << " chambers, and "
 		<< seedCorridors << " corridors.\n"
 		<< "Landings: added " << landingChambers << " chambers, "
@@ -167,7 +186,7 @@ void MapGenerator::PlaceRooms()
 
 		Room newRoom = MakeRandomChamber();
 
-		if (IsValidRoom(newRoom))
+		if (IsValidRoom(newRoom, /*check border*/ true))
 		{
 			++numPlaced;
 			m_RoomVec.push_back(newRoom);
@@ -438,7 +457,7 @@ Vec2 MapGenerator::RandRoomPos(Vec2 roomSize)
 {
 	Box2 valid_area = m_Map.get_box();
 	valid_area.min += {m_Param.MapBorder, m_Param.MapBorder};
-	valid_area.size -= {m_Param.MapBorder, m_Param.MapBorder};
+	valid_area.size -= {2*m_Param.MapBorder, 2*m_Param.MapBorder};
 	valid_area.size -= {roomSize};
 	return Random::in_box(valid_area);
 }
@@ -492,13 +511,20 @@ Room MapGenerator::MakeRandomChamber()
 	return Room::MakeChamber(newRoomBox);
 }
 
-bool MapGenerator::IsValidRoom(Room const &room)
+bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder)
 {
-	return m_Map.contains(room.GetBox()) // TODO should we check border?
+	Box2 boundingBox = m_Map.get_box();
+	if (checkBorder)
+	{
+		boundingBox.min += Vec2{m_Param.MapBorder, m_Param.MapBorder};
+		boundingBox.size -= Vec2{2*m_Param.MapBorder, 2*m_Param.MapBorder};
+	}
+
+	return boundingBox.contains(room.GetBox())
 		&& !room.AnyRoomVetoes(m_RoomVec);
 }
 
-void MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded)
+bool MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded)
 {
 	int constexpr c_MaxAttempts = 100;
 	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
@@ -508,11 +534,11 @@ void MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int
 			stairsRoom.SuggestRandAdjoiningPositionForRoom(roomSize);
 		Room adjoiningRoom = Room::MakeChamber(
 			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
-		if (IsValidRoom(adjoiningRoom))
+		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
 		{
 			m_RoomVec.push_back(adjoiningRoom);
 			++chambersAdded;
-			return;
+			return true;
 		}
 	}
 
@@ -534,9 +560,11 @@ void MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int
 		{
 			m_RoomVec.push_back(options[0]);
 			++ corridorsAdded;
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 void MapGenerator::RemoveInavlidRoomsFromOptions(std::vector<Room> &options)
@@ -545,7 +573,7 @@ void MapGenerator::RemoveInavlidRoomsFromOptions(std::vector<Room> &options)
 	options.erase(std::remove_if(options.begin(), options.end(),
 			[this](const Room &corridor)
 			{
-				return !IsValidRoom(corridor);
+				return !IsValidRoom(corridor, /*check border*/ true);
 			}
 		), options.cend());
 }

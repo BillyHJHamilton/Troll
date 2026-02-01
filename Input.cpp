@@ -7,10 +7,12 @@
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
+#include "Map.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Spell.h"
 #include "Target.h"
+#include "World.h"
 
 #include <cassert>
 #include <iostream>
@@ -141,11 +143,27 @@ void handle_next_input ()
 			return;
 		}
 
-		//if (key == TK_L)
-		//{
-		//	g_map().test_los_symmetry();
-		//	return;
-		//}
+		// Map Debug
+		if (key == TK_PERIOD)
+		{
+			Player::handle().move(Player::pos() + Vec3{0,0,-1});
+			return;
+		}
+		if (key == TK_COMMA)
+		{
+			Player::handle().move(Player::pos() + Vec3{0,0,1});
+			return;
+		}
+		if (key == TK_X)
+		{
+			Draw::toggle_los_cheat();
+			//int const map_index = World::read().find_map(Player::pos());
+			//if (map_index != c_invalid)
+			//{
+			//	World::edit().edit_map(map_index).set_all_explored();
+			//}
+			return;
+		}
 
 		// unhandled
 		return;

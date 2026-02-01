@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Room.h"
+#include "Stairs.h"
 
 // NEXT STEPS:
 // - Allow specifying another type of "seed" room, not just stairs.
@@ -39,7 +40,8 @@ public:
 	void AddConnectingStairsAsSeedRooms(Map const& map);
 
 	void Generate();
-	//void Print();
+
+	const std::vector<Stairs::Pair>& GetFailedStairs() const { return m_FailedStairs; }
 
 private:
 	int FindRoomAtPos(Vec2 pos);
@@ -57,22 +59,25 @@ private:
 	Vec2 RandRoomPos(Vec2 roomSize);
 	Stairs::Pair RandStairsPos(bool isUp);
 	Room MakeRandomChamber();
-	bool IsValidRoom(Room const &room);
-	void TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded);
+	bool IsValidRoom(Room const &room, bool checkBorder);
+	bool TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded);
 	void RemoveInavlidRoomsFromOptions(std::vector<Room> &options);
 	void RemoveBadlyPlacedStairsFromOptions(std::vector<Room> &options);
 	bool IsBadlyPlacedStairs(Room const& new_stairs);
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs);
 
-	//std::vector<Stairs::Pair> m_UpStairs;
-
-	// Rooms provided before Generate is run.  These are presumed to be valid.
+	// Seed rooms are provided before Generate is run.  These are presumed to be valid.
 	// Normally they will be added with AddConnectingStaircases.
 	// If no seed rooms are added, we'll add a random chamber and make it a seed room.
-
 	std::vector<Room> m_SeedRooms;
 	std::vector<Room> m_RoomVec;
 	std::vector<int> m_JoinedRooms; // indices
+
+	// Unfortunately sometimes the generator fails to place some of the requested seeds.
+	// In that case we could redo the generation completely, or we could post-process
+	// the previous level to remove the detached staircase.
+	std::vector<Stairs::Pair> m_FailedStairs;
+
 	Map& m_Map;
 	Parameters m_Param = {};
 	bool m_HasGenerated = false;

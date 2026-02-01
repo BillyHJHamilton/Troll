@@ -36,6 +36,7 @@ public:
 	Visibility get_visibility(Vec2 const & global_pos, int current_step) const;
 	void set_terrain(Vec2 const & global_pos, Terrain::Type t);
 	void set_visibility(Vec2 const & global_pos, Visibility v, int current_step);
+	void set_all_explored();
 
 	bool tile_is_solid(Vec2 const & global_pos) const;
 	bool tile_permits_sight(Vec2 const& global_pos) const;
@@ -49,6 +50,7 @@ public:
 	std::unordered_map<Vec2,Stairs::Direction> const& get_stairs_map() const { return stairs; }
 
 	void add_corresponding_stairs(const Map& other);
+	void remove_stairs(Vec2 global_pos);
 
 	void clear_visibility(int current_step);
 	void clean_explored_values(int current_step);

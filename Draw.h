@@ -35,4 +35,6 @@ namespace Draw
 	void print_messages(Box2 const& box);
 
 	void draw_screen();
+
+	void toggle_los_cheat();
 }
