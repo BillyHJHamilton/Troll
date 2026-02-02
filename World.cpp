@@ -329,7 +329,7 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		const bool is_target = Target::is_target(pos);
 		if (is_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, TARGET_COLOUR);
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, c_target_colour);
 		}
 		else
 		{

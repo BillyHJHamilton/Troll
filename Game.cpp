@@ -14,6 +14,7 @@
 #include "Status.h"
 #include "Target.h"
 #include "Terrain.h"
+#include "VectorUtil.h"
 #include "World.h"
 
 namespace Game
@@ -22,10 +23,13 @@ namespace Game
 int s_turn_number;
 GameMode s_game_mode;
 
+std::vector<bool> s_spawned;
+
 //------------------------------------------------------------------------------
 // Helper function declarations.
 void end_turn();
 void game_over();
+void check_spawning();
 
 //------------------------------------------------------------------------------
 // Interface function implementations
@@ -60,12 +64,16 @@ void setup()
 {
 	s_turn_number = 0;
 	s_game_mode = GameMode::Normal;
+	s_spawned.clear();
+	s_spawned.reserve(7);
+
 	World& world = World::edit();
 
 	Box2 const map1_box = Box2(0, 0, 30, 30);
 	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
 	MapGenerator& gen1 = world.edit_map(0).get_generator();
 	gen1.Generate();
+	s_spawned.push_back(false);
 
 	// Now try to find a place for the player...
 	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
@@ -107,6 +115,8 @@ void setup()
 			Vec2 other_end = pair.first + Stairs::relative_move(pair.second).xy();
 			world.edit_map(map_id - 1).remove_stairs(other_end);
 		}
+
+		s_spawned.push_back(false);
 	}
 
 /*	Box2 const map1_box = Box2(0, 0, 24, 24);
@@ -206,12 +216,60 @@ void end_turn()
 		return;
 	}
 
+	check_spawning();
+
 	++s_turn_number;
 }
 
 void game_over()
 {
 	Menu::show_game_over();
+}
+
+void check_spawning()
+{
+	// TODO There's probably a better place to put this code.
+	int const map_id = World::read().find_map(Player::pos());
+
+	if (Util::IsValidIndex(s_spawned, map_id) && !s_spawned[map_id])
+	{
+		Map const& map = World::read().read_map(map_id);
+		std::cout << "\nSpawning for map " << map_id << ".\n";
+
+		int const num_to_spawn = Random::in_range(4,6);
+		int num_spawned = 0;
+		for (int i = 0; i < num_to_spawn; ++i)
+		{
+			// Find spawn position
+			// TODO There's definitely a better way to do this.
+			// Like get the list of rooms, etc.
+			int const attempts = 100;
+			for (int a = 0; a < attempts; ++a)
+			{
+				Vec2 const pos2 = Random::in_box(map.get_box());
+				Vec3 const pos3 = pos2.xyz(Player::pos().z);
+				if (!map.tile_is_solid(pos2) &&
+					!World::read().is_visible(pos3) &&
+					Creature::creature_at_pos(pos3) == Creature::None)
+				{
+					// TODO difficulty per map
+					Creature::Type type = Creature::find_type_to_spawn(1);
+					if (type != Creature::None)
+					{
+						Creature::Handle creature = Creature::spawn_creature(type, pos3);
+						std::cout << " - Spawned " << creature.long_name()
+							<< " at " << creature.pos().x << ", " << creature.pos().y << ".\n";
+						++num_spawned;
+					}
+					break;
+				}
+			}
+		}
+
+		std::cout << "Spawned " << num_spawned << "/" << num_to_spawn
+			<< " for map " << map_id << ".\n";
+		s_spawned[map_id] = true;
+	}
 }
 
 }

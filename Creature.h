@@ -46,6 +46,7 @@ namespace Creature
 		Player = 0,
 		Neville_0,
 		ColinCreevy_0,
+		SallyAnne_0,
 
 		Hufflepuff_1,
 
@@ -56,8 +57,9 @@ namespace Creature
 	{
 		Generic = -1,
 		Player = 0,
-		Neville,
+		NevilleLongbottom,
 		ColinCreevy,
+		SallyAnnePerks,
 		Count
 	};
 

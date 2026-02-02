@@ -15,7 +15,7 @@ extern TargetMode g_target_mode;
 extern Creature::Handle g_target_creature;
 extern Vec3 g_target_pos;
 
-char const * const TARGET_COLOUR = "darkest red";
+char const * const c_target_colour = "darkest grey";
 
 namespace Target
 {

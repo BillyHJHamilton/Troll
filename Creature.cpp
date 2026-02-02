@@ -76,11 +76,6 @@ void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell
 void init ()
 {
 	init_gingerbread(); // Implemented in Gingerbread.cpp
-
-	for (int i = 0; i < (int)Creature::Identity::Count; ++i)
-	{
-		s_identity_metadata[i] = {};
-	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -127,6 +122,11 @@ void clear ()
 	for (Creature::Instance & c : s_creatures)
 	{
 		c = Creature::Instance{};
+	}
+
+	for (int i = 0; i < (int)Creature::Identity::Count; ++i)
+	{
+		s_identity_metadata[i] = {};
 	}
 
 	s_creature_status = make_grid(MAX_CREATURES, Status::Count, 0);
@@ -616,18 +616,27 @@ Creature::Type find_type_to_spawn(float target_difficulty)
 		type < Creature::Type::Count;
 		++type)
 	{
-		Stats const& stats = get_creature_stats(type);
+		Stats const& stats = s_gingerbread[type];
 		Identity const identity = stats.identity;
-		IdentityMetadata const& metadata = s_identity_metadata[(int)identity];
 
 		// Exclusions
 		if (stats.probability <= 0.0f ||
-			metadata.current_handle != Creature::None ||
-			metadata.spawned_difficulty > stats.difficulty ||
 			Math::FloatGreater(stats.difficulty, target_difficulty + c_max_over_level) ||
 			Math::FloatLess(stats.difficulty, target_difficulty - c_max_under_level))
 		{
 			continue;
+		}
+
+		// Identity-based considerations
+		if (identity != Identity::Generic)
+		{
+			IdentityMetadata const& metadata = s_identity_metadata[(int)identity];
+
+			if (metadata.current_handle != Creature::None ||
+				Math::FloatLessOrEqual(stats.difficulty, metadata.spawned_difficulty))
+			{
+				continue;
+			}
 		}
 
 		// Weight modifications
@@ -694,7 +703,7 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 
 		if (Target::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, TARGET_COLOUR);
+			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, c_target_colour);
 		}
 		else
 		{
