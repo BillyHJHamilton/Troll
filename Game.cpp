@@ -79,7 +79,7 @@ void setup()
 	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
 	{
 		Vec3 pos = itr->xy0();
-		if (!world.is_solid(pos) && !world.has_stairs(pos))
+		if (world.get_terrain(pos) == Terrain::Open)
 		{
 			spawn_creature(Creature::Player, pos);
 			break;

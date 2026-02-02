@@ -5,6 +5,8 @@
 #include "Geometry.h"
 #include "Grammar.h"
 #include "Random.h"
+#include "Terrain.h"
+#include "World.h"
 
 #include <vector>
 
@@ -108,10 +110,26 @@ void endround_dancing(Creature::Handle creature)
 	// Random movement
 	if (Random::in_range(0, 2 + creature.status_severity(Dancing) > 2))
 	{
-		Vec2 move_dir = { Random::in_range(-1,1), Random::in_range(-1,1) };
+		Vec3 const old_pos = creature.pos();
+		Vec2 const move_dir = { Random::in_range(-1,1), Random::in_range(-1,1) };
 		if (move_dir != Vec2{0,0})
 		{
-			creature.try_move(move_dir, MoveMode::Forced);
+			bool const moved = creature.try_move(move_dir, MoveMode::Forced);
+			Vec3 const new_pos = creature.pos();
+
+			// Check for falling down stairs
+			if (moved && new_pos.z < old_pos.z &&
+				World::read().get_terrain(new_pos) == Terrain::UpStairs)
+			{
+				creature.take_damage(3, Creature::None);
+
+				if (World::read().is_visible(old_pos) ||
+					World::read().is_visible(new_pos))
+				{
+					Draw::add_message(Grammar::You(creature) + " " +
+						Grammar::verbs("fall", creature) + " down the stairs!");
+				}
+			}
 		}
 	}
 

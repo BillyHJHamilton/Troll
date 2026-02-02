@@ -5,15 +5,15 @@ namespace Creature
 
 void init_gingerbread()
 {
-	char const * cstr_gryffindor = "red";
-	char const * cstr_hufflepuff = "yellow";
+	char const * cstr_gryffindor = "light red";
+	char const * cstr_hufflepuff = "light yellow";
 	char const * cstr_slytherin = "light green";
 	char const * cstr_ravenclaw = "light blue";
 
 	mix_gingerbread(Creature::Player, Identity::Player,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
 		"You", "You", '@', "white", Gender::Female,
-		/*Magic*/ 10, /*HP*/ 10, "VM FP TA LM");
+		/*Magic*/ 10, /*HP*/ 10, "VM FP TA LM MW RS");
 
 	mix_gingerbread(Creature::Neville_0, Identity::NevilleLongbottom,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,
@@ -44,7 +44,7 @@ void init_gingerbread()
 	mix_gingerbread(Creature::Hufflepuff_1, Identity::Generic,
 		/*Difficulty*/ 1.0f, /*Probability*/ 0.3f,
 		"Hufflepuff", "First-Year Hufflepuff", 'H', cstr_hufflepuff, Gender::Male,
-		/*Magic*/ 10, /*HP*/ 10, "VM FP TA LM");
+		/*Magic*/ 10, /*HP*/ 10, "TA");//LM VM FP 
 }
 
 } // namespace Creature
