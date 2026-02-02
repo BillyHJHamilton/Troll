@@ -5,12 +5,13 @@
 #include "Input.h"
 
 // To do:
-// - Map generation
 // - Improved enemy AI
 //  - Pathfinding
 //  - EQS / find good attack position
 // - XP and level up
 // - Items
+
+// Bugs: Flipendo doesn't work with stairs.
 
 void config_terminal()
 {

@@ -119,6 +119,9 @@ void setup()
 		s_spawned.push_back(false);
 	}
 
+	world.update_visibility(Player::pos(), Player::vision_radius);
+	check_spawning();
+
 /*	Box2 const map1_box = Box2(0, 0, 24, 24);
 	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
 	Box2 const map2_box = Box2(0, -10, 24, 10);
@@ -248,7 +251,7 @@ void check_spawning()
 			{
 				Vec2 const pos2 = Random::in_box(map.get_box());
 				Vec3 const pos3 = pos2.xyz(Player::pos().z);
-				if (!map.tile_is_solid(pos2) &&
+				if (map.get_terrain(pos2) == Terrain::Open &&
 					!World::read().is_visible(pos3) &&
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{

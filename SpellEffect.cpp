@@ -29,37 +29,29 @@ void flipendo (Creature::Handle caster, Creature::Handle target)
 	{
 		LineCache::Itr3D& line = *optional_line;
 		line.advance_and_loop();
-		Vec3 knock_pos = *line;
 
-		// check for collision
-		World const& world = World::read();
-		if (world.is_solid(knock_pos))
+		Vec3 knock_pos = *line;
+		Vec2 const step = (knock_pos - target.pos()).xy();
+		Creature::TryMoveResult result = target.try_move(step, MoveMode::Forced);
+		if (result.moved)
+		{
+			Draw::add_message(Grammar::You_are(target) + " knocked back!");
+		}
+		else if (result.creature_in_way != Creature::None)
+		{
+			std::string message = Grammar::You_are(target) + " knocked into "
+				+ Grammar::you(result.creature_in_way) + "!";
+			Draw::add_message(std::move(message));
+			target.take_damage(1, caster);
+			result.creature_in_way.take_damage(1, caster);
+		}
+		else
 		{
 			std::string message = Grammar::You_are(target) + " knocked into the wall!";
 			Draw::add_message(std::move(message));
 			target.take_damage(1, caster);
 		}
-		else
-		{
-			Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
-			if (secondary_target != Creature::None)
-			{
-				std::string message = Grammar::You_are(target) + " knocked into "
-					+ Grammar::you(secondary_target) + "!";
-				Draw::add_message(std::move(message));
-				target.take_damage(1, caster);
-				secondary_target.take_damage(1, caster);
-			}
-			else
-			{
-				target.move(knock_pos);
-				std::string message = Grammar::You_are(target) + " knocked back!";
-				Draw::add_message(std::move(message));
-			}
-		}
 	}
-
-
 }
 
 void tarantallegra (Creature::Handle caster, Creature::Handle target)

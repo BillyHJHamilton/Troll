@@ -335,7 +335,7 @@ void Handle::move (Vec3 const & new_pos)
 	get_creature_instance(index).pos = new_pos;
 }
 
-bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
+TryMoveResult Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 {
 	World const& world = World::read();
 
@@ -343,13 +343,14 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 	Vec3 new_pos_3d = {new_pos.x, new_pos.y, pos().z};
 	new_pos_3d.z += world.get_stairs_dz(pos(), new_pos);
 
-	if (world.is_solid(new_pos_3d))
+	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos_3d);
+	if (creature_in_way != Creature::None)
 	{
-		return false;
+		return {false, creature_in_way};
 	}
-	else if (Creature::creature_at_pos(new_pos_3d) != Creature::None)
+	else if (world.is_solid(new_pos_3d))
 	{
-		return false;
+		return {false, Creature::None};
 	}
 	else
 	{
@@ -369,12 +370,12 @@ bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 				{
 					Draw::add_message("You fail to walk.");
 				}
-				return true;
+				return {true, Creature::None};
 			}
 		}
 
 		move(new_pos_3d);
-		return true;
+		return {true, Creature::None};
 	}
 }
 
