@@ -25,12 +25,12 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 bool player_try_move(Vec2 const& relative_move)
 {
-	Creature::TryMoveResult const result = Player::handle().try_move(relative_move, MoveMode::Walk);
-	if (result.moved)
+	bool const moved = Player::handle().try_move(relative_move, MoveMode::Walk);
+	if (moved)
 	{
 		Player::data().acted = true;
 	}
-	return result.moved;
+	return moved;
 }
 
 bool player_try_cast_spell (Spell::Index spell)

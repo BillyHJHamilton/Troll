@@ -335,7 +335,7 @@ void Handle::move (Vec3 const & new_pos)
 	get_creature_instance(index).pos = new_pos;
 }
 
-TryMoveResult Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
+bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 {
 	World const& world = World::read();
 
@@ -346,11 +346,11 @@ TryMoveResult Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos_3d);
 	if (creature_in_way != Creature::None)
 	{
-		return {false, creature_in_way};
+		return false;
 	}
 	else if (world.is_solid(new_pos_3d))
 	{
-		return {false, Creature::None};
+		return false;
 	}
 	else
 	{
@@ -370,12 +370,12 @@ TryMoveResult Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
 				{
 					Draw::add_message("You fail to walk.");
 				}
-				return {true, Creature::None};
+				return true;
 			}
 		}
 
 		move(new_pos_3d);
-		return {true, Creature::None};
+		return true;
 	}
 }
 

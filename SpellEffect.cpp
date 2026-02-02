@@ -31,25 +31,39 @@ void flipendo (Creature::Handle caster, Creature::Handle target)
 		line.advance_and_loop();
 
 		Vec3 knock_pos = *line;
-		Vec2 const step = (knock_pos - target.pos()).xy();
-		Creature::TryMoveResult result = target.try_move(step, MoveMode::Forced);
-		if (result.moved)
+		const int dz = World::read().get_stairs_dz(target.pos(), knock_pos.xy());
+		knock_pos.z += dz;
+
+		Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
+
+		if (dz > 0)
 		{
-			Draw::add_message(Grammar::You_are(target) + " knocked back!");
+			Draw::add_message(Grammar::You_are(target) + " knocked into the stairs!");
+			target.take_damage(1, caster);
 		}
-		else if (result.creature_in_way != Creature::None)
+		else if (World::read().is_solid(knock_pos))
+		{
+			Draw::add_message(Grammar::You_are(target) + " knocked into the wall!");
+			target.take_damage(1, caster);
+		}
+		else if (secondary_target != Creature::None)
 		{
 			std::string message = Grammar::You_are(target) + " knocked into "
-				+ Grammar::you(result.creature_in_way) + "!";
+				+ Grammar::you(secondary_target) + "!";
 			Draw::add_message(std::move(message));
 			target.take_damage(1, caster);
-			result.creature_in_way.take_damage(1, caster);
+			secondary_target.take_damage(1, caster);
+		}
+		else if (dz < 0)
+		{
+			target.move(knock_pos);
+			Draw::add_message(Grammar::You_are(target) + " knocked down the stairs!");
+			target.take_damage(4, caster);
 		}
 		else
 		{
-			std::string message = Grammar::You_are(target) + " knocked into the wall!";
-			Draw::add_message(std::move(message));
-			target.take_damage(1, caster);
+			target.move(knock_pos);
+			Draw::add_message(Grammar::You_are(target) + " knocked back!");
 		}
 	}
 }

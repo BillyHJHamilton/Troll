@@ -99,8 +99,6 @@ namespace Creature
 		int walk_failure = 0;
 	};
 
-	struct TryMoveResult;
-
 	// Creature::Handle
 	// This is simply a glorified array index that automatically forwards
 	// opreations to the correct creature in the creature array.
@@ -147,7 +145,7 @@ namespace Creature
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);
 		void move (Vec3 const & new_pos);
-		TryMoveResult try_move(Vec2 const& relative_move, MoveMode move_mode);
+		bool try_move(Vec2 const& relative_move, MoveMode move_mode);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
 		void cure_status (Status::Index status);
@@ -155,12 +153,6 @@ namespace Creature
 		void invalidate();
 		
 		void update_derived_stats ();
-	};
-
-	struct TryMoveResult
-	{
-		bool moved = true;
-		Creature::Handle creature_in_way = Creature::None;
 	};
 
 	// Iterator over all valid creatures handles

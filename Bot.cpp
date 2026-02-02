@@ -121,16 +121,16 @@ void move_towards(Creature::Handle creature, Vec3 dest)
 		Math::Sign(to_dest.y)
 	};
 
-	Creature::TryMoveResult result = creature.try_move(move_dir, MoveMode::Walk);
+	bool moved = creature.try_move(move_dir, MoveMode::Walk);
 
-	if (!result.moved)
+	if (!moved)
 	{
-		result = creature.try_move({ move_dir.x, 0 }, MoveMode::Walk);
+		moved = creature.try_move({ move_dir.x, 0 }, MoveMode::Walk);
 	}
 
-	if (!result.moved)
+	if (!moved)
 	{
-		result = creature.try_move({ 0, move_dir.y }, MoveMode::Walk);
+		moved = creature.try_move({ 0, move_dir.y }, MoveMode::Walk);
 	}
 }
 
