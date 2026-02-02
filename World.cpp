@@ -162,25 +162,43 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 	// Convert old vision to fog of war.
 	advance_visibility_step();
 
-	// Add new sight along every line in the cache.
-	int const num_lines = LineCache::get_num();
-	for (int line_id = 0; line_id < num_lines; ++line_id)
+	// Check LOS to every line in the cache.
+	Box2 visbox =
 	{
-		LineCache::Itr3D itr(viewer, line_id);
-		++itr; // skip start pos
-		for (;
-			itr && within_range(viewer, *itr, vision_radius);
-			++itr)
-		{
-			set_visibility(*itr, Visibility::Visible);
+		viewer.xy() - Vec2{vision_radius, vision_radius},
+		Vec2{2*vision_radius + 1, 2*vision_radius + 1}
+	};
 
-			Terrain::Type t = get_terrain(*itr);
-			if (!Terrain::permits_sight(t))
-			{
-				break;
-			}
+	for (BoxItr itr(visbox); itr; ++itr)
+	{
+		Vec3 const target = itr->xyz(viewer.z);
+		if (within_range(viewer, target, vision_radius) &&
+			has_los(viewer, target))
+		{
+			set_visibility(target, Visibility::Visible);
 		}
 	}
+
+	// EDIT: Unfortunately this approach causes asymmetric LOS.
+	// TODO Implement the new RSPCVT algorithm.
+	//int const num_lines = LineCache::get_num();
+	//for (int line_id = 0; line_id < num_lines; ++line_id)
+	//{
+	//	LineCache::Itr3D itr(viewer, line_id);
+	//	++itr; // skip start pos
+	//	for (;
+	//		itr && within_range(viewer, *itr, vision_radius);
+	//		++itr)
+	//	{
+	//		set_visibility(*itr, Visibility::Visible);
+
+	//		Terrain::Type t = get_terrain(*itr);
+	//		if (!Terrain::permits_sight(t))
+	//		{
+	//			break;
+	//		}
+	//	}
+	//}
 
 	add_stairs_visibility(viewer);
 
@@ -203,7 +221,9 @@ void World::add_stairs_visibility(Vec3 viewer)
 
 void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 {
-	for (int r = 6; r <= 7; ++r)
+	int constexpr c_min_dist = 3;
+	int constexpr c_max_dist = 7;
+	for (int r = c_min_dist; r <= c_max_dist; ++r)
 	{
 		Vec3 open_pos = viewer;
 		open_pos[a] += (r * sign);
@@ -249,6 +269,7 @@ int World::get_los(Vec3 start, Vec3 end) const
 {
 	if (start.z != end.z)
 	{
+		// Special cases for stairs
 		Stairs::Direction const dir = get_stairs(start);
 		if (dir != Stairs::None &&
 			start + Stairs::relative_move(dir) == end)
@@ -256,6 +277,7 @@ int World::get_los(Vec3 start, Vec3 end) const
 			return LineCache::c_stairs_line;
 		}
 
+		// Without stairs, can't see between floors.
 		return c_invalid;
 	}
 

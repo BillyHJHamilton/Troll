@@ -4,6 +4,7 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Random.h"
 #include "Status.h"
 #include "World.h"
 
@@ -89,7 +90,7 @@ void tarantallegra (Creature::Handle caster, Creature::Handle target)
 	}
 }
 
-void locomotor_mortis(Creature::Handle caster, Creature::Handle target)
+void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::LegLocked))
 	{
@@ -115,6 +116,27 @@ void locomotor_mortis(Creature::Handle caster, Creature::Handle target)
 			target.inflict_status(Status::LegLocked, apply_amount);
 		}
 	}
+}
+
+void rictusempra (Creature::Handle caster, Creature::Handle target)
+{
+	Draw::add_message("Something is tickling " + Grammar::you(target) + "!");
+	target.inflict_status(Status::Tickled, Random::in_range(4,8));
+}
+
+void mimblewimble (Creature::Handle caster, Creature::Handle target)
+{
+	if (target.has_status(Status::TongueTied))
+	{
+		Draw::add_message(Grammar::You(target) + " " +
+			Grammar::verbs("become", target) + " more tongue-tied.");
+	}
+	else
+	{
+		Draw::add_message(Grammar::You(target) + " " +
+			Grammar::verbs("become", target) + " tongue-tied.");
+	}
+	target.inflict_status(Status::TongueTied, 5);
 }
 
 }

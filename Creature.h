@@ -48,6 +48,9 @@ namespace Creature
 		ColinCreevy_0,
 		SallyAnne_0,
 
+		Harry_1,
+		Malfoy_1,
+
 		Hufflepuff_1,
 
 		Count
@@ -60,6 +63,8 @@ namespace Creature
 		NevilleLongbottom,
 		ColinCreevy,
 		SallyAnnePerks,
+		HarryPotter,
+		DracoMalfoy,
 		Count
 	};
 

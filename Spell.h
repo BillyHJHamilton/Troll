@@ -17,6 +17,8 @@ namespace Spell
 		Flipendo,
 		Tarantallegra,
 		LocomotorMortis,
+		Rictusempra,
+		Mimblewimble,
 
 		Count
 	};

@@ -10,4 +10,6 @@ namespace Spell
 	void flipendo(Creature::Handle caster, Creature::Handle target);
 	void tarantallegra(Creature::Handle caster, Creature::Handle target);
 	void locomotor_mortis(Creature::Handle caster, Creature::Handle target);
+	void rictusempra(Creature::Handle caster, Creature::Handle target);
+	void mimblewimble(Creature::Handle caster, Creature::Handle target);
 }
