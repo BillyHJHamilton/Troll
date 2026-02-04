@@ -155,11 +155,11 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 		{
 			if (move.z > 0)
 			{
-				Draw::add_message("The " + beam_description(beam) + " hits the ceiling.");
+				Draw::add_message(" The " + beam_description(beam) + " hits the ceiling.");
 			}
 			else
 			{
-				Draw::add_message("The " + beam_description(beam) + " hits the floor.");
+				Draw::add_message(" The " + beam_description(beam) + " hits the floor.");
 			}
 		}
 		beam.done = true;
@@ -196,7 +196,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	{
 		if (world.is_visible(beam.pos))
 		{
-			Draw::add_message("The " + beam_description(beam) + " hits the wall.");
+			Draw::add_message(" The " + beam_description(beam) + " hits the wall.");
 		}
 		beam.done = true;
 		return;
@@ -224,7 +224,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		}
 		else
 		{
-			Draw::add_message("The " + beam_description(beam) + " misses "
+			Draw::add_message(" The " + beam_description(beam) + " misses "
 				+ Grammar::you(creature_in_path) + ".");
 		}
 	}

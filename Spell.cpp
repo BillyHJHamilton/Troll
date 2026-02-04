@@ -17,7 +17,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	2,		70,	8,	&flipendo,				Miscast::Beam },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
 	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",		15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
-	Spell::Data {"Rictusempra",			"RS",	"light red",	20,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
+	Spell::Data {"Rictusempra",			"RS",	"light red",	20,	0,	0,		90,	8,	&rictusempra,			Miscast::Beam },
 	Spell::Data {"Mimblewimble",		"MW",	"blue",			25,	0,	0,		90,	8,	&mimblewimble,			Miscast::Beam },
 };
 

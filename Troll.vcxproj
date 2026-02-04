@@ -219,6 +219,7 @@
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt" />
     <Text Include="Docs\Creature Identity and Spawning.txt" />
+    <Text Include="Docs\Fanfic notes.txt" />
     <Text Include="Docs\Game Design Goals.txt" />
     <Text Include="Scraps\LineCache.txt" />
     <Text Include="Scraps\Scaps.txt" />

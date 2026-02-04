@@ -162,7 +162,8 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 	// Convert old vision to fog of war.
 	advance_visibility_step();
 
-	// Check LOS to every line in the cache.
+	set_visibility(viewer, Visibility::Visible);
+
 	Box2 visbox =
 	{
 		viewer.xy() - Vec2{vision_radius, vision_radius},
@@ -181,6 +182,7 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 
 	// EDIT: Unfortunately this approach causes asymmetric LOS.
 	// TODO Implement the new RSPCVT algorithm.
+	// Check LOS along every line in the cache
 	//int const num_lines = LineCache::get_num();
 	//for (int line_id = 0; line_id < num_lines; ++line_id)
 	//{

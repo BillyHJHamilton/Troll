@@ -76,6 +76,10 @@ void print_visible_creature_stats(Box2 draw_area);
 
 void init ()
 {
+}
+
+void clear ()
+{
 	s_game_messages.clear();
 }
 

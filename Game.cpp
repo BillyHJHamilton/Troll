@@ -53,6 +53,7 @@ void init()
 void clear()
 {
 	Creature::clear();
+	Draw::clear();
 	Input::clear();
 	Player::clear();
 	Target::clear();

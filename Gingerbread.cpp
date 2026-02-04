@@ -42,9 +42,9 @@ void init_gingerbread()
 
 	// Generic student for testing purposes
 	mix_gingerbread(Creature::Hufflepuff_1, Identity::Generic,
-		/*Difficulty*/ 1.0f, /*Probability*/ 0.3f,
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Hufflepuff", "First-Year Hufflepuff", 'H', cstr_hufflepuff, Gender::Male,
-		/*Magic*/ 10, /*HP*/ 10, "TA");//LM VM FP 
+		/*Magic*/ 6, /*HP*/ 4, "TA VM");//LM VM FP 
 }
 
 } // namespace Creature

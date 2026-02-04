@@ -168,9 +168,12 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 
 void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 {
-	std::string message = Grammar::You(caster) + " " + Grammar::verbs("cast", caster)
-		+ " " + Spell::get_name(spell) + "!";
-	Draw::add_message(std::move(message));
+	if (caster.visible())
+	{
+		Draw::add_message(Grammar::You(caster) + " "
+			+ Grammar::verbs("cast", caster) + " "
+			+ Spell::get_name(spell) + "!");
+	}
 
 	if (Spell::get_accuracy(spell) == -1) // self-affecting spell
 	{

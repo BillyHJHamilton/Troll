@@ -5,13 +5,22 @@
 #include "Input.h"
 
 // To do:
+// - Resting to regain HP
+// - Name and difficulty level for each map
+// - Improve spawning code
+//  - Find pos by room, instead of spraying at random
 // - Improved enemy AI
 //  - Pathfinding
 //  - EQS / find good attack position
 // - XP and level up
+// - Learning spells
 // - Items
+// - Proper miscasts
+// - NPC taunts
 
-// Bugs: Flipendo doesn't work with stairs.
+// Bugs:
+// - Targeting can get stuck on the other level
+//  - Should probably cache the view and use this to help targeting
 
 void config_terminal()
 {

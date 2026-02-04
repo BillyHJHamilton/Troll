@@ -216,5 +216,8 @@
     <Text Include="Docs\Creature Identity and Spawning.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="Docs\Fanfic notes.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

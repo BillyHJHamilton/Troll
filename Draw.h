@@ -19,6 +19,7 @@ namespace Draw
 	};
 
 	void init();
+	void clear();
 
 	View get_view();
 
