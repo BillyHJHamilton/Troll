@@ -20,7 +20,11 @@
 
 // Bugs:
 // - Targeting can get stuck on the other level
-//  - Should probably cache the view and use this to help targeting
+//  - We should probably cache the view each frame
+//  - and then clear the target if it's no longer in the view
+
+// To consider:
+// - How do we handle initiative to support the "ping pong" shield gameplay
 
 void config_terminal()
 {
