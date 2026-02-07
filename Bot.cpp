@@ -69,7 +69,7 @@ void do_turn (Creature::Handle creature)
 		if (!is_aware(creature))
 		{
 			// Spend a turn noticing the player.
-			Draw::add_message(Grammar::You(creature) + " sees you!");
+			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
 		}
 		else
 		{

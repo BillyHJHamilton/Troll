@@ -12,4 +12,6 @@ namespace Spell
 	void locomotor_mortis(Creature::Handle caster, Creature::Handle target);
 	void rictusempra(Creature::Handle caster, Creature::Handle target);
 	void mimblewimble(Creature::Handle caster, Creature::Handle target);
+	void lacarnum_inflamare(Creature::Handle caster, Creature::Handle target);
+	void furnunculus(Creature::Handle caster, Creature::Handle target);
 }

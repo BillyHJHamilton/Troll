@@ -174,6 +174,23 @@ void run_message(std::string && message)
 	s_game_messages.back().text.append(message);
 }
 
+void creature_message(Creature::Handle creature, std::string&& message)
+{
+	if (creature.visible())
+	{
+		add_message(std::move(message));
+	}
+}
+
+void pos_message(Vec3 pos, std::string&& message)
+{
+	if (World::read().is_visible(pos))
+	{
+		add_message(std::move(message));
+	}
+}
+
+
 void print_messages(Box2 const & box)
 {
 	// We want to print as many messages as we can within the box available.

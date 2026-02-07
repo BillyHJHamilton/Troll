@@ -152,10 +152,9 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 {
 	if (caster.visible())
 	{
-		std::string message = Grammar::You(caster) + " ";
-		message += Grammar::verbs("miscast", caster) + " ";
-		message += Spell::get_name(spell) + "!";
-		Draw::add_message(std::move(message));
+		Draw::add_message(Grammar::You(caster)
+			+ " " + Grammar::verbs("miscast", caster)
+			+ " " + Spell::get_name(spell) + "!");
 
 		Draw::View view = Draw::get_view();
 		Draw::draw_tile_temp('X', caster.pos().xy(), view, "yellow");
@@ -168,12 +167,9 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 
 void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 {
-	if (caster.visible())
-	{
-		Draw::add_message(Grammar::You(caster) + " "
-			+ Grammar::verbs("cast", caster) + " "
-			+ Spell::get_name(spell) + "!");
-	}
+	Draw::creature_message(caster, Grammar::You(caster) + " "
+		+ Grammar::verbs("cast", caster) + " "
+		+ Spell::get_name(spell) + "!");
 
 	if (Spell::get_accuracy(spell) == -1) // self-affecting spell
 	{

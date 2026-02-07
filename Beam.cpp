@@ -151,16 +151,13 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	// If it didn't hit anything, hit the ceiling/floor.
 	if (!beam.done)
 	{
-		if (world.is_visible(beam.pos))
+		if (move.z > 0)
 		{
-			if (move.z > 0)
-			{
-				Draw::add_message(" The " + beam_description(beam) + " hits the ceiling.");
-			}
-			else
-			{
-				Draw::add_message(" The " + beam_description(beam) + " hits the floor.");
-			}
+			Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the ceiling.");
+		}
+		else
+		{
+			Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the floor.");
 		}
 		beam.done = true;
 	}
@@ -194,10 +191,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	// hit wall
 	if (world.is_solid(beam.pos))
 	{
-		if (world.is_visible(beam.pos))
-		{
-			Draw::add_message(" The " + beam_description(beam) + " hits the wall.");
-		}
+		Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the wall.");
 		beam.done = true;
 		return;
 	}

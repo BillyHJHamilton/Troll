@@ -9,7 +9,7 @@
 namespace Spell
 {
 
-// Note: Spell accuracy is generally 20 pts higher than in Duel1.
+// Note: Spell accuracy is generally 20 pts higher than in HPADS.
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc Rng	Effect function			Miscast type
@@ -19,6 +19,8 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",		15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
 	Spell::Data {"Rictusempra",			"RS",	"light red",	20,	0,	0,		90,	8,	&rictusempra,			Miscast::Beam },
 	Spell::Data {"Mimblewimble",		"MW",	"blue",			25,	0,	0,		90,	8,	&mimblewimble,			Miscast::Beam },
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",		25, 0,  0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam },
+	Spell::Data {"Furnunculus",			"FN",   "lighter red",	30, 0,  4,		60, 6,  &furnunculus,			Miscast::Beam },
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
@@ -27,11 +29,11 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* FLIPENDO */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals 1 extra damage if the target hits something.",
 	/* TARANTALLEGRA */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
-	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells."
-	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts."
+	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
+	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
 	// /* FUMOS */ "Produces smoke, helping the user evade spells but also slightly lowering his own accuracy."
-	// /* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn."
-	// /* FURNUNCULUS */ "Causes the target to burst out in painful boils."
+	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
+	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",
 	// /* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster."
 	// /* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly."
 	// /* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster."

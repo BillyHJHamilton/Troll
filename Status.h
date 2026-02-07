@@ -19,6 +19,7 @@ namespace Status
 		LegLocked,
 		Tickled,
 		TongueTied,
+		Burning,
 
 		Count
 	};

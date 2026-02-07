@@ -19,8 +19,7 @@ namespace Spell
 
 void vermillious (Creature::Handle caster, Creature::Handle target)
 {
-	std::string message = " " + Grammar::You_are(target) + " showered in sparks!";
-	Draw::add_message(std::move(message));
+	Draw::creature_message(target, " " + Grammar::You_are(target) + " showered in sparks!");
 }
 
 void flipendo (Creature::Handle caster, Creature::Handle target)
@@ -40,32 +39,31 @@ void flipendo (Creature::Handle caster, Creature::Handle target)
 
 		if (dz > 0)
 		{
-			Draw::add_message(" " + Grammar::You_are(target) + " knocked into the stairs!");
+			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the stairs!");
 			target.take_damage(1, caster);
 		}
 		else if (World::read().is_solid(knock_pos))
 		{
-			Draw::add_message(" " + Grammar::You_are(target) + " knocked into the wall!");
+			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the wall!");
 			target.take_damage(1, caster);
 		}
 		else if (secondary_target != Creature::None)
 		{
-			std::string message = " " + Grammar::You_are(target) + " knocked into "
-				+ Grammar::you(secondary_target) + "!";
-			Draw::add_message(std::move(message));
+			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into "
+				+ Grammar::you(secondary_target) + "!");
 			target.take_damage(1, caster);
 			secondary_target.take_damage(1, caster);
 		}
 		else if (dz < 0)
 		{
 			target.move(knock_pos);
-			Draw::add_message(" " + Grammar::You_are(target) + " knocked down the stairs!");
+			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked down the stairs!");
 			target.take_damage(4, caster);
 		}
 		else
 		{
 			target.move(knock_pos);
-			Draw::add_message(" " + Grammar::You_are(target) + " knocked back!");
+			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked back!");
 		}
 	}
 }
@@ -74,7 +72,7 @@ void tarantallegra (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::Dancing))
 	{
-		Draw::add_message(" " + Grammar::Your(target) + " feet quicken their dance!");
+		Draw::creature_message(target, " " + Grammar::Your(target) + " feet quicken their dance!");
 		target.inflict_status(Status::Dancing, 4);
 	}
 	else
@@ -88,11 +86,11 @@ void tarantallegra (Creature::Handle caster, Creature::Handle target)
 
 		if (target.has_status(Status::LegLocked))
 		{
-			Draw::add_message(" " + Grammar::Your(target) + " legs partially loosen.");
+			Draw::creature_message(target, " " + Grammar::Your(target) + " legs partially loosen.");
 		}
 		else
 		{
-			Draw::add_message(" " + Grammar::Your(target) + " feet dance!");
+			Draw::creature_message(target, " " + Grammar::Your(target) + " feet dance!");
 			target.inflict_status(Status::Dancing, apply_amount);
 		}
 	}
@@ -102,7 +100,7 @@ void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::LegLocked))
 	{
-		Draw::add_message(" " + Grammar::Your(target) + " legs are more tightly locked together!");
+		Draw::creature_message(target, " " + Grammar::Your(target) + " legs are more tightly locked together!");
 		target.inflict_status(Status::LegLocked, 4);
 	}
 	else
@@ -116,11 +114,11 @@ void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
 
 		if (target.has_status(Status::Dancing))
 		{
-			Draw::add_message(" " + Grammar::Your(target) + " feet dance more slowly.");
+			Draw::creature_message(target, " " + Grammar::Your(target) + " feet dance more slowly.");
 		}
 		else
 		{
-			Draw::add_message(" " + Grammar::Your(target) + " legs are locked together!");
+			Draw::creature_message(target, " " + Grammar::Your(target) + " legs are locked together!");
 			target.inflict_status(Status::LegLocked, apply_amount);
 		}
 	}
@@ -128,7 +126,7 @@ void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
 
 void rictusempra (Creature::Handle caster, Creature::Handle target)
 {
-	Draw::add_message(" Something is tickling " + Grammar::you(target) + "!");
+	Draw::creature_message(target, " Something is tickling " + Grammar::you(target) + "!");
 	target.inflict_status(Status::Tickled, Random::in_range(4,8));
 }
 
@@ -136,15 +134,34 @@ void mimblewimble (Creature::Handle caster, Creature::Handle target)
 {
 	if (target.has_status(Status::TongueTied))
 	{
-		Draw::add_message(" " + Grammar::You(target) + " " +
+		Draw::creature_message(target, " " + Grammar::You(target) + " " +
 			Grammar::verbs("become", target) + " more tongue-tied.");
 	}
 	else
 	{
-		Draw::add_message(" " + Grammar::You(target) + " " +
+		Draw::creature_message(target, " " + Grammar::You(target) + " " +
 			Grammar::verbs("become", target) + " tongue-tied.");
 	}
 	target.inflict_status(Status::TongueTied, 5);
+}
+
+void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target)
+{
+	if (target.has_status(Status::Burning))
+	{
+		Draw::creature_message(target, " " + Grammar::Your(target) + " clothes are burning in more places!");
+	}
+	else
+	{
+		Draw::creature_message(target, " " + Grammar::Your(target) + " clothes burst into flames!");
+	}
+
+	target.inflict_status(Status::Burning, 5);
+}
+
+void furnunculus (Creature::Handle caster, Creature::Handle target)
+{
+	Draw::creature_message(target, " " + Grammar::Your(target) + " skin boils!");
 }
 
 }
