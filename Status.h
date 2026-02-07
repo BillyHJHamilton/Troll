@@ -20,6 +20,8 @@ namespace Status
 		Tickled,
 		TongueTied,
 		Burning,
+		Impeded,
+		Batty,
 
 		Count
 	};

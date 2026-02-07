@@ -19,6 +19,8 @@ void calc_leg_locked(Creature::Handle creature, Creature::DerivedStats& ds, int 
 void calc_tickled(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_tongue_tied(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_burning(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
+void calc_impeded(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
+void calc_batty(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 
 // functions for updating each status at end of round
 void endround_dancing(Creature::Handle creature);
@@ -26,6 +28,8 @@ void endround_leg_locked(Creature::Handle creature);
 void endround_tickled(Creature::Handle creature);
 void endround_tongue_tied(Creature::Handle creature);
 void endround_burning(Creature::Handle creature);
+void endround_impeded(Creature::Handle creature);
+void endround_batty(Creature::Handle creature);
 
 // functions for printing message when a status is removed
 void cure_dancing(Creature::Handle const creature);
@@ -33,6 +37,8 @@ void cure_leg_locked(Creature::Handle const creature);
 void cure_tickled(Creature::Handle const creature);
 void cure_tongue_tied(Creature::Handle const creature);
 void cure_burning(Creature::Handle const creature);
+void cure_impeded(Creature::Handle const creature);
+void cure_batty(Creature::Handle const creature);
 
 Status::Data s_status_data [Status::Count];
 
@@ -44,6 +50,8 @@ void init ()
 	s_status_data[Status::Tickled] = {"Tickle", &calc_tickled, &endround_tickled, &cure_tickled};
 	s_status_data[Status::TongueTied] = {"TngTie", &calc_tongue_tied, &endround_tongue_tied, &cure_tongue_tied};
 	s_status_data[Status::Burning] = {"Fire", &calc_burning, &endround_burning, &cure_burning};
+	s_status_data[Status::Impeded] = {"Imped", &calc_impeded, &endround_impeded, &cure_impeded};
+	s_status_data[Status::Batty] = {"Batty", &calc_batty, &endround_batty, &cure_batty};
 }
 
 int max_severity (Status::Index status_index)
@@ -223,5 +231,46 @@ void cure_burning(Creature::Handle const creature)
 {
 	Draw::creature_message(creature, Grammar::Your(creature) + " clothes have gone out.");
 }
+
+// ------------------------------------------------------------------------------------------------
+// Impeded
+
+void calc_impeded(Creature::Handle creature, Creature::DerivedStats& ds, int severity)
+{
+	//ds. += 40;
+	ds.walk_failure += 12*severity;
+	ds.evasion -= 5*severity;
+}
+
+void endround_impeded(Creature::Handle creature)
+{
+	creature.reduce_status(Impeded, 1);
+}
+
+void cure_impeded(Creature::Handle const creature)
+{
+	Draw::creature_message(creature, Grammar::Your(creature) + " movement is no longer impeded.");
+}
+
+// ------------------------------------------------------------------------------------------------
+// Batty
+
+void calc_batty(Creature::Handle creature, Creature::DerivedStats& ds, int severity)
+{
+	ds.distractedness += 10*severity;
+	ds.evasion += 10*severity;
+}
+
+void endround_batty(Creature::Handle creature)
+{
+	creature.reduce_status(Batty, 1);
+}
+
+void cure_batty(Creature::Handle const creature)
+{
+	Draw::creature_message(creature, Grammar::You_are(creature)
+		+ " no longer being attacked by black winged things.");
+}
+
 
 } // namespace status

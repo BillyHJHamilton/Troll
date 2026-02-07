@@ -14,4 +14,7 @@ namespace Spell
 	void mimblewimble(Creature::Handle caster, Creature::Handle target);
 	void lacarnum_inflamare(Creature::Handle caster, Creature::Handle target);
 	void furnunculus(Creature::Handle caster, Creature::Handle target);
+	void stupefy(Creature::Handle caster, Creature::Handle target);
+	void impedementa(Creature::Handle caster, Creature::Handle target);
+	void bat_bogey_hex(Creature::Handle caster, Creature::Handle target);
 }

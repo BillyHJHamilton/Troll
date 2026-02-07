@@ -233,8 +233,9 @@ void draw_selected_spell()
 		return;
 	}
 
-	float base_success = 100.0f - Spell::get_miscast_rate(s, Player::handle().skill_magic());
-	int damage = Spell::get_damage(s, Player::handle());
+	float const base_success = 100.0f - Spell::get_miscast_rate(s, Player::handle().skill_magic());
+	int const damage = Spell::get_damage(s, Player::handle());
+	int const range = Spell::get_range(s);
 
 	std::stringstream ss;
 	ss << Spell::get_name(s) << "\n\n";
@@ -242,6 +243,11 @@ void draw_selected_spell()
 		<< std::setw(3) << std::left << Spell::get_difficulty(s)
 		<< " (" << std::fixed << std::setprecision(0) << base_success << "%)\n";
 	ss << std::setw(13) << std::left << "Accuracy:" << Spell::get_accuracy(s) << "\n";
+
+	if (range > 0)
+	{
+		ss << std::setw(13) << std::left << "Range:" << range << "\n";
+	}
 
 	if (damage > 0)
 	{

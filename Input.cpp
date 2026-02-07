@@ -76,7 +76,13 @@ void handle_next_input ()
 	//-----------------------------------------------------------
 	// Global input - All Game modes
 
-	if (key == TK_CLOSE) // X button in the corner
+	if (key == TK_CLOSE || // X button in the corner
+	   (key == TK_F4 && terminal_check(TK_ALT))) // Vulcan nerve pinch
+	{
+		handle_input_close();
+		return;	
+	}
+
 	{
 		handle_input_close();
 		return;	

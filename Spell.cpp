@@ -9,18 +9,23 @@
 namespace Spell
 {
 
-// Note: Spell accuracy is generally 20 pts higher than in HPADS.
+int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
+
+// Note: Spell accuracy is generally 10-20 pts higher than in HPADS.
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{	//			Spell name				Abbrv	Colour			Dif Drk Dmg		Acc Rng	Effect function			Miscast type
-	Spell::Data {"Vermillious",			"VM",	"red",			5,	0,	2,		85,	4,	&vermillious,			Miscast::Beam },
-	Spell::Data {"Flipendo",			"FP",	"orange",		10,	0,	2,		70,	8,	&flipendo,				Miscast::Beam },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",	15,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
-	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",		15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
-	Spell::Data {"Rictusempra",			"RS",	"light red",	20,	0,	0,		90,	8,	&rictusempra,			Miscast::Beam },
-	Spell::Data {"Mimblewimble",		"MW",	"blue",			25,	0,	0,		90,	8,	&mimblewimble,			Miscast::Beam },
-	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",		25, 0,  0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam },
-	Spell::Data {"Furnunculus",			"FN",   "lighter red",	30, 0,  4,		60, 6,  &furnunculus,			Miscast::Beam },
+{	//			Spell name				Abbrv	Colour				Dif Drk Dmg		Acc Rng	Effect function			Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,		85,	4,	&vermillious,			Miscast::Beam },
+	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,		70,	8,	&flipendo,				Miscast::Beam },
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
+	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
+	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,		90,	8,	&rictusempra,			Miscast::Beam },
+	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,		90,	8,	&mimblewimble,			Miscast::Beam },
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam },
+	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,		60, 6,  &furnunculus,			Miscast::Beam },
+	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,75, 7,  &stupefy,				Miscast::Beam },
+	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,		85, 8,  &impedementa,			Miscast::Beam },
+	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,		80, 6,  &bat_bogey_hex,			Miscast::Beam },
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
@@ -34,11 +39,11 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	// /* FUMOS */ "Produces smoke, helping the user evade spells but also slightly lowering his own accuracy."
 	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
 	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",
-	// /* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster."
-	// /* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly."
+	/* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
+	/* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
 	// /* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster."
 	// /* PROTEGO */ "The Shield Charm.  Provides protection against hostile spells, and may deflect a spell back at its caster.  More powerful spells may penetrate the shield."
-	// /* BAT_BOGEY */ "Causes a swarm of black winged things to descend on the target.  This is highly distracting, but also makes the victim somewhat harder to hit."
+	/* BAT_BOGEY */ "Causes a swarm of black winged things to descend on the target.  This is highly distracting, but also makes the victim somewhat harder to hit.",
 	// /* AVIS */ "Conjures one or more birds with shark beaks and claws.  The Oppugno spell is required to make the birds attack."
 	// /* OPPUGNO */ "If you have previously summoned birds, this causes them to attack."
 	// /* EPISKY */ "A simple healing spell.  The target regains one or two hitpoints."
@@ -89,13 +94,12 @@ int get_difficulty (Spell::Index spell_index)
 
 int get_damage (Spell::Index spell_index, Creature::Handle caster)
 {
-	int skill_magic = caster.skill_magic();
+	int const skill_magic = caster.skill_magic();
 
 	if (s_spell_list[spell_index].damage >= 0)
 		return s_spell_list[spell_index].damage;
-// todo stupefy damage exception
-//	else if (spell_list[spell_index].damage == D_SP)
-//		return 2 + (skill_magic/20); // (integer division)*/
+	else if (s_spell_list[spell_index].damage == c_DmgSP)
+		return 2 + (skill_magic/20); // (integer division)
 	else
 		return 0;
 }

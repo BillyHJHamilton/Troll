@@ -5,6 +5,7 @@
 #include "Draw.h"
 #include "Grammar.h"
 #include "Random.h"
+#include "Spell.h"
 #include "Status.h"
 #include "World.h"
 
@@ -162,6 +163,56 @@ void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target)
 void furnunculus (Creature::Handle caster, Creature::Handle target)
 {
 	Draw::creature_message(target, " " + Grammar::Your(target) + " skin boils!");
+}
+
+void stupefy(Creature::Handle caster, Creature::Handle target)
+{
+	std::string bolt_description;
+	if (Spell::get_damage(Spell::Stupefy, caster) > 10)
+		bolt_description = "a spectacular bolt of red light";
+	else if (Spell::get_damage(Spell::Stupefy, caster) > 8)
+		bolt_description = "a mighty bolt of red light";
+	else if (Spell::get_damage(Spell::Stupefy, caster) > 6)
+		bolt_description = "a strong bolt of red light";
+	else if (Spell::get_damage(Spell::Stupefy, caster) > 4)
+		bolt_description = "a solid bolt of red light";
+	else if (Spell::get_damage(Spell::Stupefy, caster) > 3)
+		bolt_description = "a bolt of red light";
+	else
+		bolt_description = "a weak bolt of red light";
+
+	Draw::creature_message(target, Grammar::You_are(target) + " struck by "
+		+ bolt_description + "!");
+}
+
+void impedementa(Creature::Handle caster, Creature::Handle target)
+{
+	if (target.has_status(Status::Impeded))
+	{
+		Draw::creature_message(target, Grammar::Your(target) +
+			" movement is further impeded!");
+	}
+	else
+	{
+		Draw::creature_message(target, "A force impedes "
+			+ Grammar::your(target) + " movement!");
+	}
+	target.inflict_status(Status::Impeded, 5);
+}
+
+void bat_bogey_hex(Creature::Handle caster, Creature::Handle target)
+{
+	if (target.has_status(Status::Batty))
+	{
+		Draw::creature_message(target, "The swarm of black winged things around "
+			+ Grammar::you(target) + " thickens!");
+	}
+	else
+	{
+		Draw::creature_message(target, "A swarm of black winged things descends on "
+			+ Grammar::you(target) + "!");
+	}
+	target.inflict_status(Status::Batty, 6);
 }
 
 }
