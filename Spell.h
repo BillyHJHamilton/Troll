@@ -18,7 +18,7 @@ namespace Spell
 		Tarantallegra,
 		LocomotorMortis,
 		Rictusempra,
-		// Fumos, // Requires clouds
+		Fumos,
 		Mimblewimble,
 		LacarnumInflamare,
 		Furnunculus,
@@ -46,6 +46,13 @@ namespace Spell
 		Count
 	};
 
+	enum class TargetType
+	{
+		Creature,
+		Tile,
+		Self
+	};
+
 	using Bitset = std::bitset<Spell::Index::Count>;
 
 	struct Data
@@ -62,6 +69,7 @@ namespace Spell
 		int range;
 
 		EffectFunc effect_func;
+		Spell::TargetType target_type;
 		Miscast::Category miscast_category;
 	};
 
@@ -88,6 +96,7 @@ namespace Spell
 	int get_difficulty (Spell::Index spell_index);
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
+	TargetType get_target_type (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);
 	int get_range (Spell::Index spell_index);
 	EffectFunc get_effect_func (Spell::Index spell_index);
@@ -101,5 +110,6 @@ namespace Spell
 	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
 	Spell::Instance & get_current_instance ();
 
-	void execute_effect (Spell::Index spell_index, Creature::Handle caster, Creature::Handle target);
+	void execute_effect (Spell::Index spell_index, Creature::Handle caster, Creature::Handle target,
+		LineCache::Itr3D const* impact_line);
 }

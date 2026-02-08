@@ -159,6 +159,7 @@
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="Beam.cpp" />
     <ClCompile Include="Bot.cpp" />
+    <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="Gingerbread.cpp" />
     <ClCompile Include="Draw.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="Beam.h" />
     <ClInclude Include="Bot.h" />
+    <ClInclude Include="Cloud.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Draw.h" />
@@ -222,6 +224,7 @@
     <Text Include="Docs\CodingStandard.txt" />
     <Text Include="Docs\Creature Identity and Spawning.txt" />
     <Text Include="Docs\Fanfic notes.txt" />
+    <Text Include="Docs\FontGlyphs.txt" />
     <Text Include="Docs\Game Design Goals.txt" />
     <Text Include="Scraps\LineCache.txt" />
     <Text Include="Scraps\Scaps.txt" />

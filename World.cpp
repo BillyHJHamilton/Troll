@@ -99,6 +99,63 @@ bool World::permits_sight(Vec3 pos) const
 	return false; // off the map, it's unsightly
 }
 
+Cloud::Type World::get_cloud(Vec3 pos) const
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return read_map(map_id).get_cloud(pos.xy());
+	}
+
+	return Cloud::None; // cloudless infinity
+}
+
+int World::get_cloud_lifetime(Vec3 pos) const
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return read_map(map_id).get_cloud_lifetime(pos.xy());
+	}
+
+	return 0;
+}
+
+bool World::try_add_cloud(Vec3 pos, Cloud::Type cloud, int lifetime)
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return edit_map(map_id).try_add_cloud(pos.xy(), cloud, lifetime);
+	}
+	return false;
+}
+
+void World::clear_cloud(Vec3 pos)
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return edit_map(map_id).clear_cloud(pos.xy());
+	}
+}
+
+void World::step_clouds()
+{
+	for (int m = 0; m < maps.size(); ++m)
+	{
+		edit_map(m).step_clouds();
+	}
+}
+
+void World::clear_clouds()
+{
+	for (int m = 0; m < maps.size(); ++m)
+	{
+		edit_map(m).clear_clouds();
+	}
+}
+
 Stairs::Direction World::get_stairs(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
@@ -173,8 +230,7 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 	for (BoxItr itr(visbox); itr; ++itr)
 	{
 		Vec3 const target = itr->xyz(viewer.z);
-		if (within_range(viewer, target, vision_radius) &&
-			has_los(viewer, target))
+		if (has_los(viewer, target, vision_radius))
 		{
 			set_visibility(target, Visibility::Visible);
 		}
@@ -267,8 +323,13 @@ void World::advance_visibility_step()
 	}
 }
 
-int World::get_los(Vec3 start, Vec3 end) const
+int World::get_los(Vec3 start, Vec3 end, int range) const
 {
+	if (!within_range(start, end, range))
+	{
+		return c_invalid;
+	}
+
 	if (start.z != end.z)
 	{
 		// Special cases for stairs
@@ -287,7 +348,7 @@ int World::get_los(Vec3 start, Vec3 end) const
 	std::vector<int> const& lines = LineCache::get_lines(start.xy(), end.xy());
 	for (int line_id : lines)
 	{
-		if (has_los_on_line(start, end, line_id))
+		if (has_los_on_line(start, end, line_id, range))
 		{
 			return line_id;
 		}
@@ -296,8 +357,10 @@ int World::get_los(Vec3 start, Vec3 end) const
 	return c_invalid;
 }
 
-bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id) const
+bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 {
+	int cloud_loss = 0;
+
 	LineCache::Itr itr(start.xy(), line_id);
 	itr.advance();                  // skip start point
 	while (itr && *itr != end.xy()) // skip end point
@@ -306,15 +369,25 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id) const
 		{
 			return false;
 		}
+
+		Cloud::Type const cloud = get_cloud(itr->xyz(start.z));
+		cloud_loss += Cloud::vision_loss(cloud);
+
 		itr.advance();
+	}
+
+	if (!within_range(start, end, range - cloud_loss))
+	{
+		// The clouds were too thick.
+		return false;
 	}
 
 	return true;
 }
 
-bool World::has_los(Vec3 start, Vec3 end) const
+bool World::has_los(Vec3 start, Vec3 end, int range) const
 {
-	return (get_los(start, end) != c_invalid);
+	return (get_los(start, end, range) != c_invalid);
 }
 
 void World::draw(Draw::View view) const
@@ -348,8 +421,20 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 			t = Terrain::UpStairs;
 		}
 
-		int const code = Terrain::get_character(t);
-		const char* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
+		int code = Terrain::get_character(t);
+		char const* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
+
+		// Clouds conceal terrain at position
+		if (v == Visibility::Visible)
+		{
+			Cloud::Type cloud = get_cloud(pos);
+			if (cloud != Cloud::None)
+			{
+				code = Cloud::get_character(cloud);
+				draw_colour = Cloud::get_colour(cloud);
+			}
+		}
+
 		const bool is_target = Target::is_target(pos);
 		if (is_target)
 		{

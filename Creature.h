@@ -45,12 +45,19 @@ namespace Creature
 	{
 		None = -1,	 // not included in count
 		Player = 0,
+
 		Neville_0,
 		ColinCreevy_0,
 		SallyAnne_0,
 
 		Harry_1,
 		Malfoy_1,
+
+		Ron_2,
+		Hermione_2,
+
+		Crabbe_3,
+		Goyle_3,
 
 		Hufflepuff_1,
 
@@ -61,11 +68,18 @@ namespace Creature
 	{
 		Generic = -1,
 		Player = 0,
-		NevilleLongbottom,
+
+		// Alphabetic by first name below this point
 		ColinCreevy,
-		SallyAnnePerks,
-		HarryPotter,
 		DracoMalfoy,
+		GregoryGoyle,
+		HarryPotter,
+		HermioneGranger,
+		NevilleLongbottom,
+		RonWeasley,
+		SallyAnnePerks,
+		VincentCrabbe,
+
 		Count
 	};
 
@@ -120,6 +134,7 @@ namespace Creature
 		bool valid () const;
 		Creature::Type type () const;
 		Creature::Identity identity () const;
+		bool is_generic () const;
 		std::string short_name () const;
 		std::string long_name () const;
 		Gender gender () const;

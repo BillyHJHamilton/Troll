@@ -200,6 +200,11 @@ Creature::Identity Handle::identity () const
 	return read_creature_stats(index).identity;
 }
 
+bool Handle::is_generic () const
+{
+	return identity() == Identity::Generic;
+}
+
 std::string Handle::short_name () const
 {
 	return read_creature_stats(index).short_name;

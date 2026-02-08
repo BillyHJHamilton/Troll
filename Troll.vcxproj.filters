@@ -107,6 +107,9 @@
     <ClCompile Include="NameHash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Cloud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -202,6 +205,9 @@
     <ClInclude Include="NameHash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Cloud.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
@@ -223,6 +229,9 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Docs\Fanfic notes.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Docs\FontGlyphs.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

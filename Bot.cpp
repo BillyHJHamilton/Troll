@@ -61,8 +61,7 @@ void do_turn (Creature::Handle creature)
 	Brain& brain = s_brains[creature];
 
 	World const& world = World::read();
-	bool player_is_visible = world.has_los(creature.pos(), Player::pos())
-		&& within_range(creature.pos(), Player::pos(), creature_vision);
+	bool player_is_visible = world.has_los(creature.pos(), Player::pos(), creature_vision);
 
 	if (player_is_visible)
 	{

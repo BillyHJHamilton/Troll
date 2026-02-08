@@ -38,7 +38,7 @@ struct Vec2
 
 enum CompassDirection : int
 {
-	c_CompassInvalid = c_invalid, // this enum is int type so we can do this
+	c_CompassInvalid = -1, // this enum is int type so we can do this
 	c_CompassEast = 0,
 	c_CompassNortheast,
 	c_CompassNorth,

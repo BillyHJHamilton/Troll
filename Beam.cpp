@@ -1,4 +1,5 @@
 #include "Beam.h"
+#include "Cloud.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
@@ -11,9 +12,6 @@
 
 namespace Beam
 {
-
-// Line already advanced to point of impact.  Used for Flipendo pushback.
-static std::optional<LineCache::Itr3D> s_impact_line;
 
 int constexpr c_accuracy_loss = 3; // per square
 int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
@@ -30,6 +28,7 @@ static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line_it
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
 static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line);
+static void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line);
 
 static std::string get_colour (Beam::Data const & beam);
 static int get_codepoint (Beam::Data const & beam);
@@ -53,11 +52,6 @@ int accuracy_at_range(int base_accuracy, Vec3 start, Vec3 end)
 	return std::max(c_min_ranged_accuracy, base_accuracy - loss);
 }
 
-std::optional<LineCache::Itr3D> get_latest_impact_line ()
-{
-	return s_impact_line;
-}
-
 // ------------------------------------------------------------------------------------------------
 // helper function implementations
 
@@ -76,20 +70,25 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	// Probably we should get the line earlier and abort on failure.
 	// For now it's just being set to 0 below.
 
+	int const spell_range = Spell::get_range(spell);
 	const World& world = World::read();
-	const int trajectory = world.get_los(caster.pos(), target_pos);
+	const int trajectory = world.get_los(caster.pos(), target_pos, spell_range);
+	const bool stop_on_target = (Spell::get_target_type(spell) == Spell::TargetType::Tile);
 
 	return Beam::Data
 	{
 		caster.pos(),
+		target_pos,
 		caster.pos(),
 		Beam::Type::Spell,
 		caster,
 		intended_target,
 		(trajectory == c_invalid) ? 0 : trajectory,
-		Spell::get_range(spell),
+		spell_range,
+		0 /*cloud accuracy loss*/,
 		caster_aimed,
-		false
+		false,
+		stop_on_target
 	};
 }
 
@@ -181,6 +180,19 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 
 		// see if we hit anything; this may change done to true
 		test_for_impact(beam, line_itr);
+
+		if (!beam.done && beam.pos == beam.target_pos && beam.stop_on_target)
+		{
+			detonate_in_midair(beam, line_itr);
+			beam.done = true;
+		}
+
+		if (!beam.done)
+		{
+			// Lose accuracy for clouds
+			Cloud::Type cloud = World::read().get_cloud(beam.pos);
+			beam.cloud_accuracy_loss += Cloud::accuracy_loss(cloud);
+		}
 	}
 }
 
@@ -239,8 +251,8 @@ static std::string beam_description(Beam::Data const & beam)
 static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 {
 	int base_accuracy;
-	Creature::Handle caster_accuracy_factor;
-	Creature::Handle target_evasion_divisor;
+	int caster_accuracy_factor;
+	int target_evasion_divisor;
 
 	if (beam.type == Beam::Type::Spell)
 	{
@@ -262,19 +274,24 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 		// if not aimed by caster, don't factor in caster's accuracy.
 		caster_accuracy_factor = 100;
 	}
-	else if (beam.caster.accuracy() < -90)
-	{
-		// minimum caster accuracy is 10%, even if status effects are heavily stacked
-		caster_accuracy_factor = 10;
-	}
-	else if (beam.caster.accuracy() > 100 && target != beam.intended_target)
-	{
-		// don't apply accuracy bonus if the target is not the intended target
-		caster_accuracy_factor = 100;
-	}
 	else
 	{
-		caster_accuracy_factor = 100 + beam.caster.accuracy();
+		int const caster_accuracy = beam.caster.accuracy() - beam.cloud_accuracy_loss;
+
+		if (caster_accuracy < -90)
+		{
+			// minimum caster accuracy is 10%, even if status effects are heavily stacked
+			caster_accuracy_factor = 10;
+		}
+		else if (caster_accuracy > 100 && target != beam.intended_target)
+		{
+			// don't apply accuracy bonus if the target is not the intended target
+			caster_accuracy_factor = 100;
+		}
+		else
+		{
+			caster_accuracy_factor = 100 + beam.caster.accuracy();
+		}
 	}
 
 	// factor in target evasion, capped to prevent divide by zero (or near-certain hit)
@@ -318,14 +335,20 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 	int damage = get_damage(beam);
 	Spell::EffectFunc effect_func = get_effect_func(beam);
 
-	// stash a copy of the impact line (used by Flipendo pushback)
-	s_impact_line = line;
-
 	// deal damage and then apply effect
 	target.take_damage(damage, beam.caster);
 	if (effect_func != nullptr)
 	{
-		effect_func(beam.caster, target);
+		effect_func(beam.caster, target, &line);
+	}
+}
+
+void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
+{
+	Spell::EffectFunc effect_func = get_effect_func(beam);
+	if (effect_func != nullptr)
+	{
+		effect_func(beam.caster, Creature::None, &line);
 	}
 }
 

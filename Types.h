@@ -32,6 +32,12 @@ enum class RoomType : byte;
 enum class TargetMode : byte;
 enum class Visibility : byte;
 
+namespace Cloud
+{
+	enum Type : int;
+	struct Instance;
+}
+
 namespace Creature
 {
 	enum Type : int;
@@ -43,6 +49,12 @@ namespace Creature
 namespace Draw
 {
 	struct View;
+}
+
+namespace LineCache
+{
+	class Itr;
+	class Itr3D;
 }
 
 namespace Menu
@@ -63,7 +75,7 @@ namespace Player
 namespace Spell
 {
 	enum Index : int;
-	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target);
+	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
 }
 
 namespace Stairs

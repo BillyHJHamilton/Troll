@@ -222,6 +222,10 @@ void end_turn()
 		Creature::remove_defeated_creatures();
 	}
 
+	// Update clouds
+	World::edit().step_clouds();
+	Creature::remove_defeated_creatures();
+
 	if (Player::is_game_over())
 	{
 		game_over();

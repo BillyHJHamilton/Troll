@@ -1,5 +1,6 @@
 #include "Map.h"
 
+#include "Cloud.h"
 #include "Draw.h"
 #include "Line.h"
 #include "MapUtil.h"
@@ -11,13 +12,14 @@
 #include <cassert>
 #include <iostream>
 
-void Map::init(int z, Box2 const & box, Terrain::Type fill)
+void Map::init(int z, Box2 box, Terrain::Type fill)
 {
 	global_z = z;
 	map_box = box;
 
 	terrain = make_grid(box.size.x, box.size.y, fill);
 	visibility = make_grid(box.size.x, box.size.y, c_invalid);
+	clouds = make_grid(box.size.x, box.size.y, Cloud::Type::None);
 }
 
 MapGenerator& Map::get_generator()
@@ -30,16 +32,16 @@ MapGenerator& Map::get_generator()
 	return *generator;
 }
 
-Terrain::Type Map::get_terrain(Vec2 const & global_pos) const
+Terrain::Type Map::get_terrain(Vec2 global_pos) const
 {
-	Vec2 local = global_to_local(global_pos);
+	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	return terrain[local.x][local.y];
 }
 
-Visibility Map::get_visibility(Vec2 const & global_pos, int current_step) const
+Visibility Map::get_visibility(Vec2 global_pos, int current_step) const
 {
-	Vec2 local = global_to_local(global_pos);
+	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	int const vis = visibility[local.x][local.y];
 	if (vis == current_step)
@@ -56,16 +58,30 @@ Visibility Map::get_visibility(Vec2 const & global_pos, int current_step) const
 	}
 }
 
-void Map::set_terrain(Vec2 const & global_pos, Terrain::Type t)
+Cloud::Type Map::get_cloud(Vec2 global_pos) const
 {
-	Vec2 local = global_to_local(global_pos);
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	return clouds[local.x][local.y];
+}
+
+int Map::get_cloud_lifetime(Vec2 global_pos) const
+{
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	return clouds[local.x][local.y];
+}
+
+void Map::set_terrain(Vec2 global_pos, Terrain::Type t)
+{
+	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	terrain[local.x][local.y] = t;
 }
 
-void Map::set_visibility(Vec2 const & global_pos, Visibility v, int current_step)
+void Map::set_visibility(Vec2 global_pos, Visibility v, int current_step)
 {
-	Vec2 local = global_to_local(global_pos);
+	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	if (v == Visibility::Visible)
 	{
@@ -91,13 +107,73 @@ void Map::set_all_explored()
 	}
 }
 
-bool Map::tile_is_solid(Vec2 const & global_pos) const
+bool Map::try_add_cloud(Vec2 global_pos, Cloud::Type cloud, int lifetime)
+{
+	if (lifetime > 0)
+	{
+		Vec2 const local = global_to_local(global_pos);
+		assert(local_pos_valid(local));
+
+		auto existing_itr = cloud_lifetimes.find(local);
+		if (existing_itr != cloud_lifetimes.end())
+		{
+			if (existing_itr->second > lifetime)
+			{
+				return false; // failed to add
+			}
+		}
+
+		clouds[local.x][local.y] = cloud;
+		cloud_lifetimes.insert_or_assign(global_pos, lifetime);
+		return true;
+	}
+	return false;
+}
+
+void Map::clear_cloud(Vec2 global_pos)
+{
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	clouds[local.x][local.y] = Cloud::None;
+}
+
+void Map::step_clouds()
+{
+	for (auto itr = cloud_lifetimes.begin(); itr != cloud_lifetimes.end(); )
+	{
+		int& lifetime = itr->second;
+
+		// (Here, we can also perform any updates like dealing damage from fire clouds.)
+
+		--lifetime;
+		if(lifetime <= 0)
+		{
+			clear_cloud(itr->first);
+			itr = cloud_lifetimes.erase(itr);
+		}
+		else
+		{
+			++itr;
+		}
+	}
+}
+
+void Map::clear_clouds()
+{
+	for (auto & pair : cloud_lifetimes)
+	{
+		clear_cloud(pair.first);
+	}
+	cloud_lifetimes.clear();
+}
+
+bool Map::tile_is_solid(Vec2 global_pos) const
 {
 	Terrain::Type t = get_terrain(global_pos);
 	return Terrain::is_solid(t);
 }
 
-bool Map::tile_permits_sight(Vec2 const& global_pos) const
+bool Map::tile_permits_sight(Vec2 global_pos) const
 {
 	Terrain::Type t = get_terrain(global_pos);
 	return Terrain::permits_sight(t);
@@ -113,7 +189,7 @@ void Map::fill(Terrain::Type t)
 	}
 }
 
-void Map::fill_box(Box2 const & global_box, Terrain::Type t)
+void Map::fill_box(Box2 global_box, Terrain::Type t)
 {
 	assert(contains(global_box));
 	for (Vec2 const & pos : global_box)

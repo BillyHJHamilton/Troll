@@ -12,8 +12,8 @@ namespace Terrain
 		{
 		case Terrain::Open: return '.';
 		case Terrain::Wall: return SOLID_BLOCK;
-		case Terrain::UpStairs: return '+';
-		case Terrain::DownStairs: return '-';
+		case Terrain::UpStairs: return 0x2191; //'+';
+		case Terrain::DownStairs: return 0x2193; //'-';
 		default: assert(false); return '?';
 		}
 	}

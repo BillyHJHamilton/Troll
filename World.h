@@ -28,6 +28,14 @@ public:
 	bool is_solid(Vec3 pos) const;
 	bool permits_sight(Vec3 pos) const;
 
+	// Clouds
+	Cloud::Type get_cloud(Vec3 pos) const;
+	int get_cloud_lifetime(Vec3 pos) const;
+	bool try_add_cloud(Vec3 pos, Cloud::Type cloud, int lifetime);
+	void clear_cloud(Vec3 pos);
+	void step_clouds();
+	void clear_clouds();
+
 	// Returns direction of stairs starting at pos, or Stairs::None.
 	Stairs::Direction get_stairs(Vec3 pos) const;
 
@@ -45,16 +53,16 @@ public:
 
 	// Returns the id of a clear line (in the line cache) from start to end.
 	// If no clear line exists, returns c_invalid.
-	int get_los(Vec3 start, Vec3 end) const;
+	int get_los(Vec3 start, Vec3 end, int range) const;
 
 	// Checks los along a single line trajectory.
 	// The line_id must be a valid line from start to end.
 	// Called by get_los for each relevant trajectory.
-	bool has_los_on_line(Vec3 start, Vec3 end, int line_id) const;
+	bool has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const;
 
 	// Runs get_los and returns true if the result was not c_invalid.
 	// Use this if you don't plan to use the line you found.
-	bool has_los(Vec3 start, Vec3 end) const;
+	bool has_los(Vec3 start, Vec3 end, int range) const;
 
 	void draw(Draw::View view) const;
 

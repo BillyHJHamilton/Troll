@@ -11,6 +11,10 @@ std::string You (Creature::Handle creature)
 	{
 		return "You";
 	}
+	else if (creature.is_generic())
+	{
+		return "The " + creature.short_name();
+	}
 	else
 	{
 		return creature.short_name();
@@ -22,6 +26,10 @@ std::string you (Creature::Handle creature)
 	if (creature.is_player())
 	{
 		return "you";
+	}
+	else if (creature.is_generic())
+	{
+		return "the " + creature.short_name();
 	}
 	else
 	{

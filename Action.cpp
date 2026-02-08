@@ -59,7 +59,8 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	// check for self-targeting
-	if (target_pos == Player::pos() && Spell::get_accuracy(spell) != -1)
+	if (target_pos == Player::pos() &&
+		Spell::get_target_type(spell) != Spell::TargetType::Self)
 	{
 		Draw::add_message("Don't shoot that spell at yourself.");
 		return false;
@@ -228,9 +229,9 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		+ Grammar::verbs("cast", caster) + " "
 		+ Spell::get_name(spell) + "!");
 
-	if (Spell::get_accuracy(spell) == -1) // self-affecting spell
+	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
-		Spell::execute_effect(spell, caster, Creature::None);
+		Spell::execute_effect(spell, caster, Creature::None, nullptr);
 	}
 	else
 	{

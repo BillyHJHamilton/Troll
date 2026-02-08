@@ -1,0 +1,167 @@
+﻿hex  ~  description of how it is in FSEX302 font
+
+86   †  punctuation cross
+95   •  circular dot
+394  Δ  uppercase delta, pointed arch with base
+398  Λ  uppercase lambda, looks like pointed arch
+398  Ξ  xi or whatever
+3a0  Π  pi, very square
+3A6  Φ  phi, has lines on top/bottom
+3A8  Ψ  psi
+3e8  Ϩ	backwards s squiggle
+3de	 Ϟ	curly bolt
+3df  ϟ	straighter bolt, very Harry Potter
+3ea  Ϫ  funny little hat or tent thing
+3ee  Ϯ	sword ish
+3f4	 ϴ	theta
+416  Ж  cyrillic x with line letter
+437  з  cyrillic backwars 3 letter, curly
+7dc  ߜ  little inverted triangle
+7e1  ߡ  little triangle
+7e6  ߦ  little circle with sticks
+7d9  ߙ  little cross
+965  ॥  sideways equals
+983  ஃ  three circles
+e4f  ๏  medium circle with dot
+e50  ๐  medium circle
+1040 ၀  smaller circle
+10a3 Ⴃ  amulet perhaps
+10fb ჻  three dots
+1361 ፡  two dots
+1362 ።  four dots
+1695 ᚕ  starburst
+1696 ᚖ  crossed diamond
+16a0 ᚠ  runes ...
+16ca ᛊ  hard e
+16cb ᛋ  hard bolt
+16dd ᛝ  double helix
+16df ᛟ  fish rune
+16e8 ᛨ  both ways
+16eb ᛫  one dot
+16ec ᛬  two dot
+16ed ᛭  small iron cross
+2038 ※  snow
+203c ‼  double bang
+203d ‽  interrobang
+210c ℌ  ornate h
+2190 ←  left arrow ... up, right, down
+2195 ↕  updown
+2196 ↖  nw ... ne, se, sw
+2206 ∆  up triangle slightly curved
+2207 ∇ down triangle slightly curved (symmetric w up)
+2219 ∙  beautiful round dot
+2229 ∩  little n-shaped curve
+2302 ⌂  house
+2311 ⌑  little four-armed circle
+2314 ⌔  jewel
+2317 ⌗  small mesh
+231A ⌚  muggle watch
+2318 ⌛  hourglass
+232D ⌭  side zap (filled)
+2425 ␥  cartoon glass sheen
+2426 ␦  backwards question mark
+244a ⑊  double backalsh
+2588 █  wall!
+2592 ▒  dithered wall
+2593 ▓  heavy dithered wall
+25a4 ▤  double wide horizontal wood
+25a5 ▥  double wide vertical wood
+25a7 ▧  double wide diagonal glass
+25ab ▫  small square
+25c9 ◉  plus in circle
+25ca ◊  portal
+25cb ○  elegant medium circle
+25cc ◌  dotted circle
+25cf ●  filled circle ... half filled, quarters, etc
+25d8 ◘  square w circle
+2600 ☀ brightness sun
+2602 ☂ umbrella
+2603 ☃ frosty snowman
+2604 ☄ meteor
+2605 ★ small star
+260e ☎ muggle phone
+2610 ☐  medium square
+2615 ☕ coffee cup
+2619 ☙  small leaf
+261c ☜  hand left ...
+2625 ☥  ankh
+262d ☭  communism
+262f ☯  yin yang
+263a ☺  happy face
+263c ☼  brightness (hollow)
+263d ☽ moon left ... right
+2640 ♀  venus
+2642 ♂  mars
+264c ♌ snake
+2652 ♒ double water
+2654 ♔  chess king ...
+266a ♪  music 8th
+2668 ♫  double 8th
+266d ♭  flat
+266e ♮  that other one
+266f ♯  sharp
+275b ❛  powerful quote left ...
+27e1 ⟡  sparkle
+2d62 ⵢ  perfect lightning bolt
+e000    tengwar, lol ...
+e10f    crown
+e116   spiral (unflipendo)
+e183   bird ghost thing
+e1c0   guitar
+e2e1   wine glass
+eaa1 ... various splatters (private use)
+
+
+
+various curved etc arrows:
+↚ 219a
+↛ 219b
+↜ 219c
+↝ 219d
+↞ 219e
+↟ 219f
+↠ 21a0
+↡ 21a1
+↢ 21a2
+↣ 21a3
+↤ 21a4
+↥ 21a5
+↦ 21a6
+↧ 21a7
+↨ 21a8
+↩ 21a9
+↪ 21aa
+↫ 21ab
+↬ 21ac
+↭ 21ad
+↮ 21ae
+↯ 21af
+↰ 21b0
+↱ 21b1
+↲ 21b2
+↳ 21b3
+↴ 21b4
+↵ 21b5
+↶ 21b6
+
+chess pieces, playing cards
+♔ 2654
+♕ 2655
+♖ 2656
+♗ 2657
+♘ 2658
+♙ 2659
+♚ 265a
+♛ 265b
+♜ 265c
+♝ 265d
+♞ 265e
+♟ 265f
+♠ 2660
+♡ 2661
+♢ 2662
+♣ 2663
+♤ 2664
+♥ 2665
+♦ 2666
+♧ 2667

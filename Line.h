@@ -35,9 +35,9 @@ namespace LineCache
 		void advance_and_loop();
 
 		// iterator-style functions
-		operator bool() { return !finished(); }
-		Vec2 operator*() { return current; }
-		Vec2 const* operator->() { return &current; }
+		operator bool() const { return !finished(); }
+		Vec2 operator*() const { return current; }
+		Vec2 const* operator->() const { return &current; }
 		Vec2 operator++() { advance(); return current; }
 		// post-increment not provided to avoid accidental copy
 
@@ -58,14 +58,14 @@ namespace LineCache
 			z(start_pos.z)
 		{}
 
-		int steps_left() const { return itr.steps_left(); }
-		bool finished() const { return itr.finished(); }
+		int const steps_left() const { return itr.steps_left(); }
+		bool const finished() const { return itr.finished(); }
 		void advance() { itr.advance(); }
 		void advance_and_loop() { itr.advance_and_loop(); }
 
 		// iterator-style functions
-		operator bool() { return !finished(); }
-		Vec3 operator*() { return {itr->x, itr->y, z}; }
+		operator bool() const { return !finished(); }
+		Vec3 operator*() const { return {itr->x, itr->y, z}; }
 		Vec3 operator++() { advance(); return operator*(); }
 		// post-increment not provided to avoid accidental copy
 		// can't easily provide ->, I fear.

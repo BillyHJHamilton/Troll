@@ -1,6 +1,7 @@
 #include "SpellEffect.h"
 
 #include "Beam.h"
+#include "Cloud.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
@@ -18,18 +19,17 @@ namespace Spell
 
 // Put one space at the start of the messages for these, for a hanging indent.
 
-void vermillious (Creature::Handle caster, Creature::Handle target)
+void vermillious (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	Draw::creature_message(target, " " + Grammar::You_are(target) + " showered in sparks!");
 }
 
-void flipendo (Creature::Handle caster, Creature::Handle target)
+void flipendo (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	// Push back
-	std::optional<LineCache::Itr3D> optional_line = Beam::get_latest_impact_line();
-	if (optional_line.has_value())
+	if (impact_line != nullptr)
 	{
-		LineCache::Itr3D& line = *optional_line;
+		LineCache::Itr3D line = *impact_line; // copy
 		line.advance_and_loop();
 
 		Vec3 knock_pos = *line;
@@ -69,7 +69,7 @@ void flipendo (Creature::Handle caster, Creature::Handle target)
 	}
 }
 
-void tarantallegra (Creature::Handle caster, Creature::Handle target)
+void tarantallegra (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::Dancing))
 	{
@@ -97,7 +97,7 @@ void tarantallegra (Creature::Handle caster, Creature::Handle target)
 	}
 }
 
-void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
+void locomotor_mortis (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::LegLocked))
 	{
@@ -125,13 +125,49 @@ void locomotor_mortis (Creature::Handle caster, Creature::Handle target)
 	}
 }
 
-void rictusempra (Creature::Handle caster, Creature::Handle target)
+void rictusempra (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	Draw::creature_message(target, " Something is tickling " + Grammar::you(target) + "!");
 	target.inflict_status(Status::Tickled, Random::in_range(4,8));
 }
 
-void mimblewimble (Creature::Handle caster, Creature::Handle target)
+void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::Itr3D const* impact_line)
+{
+	if (impact_line)
+	{
+		Vec3 const spell_pos = **impact_line;
+		
+		bool msg = false;
+		for (CompassDirection dir = c_CompassEast;
+			dir <= c_CompassNoMove;
+			dir = (CompassDirection)(dir + 1))
+		{
+			Vec3 const cloud_pos = spell_pos + c_compass[dir].xy0();
+			
+			if (World::read().is_solid(cloud_pos))
+			{
+				continue;
+			}
+
+			if (dir == c_CompassNoMove || Random::coinflip())
+			{
+				int const lifetime = Random::in_range(8,11);
+				bool const added = World::edit().try_add_cloud(cloud_pos, Cloud::Smoke, lifetime);
+				if (!msg && added && World::read().is_visible(cloud_pos))
+				{
+					msg = true;
+				}
+			}
+		}
+
+		if (msg)
+		{
+			Draw::add_message("Smoke billows forth.");
+		}
+	}
+}
+
+void mimblewimble (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::TongueTied))
 	{
@@ -146,7 +182,7 @@ void mimblewimble (Creature::Handle caster, Creature::Handle target)
 	target.inflict_status(Status::TongueTied, 5);
 }
 
-void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target)
+void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::Burning))
 	{
@@ -160,12 +196,12 @@ void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target)
 	target.inflict_status(Status::Burning, 5);
 }
 
-void furnunculus (Creature::Handle caster, Creature::Handle target)
+void furnunculus (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	Draw::creature_message(target, " " + Grammar::Your(target) + " skin boils!");
 }
 
-void stupefy(Creature::Handle caster, Creature::Handle target)
+void stupefy(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	std::string bolt_description;
 	if (Spell::get_damage(Spell::Stupefy, caster) > 10)
@@ -185,7 +221,7 @@ void stupefy(Creature::Handle caster, Creature::Handle target)
 		+ bolt_description + "!");
 }
 
-void impedementa(Creature::Handle caster, Creature::Handle target)
+void impedementa(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::Impeded))
 	{
@@ -200,7 +236,7 @@ void impedementa(Creature::Handle caster, Creature::Handle target)
 	target.inflict_status(Status::Impeded, 5);
 }
 
-void bat_bogey_hex(Creature::Handle caster, Creature::Handle target)
+void bat_bogey_hex(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
 	if (target.has_status(Status::Batty))
 	{

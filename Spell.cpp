@@ -14,18 +14,19 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 // Note: Spell accuracy is generally 10-20 pts higher than in HPADS.
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{	//			Spell name				Abbrv	Colour				Dif Drk Dmg		Acc Rng	Effect function			Miscast type
-	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,		85,	4,	&vermillious,			Miscast::Beam },
-	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,		70,	8,	&flipendo,				Miscast::Beam },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,		90,	8,	&tarantallegra,			Miscast::Beam },
-	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,		85,	8,	&locomotor_mortis,		Miscast::Beam },
-	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,		90,	8,	&rictusempra,			Miscast::Beam },
-	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,		90,	8,	&mimblewimble,			Miscast::Beam },
-	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam },
-	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,		60, 6,  &furnunculus,			Miscast::Beam },
-	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,75, 7,  &stupefy,				Miscast::Beam },
-	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,		85, 8,  &impedementa,			Miscast::Beam },
-	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,		80, 6,  &bat_bogey_hex,			Miscast::Beam },
+{	//			Spell name				Abbrv	Colour				Dif Drk Dmg			Acc Rng	Effect function			Target type				Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,			85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,			90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,			85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,			90,	8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	0,			-1, 8,	&fumos,					TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,			80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
@@ -36,7 +37,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
 	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
 	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
-	// /* FUMOS */ "Produces smoke, helping the user evade spells but also slightly lowering his own accuracy."
+	/* FUMOS */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.",
 	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
 	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",
 	/* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
@@ -102,6 +103,11 @@ int get_damage (Spell::Index spell_index, Creature::Handle caster)
 		return 2 + (skill_magic/20); // (integer division)
 	else
 		return 0;
+}
+
+TargetType get_target_type (Spell::Index spell_index)
+{
+	return s_spell_list[spell_index].target_type;
 }
 
 int get_accuracy (Spell::Index spell_index)
@@ -203,12 +209,13 @@ Spell::Instance & get_current_instance ()
 	return s_current_spell_instance;
 }
 
-void execute_effect(Spell::Index spell_index, Creature::Handle caster, Creature::Handle target)
+void execute_effect(Spell::Index spell_index, Creature::Handle caster, Creature::Handle target,
+	LineCache::Itr3D const* impact_line)
 {
 	Spell::EffectFunc func = s_spell_list[spell_index].effect_func;
 	if (func != nullptr)
 	{
-		func(caster, target);
+		func(caster, target, impact_line);
 	}
 }
 
