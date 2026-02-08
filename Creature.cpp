@@ -40,7 +40,7 @@ IdentityMetadata s_identity_metadata [(int)Identity::Count];
 // The gingerbread array stores the invariant stats for each creature type.
 // (It is called gingerbread because they are like cookie cutters.)
 // Note that the first entry in the array is reserved for the player.
-// This is the one entry of the array that will change during play (as player levels up).
+// This is the one entry of the array that WILL change during play (as player levels up).
 
 static Creature::Stats s_gingerbread [Creature::Count];
 static Spell::Bitset s_gingerbread_spells [Creature::Count]; 
@@ -78,6 +78,11 @@ void init ()
 	init_gingerbread(); // Implemented in Gingerbread.cpp
 }
 
+Stats& edit_player_stats()
+{
+	return s_gingerbread[Creature::Player];
+}
+
 //-------------------------------------------------------------------------------------------------
 
 // Individual creatures are stored in the s_creatures array.
@@ -86,31 +91,49 @@ void init ()
 // Just as with the gingerbread array, the first entry is reserved for the player.
 // This means the Creature::Player constant applies to *both* gingerbread *and* g_creatures.
 
-int constexpr MAX_CREATURES = 200;
-static Creature::Instance s_creatures [MAX_CREATURES];
+int constexpr c_max_creatures = 200;
+static Creature::Instance s_creatures [c_max_creatures];
 static Grid<int> s_creature_status; // [creature][status]
-static Creature::DerivedStats s_derived_stats [MAX_CREATURES];
-static Spell::Bitset s_spells_known [MAX_CREATURES];
+static Creature::DerivedStats s_derived_stats [c_max_creatures];
+static Spell::Bitset s_spells_known [c_max_creatures];
 static int s_max_creature_index;
+
+int constexpr c_rest_turns_per_hp = 5;
 
 std::vector<Creature::Handle> s_visible_creatures;
 std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
 
-static Creature::Instance & get_creature_instance (Creature::Handle creature)
+static Creature::Instance const & read_creature_instance (Creature::Handle creature)
 {
 	assert(creature.valid());
 	return s_creatures[creature];
 }
 
-static Creature::Stats & get_creature_stats (Creature::Handle creature)
+static Creature::Instance & edit_creature_instance (Creature::Handle creature)
 {
 	assert(creature.valid());
-	Type const t = creature.type();
-	assert(t > Creature::Type::None && t < Creature::Type::Count);
+	return s_creatures[creature];
+}
+
+static Creature::Stats const & read_creature_stats (Creature::Handle creature)
+{
+	assert(creature.valid());
 	return s_gingerbread[creature.type()];
 }
 
-static Creature::DerivedStats & get_derived_stats (Creature::Handle creature)
+static Creature::Stats & edit_creature_stats (Creature::Handle creature)
+{
+	assert(creature.valid());
+	return s_gingerbread[creature.type()];
+}
+
+static Creature::DerivedStats const & read_derived_stats (Creature::Handle creature)
+{
+	assert(creature.valid());
+	return s_derived_stats[creature];
+}
+
+static Creature::DerivedStats & edit_derived_stats (Creature::Handle creature)
 {
 	assert(creature.valid());
 	return s_derived_stats[creature];
@@ -129,12 +152,12 @@ void clear ()
 		s_identity_metadata[i] = {};
 	}
 
-	s_creature_status = make_grid(MAX_CREATURES, Status::Count, 0);
+	s_creature_status = make_grid(c_max_creatures, Status::Count, 0);
 
 	s_max_creature_index = 0;
 
 	s_visible_creatures.clear();
-	s_visible_creatures.reserve(MAX_CREATURES);
+	s_visible_creatures.reserve(c_max_creatures);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -144,47 +167,48 @@ bool Handle::valid () const
 {
 	return index >= 0
 		&& index < s_max_creature_index
-		&& s_creatures[index].type != Creature::None;
+		&& s_creatures[index].type > Creature::None
+		&& s_creatures[index].type < Creature::Count;
 }
 
 Creature::Type Handle::type () const
 {
-	return get_creature_instance(index).type;
+	return read_creature_instance(index).type;
 }
 
 Creature::Identity Handle::identity () const
 {
-	return get_creature_stats(index).identity;
+	return read_creature_stats(index).identity;
 }
 
 std::string Handle::short_name () const
 {
-	return get_creature_stats(index).short_name;
+	return read_creature_stats(index).short_name;
 }
 
 std::string Handle::long_name () const
 {
-	return get_creature_stats(index).long_name;
+	return read_creature_stats(index).long_name;
 }
 
 Gender Handle::gender () const
 {
-	return get_creature_stats(index).gender;
+	return read_creature_stats(index).gender;
 }
 
 int Handle::skill_magic () const
 {
-	return get_creature_stats(index).skill_magic;
+	return read_creature_stats(index).skill_magic;
 }
 
 int Handle::max_hp () const
 {
-	return get_creature_stats(index).max_hp;
+	return read_creature_stats(index).max_hp;
 }
 
 int Handle::hp () const
 {
-	return get_creature_instance(index).hp;
+	return read_creature_instance(index).hp;
 }
 
 float Handle::hp_percent() const
@@ -192,9 +216,14 @@ float Handle::hp_percent() const
 	return (float)(hp()) / (float)(max_hp());
 }
 
+bool Handle::is_hurt() const
+{
+	return hp() < max_hp();
+}
+
 Vec3 Handle::pos () const
 {
-	return get_creature_instance(index).pos;
+	return read_creature_instance(index).pos;
 }
 
 bool Handle::has_status (Status::Index status) const
@@ -209,27 +238,27 @@ int Handle::status_severity (Status::Index status) const
 
 int Handle::distractedness () const
 {
-	return get_derived_stats(index).distractedness;
+	return read_derived_stats(index).distractedness;
 }
 
 int Handle::miscastiness () const
 {
-	return get_derived_stats(index).miscastiness;
+	return read_derived_stats(index).miscastiness;
 }
 
 int Handle::evasion () const
 {
-	return get_derived_stats(index).evasion;
+	return read_derived_stats(index).evasion;
 }
 
 int Handle::accuracy () const
 {
-	return get_derived_stats(index).accuracy;
+	return read_derived_stats(index).accuracy;
 }
 
 int Handle::walk_failure () const
 {
-	return std::min(90, get_derived_stats(index).walk_failure);
+	return std::min(90, read_derived_stats(index).walk_failure);
 }
 
 bool Handle::knows_spell (Spell::Index spell) const
@@ -320,8 +349,13 @@ std::vector<Spell::Index> Handle::spells_known () const
 
 void Handle::take_damage (int damage, Creature::Handle instigator)
 {
-	Creature::Instance & c = get_creature_instance(index);
+	Creature::Instance & c = edit_creature_instance(index);
 	c.hp -= damage;
+
+	if (is_player())
+	{
+		Player::stop_automove();
+	}
 
 	if (c.hp <= 0)
 	{
@@ -332,51 +366,7 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 
 void Handle::move (Vec3 const & new_pos)
 {
-	get_creature_instance(index).pos = new_pos;
-}
-
-bool Handle::try_move(Vec2 const& relative_move, MoveMode move_mode)
-{
-	World const& world = World::read();
-
-	Vec2 new_pos = pos().xy() + relative_move;
-	Vec3 new_pos_3d = {new_pos.x, new_pos.y, pos().z};
-	new_pos_3d.z += world.get_stairs_dz(pos(), new_pos);
-
-	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos_3d);
-	if (creature_in_way != Creature::None)
-	{
-		return false;
-	}
-	else if (world.is_solid(new_pos_3d))
-	{
-		return false;
-	}
-	else
-	{
-		if (move_mode == MoveMode::Walk)
-		{
-			int const failure = walk_failure();
-			int const roll = Random::in_range(0, 99);
-			if (SHOW_CREATURE_DEBUG && failure > 0)
-			{
-				std::cout << "Walk failure (" << short_name() << "): " << failure
-					<< "; roll: " << roll << std::endl;
-			}
-
-			if (roll < failure)
-			{
-				if (is_player())
-				{
-					Draw::add_message("You fail to walk.");
-				}
-				return true;
-			}
-		}
-
-		move(new_pos_3d);
-		return true;
-	}
+	edit_creature_instance(index).pos = new_pos;
 }
 
 void Handle::inflict_status (Status::Index status, int severity)
@@ -430,10 +420,35 @@ void Handle::cure_all ()
 {
 	// blank all statuses (with no message)
 	s_creature_status[index] = std::vector<int>(Status::Count, 0);
-	get_creature_instance(index).hp = max_hp();
+	edit_creature_instance(index).hp = max_hp();
 }
 
-void Handle::invalidate()
+void Handle::rest_step ()
+{
+	Creature::Instance& inst = edit_creature_instance(index);
+
+	if (is_hurt()
+		&& read_derived_stats(index).distractedness == 0)
+	{
+		++ inst.rest_turns;
+		if (inst.rest_turns >= c_rest_turns_per_hp)
+		{
+			++ inst.hp;
+			inst.rest_turns = 0;
+		}
+	}
+	else
+	{
+		clear_rest_steps();
+	}
+}
+
+void Handle::clear_rest_steps ()
+{
+	edit_creature_instance(index).rest_turns = 0;
+}
+
+void Handle::invalidate ()
 {
 	if (identity() != Identity::Generic)
 	{
@@ -448,7 +463,7 @@ void Handle::invalidate()
 
 void Handle::update_derived_stats ()
 {
-	Creature::DerivedStats & ds = get_derived_stats(index);
+	Creature::DerivedStats & ds = edit_derived_stats(index);
 	
 	ds = DerivedStats{};
 
@@ -480,7 +495,7 @@ Creature::Handle HandleItr::get () const
 	return current;
 }
 
-void HandleItr::advance()
+void HandleItr::advance ()
 {
 	++ current;
 	while (!current.valid()
@@ -498,7 +513,7 @@ bool HandleItr::finished () const
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
 
-const char* short_name_from_type(Creature::Type type)
+const char* short_name_from_type (Creature::Type type)
 {
 	if (type >= 0 && type <= Creature::Type::Count)
 	{
@@ -507,7 +522,7 @@ const char* short_name_from_type(Creature::Type type)
 	return "no one";
 }
 
-const char* long_name_from_type(Creature::Type type)
+const char* long_name_from_type (Creature::Type type)
 {
 	if (type >= 0 && type <= Creature::Type::Count)
 	{
@@ -548,7 +563,7 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 		}
 	}
 
-	if (new_index == c_invalid && s_max_creature_index < MAX_CREATURES)
+	if (new_index == c_invalid && s_max_creature_index < c_max_creatures)
 	{
 		new_index = s_max_creature_index;
 		++ s_max_creature_index;
@@ -599,7 +614,7 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	return Handle(new_index);
 }
 
-Creature::Type find_type_to_spawn(float target_difficulty)
+Creature::Type find_type_to_spawn (float target_difficulty)
 {
 	std::vector<Type> options;
 	std::vector<float> weights;
@@ -721,7 +736,7 @@ void draw_visible_creatures (Draw::View const & view)
 	}
 }
 
-void remove_defeated_creatures()
+void remove_defeated_creatures ()
 {
 	int num_removed = 0;
 

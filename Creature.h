@@ -87,6 +87,7 @@ namespace Creature
 		Type type = Creature::None;
 		int hp = 0;
 		Vec3 pos = {0,0,0};
+		int rest_turns = 0; // counter for healing by resting
 	};
 
 	struct DerivedStats
@@ -125,6 +126,7 @@ namespace Creature
 		int max_hp () const;
 		int hp () const;
 		float hp_percent() const;
+		bool is_hurt() const;
 		Vec3 pos () const;
 		bool has_status (Status::Index status) const;
 		int status_severity (Status::Index status) const;
@@ -132,7 +134,7 @@ namespace Creature
 		int miscastiness () const;
 		int evasion () const;
 		int accuracy () const;
-		int walk_failure() const;
+		int walk_failure () const;
 		bool knows_spell (Spell::Index spell) const;
 
 		// Complex accessors
@@ -145,12 +147,13 @@ namespace Creature
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);
 		void move (Vec3 const & new_pos);
-		bool try_move(Vec2 const& relative_move, MoveMode move_mode);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
 		void cure_status (Status::Index status);
 		void cure_all (); // heals status and hp
-		void invalidate();
+		void rest_step ();
+		void clear_rest_steps ();
+		void invalidate ();
 		
 		void update_derived_stats ();
 	};
@@ -183,6 +186,8 @@ namespace Creature
 		int codepoint, char const * colour, Gender gender,
 		int magic_skill, int max_hp, std::string spell_string);
 	void init_gingerbread();
+
+	Stats& edit_player_stats();
 
 	const char* short_name_from_type(Creature::Type type);
 	const char* long_name_from_type(Creature::Type type);

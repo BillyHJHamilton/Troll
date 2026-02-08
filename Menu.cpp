@@ -57,6 +57,11 @@ const char* const c_doc_help =
 	"Movement:\n"
 	"  To move, use the arrow keys or numpad.\n"
 	"  If you have no numpad, use Home/End/PgUp/PgDn for diagonals.\n"
+	"  For a long move, hold Ctrl and press the move key.\n"
+	"\n"
+	"Resting:\n"
+	"  To skip a turn, press Space (or numpad 5).\n"
+	"  To rest until fully healed, hold Ctrl and press Space (or numpad 5).\n"
 	"\n"
 	"Spellcasting:\n"
 	"  To cast a spell, hold Shift and type the spell's two-letter abbreviation.\n"
@@ -103,7 +108,7 @@ void show_game_over()
 {
 	open_menu(Document);
 	s_document_content = "Game Over.\n\nYou were defeated by ";
-	s_document_content += Creature::long_name_from_type(Player::data().defeated_by);
+	s_document_content += Creature::long_name_from_type(Player::get_defeated_by());
 	s_document_content += ".";
 
 	s_on_complete = Game::reset;

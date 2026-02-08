@@ -70,6 +70,9 @@ void do_turn (Creature::Handle creature)
 		{
 			// Spend a turn noticing the player.
 			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
+
+			// And break automove since player probably wants to respond to this.
+			Player::stop_automove();
 		}
 		else
 		{
@@ -121,16 +124,16 @@ void move_towards(Creature::Handle creature, Vec3 dest)
 		Math::Sign(to_dest.y)
 	};
 
-	bool moved = creature.try_move(move_dir, MoveMode::Walk);
+	bool moved = try_move(creature, move_dir, MoveMode::Walk);
 
 	if (!moved)
 	{
-		moved = creature.try_move({ move_dir.x, 0 }, MoveMode::Walk);
+		moved = try_move(creature, { move_dir.x, 0 }, MoveMode::Walk);
 	}
 
 	if (!moved)
 	{
-		moved = creature.try_move({ 0, move_dir.y }, MoveMode::Walk);
+		moved = try_move(creature, { 0, move_dir.y }, MoveMode::Walk);
 	}
 }
 

@@ -46,7 +46,7 @@ bool s_quit_flag = false;
 bool is_letter (int tk_code);
 bool is_keyboard_key (int tk_code);
 bool is_directional (int tk_code);
-Vec2 parse_directional (int tk_code);
+CompassDirection parse_directional (int tk_code);
 
 void handle_input_close ();
 
@@ -78,11 +78,6 @@ void handle_next_input ()
 
 	if (key == TK_CLOSE || // X button in the corner
 	   (key == TK_F4 && terminal_check(TK_ALT))) // Vulcan nerve pinch
-	{
-		handle_input_close();
-		return;	
-	}
-
 	{
 		handle_input_close();
 		return;	
@@ -126,8 +121,30 @@ void handle_next_input ()
 	{
 		if (is_directional(key))
 		{
-			Vec2 dir = parse_directional(key);
-			player_try_move(dir);
+			CompassDirection const dir = parse_directional(key);
+
+			if (terminal_check(TK_CONTROL))
+			{
+				Player::start_automove(dir);
+			}
+			else
+			{
+				Vec2 const vec = c_compass[dir];
+				player_try_move(vec);
+				return;
+			}
+		}
+
+		if (key == TK_KP_5 || key == TK_SPACE)
+		{
+			if (terminal_check(TK_CONTROL))
+			{
+				Player::start_automove(c_CompassNoMove);
+			}
+			else
+			{
+				player_rest_step();
+			}
 			return;
 		}
 
@@ -136,12 +153,6 @@ void handle_next_input ()
 			Target::cycle();
 			return;
 		}
-
-		//if (key == TK_SPACE)
-		//{
-		//	Bot::do_all_bot_turns();
-		//	return;
-		//}
 
 		if (key == TK_H)
 		{
@@ -189,8 +200,8 @@ void handle_next_input ()
 
 		if (is_directional(key))
 		{
-			Vec2 dir = parse_directional(key);
-			Target::move(dir);
+			Vec2 const vec = c_compass[parse_directional(key)];
+			Target::move(vec);
 			return;
 		}
 
@@ -202,6 +213,53 @@ void handle_next_input ()
 
 		// unhandled
 		return;
+	}
+}
+
+void dispatch_automove()
+{
+	CompassDirection const dir = Player::get_automove();
+	if (dir == c_CompassNoMove)
+	{
+		player_rest_step();
+
+		if (!Player::handle().is_hurt())
+		{
+			Player::stop_automove();
+		}
+	}
+	else
+	{
+		// Automove behaviour, inspired by run system in Linley's Dungeon Crawl.
+		CompassDirection const clockwise = get_clockwise(dir);
+		CompassDirection const counterclockwise = get_counterclockwise(dir);
+		Vec3 const p0 = Player::pos();
+		Vec3 const p1 = p0 + c_compass[clockwise].xy0();
+		Vec3 const p2 = p0 + c_compass[counterclockwise].xy0();
+		Terrain::Type t0 = World::read().get_terrain(p0);
+		Terrain::Type t1 = World::read().get_terrain(p1);
+		Terrain::Type t2 = World::read().get_terrain(p2);
+
+		bool const moved = player_try_move(c_compass[dir]);
+
+		if (!moved)
+		{
+			Player::stop_automove();
+		}
+		else
+		{
+			Vec3 const new_p0 = Player::pos();
+			Vec3 const new_p1 = new_p0 + c_compass[clockwise].xy0();
+			Vec3 const new_p2 = new_p0 + c_compass[counterclockwise].xy0();
+			Terrain::Type new_t0 = World::read().get_terrain(new_p0);
+			Terrain::Type new_t1 = World::read().get_terrain(new_p1);
+			Terrain::Type new_t2 = World::read().get_terrain(new_p2);
+
+			if (t0 != new_t0 || t1 != new_t1 || t2 != new_t2)
+			{
+				Player::stop_automove();
+			}
+		}
 	}
 }
 
@@ -263,45 +321,45 @@ bool is_directional (int tk_code)
 		|| tk_code == TK_PAGEUP || tk_code == TK_PAGEDOWN;
 }
 
-Vec2 parse_directional (int tk_code)
+CompassDirection parse_directional (int tk_code)
 {
 	switch(tk_code)
 	{
 	case TK_KP_6:
 	case TK_RIGHT:
-		return {1,0};
+		return c_CompassEast;
 		break;
 	case TK_KP_9:
 	case TK_PAGEUP:
-		return {1,-1};
+		return c_CompassNortheast;
 		break;
 	case TK_KP_8:
 	case TK_UP:
-		return {0,-1};
+		return c_CompassNorth;
 		break;
 	case TK_KP_7:
 	case TK_HOME:
-		return {-1,-1};
+		return c_CompassNorthwest;
 		break;
 	case TK_KP_4:
 	case TK_LEFT:
-		return {-1,0};
+		return c_CompassWest;
 		break;
 	case TK_KP_1:
 	case TK_END:
-		return {-1,1};
+		return c_CompassSouthwest;
 		break;
 	case TK_KP_2:
 	case TK_DOWN:
-		return {0,1};
+		return c_CompassSouth;
 		break;
 	case TK_KP_3:
 	case TK_PAGEDOWN:
-		return {1,1};
+		return c_CompassSoutheast;
 		break;
 	default:
 		assert(false);
-		return {0,0};
+		return c_CompassNoMove;
 	}
 }
 

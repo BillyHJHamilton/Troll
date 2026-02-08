@@ -1,5 +1,6 @@
 #include "Status.h"
 
+#include "Action.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Geometry.h"
@@ -126,7 +127,7 @@ void endround_dancing(Creature::Handle creature)
 		Vec2 const move_dir = { Random::in_range(-1,1), Random::in_range(-1,1) };
 		if (move_dir != Vec2{0,0})
 		{
-			bool const moved = creature.try_move(move_dir, MoveMode::Forced);
+			bool const moved = try_move(creature, move_dir, MoveMode::Forced);
 			Vec3 const new_pos = creature.pos();
 
 			// Check for falling down stairs

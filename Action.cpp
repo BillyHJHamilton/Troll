@@ -9,6 +9,7 @@
 #include "Random.h"
 #include "Spell.h"
 #include "Target.h"
+#include "World.h"
 
 #include <cassert>
 
@@ -23,12 +24,18 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 //-------------------------------------------------------------------------------------------------
 // Interface functions
 
-bool player_try_move(Vec2 const& relative_move)
+void player_rest_step()
 {
-	bool const moved = Player::handle().try_move(relative_move, MoveMode::Walk);
+	Player::handle().rest_step();
+	Player::set_acted(true);
+}
+
+bool player_try_move(Vec2 relative_move)
+{
+	bool const moved = try_move(Player::handle(), relative_move, MoveMode::Walk);
 	if (moved)
 	{
-		Player::data().acted = true;
+		Player::set_acted(true);
 	}
 	return moved;
 }
@@ -73,8 +80,58 @@ bool player_try_cast_spell (Spell::Index spell)
 	return true;
 }
 
+bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode)
+{
+	World const& world = World::read();
+	Vec3 old_pos = creature.pos();
+
+	Vec2 new_pos = old_pos.xy() + relative_move;
+	Vec3 new_pos_3d = {new_pos.x, new_pos.y, old_pos.z};
+	new_pos_3d.z += world.get_stairs_dz(old_pos, new_pos);
+
+	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos_3d);
+	if (creature_in_way != Creature::None)
+	{
+		return false;
+	}
+	else if (world.is_solid(new_pos_3d))
+	{
+		return false;
+	}
+	else
+	{
+		creature.clear_rest_steps();
+
+		if (move_mode == MoveMode::Walk)
+		{
+			int const failure = creature.walk_failure();
+			int const roll = Random::in_range(0, 99);
+			if (SHOW_CREATURE_DEBUG && failure > 0)
+			{
+				std::cout << "Walk failure (" << creature.short_name() << "): " << failure
+					<< "; roll: " << roll << std::endl;
+			}
+
+			if (roll < failure)
+			{
+				if (creature.is_player())
+				{
+					Draw::add_message("You fail to walk.");
+				}
+				return true;
+			}
+		}
+
+		creature.move(new_pos_3d);
+
+		return true;
+	}
+}
+
 void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos)
 {
+	caster.clear_rest_steps();
+
 	// Update the screen because we'll do some animation for the spell
 	Draw::draw_screen();
 

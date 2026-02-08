@@ -36,6 +36,50 @@ struct Vec2
 	Vec3 xyz(int z) const; // convert to Vec3 with provided z
 };
 
+enum CompassDirection : int
+{
+	c_CompassInvalid = c_invalid, // this enum is int type so we can do this
+	c_CompassEast = 0,
+	c_CompassNortheast,
+	c_CompassNorth,
+	c_CompassNorthwest,
+	c_CompassWest,
+	c_CompassSouthwest,
+	c_CompassSouth,
+	c_CompassSoutheast,
+	c_CompassNoMove,
+	c_CompassCount
+};
+
+CompassDirection get_clockwise(CompassDirection dir)
+{
+	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
+		(CompassDirection)(((int)dir + 1) % 8) :
+		c_CompassInvalid;
+}
+
+CompassDirection get_counterclockwise(CompassDirection dir)
+{
+	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
+		(CompassDirection)(((int)dir - 1) % 8) :
+		c_CompassInvalid;
+}
+
+// Directions from east, counterclockwise, plus {0,0} at the end.
+// Inspired by similar approach in Linley's Dungeon Crawl.
+Vec2 constexpr c_compass [c_CompassCount] =
+{
+	{ 1, 0},
+	{ 1,-1},
+	{ 0,-1},
+	{-1,-1},
+	{-1, 0},
+	{-1, 1},
+	{ 0, 1},
+	{ 1, 1},
+	{ 0, 0}
+};
+
 inline bool operator== (Vec2 const & lhs, Vec2 const & rhs)
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y;

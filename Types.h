@@ -23,6 +23,8 @@ struct Vec2;
 struct Vec3;
 struct Box2;
 
+enum CompassDirection : int;
+
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;

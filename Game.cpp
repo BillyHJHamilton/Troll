@@ -160,9 +160,17 @@ void update()
 	}
 
 	Draw::draw_screen();
-	Input::handle_next_input();
 
-	if (Player::data().acted)
+	if (Player::is_automoving())
+	{
+		Input::dispatch_automove();
+	}
+	else
+	{
+		Input::handle_next_input();
+	}
+
+	if (Player::has_acted())
 	{
 		end_turn();
 	}
@@ -206,7 +214,7 @@ void end_turn()
 
 	// Now all other creatures act.
 	for (Creature::HandleItr itr(1);
-		itr && !Player::data().game_over;
+		itr && !Player::is_game_over();
 		++itr)
 	{
 		Bot::do_turn(*itr);
@@ -214,7 +222,7 @@ void end_turn()
 		Creature::remove_defeated_creatures();
 	}
 
-	if (Player::data().game_over)
+	if (Player::is_game_over())
 	{
 		game_over();
 		return;
