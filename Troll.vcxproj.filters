@@ -104,6 +104,9 @@
     <ClCompile Include="Gingerbread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NameHash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h">
@@ -194,6 +197,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MapGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NameHash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

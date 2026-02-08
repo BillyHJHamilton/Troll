@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Geometry.h"
+#include "NameHash.h"
 
 #include <iostream>
 
@@ -136,6 +137,7 @@ namespace Creature
 		int accuracy () const;
 		int walk_failure () const;
 		bool knows_spell (Spell::Index spell) const;
+		bool has_tag (NameHash tag) const;
 
 		// Complex accessors
 		bool is_player () const;
@@ -181,10 +183,11 @@ namespace Creature
 	void clear ();
 
 	void mix_gingerbread (
-		Creature::Type type, Creature::Identity identity, int difficulty, int probability,
+		Creature::Type type, Creature::Identity identity, float difficulty, float probability,
 		char const * short_name, char const * long_name,
 		int codepoint, char const * colour, Gender gender,
-		int magic_skill, int max_hp, std::string spell_string);
+		int magic_skill, int max_hp, std::string spell_string,
+		char const * tag_string = "");
 	void init_gingerbread();
 
 	Stats& edit_player_stats();

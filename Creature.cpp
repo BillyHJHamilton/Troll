@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Bot.h"
 #include "Debug.h"
@@ -44,24 +45,26 @@ IdentityMetadata s_identity_metadata [(int)Identity::Count];
 
 static Creature::Stats s_gingerbread [Creature::Count];
 static Spell::Bitset s_gingerbread_spells [Creature::Count]; 
+static std::unordered_set<NameHash> s_gingerbread_tags [Creature::Count];
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string);
+void parse_tag_string (std::unordered_set<NameHash> & tag_set, std::string const & tag_string);
 
 void mix_gingerbread (
 	Creature::Type type, Creature::Identity identity, float difficulty, float probability,
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
-	int magic_skill, int max_hp, std::string spell_string)
+	int magic_skill, int max_hp, std::string spell_string,
+	char const * tag_string)
 {
 	s_gingerbread[type] = { identity, difficulty, probability,
 		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
+	parse_tag_string(s_gingerbread_tags[type], tag_string);
 }
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
 {
-	int i = 0;
-
 	std::stringstream ss(spell_string);
 
 	std::string token;
@@ -70,6 +73,22 @@ void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell
 		Spell::Index spell = Spell::get_index_by_abbrev(token);
 		assert(spell != Spell::None);
 		spell_bitset.set(spell, true);
+	}
+}
+
+void parse_tag_string (std::unordered_set<NameHash> & tag_set, std::string const & tag_string)
+{
+	tag_set.clear();
+
+	if (!tag_string.empty())
+	{
+		std::stringstream ss(tag_string);
+		std::string token;
+
+		while (ss >> token)
+		{
+			tag_set.insert(NameHash(token.c_str()));
+		}
 	}
 }
 
@@ -265,6 +284,12 @@ bool Handle::knows_spell (Spell::Index spell) const
 {
 	Spell::Bitset const & spell_bitset = s_spells_known[index];
 	return spell_bitset.test(spell);
+}
+
+bool Handle::has_tag (NameHash tag) const
+{
+	assert(valid());
+	return s_gingerbread_tags[type()].count(tag) > 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -747,7 +772,14 @@ void remove_defeated_creatures ()
 
 		if (creature.visible() || instigator_type == Type::Player)
 		{
-			Draw::add_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+			if (creature.has_tag("Faint.Disappear"))
+			{
+				Draw::add_message(creature.long_name() + " disappears.");
+			}
+			else
+			{
+				Draw::add_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+			}
 		}
 
 		if (creature.is_player())

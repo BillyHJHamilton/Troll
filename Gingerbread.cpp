@@ -28,7 +28,7 @@ void init_gingerbread()
 	mix_gingerbread(Creature::SallyAnne_0, Identity::SallyAnnePerks,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.2f,
 		"Sally-Anne", "Sally-Anne Perks", 'S', cstr_hufflepuff, Gender::Female,
-		/*Magic*/ 0, /*HP*/ 3, "VM");
+		/*Magic*/ 0, /*HP*/ 3, "VM", "Faint.Disappear");
 
 	mix_gingerbread(Creature::Harry_1, Identity::HarryPotter,
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f,
