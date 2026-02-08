@@ -162,7 +162,7 @@ void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::I
 
 		if (msg)
 		{
-			Draw::add_message("Smoke billows forth.");
+			Draw::add_message(" Smoke billows forth.");
 		}
 	}
 }
@@ -217,7 +217,7 @@ void stupefy(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D 
 	else
 		bolt_description = "a weak bolt of red light";
 
-	Draw::creature_message(target, Grammar::You_are(target) + " struck by "
+	Draw::creature_message(target, " " + Grammar::You_are(target) + " struck by "
 		+ bolt_description + "!");
 }
 

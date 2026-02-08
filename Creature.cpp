@@ -382,6 +382,8 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 	Creature::Instance & c = edit_creature_instance(index);
 	c.hp -= damage;
 
+	clear_rest_steps();
+
 	if (is_player())
 	{
 		Player::stop_automove();

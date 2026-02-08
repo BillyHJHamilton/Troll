@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
+#include "Stairs.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -99,7 +100,20 @@ void do_turn (Creature::Handle creature)
 		if (is_aware(creature))
 		{
 			--brain.awareness;
-			move_towards(creature, brain.last_seen);
+
+			if (brain.last_seen == creature.pos())
+			{
+				Stairs::Direction dir = World::read().get_stairs(creature.pos());
+				if (dir != Stairs::None)
+				{
+					// Hm, where could she possibly have gone?
+					try_move(creature, Stairs::relative_move(dir).xy(), MoveMode::Walk);
+				}
+			}
+			else
+			{
+				move_towards(creature, brain.last_seen);
+			}
 		}
 	}
 }
