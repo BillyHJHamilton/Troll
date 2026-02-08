@@ -132,6 +132,14 @@ namespace Util
 	//}
 
 	template<typename VectorItemType>
+	VectorItemType PopBack(std::vector<VectorItemType>& vector)
+	{
+		VectorItemType result = vector.back();
+		vector.pop_back();
+		return result;
+	}
+
+	template<typename VectorItemType>
 	void AddUnique(std::vector<VectorItemType>& vec, const VectorItemType& item)
 	{
 		if (!Contains(vec, item))

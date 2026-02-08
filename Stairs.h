@@ -15,6 +15,7 @@ namespace Stairs
 	// Type used by stairs hashmap.
 	using Pair = std::pair<Vec2,Stairs::Direction>;
 
+	CompassDirection compass_dir(Direction dir);
 	bool is_up(Direction dir);
 	Vec3 relative_move(Direction dir);
 	Vec2 joining_vector(Direction dir);

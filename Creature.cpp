@@ -576,6 +576,11 @@ Creature::Handle creature_at_pos (Vec3 pos)
 	return Creature::None;
 }
 
+bool is_anyone_at (Vec3 pos)
+{
+	return creature_at_pos(pos) != Creature::None;
+}
+
 Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 {
 	if (type <= Creature::None || type >= Creature::Count)

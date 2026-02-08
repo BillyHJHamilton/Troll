@@ -64,6 +64,9 @@ public:
 	// Use this if you don't plan to use the line you found.
 	bool has_los(Vec3 start, Vec3 end, int range) const;
 
+	// Finds spaces that are not solid and not occupied by any creature.
+	std::vector<Vec3> find_open_neighbours(Vec3 pos) const;
+
 	void draw(Draw::View view) const;
 
 private:

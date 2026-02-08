@@ -138,10 +138,9 @@ void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::I
 		Vec3 const spell_pos = **impact_line;
 		
 		bool msg = false;
-		for (CompassDirection dir = c_CompassEast;
-			dir <= c_CompassNoMove;
-			dir = (CompassDirection)(dir + 1))
+		for (CompassItr itr(true); itr; ++itr)
 		{
+			CompassDirection dir = *itr;
 			Vec3 const cloud_pos = spell_pos + c_compass[dir].xy0();
 			
 			if (World::read().is_solid(cloud_pos))

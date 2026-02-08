@@ -210,6 +210,7 @@ namespace Creature
 	const char* short_name_from_type(Creature::Type type);
 	const char* long_name_from_type(Creature::Type type);
 	Creature::Handle creature_at_pos (Vec3 pos);
+	bool is_anyone_at (Vec3 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);
 

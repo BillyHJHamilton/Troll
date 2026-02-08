@@ -61,6 +61,10 @@ std::string You_are (Creature::Handle creature)
 	{
 		return "You are";
 	}
+	else if (creature.is_generic())
+	{
+		return "The " + creature.short_name() + " is";
+	}
 	else
 	{
 		return creature.short_name() + " is";

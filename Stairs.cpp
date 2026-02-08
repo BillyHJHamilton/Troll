@@ -1,5 +1,6 @@
 #include "Stairs.h"
 
+#include "Debug.h"
 #include "Random.h"
 #include "Terrain.h"
 
@@ -7,6 +8,32 @@
 
 namespace Stairs
 {
+
+CompassDirection compass_dir(Direction dir)
+{
+	switch (dir)
+	{
+		case DownEast: 
+		case   UpEast:
+			return c_CompassEast;
+
+		case DownWest: 
+		case   UpWest:
+			return c_CompassWest;
+
+		case DownNorth: 
+		case   UpNorth:
+			return c_CompassNorth;
+
+		case DownSouth: 
+		case   UpSouth:
+			return c_CompassSouth;
+
+		default:
+			DebugBreak();
+			return c_CompassNoMove;
+	}
+}
 
 bool is_up(Direction dir)
 {

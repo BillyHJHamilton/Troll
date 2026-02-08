@@ -176,8 +176,8 @@ bool check_distraction (Creature::Handle caster)
 	int distractedness_roll = Random::in_range(0,99);
 	if (SHOW_SPELL_DEBUG)
 	{
-		std::cout << "Distraction Rate: " << distraction_rate
-			 << "%    Roll: " << distractedness_roll << std::endl << " ";
+		std::cout << " Distraction Rate: " << distraction_rate
+			 << "%    Roll: " << distractedness_roll << "\n";
 	}
 
 	return (distractedness_roll < distraction_rate);
@@ -192,8 +192,8 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 
 	if (SHOW_SPELL_DEBUG)
 	{
-		std::cout << "Miscast Rate: " << miscast_rate
-			 << "%    Roll: " << miscast_roll << std::endl << " ";
+		std::cout << " Miscast Rate: " << miscast_rate
+			 << "%    Roll: " << miscast_roll << "\n";
 	}
 
 	if (miscast_roll < miscast_rate)

@@ -18,24 +18,42 @@ inline Vec2 componentwise_max(Vec2 a, Vec2 b)
 	return {std::max(a.x,b.x), std::max(a.y, b.y)};
 }
 
+int squared_distance(Vec2 p0, Vec2 p1)
+{
+	int const dx = p0.x - p1.x;
+	int const dy = p0.y - p1.y;
+
+	// Make sure we aren't near an int overflow.
+	assert(abs(dx) < 30'000
+		&& abs(dy) < 30'000);
+
+	return dx*dx + dy*dy;
+}
+
 bool within_range(Vec2 p0, Vec2 p1, int max_range)
 {
 	assert(max_range < sqrt(INT_MAX));
 	int const squared_max_range = max_range * max_range;
-
-	int const dx = p0.x - p1.x;
-	int const dy = p0.y - p1.y;
-	int const squared_distance = dx*dx + dy*dy;
-
-	return squared_distance <= squared_max_range;
+	return squared_distance(p0,p1) <= squared_max_range;
 }
 
 float euclidean_distance(Vec2 p0, Vec2 p1)
 {
-	int const dx = p0.x - p1.x;
-	int const dy = p0.y - p1.y;
-	double const squared_distance = (float)(dx*dx + dy*dy);
-	return (float)(sqrt(squared_distance));
+	return (float)(sqrt(squared_distance(p0,p1)));
+}
+
+int manhattan_distance(Vec2 p0, Vec2 p1)
+{
+	int const dx = abs(p0.x - p1.x);
+	int const dy = abs(p0.y - p1.y);
+	return dx + dy;
+}
+
+int chessboard_distance(Vec2 p0, Vec2 p1)
+{
+	int const dx = abs(p0.x - p1.x);
+	int const dy = abs(p0.y - p1.y);
+	return std::min(dx, dy);
 }
 
 //------------------------------------------------------------------------------
@@ -50,27 +68,46 @@ inline Vec3 componentwise_max(Vec3 a, Vec3 b)
 	return { std::max(a.x,b.x), std::max(a.y, b.y), std::max(a.z, b.z) };
 }
 
+int squared_distance(Vec3 p0, Vec3 p1)
+{
+	int const dx = p0.x - p1.x;
+	int const dy = p0.y - p1.y;
+	int const dz = p0.z - p1.z;
+
+	// Make sure we aren't near an int overflow.
+	assert(abs(dx) < 20'000
+		&& abs(dy) < 20'000
+		&& abs(dz) < 20'000);
+
+	return dx*dx + dy*dy + dz*dz;
+}
+
 bool within_range(Vec3 p0, Vec3 p1, int max_range)
 {
 	assert(max_range < sqrt(INT_MAX));
 	int const squared_max_range = max_range * max_range;
-
-	int const dx = p0.x - p1.x;
-	int const dy = p0.y - p1.y;
-	int const dz = p0.z - p1.z;
-	int const squared_distance = dx*dx + dy*dy + dz*dz;
-
-	return squared_distance <= squared_max_range;
+	return squared_distance(p0,p1) <= squared_max_range;
 }
 
 float euclidean_distance(Vec3 p0, Vec3 p1)
 {
-	int const dx = p0.x - p1.x;
-	int const dy = p0.y - p1.y;
-	int const dz = p0.z - p1.z;
-	int const squared_distance = dx*dx + dy*dy + dz*dz;
+	return (float)(sqrt(squared_distance(p0,p1)));
+}
 
-	return (float)(sqrt(squared_distance));
+int manhattan_distance(Vec3 p0, Vec3 p1)
+{
+	int const dx = abs(p0.x - p1.x);
+	int const dy = abs(p0.y - p1.y);
+	int const dz = abs(p0.z - p1.z);
+	return dx + dy + dz;
+}
+
+int chessboard_distance(Vec3 p0, Vec3 p1)
+{
+	int const dx = abs(p0.x - p1.x);
+	int const dy = abs(p0.y - p1.y);
+	int const dz = abs(p0.z - p1.z);
+	return std::min(std::min(dx, dy), dz);
 }
 
 //------------------------------------------------------------------------------

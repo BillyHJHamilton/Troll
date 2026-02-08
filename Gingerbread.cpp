@@ -13,7 +13,7 @@ void init_gingerbread()
 	mix_gingerbread(Creature::Player, Identity::Player,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
 		"You", "You", '@', "white", Gender::Female,
-		/*Magic*/ 70, /*HP*/ 10, "VM FP TA LM MW RS LC FN SP IP BT FM");
+		/*Magic*/ 70, /*HP*/ 90, "VM FP TA LM MW RS LC FN SP IP BT FM");
 
 	mix_gingerbread(Creature::Neville_0, Identity::NevilleLongbottom,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,

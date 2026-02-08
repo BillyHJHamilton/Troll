@@ -80,6 +80,31 @@ Vec2 constexpr c_compass [c_CompassCount] =
 	{ 0, 0}
 };
 
+class CompassItr
+{
+public:
+	CompassItr(bool include_no_move) : include(include_no_move), dir(c_CompassEast) {}
+
+	void advance () { dir = (CompassDirection)(dir + 1); }
+	bool finished () const { return dir >= (include ? c_CompassCount : c_CompassNoMove); }
+	CompassDirection get () const { return dir; }
+	Vec2 get_vec2 () const { return c_compass[dir]; }
+
+	// iterator style functions
+	operator bool () const { return !finished(); }
+	CompassDirection operator* () const { return get(); }
+	CompassDirection operator++() { advance(); return dir; }
+	bool operator== (CompassItr const& rhs) const { return dir == rhs.dir; } 
+	bool operator!= (CompassItr const& rhs) const { return dir != rhs.dir; } 
+	bool operator== (CompassDirection rhs) const { return dir == rhs; } 
+	bool operator!= (CompassDirection rhs) const { return dir != rhs; } 
+	// post-increment not provided to avoid accidental copy
+
+private:
+	bool include;
+	CompassDirection dir;
+};
+
 inline bool operator== (Vec2 const & lhs, Vec2 const & rhs)
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y;
@@ -128,14 +153,17 @@ inline Vec2 const & operator-= (Vec2 & lhs, Vec2 const & rhs)
 inline Vec2 componentwise_min(Vec2 a, Vec2 b);
 inline Vec2 componentwise_max(Vec2 a, Vec2 b);
 
-//Vec2 constexpr WALK_VEC [8] = { {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}, {1,-1} };
-//enum class WalkDir : int { E, NE, N, NW, W, SW, S, SE };
-
-// returns true if euclidean distance <= range
+// Returns true if euclidean distance <= range.
 bool within_range(Vec2 p0, Vec2 p1, int max_range);
 
-// don't use this if you could use the above, of course
+// Don't use this if you could use squared_distance or within_range, of course.
 float euclidean_distance(Vec2 p0, Vec2 p1);
+
+// Sum of distance in each dimension (i.e., distance with no diagonals allowed).
+int manhattan_distance(Vec2 p0, Vec2 p1);
+
+// Distance in shortest dimension (i.e., distance if diagonals cost only 1).
+int chessboard_distance(Vec2 p0, Vec2 p1);
 
 // Support for unordered_map<Vec2>
 namespace std
@@ -234,11 +262,39 @@ inline Vec3 Vec2::xyz(int z) const
 inline Vec3 componentwise_min(Vec3 a, Vec3 b);
 inline Vec3 componentwise_max(Vec3 a, Vec3 b);
 
-// returns true if euclidean distance <= range
+int squared_distance(Vec3 p0, Vec3 p1);
+
+// Returns true if euclidean distance <= range.
 bool within_range(Vec3 p0, Vec3 p1, int max_range);
 
-// don't use this if you could use the above, of course
+// Don't use this if you could use the above, of course.
 float euclidean_distance(Vec3 p0, Vec3 p1);
+
+// Sum of distance in each dimension (i.e., distance with no diagonals allowed).
+int manhattan_distance(Vec3 p0, Vec3 p1);
+
+// Distance in shortest dimension (i.e., distance if diagonals cost only 1).
+int chessboard_distance(Vec3 p0, Vec3 p1);
+
+// Support for unordered_map<Vec3>
+namespace std
+{
+	template <>
+	struct hash<Vec3>
+	{
+		size_t operator()(const Vec3& v) const
+		{
+			// I doubt this is a really good hash function, but what I've done is
+			// chop the z in half and xor the halves with the upper halves of x and y.
+			int const z0 = (0x0000ffff & v.z) << 16;
+			int const z1 = (0xffff0000 & v.z);
+			int const xz0 = v.x ^ z0;
+			int const yz1 = v.y ^ z1;
+
+			return static_cast<size_t>(xz0) & (static_cast<size_t>(yz1) << 32);
+		}
+	};
+}
 
 //------------------------------------------------------------------------------
 // Integer Box 2D class

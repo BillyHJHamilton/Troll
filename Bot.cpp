@@ -6,6 +6,7 @@
 #include "Draw.h"
 #include "Grammar.h"
 #include "Math.h"
+#include "Pathfind.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -17,9 +18,13 @@ namespace Bot
 {
 
 static bool constexpr SHOW_BOT_DEBUG = true;
+static bool constexpr TERMINATOR_MODE = false;
 
 // Number of turns a bot will remain "aware" after losing sight of player.
 static int constexpr c_max_awareness = 10;
+
+// Maximum path length to consider when using a-star pathfinding.
+static int constexpr c_max_path_cost = 25;
 
 static std::vector<Brain> s_brains;
 
@@ -27,7 +32,9 @@ static std::vector<Brain> s_brains;
 // Helper function declarations
 
 bool is_aware(Creature::Handle const creature);
+void go_to_last_seen(Creature::Handle creature);
 void move_towards(Creature::Handle creature, Vec3 dest);
+bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 Spell::Index choose_spell (Creature::Handle caster);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
@@ -60,9 +67,10 @@ void do_turn (Creature::Handle creature)
 {
 	constexpr int creature_vision = 8; // Add variable/function later if desired.
 	Brain& brain = s_brains[creature];
+	Vec3 const pos = creature.pos();
 
 	World const& world = World::read();
-	bool player_is_visible = world.has_los(creature.pos(), Player::pos(), creature_vision);
+	bool player_is_visible = world.has_los(pos, Player::pos(), creature_vision);
 
 	if (player_is_visible)
 	{
@@ -97,23 +105,16 @@ void do_turn (Creature::Handle creature)
 	}
 	else
 	{
+		if (TERMINATOR_MODE)
+		{
+			brain.awareness = 10;
+			brain.last_seen = Player::pos();
+		}
+
 		if (is_aware(creature))
 		{
 			--brain.awareness;
-
-			if (brain.last_seen == creature.pos())
-			{
-				Stairs::Direction dir = World::read().get_stairs(creature.pos());
-				if (dir != Stairs::None)
-				{
-					// Hm, where could she possibly have gone?
-					try_move(creature, Stairs::relative_move(dir).xy(), MoveMode::Walk);
-				}
-			}
-			else
-			{
-				move_towards(creature, brain.last_seen);
-			}
+			go_to_last_seen(creature);
 		}
 	}
 }
@@ -126,11 +127,58 @@ bool is_aware(Creature::Handle const creature)
 	return s_brains[creature].awareness > 0;
 }
 
+// Tries to use pathfinding, or falls back to the basic move towards.
+void go_to_last_seen(Creature::Handle creature)
+{
+	Brain& brain = s_brains[creature];
+	Vec3 const pos = creature.pos();
+
+	if (pos == brain.last_seen)
+	{
+		Stairs::Direction dir = World::read().get_stairs(creature.pos());
+		if (dir != Stairs::None)
+		{
+			// Hm, where could she possibly have gone?
+			try_move(creature, Stairs::relative_move(dir).xy(), MoveMode::Walk);
+		}
+	}
+	else if (pos.z == brain.last_seen.z
+		&& chessboard_distance(pos.xy(), brain.last_seen.xy()) == 1)
+	{
+		// Only one square away, you can do it!
+		move_towards(creature, brain.last_seen);
+	}
+	else
+	{
+		bool moved = false;
+
+		if (!brain.move_stack.empty())
+		{
+			// We have a plan.  See if we can still follow it.
+			moved = try_follow_path(creature, brain.move_stack);
+		}
+
+		if (!moved)
+		{
+			// Try to formulate a new plan.
+			brain.move_stack = Pathfind::astar(pos, brain.last_seen, c_max_path_cost);
+
+			if (!brain.move_stack.empty())
+			{
+				moved = try_follow_path(creature, brain.move_stack);
+			}
+		}
+				
+		if (!moved)
+		{
+			move_towards(creature, brain.last_seen);
+		}
+	}
+}
+
+// A naïve move straight towards the destination.
 void move_towards(Creature::Handle creature, Vec3 dest)
 {
-	// TODO proper pathfinding
-	// TODO and consider 3D cases
-
 	Vec3 const to_dest = dest - creature.pos();
 	Vec2 const move_dir = {
 		Math::Sign(to_dest.x),
@@ -148,6 +196,19 @@ void move_towards(Creature::Handle creature, Vec3 dest)
 	{
 		moved = try_move(creature, { 0, move_dir.y }, MoveMode::Walk);
 	}
+}
+
+bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
+{
+	// Try to follow our plan
+	Vec3 const next_pos = Util::PopBack(move_stack);
+	Vec2 const next_move = next_pos.xy() - creature.pos().xy();
+	if (next_move.x >= -1 && next_move.x <= 1 && next_move.y >= -1 && next_move.y <= 1)
+	{
+		return try_move(creature, next_move, MoveMode::Walk);
+	}
+
+	return false;
 }
 
 Spell::Index choose_spell (Creature::Handle caster)
