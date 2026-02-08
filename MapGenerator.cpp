@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Map.h"
 #include "Math.h"
+#include "PerfTimer.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -59,6 +60,8 @@ void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)
 void MapGenerator::Generate()
 {
 	std::cout << "\nGenerating level.\n";
+
+	PerfTimer perf0("map generate");
 
 	PlaceSeedRooms();
 

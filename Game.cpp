@@ -7,6 +7,7 @@
 #include "Map.h"
 #include "MapGenerator.h"
 #include "Menu.h"
+#include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -41,6 +42,8 @@ void check_spawning();
 // Init runs once when the program starts.
 void init()
 {
+	PerfTimer perf0("game init");
+
 	Creature::init();
 	Draw::init();
 	LineCache::init();
@@ -52,6 +55,8 @@ void init()
 // Clear runs before the start of each game.
 void clear()
 {
+	PerfTimer perf0("game clear");
+
 	Creature::clear();
 	Draw::clear();
 	Input::clear();
@@ -63,6 +68,8 @@ void clear()
 // Setup runs at the start of each game, after all clear functions.
 void setup()
 {
+	PerfTimer perf0("game setup");
+
 	s_turn_number = 0;
 	s_game_mode = GameMode::Normal;
 	s_spawned.clear();

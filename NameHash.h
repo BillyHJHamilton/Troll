@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_map> // for std::hash template
 
 //-----------------------------------------------------------------------------
 // Hash function (external code)

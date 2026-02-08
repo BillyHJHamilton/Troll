@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "MapUtil.h"
+#include "PerfTimer.h"
 #include "Stairs.h"
 #include "World.h"
 
@@ -11,6 +12,7 @@
 
 namespace Pathfind
 {
+	constexpr bool PRINT_PATHFIND_DEBUG = false;
 
 // I hate the std::priority_queue, but I guess it's okay for this case.
 // Wrapper based on the redblob link below.
@@ -39,12 +41,19 @@ struct AStarPriorityQueue
 
 void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle target)
 {
-	out.clear();
-	out.reserve(8);
+	PerfTimer perf0("find_open_neighbours");
+
+	{
+		PerfTimer perf1("find_open_neighbours - clear/reserve");
+
+		out.clear();
+		out.reserve(8);
+	}
 
 	World const& world = World::read();
 
 	CompassDirection stairs_compass = c_CompassInvalid;
+
 	Stairs::Direction const stairs_dir = world.get_stairs(pos);
 
 	if (stairs_dir != Stairs::None)
@@ -58,16 +67,19 @@ void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle tar
 		}
 	}
 
-	for (CompassItr itr(true); itr; ++itr)
 	{
-		Vec3 const next_pos = pos + itr.get_vec2().xy0();
-		if (itr != stairs_compass &&
-			!world.is_solid(next_pos))
+		PerfTimer perf1("find_open_neighbours - compass loop");
+		for (CompassItr itr(true); itr; ++itr)
 		{
-			Creature::Handle const creature = Creature::creature_at_pos(next_pos);
-			if (creature == Creature::None || creature == target)
+			Vec3 const next_pos = pos + itr.get_vec2().xy0();
+			if (itr != stairs_compass &&
+				!world.is_solid(next_pos))
 			{
-				out.push_back(next_pos);
+				Creature::Handle const creature = Creature::creature_at_pos(next_pos);
+				if (creature == Creature::None || creature == target)
+				{
+					out.push_back(next_pos);
+				}
 			}
 		}
 	}
@@ -79,12 +91,18 @@ void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle tar
 
 std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 {
+	PerfTimer perf0("astar");
+
 	World const& world = World::read();
 	Creature::Handle const target = Creature::creature_at_pos(goal);
 
 	if (chessboard_distance(start, goal) > max_cost)
 	{
-		std::cout << "Target is beyond max cost.  Pathfinding skipped.\n";
+		if (PRINT_PATHFIND_DEBUG)
+		{
+			std::cout << "Target is beyond max cost.  Pathfinding skipped.\n";
+		}
+
 		return std::vector<Vec3>();
 	}
 
@@ -106,37 +124,43 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 	AStarPriorityQueue frontier;
 	frontier.add(start, 0);
 
-	while (!frontier.empty())
 	{
-		Vec3 const here = frontier.pop();
-		NodeInfo& here_node = discovered.at(here);
+		PerfTimer perf1("astar - core loop");
 
-		if (here == goal)
+		while (!frontier.empty())
 		{
-			break;
-		}
+			PerfTimer perf2("astar - per iteration");
 
-		find_open_neighbours(here, neighbours, target);
-		for (Vec3 neighbour : neighbours)
-		{
-			int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
+			Vec3 const here = frontier.pop();
+			NodeInfo& here_node = discovered.at(here);
 
-			if (new_cost > max_cost)
+			if (here == goal)
 			{
-				continue;
+				break;
 			}
 
-			NodeInfo* const old_node = Util::Find(discovered, neighbour);
-			if (old_node && old_node->total_cost <= new_cost)
+			find_open_neighbours(here, neighbours, target);
+			for (Vec3 neighbour : neighbours)
 			{
-				continue;
-			}
-			else
-			{
-				discovered[neighbour] = {here, new_cost};
+				int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
 
-				int const heuristic = squared_distance(neighbour, goal);
-				frontier.add(neighbour, heuristic);
+				if (new_cost > max_cost)
+				{
+					continue;
+				}
+
+				NodeInfo* const old_node = Util::Find(discovered, neighbour);
+				if (old_node && old_node->total_cost <= new_cost)
+				{
+					continue;
+				}
+				else
+				{
+					discovered[neighbour] = {here, new_cost};
+
+					int const heuristic = squared_distance(neighbour, goal);
+					frontier.add(neighbour, heuristic);
+				}
 			}
 		}
 	}
@@ -144,6 +168,8 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 	NodeInfo const* const goal_node = Util::Find(discovered, goal);
 	if (goal_node)
 	{
+		PerfTimer perf1("astar - rebuild path");
+
 		std::vector<Vec3> path;
 		path.reserve(manhattan_distance(start, goal));
 		Vec3 boomerang = goal;
@@ -153,12 +179,20 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 			boomerang = discovered[boomerang].come_from;
 		}
 
-		std::cout << "Built path of " << path.size() << " steps.\n";
+		if (PRINT_PATHFIND_DEBUG)
+		{
+			std::cout << "Built path of " << path.size() << " steps.\n";
+		}
+
 		return (path);
 	}
 	else
 	{
-		std::cout << "Failed to find a path.\n";
+		if (PRINT_PATHFIND_DEBUG)
+		{
+			std::cout << "Failed to find a path.\n";
+		}
+
 		return std::vector<Vec3>();
 	}
 }

@@ -2,6 +2,7 @@
 
 #include "BearLibTerminal.h"
 
+#include "Types.h"
 #include "Geometry.h"
 
 namespace Draw

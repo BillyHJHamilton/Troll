@@ -11,7 +11,7 @@ using Axis = int;
 Axis constexpr AXIS_X = 0;
 Axis constexpr AXIS_Y = 1;
 Axis constexpr AXIS_Z = 2;
-Axis get_other_axis(Axis a) { return 1 - a; } // only really valid for X/Y
+inline Axis get_other_axis(Axis a) { return 1 - a; } // only really valid for X/Y
 
 //------------------------------------------------------------------------------
 // Integer Vec2 class
@@ -51,14 +51,14 @@ enum CompassDirection : int
 	c_CompassCount
 };
 
-CompassDirection get_clockwise(CompassDirection dir)
+inline CompassDirection get_clockwise(CompassDirection dir)
 {
 	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
 		(CompassDirection)(((int)dir + 1) % 8) :
 		c_CompassInvalid;
 }
 
-CompassDirection get_counterclockwise(CompassDirection dir)
+inline CompassDirection get_counterclockwise(CompassDirection dir)
 {
 	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
 		(CompassDirection)(((int)dir - 1) % 8) :

@@ -3,14 +3,13 @@
 #include "Geometry.h"
 #include "Game.h"
 #include "Input.h"
+#include "PerfTimer.h"
 
 // To do:
-// - Resting to regain HP
 // - Name and difficulty level for each map
 // - Improve spawning code
 //  - Find pos by room, instead of spraying at random
 // - Improved enemy AI
-//  - Pathfinding
 //  - EQS / find good attack position
 // - XP and level up
 // - Learning spells
@@ -60,6 +59,10 @@ int main()
 		Game::update();
 	}
   
+#if PERF_TEST
+	PerfTimer::PrintAll();
+#endif
+
     terminal_close();
 
 	return 0;

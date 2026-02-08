@@ -10,6 +10,7 @@
 #include "Draw.h"
 #include "Grammar.h"
 #include "Math.h"
+#include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -565,6 +566,8 @@ const char* long_name_from_type (Creature::Type type)
 
 Creature::Handle creature_at_pos (Vec3 pos)
 {
+	PerfTimer perf("creature_at_pos");
+
 	for (Creature::HandleItr itr(0); itr; ++itr)
 	{
 		if (itr->pos() == pos)

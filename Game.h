@@ -1,6 +1,6 @@
 #pragma once
 
-// Game.cpp includes almost everything; but Game.h is widely needed, so keep it light.
+#include "Types.h"
 
 class World;
 

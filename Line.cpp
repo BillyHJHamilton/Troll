@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 
+#include "PerfTimer.h"
 #include "VectorUtil.h"
 
 namespace LineCache
@@ -47,6 +48,8 @@ void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range);
 
 void init()
 {
+	PerfTimer perf0("LineCache init");
+
 	// Initialize lookup table with empty vectors.
 	s_line_lookup.resize(c_line_grid_area);
 

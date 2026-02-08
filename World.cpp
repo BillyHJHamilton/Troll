@@ -3,6 +3,7 @@
 #include "Draw.h"
 #include "Line.h"
 #include "Map.h"
+#include "PerfTimer.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -158,6 +159,8 @@ void World::clear_clouds()
 
 Stairs::Direction World::get_stairs(Vec3 pos) const
 {
+	PerfTimer perf("get_stairs");
+
 	int const map_id = find_map(pos);
 	if (map_id != c_invalid)
 	{
@@ -216,6 +219,8 @@ void World::set_visibility(Vec3 pos, Visibility v)
 
 void World::update_visibility(Vec3 viewer, int vision_radius)
 {
+	PerfTimer perf0("update_visibility");
+
 	// Convert old vision to fog of war.
 	advance_visibility_step();
 
@@ -325,6 +330,8 @@ void World::advance_visibility_step()
 
 int World::get_los(Vec3 start, Vec3 end, int range) const
 {
+	PerfTimer perf0("get_los");
+
 	if (!within_range(start, end, range))
 	{
 		return c_invalid;
@@ -359,6 +366,8 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 
 bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 {
+	PerfTimer perf0("has_los_on_line");
+
 	int cloud_loss = 0;
 
 	LineCache::Itr itr(start.xy(), line_id);
@@ -392,6 +401,8 @@ bool World::has_los(Vec3 start, Vec3 end, int range) const
 
 void World::draw(Draw::View view) const
 {
+	PerfTimer perf0("world draw");
+
 	for (Vec2 const& pos : view.view_area())
 	{
 		draw_map_tile(pos.xyz(view.z), view);
