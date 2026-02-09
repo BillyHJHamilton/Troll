@@ -32,7 +32,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
 {
 	/* VERMILLIOUS */ "Shoots a shower of hot sparks, dealing minor damage.",
-	/* FLIPENDO */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals 1 extra damage if the target hits something.",
+	/* FLIPENDO */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals extra damage if the target hits something.",
 	/* TARANTALLEGRA */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
 	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
