@@ -54,8 +54,7 @@ bool player_try_cast_spell (Spell::Index spell)
 
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
-		// TODO Casting non-beam spell here.
-		return false;
+		try_cast_spell(spell, Creature::Player, Player::pos(), c_invalid);
 	}
 	else
 	{
