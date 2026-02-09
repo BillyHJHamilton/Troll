@@ -2,9 +2,11 @@
 
 #include "Action.h"
 #include "Creature.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Geometry.h"
 #include "Grammar.h"
+#include "Pathfind.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "World.h"
@@ -120,28 +122,39 @@ void calc_dancing(Creature::Handle creature, Creature::DerivedStats & ds, int se
 
 void endround_dancing(Creature::Handle creature)
 {
-	// Random movement
-	if (Random::in_range(0, 2 + creature.status_severity(Dancing) > 2))
+	// Chance of random movement.
+	int const roll_max = 2 + creature.status_severity(Dancing);
+	int const roll = Random::in_range(0, roll_max);
+
+	if (c_ShowActionDebug)
+	{
+		std:: cout << creature.short_name() << " dances on 3+.  Roll (0-"
+			<< roll_max << ") = " << roll << "\n";
+	}
+
+	if (roll >= 3)
 	{
 		Vec3 const old_pos = creature.pos();
-		Vec2 const move_dir = { Random::in_range(-1,1), Random::in_range(-1,1) };
-		if (move_dir != Vec2{0,0})
+
+		std::vector<Vec3> possible_moves;
+		Pathfind::find_open_neighbours(old_pos, possible_moves, Creature::None);
+		Vec3 const move_to = Random::from_vector(possible_moves);
+		Vec2 const step = move_to.xy() - old_pos.xy();
+
+		bool const moved = try_move(creature, step, MoveMode::Forced);
+		Vec3 const new_pos = creature.pos();
+
+		// Check for falling down stairs
+		if (moved && new_pos.z < old_pos.z &&
+			World::read().get_terrain(new_pos) == Terrain::UpStairs)
 		{
-			bool const moved = try_move(creature, move_dir, MoveMode::Forced);
-			Vec3 const new_pos = creature.pos();
+			creature.take_damage(3, Creature::None);
 
-			// Check for falling down stairs
-			if (moved && new_pos.z < old_pos.z &&
-				World::read().get_terrain(new_pos) == Terrain::UpStairs)
+			if (World::read().is_visible(old_pos) ||
+				World::read().is_visible(new_pos))
 			{
-				creature.take_damage(3, Creature::None);
-
-				if (World::read().is_visible(old_pos) ||
-					World::read().is_visible(new_pos))
-				{
-					Draw::add_message(Grammar::You(creature) + " " +
-						Grammar::verbs("fall", creature) + " down the stairs!");
-				}
+				Draw::add_message(Grammar::You(creature) + " " +
+					Grammar::verbs("fall", creature) + " down the stairs!");
 			}
 		}
 	}

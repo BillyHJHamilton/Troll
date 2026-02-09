@@ -2,6 +2,7 @@
 
 #include "Beam.h"
 #include "Creature.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
 #include "Map.h"
@@ -18,8 +19,8 @@
 
 bool check_distraction (Creature::Handle caster);
 bool check_miscast (Creature::Handle caster, Spell::Index spell);
-void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos);
-void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos);
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id);
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id);
 
 //-------------------------------------------------------------------------------------------------
 // Interface functions
@@ -49,36 +50,53 @@ bool player_try_cast_spell (Spell::Index spell)
 		return false;
 	}
 
-	// targeting
 	std::optional<Vec3> target_pos = Target::get_pos();
 
-	if (!target_pos.has_value())
+	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
-		Draw::add_message("No target.");
+		// TODO Casting non-beam spell here.
 		return false;
 	}
-
-	// check for self-targeting
-	if (target_pos == Player::pos() &&
-		Spell::get_target_type(spell) != Spell::TargetType::Self)
+	else
 	{
-		Draw::add_message("Don't shoot that spell at yourself.");
-		return false;
+		// It's a beam spell.  Check that targeting is valid.
+
+		if (!target_pos.has_value())
+		{
+			Draw::add_message("No target.");
+			return false;
+		}
+
+		if (target_pos == Player::pos())
+		{
+			// Special case for shooting yourself.
+			//Draw::add_message("Don't shoot that spell at yourself.");
+			try_cast_spell(spell, Creature::Player, Player::pos(), c_invalid);
+			Player::set_acted(true);
+			return true;
+		}
+		
+		if (!within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
+		{
+			Draw::add_message("The target is out of range.");
+			return false;
+		}
+
+		int const line_id = World::read().get_los(Player::pos(), target_pos.value(),
+			Player::vision_radius);
+		if (line_id == c_invalid)
+		{
+			Draw::add_message("Target not visible.");
+			return false;
+		}
+
+		// Having confirmed it is plausible for the player to try to cast the spell,
+		// we now continue to the generic spell-casting function.
+		try_cast_spell(spell, Creature::Player, *target_pos, line_id);
+
+		Player::set_acted(true);
+		return true;
 	}
-
-	// check for out of range
-	if (!within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
-	{
-		Draw::add_message("The target is out of range.");
-		return false;
-	}
-
-	// Having confirmed it is plausible for the player to try to cast the spell,
-	// we now continue to the generic spell-casting function
-	try_cast_spell(spell, Creature::Player, *target_pos);
-
-	Player::set_acted(true);
-	return true;
 }
 
 bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode)
@@ -107,7 +125,7 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 		{
 			int const failure = creature.walk_failure();
 			int const roll = Random::in_range(0, 99);
-			if (SHOW_CREATURE_DEBUG && failure > 0)
+			if (c_ShowActionDebug && failure > 0)
 			{
 				std::cout << "Walk failure (" << creature.short_name() << "): " << failure
 					<< "; roll: " << roll << std::endl;
@@ -129,12 +147,17 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 	}
 }
 
-void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos)
+void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, int line_id)
 {
 	caster.clear_rest_steps();
 
 	// Update the screen because we'll do some animation for the spell
 	Draw::draw_screen();
+
+	if (c_ShowSpellDebug)
+	{
+		std::cout << caster.short_name() << " casting " << Spell::get_name(spell) << "\n";
+	}
 
 	// 1. Distractedness
 	bool is_distracted = check_distraction(caster);
@@ -151,12 +174,12 @@ void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_po
 	bool is_miscast = check_miscast(caster, spell);
 	if ( is_miscast )
 	{
-		do_miscast(caster, spell, target_pos);
+		do_miscast(caster, spell, target_pos, line_id);
 		return;
 	}
 
 	// 4. Success!
-	do_successful_cast(caster, spell, target_pos);
+	do_successful_cast(caster, spell, target_pos, line_id);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -174,7 +197,7 @@ bool check_distraction (Creature::Handle caster)
 	}
 
 	int distractedness_roll = Random::in_range(0,99);
-	if (SHOW_SPELL_DEBUG)
+	if (c_ShowSpellDebug)
 	{
 		std::cout << " Distraction Rate: " << distraction_rate
 			 << "%    Roll: " << distractedness_roll << "\n";
@@ -190,7 +213,7 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 	float miscast_rate = caster.miscast_rate_for_spell(spell);
 	float miscast_roll = Random::in_range(0.0f, 100.0f);
 
-	if (SHOW_SPELL_DEBUG)
+	if (c_ShowSpellDebug)
 	{
 		std::cout << " Miscast Rate: " << miscast_rate
 			 << "%    Roll: " << miscast_roll << "\n";
@@ -206,7 +229,7 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 	}
 }
 
-void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
+void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id)
 {
 	if (caster.visible())
 	{
@@ -220,10 +243,10 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
 	}
 
 	// todo - proper miscasts
-	//Miscast::perform(caster, target, spell_used);
+	//Miscast::perform(caster, target, spell_used, line_id ...);
 }
 
-void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos)
+void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id)
 {
 	Draw::creature_message(caster, Grammar::You(caster) + " "
 		+ Grammar::verbs("cast", caster) + " "
@@ -233,9 +256,16 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 	{
 		Spell::execute_effect(spell, caster, Creature::None, nullptr);
 	}
+	else if (line_id == c_invalid)
+	{
+		// Shot yourself, it seems.
+		int const damage = Spell::get_damage(spell, caster);
+		caster.take_damage(damage, caster);
+		Spell::execute_effect(spell, caster, caster, nullptr);
+	}
 	else
 	{
 		bool constexpr caster_aimed = true;
-		Beam::shoot_spell (spell, caster, target_pos, caster_aimed);
+		Beam::shoot_spell (spell, caster, target_pos, caster_aimed, line_id);
 	}
 }

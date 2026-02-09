@@ -17,6 +17,7 @@ namespace Random
 	int weighted_index(const std::vector<float> &weights);
 	bool coinflip ();
 	bool one_in (int x);
+	CompassDirection compass_direction(bool include_no_move);
 
 	template<class T>
 	int index (std::vector<T> v)

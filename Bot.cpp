@@ -70,7 +70,8 @@ void do_turn (Creature::Handle creature)
 	Vec3 const pos = creature.pos();
 
 	World const& world = World::read();
-	bool player_is_visible = world.has_los(pos, Player::pos(), creature_vision);
+	int line_id = world.get_los(pos, Player::pos(), creature_vision);
+	bool const player_is_visible = (line_id != c_invalid);
 
 	if (player_is_visible)
 	{
@@ -91,7 +92,7 @@ void do_turn (Creature::Handle creature)
 				if (within_range(creature.pos(),
 					Player::pos(), Spell::get_range(spell)))
 				{
-					try_cast_spell(spell, creature, Player::pos());
+					try_cast_spell(spell, creature, Player::pos(), line_id);
 				}
 				else
 				{
@@ -105,7 +106,7 @@ void do_turn (Creature::Handle creature)
 	}
 	else
 	{
-		if (TERMINATOR_MODE)
+		if (TERMINATOR_MODE) // hunt down player (for testing)
 		{
 			brain.awareness = 10;
 			brain.last_seen = Player::pos();

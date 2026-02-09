@@ -332,7 +332,7 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 {
 	PerfTimer perf0("get_los");
 
-	if (!within_range(start, end, range))
+	if (range != -1 && !within_range(start, end, range))
 	{
 		return c_invalid;
 	}
@@ -379,13 +379,17 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 			return false;
 		}
 
-		Cloud::Type const cloud = get_cloud(itr->xyz(start.z));
-		cloud_loss += Cloud::vision_loss(cloud);
+		if (range != -1)
+		{
+			Cloud::Type const cloud = get_cloud(itr->xyz(start.z));
+			cloud_loss += Cloud::vision_loss(cloud);
+		}
 
 		itr.advance();
 	}
 
-	if (!within_range(start, end, range - cloud_loss))
+	if (range != -1 &&
+		!within_range(start, end, range - cloud_loss))
 	{
 		// The clouds were too thick.
 		return false;

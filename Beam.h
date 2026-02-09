@@ -36,7 +36,8 @@ namespace Beam
 		bool stop_on_target;
 	};
 
-	void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, bool caster_aimed);
+	void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,
+		bool caster_aimed, int line_id);
 
 	int accuracy_at_range (int base_accuracy, Vec3 start, Vec3 end);
 }

@@ -1,6 +1,7 @@
 #include "Beam.h"
 #include "Cloud.h"
 #include "Creature.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
 #include "Random.h"
@@ -19,15 +20,18 @@ int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
 
-static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec3 target_pos, bool caster_aimed);
+static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec3 target_pos,
+	bool caster_aimed, int line_id);
 static void shoot_beam (Beam::Data & beam);
 static void shoot_beam_on_line (Beam::Data & beam);
 static void shoot_beam_on_stairs (Beam::Data & beam);
-static void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, std::string& colour, LineCache::Itr3D const& line_itr);
+static void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint,
+	std::string& colour, LineCache::Itr3D const& line_itr);
 static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line_itr);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
-static void hit_creature (Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line);
+static void hit_creature (Beam::Data const & beam, Creature::Handle target,
+	LineCache::Itr3D const & line);
 static void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line);
 
 static std::string get_colour (Beam::Data const & beam);
@@ -38,10 +42,11 @@ static Spell::EffectFunc get_effect_func (Beam::Data const & beam);
 // ------------------------------------------------------------------------------------------------
 // interface function implementations
 
-void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, bool caster_aimed)
+void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,
+	bool caster_aimed, int line_id)
 {
 	Spell::create_and_bind_instance(spell, caster);
-	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed);
+	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed, line_id);
 	shoot_beam(beam);
 }
 
@@ -55,9 +60,11 @@ int accuracy_at_range(int base_accuracy, Vec3 start, Vec3 end)
 // ------------------------------------------------------------------------------------------------
 // helper function implementations
 
-Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, bool caster_aimed)
+Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,
+	bool caster_aimed, int line_id)
 {
 	assert(caster.pos() != target_pos); // Should not be shooting beam with zero trajectory.
+	assert(line_id != c_invalid);
 
 	Creature::Handle intended_target = Creature::None;
 	if (caster_aimed)
@@ -65,14 +72,8 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		intended_target = Creature::creature_at_pos(target_pos);
 	}
 
-	// Find line trajectory.
-	// TODO: Properly handle case where target is not in the line cache.
-	// Probably we should get the line earlier and abort on failure.
-	// For now it's just being set to 0 below.
-
 	int const spell_range = Spell::get_range(spell);
 	const World& world = World::read();
-	const int trajectory = world.get_los(caster.pos(), target_pos, spell_range);
 	const bool stop_on_target = (Spell::get_target_type(spell) == Spell::TargetType::Tile);
 
 	return Beam::Data
@@ -83,7 +84,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		Beam::Type::Spell,
 		caster,
 		intended_target,
-		(trajectory == c_invalid) ? 0 : trajectory,
+		line_id,
 		spell_range,
 		0 /*cloud accuracy loss*/,
 		caster_aimed,
@@ -216,9 +217,9 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		int hit_chance = get_hit_chance(beam, creature_in_path);
 		int accuracy_roll = Random::in_range(0,99);
 
-		if (SHOW_SPELL_DEBUG)
+		if (c_ShowSpellDebug)
 		{
-			std::cout << "Hit chance: " << hit_chance
+			std::cout << " Final Accuracy: " << hit_chance
 				<< "; roll: " << accuracy_roll << std::endl;
 		}
 
@@ -290,7 +291,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 		}
 		else
 		{
-			caster_accuracy_factor = 100 + beam.caster.accuracy();
+			caster_accuracy_factor = 100 + caster_accuracy;
 		}
 	}
 
@@ -307,6 +308,18 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	assert(range_accuracy > 0);
 	assert(caster_accuracy_factor > 0);
 	assert(target_evasion_divisor > 0);
+
+	if (c_ShowSpellDebug)
+	{
+		std::cout << " Base Accuracy: " << base_accuracy
+			<< ", Ranged Accuracy: " << range_accuracy
+			<< ", Caster Factor: " << caster_accuracy_factor;
+		if (beam.cloud_accuracy_loss > 0)
+		{
+			std::cout << " (with -" << beam.cloud_accuracy_loss << " from clouds)";
+		}
+		std::cout << ", Target Divisor: " << target_evasion_divisor << "\n";
+	}
 
 	int const hit_chance = (range_accuracy * caster_accuracy_factor) / target_evasion_divisor;
 

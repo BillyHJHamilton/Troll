@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-static bool constexpr SHOW_SPELL_DEBUG = true;
-
 namespace Spell
 {
 	enum Index : int

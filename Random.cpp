@@ -92,5 +92,11 @@ bool one_in (int x)
 	return dist(generator) == 1;
 }
 
+CompassDirection compass_direction(bool include_no_move)
+{
+	int const max_dir = include_no_move ? c_CompassNoMove : c_CompassSoutheast; 
+	return (CompassDirection)in_range(c_CompassEast, max_dir);
+}
+
 }
 

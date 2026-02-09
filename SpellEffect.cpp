@@ -18,6 +18,8 @@ namespace Spell
 {
 
 // Put one space at the start of the messages for these, for a hanging indent.
+// Be aware that impact_line MAY be nullptr, particularly if spell is self-targeted.
+// Target may be Creature::None, if spell hit self or detonated in midair.
 
 void vermillious (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
@@ -26,46 +28,54 @@ void vermillious (Creature::Handle caster, Creature::Handle target, LineCache::I
 
 void flipendo (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
 {
-	// Push back
-	if (impact_line != nullptr)
+	Vec3 knock_pos;
+
+	if (impact_line == nullptr)
+	{
+		// If you shoot yourself, just push in a random direction.
+		CompassDirection dir = Random::compass_direction(false);
+		knock_pos = target.pos() + c_compass[dir].xy0();
+	}
+	else
 	{
 		LineCache::Itr3D line = *impact_line; // copy
 		line.advance_and_loop();
+		knock_pos = *line;
+	}
 
-		Vec3 knock_pos = *line;
-		const int dz = World::read().get_stairs_dz(target.pos(), knock_pos.xy());
-		knock_pos.z += dz;
+	// Push back
+	const int dz = World::read().get_stairs_dz(target.pos(), knock_pos.xy());
+	knock_pos.z += dz;
 
-		Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
+	Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
 
-		if (dz > 0)
-		{
-			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the stairs!");
-			target.take_damage(1, caster);
-		}
-		else if (World::read().is_solid(knock_pos))
-		{
-			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the wall!");
-			target.take_damage(1, caster);
-		}
-		else if (secondary_target != Creature::None)
-		{
-			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into "
-				+ Grammar::you(secondary_target) + "!");
-			target.take_damage(1, caster);
-			secondary_target.take_damage(1, caster);
-		}
-		else if (dz < 0)
-		{
-			target.move(knock_pos);
-			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked down the stairs!");
-			target.take_damage(4, caster);
-		}
-		else
-		{
-			target.move(knock_pos);
-			Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked back!");
-		}
+	if (dz > 0)
+	{
+		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the stairs!");
+		target.take_damage(1, caster);
+	}
+	else if (World::read().is_solid(knock_pos))
+	{
+		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the wall!");
+		target.take_damage(1, caster);
+	}
+	else if (secondary_target != Creature::None)
+	{
+		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into "
+			+ Grammar::you(secondary_target) + "!");
+		target.take_damage(1, caster);
+		secondary_target.take_damage(1, caster);
+	}
+	else if (dz < 0)
+	{
+		target.move(knock_pos);
+		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked down the stairs!");
+		target.take_damage(4, caster);
+	}
+	else
+	{
+		target.move(knock_pos);
+		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked back!");
 	}
 }
 
@@ -133,36 +143,33 @@ void rictusempra (Creature::Handle caster, Creature::Handle target, LineCache::I
 
 void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::Itr3D const* impact_line)
 {
-	if (impact_line)
+	Vec3 const spell_pos = (impact_line) ? **impact_line : caster.pos();
+
+	bool msg = false;
+	for (CompassItr itr(true); itr; ++itr)
 	{
-		Vec3 const spell_pos = **impact_line;
-		
-		bool msg = false;
-		for (CompassItr itr(true); itr; ++itr)
-		{
-			CompassDirection dir = *itr;
-			Vec3 const cloud_pos = spell_pos + c_compass[dir].xy0();
+		CompassDirection dir = *itr;
+		Vec3 const cloud_pos = spell_pos + c_compass[dir].xy0();
 			
-			if (World::read().is_solid(cloud_pos))
-			{
-				continue;
-			}
-
-			if (dir == c_CompassNoMove || Random::coinflip())
-			{
-				int const lifetime = Random::in_range(8,11);
-				bool const added = World::edit().try_add_cloud(cloud_pos, Cloud::Smoke, lifetime);
-				if (!msg && added && World::read().is_visible(cloud_pos))
-				{
-					msg = true;
-				}
-			}
-		}
-
-		if (msg)
+		if (World::read().is_solid(cloud_pos))
 		{
-			Draw::add_message(" Smoke billows forth.");
+			continue;
 		}
+
+		if (dir == c_CompassNoMove || Random::coinflip())
+		{
+			int const lifetime = Random::in_range(8,11);
+			bool const added = World::edit().try_add_cloud(cloud_pos, Cloud::Smoke, lifetime);
+			if (!msg && added && World::read().is_visible(cloud_pos))
+			{
+				msg = true;
+			}
+		}
+	}
+
+	if (msg)
+	{
+		Draw::add_message(" Smoke billows forth.");
 	}
 }
 

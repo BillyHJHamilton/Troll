@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "Player.h"
+#include "World.h"
 
 #include <algorithm>
 #include <cassert>
@@ -40,6 +41,14 @@ void update ()
 		if (g_target_creature == c_invalid)
 		{
 			// acquire target
+			cycle();
+		}
+	}
+	else if (g_target_mode == TargetMode::Manual)
+	{
+		if (g_target_pos.z != Player::pos().z &&
+			!World::read().is_visible(g_target_pos))
+		{
 			cycle();
 		}
 	}

@@ -52,6 +52,7 @@ public:
 	void update_visibility(Vec3 viewer, int vision_radius);
 
 	// Returns the id of a clear line (in the line cache) from start to end.
+	// Use range = -1 for unlimited range.
 	// If no clear line exists, returns c_invalid.
 	int get_los(Vec3 start, Vec3 end, int range) const;
 
@@ -61,6 +62,7 @@ public:
 	bool has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const;
 
 	// Runs get_los and returns true if the result was not c_invalid.
+	// Use range = -1 for unlimited range.
 	// Use this if you don't plan to use the line you found.
 	bool has_los(Vec3 start, Vec3 end, int range) const;
 
