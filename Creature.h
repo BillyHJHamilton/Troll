@@ -22,8 +22,6 @@
 // There may be multiple creatures of the same type, though hopefully not for named
 // characters like Neville or Dumbledore.
 
-static bool constexpr SHOW_CREATURE_DEBUG = true;
-
 enum class Gender : byte
 {
 	Male,

@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include "Bot.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Input.h"
 #include "Line.h"
@@ -257,7 +258,11 @@ void check_spawning()
 	if (Util::IsValidIndex(s_spawned, map_id) && !s_spawned[map_id])
 	{
 		Map const& map = World::read().read_map(map_id);
-		std::cout << "\nSpawning for map " << map_id << ".\n";
+
+		if (c_ShowMapDebug)
+		{
+			std::cout << "\nSpawning for map " << map_id << ".\n";
+		}
 
 		int const num_to_spawn = Random::in_range(4,6);
 		int num_spawned = 0;
@@ -280,8 +285,13 @@ void check_spawning()
 					if (type != Creature::None)
 					{
 						Creature::Handle creature = Creature::spawn_creature(type, pos3);
-						std::cout << " - Spawned " << creature.long_name()
-							<< " at " << creature.pos().x << ", " << creature.pos().y << ".\n";
+
+						if (c_ShowMapDebug)
+						{
+							std::cout << " - Spawned " << creature.long_name()
+								<< " at " << creature.pos().x << ", " << creature.pos().y << ".\n";
+						}
+
 						++num_spawned;
 					}
 					break;
@@ -289,8 +299,12 @@ void check_spawning()
 			}
 		}
 
-		std::cout << "Spawned " << num_spawned << "/" << num_to_spawn
-			<< " for map " << map_id << ".\n";
+		if (c_ShowMapDebug)
+		{
+			std::cout << "Spawned " << num_spawned << "/" << num_to_spawn
+				<< " for map " << map_id << ".\n";
+		}
+
 		s_spawned[map_id] = true;
 	}
 }

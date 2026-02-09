@@ -71,8 +71,6 @@ void handle_next_input ()
 	// note: "key" may also include mouse events, etc.
 	int key = terminal_read();
 
-	//int shift = terminal_check(TK_SHIFT);
-
 	//-----------------------------------------------------------
 	// Global input - All Game modes
 

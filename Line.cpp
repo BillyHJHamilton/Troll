@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 
+#include "Debug.h"
 #include "PerfTimer.h"
 #include "VectorUtil.h"
 
@@ -77,34 +78,36 @@ void init()
 		add_ring_of_lines_to_cache(range);
 	}
 	
-	// Some debug:
-	std::cout << "Cached " << s_line_cache.size()
-		<< " lines with a grid area of " << c_line_grid_area << ".\n\n";
-	for (int i = 0; i < s_line_lookup.size(); ++i)
+	if (c_ShowLineDebug)
 	{
-		const int n = (int)s_line_lookup[i].size();
-		std::cout << n << " ";
-		if (i % c_line_grid_dimension == (c_line_grid_dimension - 1))
+		std::cout << "Cached " << s_line_cache.size()
+			<< " lines with a grid area of " << c_line_grid_area << ".\n\n";
+		for (int i = 0; i < s_line_lookup.size(); ++i)
 		{
-			std::cout << "\n";
-		}
-	}
-
-	// Now check if any identical lines somehow got in.
-	int duplicate_pairs = 0;
-	for (int i = 0; i < s_line_cache.size(); ++i)
-	{
-		for (int j = i + 1; j < s_line_cache.size(); ++j)
-		{
-			LineCache::Itr itr_i({ 0,0 }, i);
-			LineCache::Itr itr_j({ 0,0 }, j);
-			if (is_duplicate(itr_i, itr_j))
+			const int n = (int)s_line_lookup[i].size();
+			std::cout << n << " ";
+			if (i % c_line_grid_dimension == (c_line_grid_dimension - 1))
 			{
-				++duplicate_pairs;
+				std::cout << "\n";
 			}
 		}
+
+		// Check if any identical lines somehow got in.
+		int duplicate_pairs = 0;
+		for (int i = 0; i < s_line_cache.size(); ++i)
+		{
+			for (int j = i + 1; j < s_line_cache.size(); ++j)
+			{
+				LineCache::Itr itr_i({ 0,0 }, i);
+				LineCache::Itr itr_j({ 0,0 }, j);
+				if (is_duplicate(itr_i, itr_j))
+				{
+					++duplicate_pairs;
+				}
+			}
+		}
+		std::cout << "\nFound " << duplicate_pairs << " pairs of duplicate lines.\n";
 	}
-	std::cout << "\nFound " << duplicate_pairs << " pairs of duplicate lines.\n";
 }
 
 std::vector<int> const& get_lines(Vec2 relative_pos)

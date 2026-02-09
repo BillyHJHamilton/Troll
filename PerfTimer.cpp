@@ -54,10 +54,20 @@ void PerfTimer::PrintAll()
 				std::cout << " " << std::setw(40) << name
 					<< std::setw(10) << value*1'000'000.0 << " micro";
 			}
-			else
+			else if (value < 1.0)
 			{
 				std::cout << " " << std::setw(40) << name
 					<< std::setw(10) << value*1'000.0 << " ms   ";
+			}
+			else if (value < 1000.0)
+			{
+				std::cout << " " << std::setw(40) << name
+					<< std::setw(10) << value << " s    ";
+			}
+			else
+			{
+				std::cout << " " << std::setw(40) << name
+					<< std::setw(10) << value/1'000 << " ks   ";
 			}
 		}
 	};

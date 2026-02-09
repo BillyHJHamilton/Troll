@@ -59,7 +59,10 @@ void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)
 
 void MapGenerator::Generate()
 {
-	std::cout << "\nGenerating level.\n";
+	if (c_ShowMapDebug)
+	{
+		std::cout << "\nGenerating level.\n";
+	}
 
 	PerfTimer perf0("map generate");
 
@@ -166,12 +169,15 @@ void MapGenerator::PlaceSeedRooms()
 		}
 	}
 
-	std::cout << "Seed rooms: " << seedStairs << " stairs ("
-		<< failedStairs << " failed), "
-		<< seedChambers << " chambers, and "
-		<< seedCorridors << " corridors.\n"
-		<< "Landings: added " << landingChambers << " chambers, "
-		<< landingCorridors << " corridors.\n";
+	if (c_ShowMapDebug)
+	{
+		std::cout << "Seed rooms: " << seedStairs << " stairs ("
+			<< failedStairs << " failed), "
+			<< seedChambers << " chambers, and "
+			<< seedCorridors << " corridors.\n"
+			<< "Landings: added " << landingChambers << " chambers, "
+			<< landingCorridors << " corridors.\n";
+	}
 }
 
 void MapGenerator::PlaceRooms()
@@ -196,8 +202,11 @@ void MapGenerator::PlaceRooms()
 		}
 	}
 
-	std::cout << "Placed " << numPlaced << " rooms; attempted "
-		<< attempts << "; intended " << numRooms << "." << std::endl;
+	if (c_ShowMapDebug)
+	{
+		std::cout << "Placed " << numPlaced << " rooms; attempted "
+			<< attempts << "; intended " << numRooms << "." << std::endl;
+	}
 }
 
 void MapGenerator::AddJoiningCorridors()
@@ -271,8 +280,11 @@ void MapGenerator::AddJoiningCorridors()
 			}
 		}
 
-		std::cout << "Pass " << passes << " - Added " << numAddedThisPass
-			<< " joining corridors." << std::endl;
+		if (c_ShowMapDebug)
+		{
+			std::cout << "Pass " << passes << " - Added " << numAddedThisPass
+				<< " joining corridors." << std::endl;
+		}
 
 		++ passes;
 	}
@@ -298,8 +310,11 @@ void MapGenerator::RemoveDisconnectedRooms()
 	// Its work is done.
 	m_JoinedRooms.clear();
 
-	std::cout << "Deleted " << deletedRooms << " disconnected rooms."
-		<< std::endl;
+	if (c_ShowMapDebug)
+	{
+		std::cout << "Deleted " << deletedRooms << " disconnected rooms."
+			<< std::endl;
+	}
 }
 
 void MapGenerator::AddExtraStairs(bool goingUp, int stairsToAdd)
@@ -327,9 +342,12 @@ void MapGenerator::AddExtraStairs(bool goingUp, int stairsToAdd)
 		}
 	}
 
-	std::cout << "Placed " << numAdded << "/" << stairsToAdd
-		<< (goingUp ? " up" : " down") << " stairs in "
-		<< attempts << " attempts." << std::endl;
+	if (c_ShowMapDebug)
+	{
+		std::cout << "Placed " << numAdded << "/" << stairsToAdd
+			<< (goingUp ? " up" : " down") << " stairs in "
+			<< attempts << " attempts." << std::endl;
+	}
 }
 
 void MapGenerator::AddExtraCorridors()
@@ -405,8 +423,11 @@ void MapGenerator::AddExtraCorridors()
 			}
 		}
 	}
-
-	std::cout << "Added " << numAdded << " extra corridors." << std::endl;
+	
+	if (c_ShowMapDebug)
+	{
+		std::cout << "Added " << numAdded << " extra corridors." << std::endl;
+	}
 }
 
 // Map Gen Helper Helpers

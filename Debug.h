@@ -4,10 +4,11 @@
 #include <iostream>
 #include <string>
 
-static constexpr bool c_ShowActionDebug = true;
-static constexpr bool c_ShowLineDebug = true;
-static constexpr bool c_ShowMapDebug = true;
-static constexpr bool c_ShowSpellDebug = true;
+static constexpr bool c_ShowActionDebug = false;
+static constexpr bool c_ShowBotDebug = false;
+static constexpr bool c_ShowLineDebug = false;
+static constexpr bool c_ShowMapDebug = false;
+static constexpr bool c_ShowSpellDebug = false;
 
 inline void DebugBreak(std::string msg = "Error")
 {

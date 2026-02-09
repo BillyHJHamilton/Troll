@@ -3,6 +3,7 @@
 #include "Action.h"
 #include "Beam.h"
 #include "Creature.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
 #include "Math.h"
@@ -17,7 +18,6 @@
 namespace Bot
 {
 
-static bool constexpr SHOW_BOT_DEBUG = true;
 static bool constexpr TERMINATOR_MODE = false;
 
 // Number of turns a bot will remain "aware" after losing sight of player.
@@ -35,7 +35,7 @@ bool is_aware(Creature::Handle const creature);
 void go_to_last_seen(Creature::Handle creature);
 void move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
-Spell::Index choose_spell (Creature::Handle caster);
+Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	std::vector<Spell::Index> const & spell_list);
 float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
@@ -88,7 +88,8 @@ void do_turn (Creature::Handle creature)
 			std::vector<Spell::Index> spell_list = creature.spells_known();
 			if (spell_list.size() > 0)
 			{
-				Spell::Index spell = Random::from_vector(spell_list);
+				Spell::Index spell = choose_spell(creature, Player::handle());
+				//Spell::Index spell = Random::from_vector(spell_list);
 				if (within_range(creature.pos(),
 					Player::pos(), Spell::get_range(spell)))
 				{
@@ -212,22 +213,23 @@ bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 	return false;
 }
 
-Spell::Index choose_spell (Creature::Handle caster)
+Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 {
-	Creature::Handle target = Creature::Player;
 	Spell::Index spell_chosen = Spell::None;
 	std::vector<Spell::Index> spell_list = caster.spells_known();
 
 	// 50% chance of doing attack with best predicted damage
 	if (Random::coinflip())
 	{
-		if (SHOW_BOT_DEBUG)
-		{
-			std::cout << "Doing highest output spell." << std::endl;
-		}
 		spell_chosen = highest_predicted_damage_spell(caster, target, spell_list);
 		if (spell_chosen != Spell::None)
 		{
+			if (c_ShowBotDebug)
+			{
+				std::cout << caster.short_name() << " using highest output spell = "
+					<< Spell::get_name(spell_chosen) << "\n";
+			}
+
 			return spell_chosen;
 		}
 	}
@@ -247,31 +249,28 @@ Spell::Index choose_spell (Creature::Handle caster)
 		return Spell::None;
 	}
 
-	if (SHOW_BOT_DEBUG)
-	{
-		std::cout << "Doing random spell." << std::endl;
-	}
+	Random::shuffle_vector(spell_list);
 
-	int i = 0;
-	int num_tries = static_cast<int>(5*spell_list.size());
-	while (i < num_tries)
+	for (int i = 0; i < spell_list.size(); ++i)
 	{
-		spell_chosen = Random::from_vector(spell_list);
+		spell_chosen = spell_list[i];
 		if ( !spell_is_useless(spell_chosen, caster, target)
 			 && Random::in_range(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
 		{
+			if (c_ShowBotDebug)
+			{
+				std::cout << caster.short_name() << " using random reasonable spell = "
+					<< Spell::get_name(spell_chosen) << "\n";
+			}
+
 			return spell_chosen;
-		}
-		else
-		{
-			i++;
 		}
 	}
 
-	if (SHOW_BOT_DEBUG)
+	if (c_ShowBotDebug)
 	{
-		std::cout << "Couldn't find any reasonable spell after " << num_tries
-			<< "tries." << std::endl;
+		std::cout << caster.short_name() << " couldn't find good spell.  Using random = "
+			<< Spell::get_name(spell_chosen) << "\n";
 	}
 
 	// if can't find anything that might succeed, give up and just cast whatever
