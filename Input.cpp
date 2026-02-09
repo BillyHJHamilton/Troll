@@ -96,6 +96,7 @@ void handle_next_input ()
 	// enter spellcasting mode when shift is pressed down
 	if (key == TK_SHIFT)
 	{
+		Player::stop_automove();
 		s_input_mode = InputMode::Spellcasting;
 		blank_spell_input();
 		return;
@@ -104,6 +105,7 @@ void handle_next_input ()
 	// return to normal mode when shift is released
 	if (key == (TK_SHIFT | TK_KEY_RELEASED))
 	{
+		Player::stop_automove();
 		s_input_mode = InputMode::Normal;
 		if (check_spell_input_state() == SpellInputState::InProgress)
 		{
@@ -127,6 +129,7 @@ void handle_next_input ()
 			}
 			else
 			{
+				Player::stop_automove();
 				Vec2 const vec = c_compass[dir];
 				player_try_move(vec);
 				return;
@@ -141,6 +144,7 @@ void handle_next_input ()
 			}
 			else
 			{
+				Player::stop_automove();
 				player_rest_step();
 			}
 			return;
@@ -148,37 +152,39 @@ void handle_next_input ()
 
 		if (key == TK_TAB)
 		{
+			Player::stop_automove();
 			Target::cycle();
 			return;
 		}
 
 		if (key == TK_H)
 		{
+			Player::stop_automove();
 			Menu::show_help();
 			return;
 		}
 
 		// Map Debug
-		if (key == TK_PERIOD)
-		{
-			Player::handle().move(Player::pos() + Vec3{0,0,-1});
-			return;
-		}
-		if (key == TK_COMMA)
-		{
-			Player::handle().move(Player::pos() + Vec3{0,0,1});
-			return;
-		}
-		if (key == TK_X)
-		{
-			Draw::toggle_los_cheat();
-			//int const map_index = World::read().find_map(Player::pos());
-			//if (map_index != c_invalid)
-			//{
-			//	World::edit().edit_map(map_index).set_all_explored();
-			//}
-			return;
-		}
+		//if (key == TK_PERIOD)
+		//{
+		//	Player::handle().move(Player::pos() + Vec3{0,0,-1});
+		//	return;
+		//}
+		//if (key == TK_COMMA)
+		//{
+		//	Player::handle().move(Player::pos() + Vec3{0,0,1});
+		//	return;
+		//}
+		//if (key == TK_X)
+		//{
+		//	Draw::toggle_los_cheat();
+		//	//int const map_index = World::read().find_map(Player::pos());
+		//	//if (map_index != c_invalid)
+		//	//{
+		//	//	World::edit().edit_map(map_index).set_all_explored();
+		//	//}
+		//	return;
+		//}
 
 		// unhandled
 		return;

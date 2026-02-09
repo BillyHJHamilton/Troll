@@ -169,7 +169,7 @@ void update()
 
 	Draw::draw_screen();
 
-	if (Player::is_automoving())
+	if (Player::is_automoving() && !terminal_has_input())
 	{
 		Input::dispatch_automove();
 	}
