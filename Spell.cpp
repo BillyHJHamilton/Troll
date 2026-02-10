@@ -209,13 +209,12 @@ Spell::Instance & get_current_instance ()
 	return s_current_spell_instance;
 }
 
-void execute_effect(Spell::Index spell_index, Creature::Handle caster, Creature::Handle target,
-	LineCache::Itr3D const* impact_line)
+void execute_effect(Spell::Index spell_index, Spell::EffectParams params)
 {
 	Spell::EffectFunc func = s_spell_list[spell_index].effect_func;
 	if (func != nullptr)
 	{
-		func(caster, target, impact_line);
+		func(params);
 	}
 }
 

@@ -21,24 +21,28 @@ namespace Spell
 // Be aware that impact_line MAY be nullptr, particularly if spell is self-targeted.
 // Target may be Creature::None, if spell hit self or detonated in midair.
 
-void vermillious (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void vermillious (EffectParams params)
 {
+	Creature::Handle const target = params.target;
 	Draw::creature_message(target, " " + Grammar::You_are(target) + " showered in sparks!");
 }
 
-void flipendo (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void flipendo (EffectParams params)
 {
+	Creature::Handle const caster = params.caster;
+	Creature::Handle target = params.target;
+
 	Vec3 knock_pos;
 
-	if (impact_line == nullptr)
+	if (params.impact_line == nullptr)
 	{
 		// If you shoot yourself, just push in a random direction.
 		CompassDirection dir = Random::compass_direction(false);
-		knock_pos = target.pos() + c_compass[dir].xy0();
+		knock_pos = params.target_pos + c_compass[dir].xy0();
 	}
 	else
 	{
-		LineCache::Itr3D line = *impact_line; // copy
+		LineCache::Itr3D line = *params.impact_line; // copy
 		line.advance_and_loop();
 		knock_pos = *line;
 	}
@@ -79,8 +83,10 @@ void flipendo (Creature::Handle caster, Creature::Handle target, LineCache::Itr3
 	}
 }
 
-void tarantallegra (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void tarantallegra (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::Dancing))
 	{
 		Draw::creature_message(target, " " + Grammar::Your(target) + " feet quicken their dance!");
@@ -107,8 +113,10 @@ void tarantallegra (Creature::Handle caster, Creature::Handle target, LineCache:
 	}
 }
 
-void locomotor_mortis (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void locomotor_mortis (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::LegLocked))
 	{
 		Draw::creature_message(target, " " + Grammar::Your(target) + " legs are more tightly locked together!");
@@ -135,21 +143,23 @@ void locomotor_mortis (Creature::Handle caster, Creature::Handle target, LineCac
 	}
 }
 
-void rictusempra (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void rictusempra (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	Draw::creature_message(target, " Something is tickling " + Grammar::you(target) + "!");
 	target.inflict_status(Status::Tickled, Random::in_range(4,8));
 }
 
-void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::Itr3D const* impact_line)
+void fumos (EffectParams params)
 {
-	Vec3 const spell_pos = (impact_line) ? **impact_line : caster.pos();
+	Vec3 const target_pos = params.target_pos;
 
 	bool msg = false;
 	for (CompassItr itr(true); itr; ++itr)
 	{
 		CompassDirection dir = *itr;
-		Vec3 const cloud_pos = spell_pos + c_compass[dir].xy0();
+		Vec3 const cloud_pos = target_pos + c_compass[dir].xy0();
 			
 		if (World::read().is_solid(cloud_pos))
 		{
@@ -173,8 +183,10 @@ void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::I
 	}
 }
 
-void mimblewimble (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void mimblewimble (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::TongueTied))
 	{
 		Draw::creature_message(target, " " + Grammar::You(target) + " " +
@@ -188,8 +200,10 @@ void mimblewimble (Creature::Handle caster, Creature::Handle target, LineCache::
 	target.inflict_status(Status::TongueTied, 5);
 }
 
-void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void lacarnum_inflamare (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::Burning))
 	{
 		Draw::creature_message(target, " " + Grammar::Your(target) + " clothes are burning in more places!");
@@ -202,13 +216,17 @@ void lacarnum_inflamare (Creature::Handle caster, Creature::Handle target, LineC
 	target.inflict_status(Status::Burning, 5);
 }
 
-void furnunculus (Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void furnunculus (EffectParams params)
 {
+	Creature::Handle target = params.target;
 	Draw::creature_message(target, " " + Grammar::Your(target) + " skin boils!");
 }
 
-void stupefy(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void stupefy (EffectParams params)
 {
+	Creature::Handle const caster = params.target;
+	Creature::Handle const target = params.target;
+
 	std::string bolt_description;
 	if (Spell::get_damage(Spell::Stupefy, caster) > 10)
 		bolt_description = "a spectacular bolt of red light";
@@ -227,8 +245,10 @@ void stupefy(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D 
 		+ bolt_description + "!");
 }
 
-void impedementa(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void impedementa (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::Impeded))
 	{
 		Draw::creature_message(target, Grammar::Your(target) +
@@ -242,8 +262,10 @@ void impedementa(Creature::Handle caster, Creature::Handle target, LineCache::It
 	target.inflict_status(Status::Impeded, 5);
 }
 
-void bat_bogey_hex(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line)
+void bat_bogey_hex (EffectParams params)
 {
+	Creature::Handle target = params.target;
+
 	if (target.has_status(Status::Batty))
 	{
 		Draw::creature_message(target, "The swarm of black winged things around "

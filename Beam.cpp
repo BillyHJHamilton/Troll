@@ -6,6 +6,7 @@
 #include "Grammar.h"
 #include "Random.h"
 #include "Spell.h"
+#include "SpellEffect.h"
 #include "Stairs.h"
 #include "World.h"
 
@@ -352,7 +353,15 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 	target.take_damage(damage, beam.caster);
 	if (effect_func != nullptr)
 	{
-		effect_func(beam.caster, target, &line);
+		Spell::EffectParams params
+		{
+			beam.caster,
+			target,
+			target.pos(),
+			&line
+		};
+
+		effect_func(params);
 	}
 }
 
@@ -361,7 +370,15 @@ void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
 	Spell::EffectFunc effect_func = get_effect_func(beam);
 	if (effect_func != nullptr)
 	{
-		effect_func(beam.caster, Creature::None, &line);
+		Spell::EffectParams params
+		{
+			beam.caster,
+			Creature::None,
+			beam.pos,
+			&line
+		};
+
+		effect_func(params);
 	}
 }
 

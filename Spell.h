@@ -108,6 +108,5 @@ namespace Spell
 	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
 	Spell::Instance & get_current_instance ();
 
-	void execute_effect (Spell::Index spell_index, Creature::Handle caster, Creature::Handle target,
-		LineCache::Itr3D const* impact_line);
+	void execute_effect(Spell::Index spell_index, Spell::EffectParams params);
 }

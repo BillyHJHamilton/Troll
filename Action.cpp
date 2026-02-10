@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
+#include "SpellEffect.h"
 #include "Target.h"
 #include "World.h"
 
@@ -254,14 +255,30 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
-		Spell::execute_effect(spell, caster, Creature::None, nullptr);
+		Spell::EffectParams params
+		{
+			caster,
+			Creature::None,
+			caster.pos(),
+			nullptr
+		};
+
+		Spell::execute_effect(spell, params);
 	}
 	else if (line_id == c_invalid)
 	{
 		// Shot yourself, it seems.
 		int const damage = Spell::get_damage(spell, caster);
-		caster.take_damage(damage, caster);
-		Spell::execute_effect(spell, caster, caster, nullptr);
+
+		Spell::EffectParams params
+		{
+			caster,
+			caster,
+			caster.pos(),
+			nullptr
+		};
+
+		Spell::execute_effect(spell, params);
 	}
 	else
 	{

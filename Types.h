@@ -75,7 +75,8 @@ namespace Player
 namespace Spell
 {
 	enum Index : int;
-	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
+	struct EffectParams;
+	using EffectFunc = void(*)(EffectParams params);
 }
 
 namespace Stairs

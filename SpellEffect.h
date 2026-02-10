@@ -1,21 +1,40 @@
 #pragma once
 
 #include "Types.h"
+#include "Creature.h"
 
 namespace Spell
 {
-	using EffectFunc = void(*)(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
+	struct EffectParams
+	{
+		// Caster of the spell.
+		Creature::Handle caster = Creature::None;
 
-	void vermillious(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void flipendo(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void tarantallegra(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void locomotor_mortis(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void rictusempra(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void fumos(Creature::Handle caster, Creature::Handle target_unused, LineCache::Itr3D const* impact_line);
-	void mimblewimble(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void lacarnum_inflamare(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void furnunculus(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void stupefy(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void impedementa(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
-	void bat_bogey_hex(Creature::Handle caster, Creature::Handle target, LineCache::Itr3D const* impact_line);
+		// Creature hit by the spell.
+		// May be None if the spell is self-targeting, or detonated in midair.
+		Creature::Handle target = Creature::None;
+
+		// Place where the spell detonated.  Often same as target or caster position.
+		Vec3 target_pos;
+
+		// Pointer to the spell's travel line at the moment of impact.
+		// Used for Flipendo pushback, for example.
+		// May be nullptr, if the spell is self-targeting.
+		LineCache::Itr3D const* impact_line = nullptr;
+	};
+
+	using EffectFunc = void(*)(EffectParams params);
+
+	void vermillious(EffectParams params);
+	void flipendo(EffectParams params);
+	void tarantallegra(EffectParams params);
+	void locomotor_mortis(EffectParams params);
+	void rictusempra(EffectParams params);
+	void fumos(EffectParams params);
+	void mimblewimble(EffectParams params);
+	void lacarnum_inflamare(EffectParams params);
+	void furnunculus(EffectParams params);
+	void stupefy(EffectParams params);
+	void impedementa(EffectParams params);
+	void bat_bogey_hex(EffectParams params);
 }
