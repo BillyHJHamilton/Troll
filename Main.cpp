@@ -8,8 +8,10 @@
 // To do:
 // - Name and difficulty level for each map
 // - Improve spawning code
-//  - Find pos by room, instead of spraying at random
+//  - Find pos by room, instead of spraying at random?
+//  - Or enumerate all open spaces and choose some?
 // - Improved enemy AI
+//  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
 //  - EQS / find good attack position
 // - XP and level up
 // - Learning spells

@@ -55,6 +55,7 @@ bool player_try_cast_spell (Spell::Index spell)
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
 		try_cast_spell(spell, Creature::Player, Player::pos(), c_invalid);
+		return true;
 	}
 	else
 	{
