@@ -1,6 +1,7 @@
 #include "Target.h"
 
 #include "Creature.h"
+#include "Draw.h"
 #include "Player.h"
 #include "World.h"
 
@@ -110,6 +111,18 @@ void move (Vec2 dir)
 		g_target_mode = TargetMode::Manual;
 	}
 	g_target_pos += dir.xy0();
+
+	// see if we've slipped onto another level
+	Draw::View const& view = Draw::get_view();
+	g_target_pos.z = view.z;
+	for (Vec3 peek : view.peek_tiles)
+	{
+		if (peek.xy() == g_target_pos.xy())
+		{
+			g_target_pos.z = peek.z;
+			break;
+		}
+	}
 }
 
 bool is_target (Creature::Handle creature)

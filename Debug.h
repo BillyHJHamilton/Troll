@@ -4,11 +4,21 @@
 #include <iostream>
 #include <string>
 
-static constexpr bool c_ShowActionDebug = false;
-static constexpr bool c_ShowBotDebug = false;
-static constexpr bool c_ShowLineDebug = false;
-static constexpr bool c_ShowMapDebug = false;
-static constexpr bool c_ShowSpellDebug = false;
+#ifdef _DEBUG
+static constexpr bool c_ShowActionDebug		= false;
+static constexpr bool c_ShowBotDebug		= false;
+static constexpr bool c_ShowLineDebug		= false;
+static constexpr bool c_ShowMapDebug		= true;
+static constexpr bool c_ShowPathfindDebug	= false;
+static constexpr bool c_ShowSpellDebug		= false;
+#else
+static constexpr bool c_ShowActionDebug		= false;
+static constexpr bool c_ShowBotDebug		= false;
+static constexpr bool c_ShowLineDebug		= false;
+static constexpr bool c_ShowMapDebug		= false;
+static constexpr bool c_ShowPathfindDebug	= false;
+static constexpr bool c_ShowSpellDebug		= false;
+#endif
 
 inline void DebugBreak(std::string msg = "Error")
 {

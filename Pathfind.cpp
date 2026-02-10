@@ -1,6 +1,7 @@
 #include "Pathfind.h"
 
 #include "Creature.h"
+#include "Debug.h"
 #include "MapUtil.h"
 #include "PerfTimer.h"
 #include "Stairs.h"
@@ -12,7 +13,6 @@
 
 namespace Pathfind
 {
-	constexpr bool PRINT_PATHFIND_DEBUG = false;
 
 // I hate the std::priority_queue, but I guess it's okay for this case.
 // Wrapper based on the redblob link below.
@@ -98,7 +98,7 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 
 	if (chessboard_distance(start, goal) > max_cost)
 	{
-		if (PRINT_PATHFIND_DEBUG)
+		if (c_ShowPathfindDebug)
 		{
 			std::cout << "Target is beyond max cost.  Pathfinding skipped.\n";
 		}
@@ -179,7 +179,7 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 			boomerang = discovered[boomerang].come_from;
 		}
 
-		if (PRINT_PATHFIND_DEBUG)
+		if (c_ShowPathfindDebug)
 		{
 			std::cout << "Built path of " << path.size() << " steps.\n";
 		}
@@ -188,7 +188,7 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 	}
 	else
 	{
-		if (PRINT_PATHFIND_DEBUG)
+		if (c_ShowPathfindDebug)
 		{
 			std::cout << "Failed to find a path.\n";
 		}

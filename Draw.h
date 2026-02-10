@@ -22,7 +22,10 @@ namespace Draw
 	void init();
 	void clear();
 
-	View get_view();
+	void update_view();
+
+	// Gets the cached view, from the last time update_view was called.
+	View const& get_view();
 
 	void draw_tile(int code, Vec2  const& global_pos, Draw::View const& view,
 		char const* const colour);

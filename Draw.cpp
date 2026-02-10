@@ -32,6 +32,8 @@ static int constexpr TILE_WIDTH_FACTOR = 2;
 
 bool s_los_cheat = false;
 
+View s_view = View{};
+
 // ------------------------------------------------------------------------------------------------
 // TerminalLayer helper class
 
@@ -89,9 +91,9 @@ bool View::contains_global_pos(Vec3 const& global_pos) const
 		&& (global_pos.z == z || Util::Contains(peek_tiles, global_pos));
 }
 
-View get_view ()
+void update_view ()
 {
-	int constexpr view_size = 31;
+		int constexpr view_size = 31;
 	Box2 viewport = Box2(0,0,view_size, view_size);
 
 	// Centre the view on the player
@@ -110,16 +112,19 @@ View get_view ()
 		peek_tiles.push_back(stairs_pos);
 	}
 
-	View view
+	s_view =
 	{
 		viewport,
 		start,
 		viewer.z,
-		false, // ignore visibility
+		s_los_cheat, // ignore visibility
 		peek_tiles
 	};
+}
 
-	return view;
+View const& get_view ()
+{
+	return s_view;
 }
 
 void draw_tile (int code, Vec2 const & global_pos, Draw::View const & view,
@@ -257,11 +262,8 @@ void toggle_los_cheat()
 
 void update_screen()
 {
-	Draw::View view = get_view();
-	if (s_los_cheat)
-	{
-		view.ignore_visibility = true;
-	}
+	update_view();
+	Draw::View const& view = get_view();
 
 	terminal_font("tile");
 	World::read().draw(view);
@@ -301,13 +303,6 @@ void update_screen()
 	Box2 spell_area = Box2(93, 1, 27, 30);
 	std::string spell_preview = Input::get_spell_preview_string();
 	print_in_box(spell_area, spell_preview.c_str());
-	/*	print_in_box(spell_area,
-			"Spells:\n"
-			"RL  Relashio\n"
-			"FP  Flipendo\n"
-			"MW  Mimblewimble\n"
-			"RS  Rictusempra\n"
-		);*/
 }
 
 int num_lines_for_visible_creature_stats()
