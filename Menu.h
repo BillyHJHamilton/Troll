@@ -12,9 +12,13 @@ namespace Menu
 		Count
 	};
 
+	// Document Menus
 	void show_title();
 	void show_help();
 	void show_game_over();
+
+	// List Menus
+	void show_house_selection();
 	void show_spells_known();
 
 	// Return to normal gameplay

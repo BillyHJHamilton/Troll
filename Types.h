@@ -51,6 +51,11 @@ namespace Draw
 	struct View;
 }
 
+namespace House
+{
+	enum Id : int;
+}
+
 namespace LineCache
 {
 	class Itr;

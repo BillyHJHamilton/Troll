@@ -66,6 +66,7 @@ void mix_gingerbread (
 
 void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
 {
+	spell_bitset.reset();
 	std::stringstream ss(spell_string);
 
 	std::string token;
@@ -492,6 +493,13 @@ void Handle::invalidate ()
 	}
 
 	s_creatures[index].type = Creature::None;
+}
+
+void Handle::reset_to_gingerbread ()
+{
+	s_spells_known[index] = s_gingerbread_spells[type()];
+	cure_all();
+	update_derived_stats();
 }
 
 void Handle::update_derived_stats ()

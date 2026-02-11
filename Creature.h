@@ -169,6 +169,7 @@ namespace Creature
 		void rest_step ();
 		void clear_rest_steps ();
 		void invalidate ();
+		void reset_to_gingerbread ();
 		
 		void update_derived_stats ();
 	};
@@ -203,6 +204,7 @@ namespace Creature
 		char const * tag_string = "");
 	void init_gingerbread();
 
+	void reset_player_stats(House::Id house);
 	Stats& edit_player_stats();
 
 	const char* short_name_from_type(Creature::Type type);
