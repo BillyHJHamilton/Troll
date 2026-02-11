@@ -61,6 +61,37 @@ namespace Util
 		return itr != vector.end();
 	}
 
+	// Utility functions for removing with simpler syntax
+
+	template<typename VectorItemType>
+	void RemoveAt(std::vector<VectorItemType>& vector, int indexToRemove)
+	{
+		vector.erase(vector.begin() + indexToRemove);
+	}
+
+	template<typename VectorItemType, typename ValueType>
+	void RemoveFirstMatchingItem(std::vector<VectorItemType>& vector, ValueType& value)
+	{
+		auto itr = Find(vector, value);
+		if (itr != vector.end())
+		{
+			vector.erase(itr);
+		}
+	}
+	
+	template<typename VectorItemType, typename ValueType>
+	void RemoveAllMatchingItems(std::vector<VectorItemType>& vector, ValueType& value)
+	{
+		for (int i = 0; i < vector.size(); ++i)
+		{
+			if (vector[i] == value)
+			{
+				RemoveAt(vector, i);
+				--i;
+			}
+		}
+	}
+
 	// Utility functions for removing items from std::vector without maintaining order.
 
 	template<typename VectorItemType>

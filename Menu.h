@@ -19,6 +19,7 @@ namespace Menu
 
 	// List Menus
 	void show_house_selection();
+	void show_starting_spells();
 	void show_spells_known();
 
 	// Return to normal gameplay

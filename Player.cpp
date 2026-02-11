@@ -113,7 +113,8 @@ void gain_xp_for (Creature::Type creature)
 		Creature::edit_player_stats().skill_magic += 5;
 		handle().heal_hp(2);
 
-		// Hack!  Fix later when there's another way to learn spells!
+		// Hack!  Automatically learn spells when levelling up...
+		// TODO: Implement a better way to learn spells.
 		Spell::Index new_spell = (Spell::Index)read_data().level;
 		if (Spell::is_valid_index(new_spell))
 		{

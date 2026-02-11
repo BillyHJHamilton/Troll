@@ -101,6 +101,7 @@ void draw_selected_house(ListOption option);
 void draw_selected_spell(ListOption option);
 
 void select_house();
+void select_starting_spell();
 
 //-------------------------------------------------------------------------------------------------
 // Public function implementations
@@ -144,6 +145,34 @@ void show_house_selection()
 	}
 
 	s_input_map[TK_ENTER] = &select_house;
+}
+
+void show_starting_spells()
+{
+	open_menu(List);
+	reset_list();
+
+	s_document_content = "Choose three spells to start with:";
+	s_list_details_func = draw_selected_spell;
+
+	s_option_list.reserve(6);
+
+	int constexpr c_max_difficulty = 25;
+
+	for (Spell::Index spell_index = (Spell::Index)0;
+		Spell::is_valid_index(spell_index);
+		spell_index = (Spell::Index)(spell_index + 1))
+	{
+		if (Spell::get_difficulty(spell_index) <= c_max_difficulty)
+		{
+			ListOption option;
+			option.text = Spell::get_abbrev(spell_index) + " " + Spell::get_name(spell_index);
+			option.value = (int)spell_index;
+			s_option_list.push_back(option);
+		}
+	}
+
+	s_input_map[TK_ENTER] = &Menu::select_starting_spell;
 }
 
 void show_spells_known()
@@ -342,7 +371,27 @@ void select_house()
 	House::Id house = (House::Id)s_option_list[s_selection].value;
 	assert(House::is_valid(house));
 	Creature::reset_player_stats(house);
-	Menu::close();
+	show_starting_spells();
+	//Menu::close();
+}
+
+void select_starting_spell()
+{
+	Spell::Index spell = (Spell::Index)s_option_list[s_selection].value;
+	Player::handle().learn_spell(spell);
+
+	if (Player::handle().spells_known().size() >= 3)
+	{
+		Menu::close();
+	}
+	else
+	{
+		Util::RemoveAt(s_option_list, s_selection);
+		if (s_selection >= s_option_list.size())
+		{
+			--s_selection;
+		}
+	}
 }
 
 }
