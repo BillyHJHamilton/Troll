@@ -76,12 +76,12 @@ namespace Spell
 	// This means we can also support randomly generated spells for miscasts.
 	struct Instance
 	{
-		std::string colour;
-		int codepoint;
-		int damage;
-		int power; // = spell level * caster skill
-		int accuracy;
-		EffectFunc effect_func;
+		std::string colour = "";
+		int codepoint = 0;
+		int damage = 0;
+		int power = 1; // = spell level * caster skill
+		int accuracy = 100;
+		EffectFunc effect_func = nullptr;
 	};
 
 	// functions

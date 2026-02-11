@@ -40,6 +40,16 @@ namespace Math
 		return a ^ b;
 	}
 
+	inline int RoundToInt(float x)
+	{
+		return static_cast<int>(lround(x));
+	}
+
+	inline int RoundToInt(double x)
+	{
+		return static_cast<int>(lround(x));
+	}
+
 	inline bool FloatIsZero(float x)
 	{
 		return abs(x) < c_FloatEpsilon;

@@ -93,7 +93,7 @@ bool View::contains_global_pos(Vec3 const& global_pos) const
 
 void update_view ()
 {
-		int constexpr view_size = 31;
+	int constexpr view_size = 31;
 	Box2 viewport = Box2(0,0,view_size, view_size);
 
 	// Centre the view on the player
@@ -362,9 +362,10 @@ void print_player_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 
-	ss << "XP     " << 125 << std::endl; // todo
+	ss << "Level  " << Player::current_level() << std::endl;
+	ss << "XP     " << Player::current_xp() << " / "
+	   << Player::next_xp_threshold() << std::endl;
 	ss << "Magic  " << Player::handle().skill_magic() << std::endl;
-	ss << "Level  " << 4 << std::endl; // todo
 	ss << std::endl;
 
 	format_creature_stats(ss, Creature::Player);

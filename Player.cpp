@@ -3,6 +3,8 @@
 
 #include "Creature.h"
 #include "Draw.h"
+#include "Math.h"
+#include "Spell.h"
 
 namespace Player
 {
@@ -78,6 +80,48 @@ void set_game_over(Creature::Type defeated_by)
 {
 	s_player_data.game_over = true;
 	s_player_data.defeated_by = defeated_by;
+}
+
+int current_level ()
+{
+	return read_data().level;
+}
+
+int current_xp ()
+{
+	return read_data().xp;
+}
+
+int next_xp_threshold ()
+{
+	int const level = read_data().level;
+	return 50 * Math::RoundToInt(pow(2, level - 1));
+}
+
+void gain_xp_for (Creature::Type creature)
+{
+	float const difficulty = Creature::read_stats(creature).difficulty;
+	int const gain = Math::RoundToInt(10.0f * pow(2.0f, difficulty));
+	edit_data().xp += gain;
+
+	while (current_xp() >= next_xp_threshold())
+	{
+		edit_data().xp -= next_xp_threshold();
+		++ edit_data().level;
+
+		Creature::edit_player_stats().max_hp += 2;
+		Creature::edit_player_stats().skill_magic += 5;
+		handle().heal_hp(2);
+
+		// Hack!  Fix later when there's another way to learn spells!
+		Spell::Index new_spell = (Spell::Index)read_data().level;
+		if (Spell::is_valid_index(new_spell))
+		{
+			handle().learn_spell(new_spell);
+		}
+
+		Draw::add_message("Welcome to level " + std::to_string(current_level()) + ".");
+	}
 }
 
 } // namespace Player

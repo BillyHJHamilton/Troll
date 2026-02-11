@@ -161,6 +161,7 @@ namespace Creature
 
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);
+		void heal_hp (int healing);
 		void move (Vec3 const & new_pos);
 		void inflict_status (Status::Index status, int severity);
 		void reduce_status (Status::Index status, int reduction);
@@ -170,6 +171,7 @@ namespace Creature
 		void clear_rest_steps ();
 		void invalidate ();
 		void reset_to_gingerbread ();
+		void learn_spell (Spell::Index spell);
 		
 		void update_derived_stats ();
 	};
@@ -207,6 +209,7 @@ namespace Creature
 	void reset_player_stats(House::Id house);
 	Stats& edit_player_stats();
 
+	Stats const& read_stats(Creature::Type type);
 	const char* short_name_from_type(Creature::Type type);
 	const char* long_name_from_type(Creature::Type type);
 	Creature::Handle creature_at_pos (Vec3 pos);

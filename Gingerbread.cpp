@@ -13,7 +13,7 @@ void reset_player_stats(House::Id house)
 		Gender::Female,
 		/*Magic*/ (house == House::Ravenclaw) ? 15 : 10,
 		/*HP*/ (house == House::Hufflepuff) ? 12 : 10,
-		"FP");
+		"VM FP");
 
 	Creature::Handle(0).reset_to_gingerbread();
 }

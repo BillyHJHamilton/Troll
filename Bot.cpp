@@ -118,6 +118,10 @@ void do_turn (Creature::Handle creature)
 			--brain.awareness;
 			go_to_last_seen(creature);
 		}
+		else
+		{
+			creature.rest_step();
+		}
 	}
 }
 
@@ -142,6 +146,11 @@ void go_to_last_seen(Creature::Handle creature)
 		{
 			// Hm, where could she possibly have gone?
 			try_move(creature, Stairs::relative_move(dir).xy(), MoveMode::Walk);
+		}
+		else
+		{
+			// TODO: Explore a little.  Try to find the player.
+			creature.rest_step();
 		}
 	}
 	else if (pos.z == brain.last_seen.z

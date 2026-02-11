@@ -398,6 +398,12 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 	}
 }
 
+void Handle::heal_hp (int healing)
+{
+	Creature::Instance & c = edit_creature_instance(index);
+	c.hp = std::min(c.hp + healing, max_hp());
+}
+
 void Handle::move (Vec3 const & new_pos)
 {
 	edit_creature_instance(index).pos = new_pos;
@@ -502,6 +508,12 @@ void Handle::reset_to_gingerbread ()
 	update_derived_stats();
 }
 
+void Handle::learn_spell (Spell::Index spell)
+{
+	assert(Spell::is_valid_index(spell));
+	s_spells_known[index].set((int)spell);
+}
+
 void Handle::update_derived_stats ()
 {
 	Creature::DerivedStats & ds = edit_derived_stats(index);
@@ -553,6 +565,19 @@ bool HandleItr::finished () const
 
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
+
+Stats const& read_stats(Creature::Type type)
+{
+	if (type >= 0 && type <= Creature::Type::Count)
+	{
+		return s_gingerbread[type];
+	}
+	else
+	{
+		DebugBreak();
+		return s_gingerbread[0];
+	}
+}
 
 const char* short_name_from_type (Creature::Type type)
 {
@@ -812,6 +837,7 @@ void remove_defeated_creatures ()
 		else
 		{
 			++num_removed;
+			Player::gain_xp_for(creature.type());
 			creature.invalidate();
 		}
 	}
