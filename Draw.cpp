@@ -229,8 +229,11 @@ void print_messages(Box2 const & box)
 				{
 					combined_message = itr->text + "\n" + combined_message;
 				}
+				
+				// Printing turn numbers - test only
+				// combined_message = "(" + std::to_string(itr->turn_number) + ") " + combined_message;
 			}
-		};
+		}
 
 		print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
 	}

@@ -194,6 +194,7 @@ Item::Handle const Map::peek_item(Vec2 global_pos) const
 
 void Map::add_item(Vec2 global_pos, Item::Handle item)
 {
+	assert(item.valid());
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	item.stack_onto(items[local.x][local.y]);
@@ -205,8 +206,11 @@ Item::Handle Map::pop_item(Vec2 global_pos)
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
 	Item::Handle top = items[local.x][local.y];
-	items[local.x][local.y] = top.next_in_stack();
-	top.stack_onto(c_invalid);
+	if (top.valid())
+	{
+		items[local.x][local.y] = top.next_in_stack();
+		top.stack_onto(c_invalid);
+	}
 	return top;
 }
 

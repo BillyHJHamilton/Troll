@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include <string>
 
 namespace Item
 {
@@ -8,7 +9,7 @@ namespace Item
 	{
 		None = c_invalid,
 		Notes,
-		Sweets,
+		BBEFBean,
 		Count
 	};
 
@@ -44,9 +45,9 @@ namespace Item
 		Item::Type type () const;
 		Item::Handle next_in_stack () const;
 
-		int get_codepoint () const;
-		char const * get_name () const;
-		char const * get_colour () const;
+		int codepoint () const;
+		std::string name () const;
+		std::string colour () const;
 
 		// Mutators
 

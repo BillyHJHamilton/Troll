@@ -5,6 +5,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Item.h"
 #include "Map.h"
 #include "Player.h"
 #include "Random.h"
@@ -37,6 +38,14 @@ bool player_try_move(Vec2 relative_move)
 	bool const moved = try_move(Player::handle(), relative_move, MoveMode::Walk);
 	if (moved)
 	{
+		// Try pick up items.
+		Item::Handle item = World::edit().pop_item(Player::pos());
+		while (item != c_invalid)
+		{
+			Draw::add_message("Got " + item.name() + "!");
+			item = World::edit().pop_item(Player::pos());
+		}
+
 		Player::set_acted(true);
 	}
 	return moved;

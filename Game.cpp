@@ -310,6 +310,37 @@ void check_spawning()
 				<< " for map " << map_id << ".\n";
 		}
 
+		int const beans_to_spawn = Random::in_range(20,40);
+		int beans_spawned = 0;
+		for (int i = 0; i < beans_to_spawn; ++i)
+		{
+			// Find spawn position
+			// TODO Repeating code from above...
+			int const attempts = 100;
+			for (int a = 0; a < attempts; ++a)
+			{
+				Vec2 const pos2 = Random::in_box(map.get_box());
+				Vec3 const pos3 = pos2.xyz(Player::pos().z);
+				if (map.get_terrain(pos2) == Terrain::Open &&
+					!World::read().has_item(pos3) &&
+					Creature::creature_at_pos(pos3) == Creature::None)
+				{
+					Item::Instance inst;
+					inst.type = Item::BBEFBean;
+					inst.flavour = BertieBotts::random_flavour();
+					Item::spawn_item(inst, pos3);
+					++beans_spawned;
+					break;
+				}
+			}
+		}
+
+		if (c_ShowMapDebug)
+		{
+			std::cout << "Placed " << beans_spawned << "/" << beans_to_spawn
+				<< " beans for map " << map_id << ".\n";
+		}
+
 		s_spawned[map_id] = true;
 	}
 }

@@ -1,5 +1,6 @@
 #include "Item.h"
 
+#include "BertieBotts.h"
 #include "Debug.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -59,6 +60,44 @@ Item::Type Handle::type () const
 Item::Handle Handle::next_in_stack () const
 {
 	return read_inst(index).next;
+}
+
+int Handle::codepoint () const
+{
+	switch (type())
+	{
+		case BBEFBean:		return ',';
+		default:			return '?';
+	}
+}
+
+std::string Handle::name () const
+{
+	switch (type())
+	{
+		case Notes:			return "Notes";
+		case BBEFBean:		return "Bertie Bott's Every Flavour Bean";
+		default:
+			DebugBreak();
+			return "";
+	}
+}
+
+std::string Handle::colour () const
+{
+	switch (type())
+	{
+		case BBEFBean:
+		{
+			int const flavour = read_inst(index).flavour;
+			return BertieBotts::get_colour(flavour);
+		}
+			
+		default:
+		{
+			return "white";
+		}
+	}
 }
 
 void Handle::stack_onto (Item::Handle other)

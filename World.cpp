@@ -471,27 +471,37 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		}
 
 		int code = Terrain::get_character(t);
-		char const* draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
+		std::string draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
 
-		// Clouds conceal terrain at position
 		if (v == Visibility::Visible)
 		{
-			Cloud::Type cloud = get_cloud(pos);
+			// Clouds conceal terrain/items at position
+			Cloud::Type const cloud = get_cloud(pos);
 			if (cloud != Cloud::None)
 			{
 				code = Cloud::get_character(cloud);
 				draw_colour = Cloud::get_colour(cloud);
+			}
+			else
+			{
+				// If no cloud, check for item to draw.
+				Item::Handle const item = peek_item(pos);
+				if (item != c_invalid)
+				{
+					code = item.codepoint();
+					draw_colour = item.colour();
+				}
 			}
 		}
 
 		const bool is_target = Target::is_target(pos);
 		if (is_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, c_target_colour);
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), c_target_colour);
 		}
 		else
 		{
-			Draw::draw_tile(code, pos.xy(), view, draw_colour);
+			Draw::draw_tile(code, pos.xy(), view, draw_colour.c_str());
 		}
 	}
 }
