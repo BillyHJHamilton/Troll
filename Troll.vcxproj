@@ -184,7 +184,6 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
-    <ClCompile Include="Source.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
     <ClCompile Include="Stairs.cpp" />
@@ -192,7 +191,6 @@
     <ClCompile Include="Target.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="World.cpp" />
-    <ClCompile Include="WorldLineItr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h" />
@@ -230,7 +228,6 @@
     <ClInclude Include="Types.h" />
     <ClInclude Include="VectorUtil.h" />
     <ClInclude Include="World.h" />
-    <ClInclude Include="WorldLineItr.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt" />

@@ -4,7 +4,6 @@
 #include "Geometry.h"
 #include "Line.h"
 #include "Types.h"
-#include "WorldLineItr.h"
 
 #include <optional>
 #include <string>
