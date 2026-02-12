@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Game.h"
+#include "Gingerbread.h"
 #include "House.h"
 #include "Input.h"
 #include "MapUtil.h"
@@ -124,7 +125,7 @@ void show_game_over()
 {
 	open_menu(Document);
 	s_document_content = "Game Over.\n\nYou were defeated by ";
-	s_document_content += Creature::long_name_from_type(Player::get_defeated_by());
+	s_document_content += Gingerbread::long_name(Player::get_defeated_by());
 	s_document_content += ".";
 
 	s_input_map[TK_ENTER] = &Game::reset;
@@ -141,7 +142,7 @@ void show_house_selection()
 
 	for (int i = 0; i < House::Count; ++i)
 	{
-		s_option_list.push_back({House::name((House::Id)i), i});
+		s_option_list.push_back({House::name((House::Type)i), i});
 	}
 
 	s_input_map[TK_ENTER] = &select_house;
@@ -314,7 +315,7 @@ void draw_list()
 void draw_selected_house(ListOption option)
 {
 	terminal_font("");
-	House::Id h = (House::Id)option.value;
+	House::Type h = (House::Type)option.value;
 
 	if (!House::is_valid(h))
 	{
@@ -368,9 +369,9 @@ void draw_selected_spell(ListOption option)
 
 void select_house()
 {
-	House::Id house = (House::Id)s_option_list[s_selection].value;
+	House::Type house = (House::Type)s_option_list[s_selection].value;
 	assert(House::is_valid(house));
-	Creature::reset_player_stats(house);
+	Gingerbread::reset_player_stats(house);
 	show_starting_spells();
 	//Menu::close();
 }

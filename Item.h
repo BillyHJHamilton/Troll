@@ -59,5 +59,8 @@ namespace Item
 	void init();
 	void clear();
 
-	Item::Handle spawn_item (Instance instance, Vec3 const & pos);
+	Item::Handle spawn_item (Vec3 pos, Instance instance);
+
+	Item::Handle spawn_bbb (Vec3 pos);
+	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
 };

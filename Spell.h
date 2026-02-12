@@ -108,5 +108,7 @@ namespace Spell
 	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
 	Spell::Instance & get_current_instance ();
 
+	void bitset_to_list(Spell::Bitset const& bitset, std::vector<Spell::Index>& out_list);
+
 	void execute_effect(Spell::Index spell_index, Spell::EffectParams params);
 }

@@ -3,6 +3,7 @@
 
 #include "Creature.h"
 #include "Draw.h"
+#include "Gingerbread.h"
 #include "Math.h"
 #include "Spell.h"
 
@@ -98,9 +99,9 @@ int next_xp_threshold ()
 	return 50 * Math::RoundToInt(pow(2, level - 1));
 }
 
-void gain_xp_for (Creature::Type creature)
+void gain_xp_for (Creature::Type creature_type)
 {
-	float const difficulty = Creature::read_stats(creature).difficulty;
+	float const difficulty = Gingerbread::read(creature_type).difficulty;
 	int const gain = Math::RoundToInt(10.0f * pow(2.0f, difficulty));
 	edit_data().xp += gain;
 
@@ -109,8 +110,8 @@ void gain_xp_for (Creature::Type creature)
 		edit_data().xp -= next_xp_threshold();
 		++ edit_data().level;
 
-		Creature::edit_player_stats().max_hp += 2;
-		Creature::edit_player_stats().skill_magic += 5;
+		Gingerbread::edit_player_stats().max_hp += 2;
+		Gingerbread::edit_player_stats().skill_magic += 5;
 		handle().heal_hp(2);
 
 		// Hack!  Automatically learn spells when levelling up...

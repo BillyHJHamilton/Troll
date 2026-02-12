@@ -2,7 +2,7 @@
 
 namespace House
 {
-	enum Id : int
+	enum Type : int
 	{
 		None = -1,
 		Gryffindor = 0,
@@ -12,8 +12,8 @@ namespace House
 		Count = 4
 	};
 
-	inline bool is_valid(Id id) { return id > None && id < Count; }
-	char const * name(Id id);
-	char const * colour(Id id);
-	char const * description(Id id);
+	inline bool is_valid(Type house) { return house > None && house < Count; }
+	char const * name(Type house);
+	char const * colour(Type house);
+	char const * description(Type house);
 }

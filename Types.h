@@ -53,7 +53,12 @@ namespace Draw
 
 namespace House
 {
-	enum Id : int;
+	enum Type : int;
+}
+
+namespace Identity
+{
+	enum Type : int;
 }
 
 namespace Item

@@ -3,9 +3,9 @@
 
 namespace House
 {
-	char const * name(Id id)
+	char const * name(Type house)
 	{
-		switch (id)
+		switch (house)
 		{
 			case Gryffindor: return "Gryffindor";
 			case Hufflepuff: return "Hufflepuff";
@@ -15,9 +15,9 @@ namespace House
 		}
 	}
 
-	char const * colour(Id id)
+	char const * colour(Type house)
 	{
-		switch (id)
+		switch (house)
 		{
 			case Gryffindor: return "light red";
 			case Hufflepuff: return "light yellow";
@@ -27,9 +27,9 @@ namespace House
 		}
 	}
 
-	char const * description(Id id)
+	char const * description(Type house)
 	{
-		switch (id)
+		switch (house)
 		{
 			case Gryffindor: return
 				"Fearless and brave.\n"

@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Gingerbread.h"
 #include "Math.h"
 #include "PerfTimer.h"
 #include "Player.h"
@@ -21,88 +22,6 @@
 
 namespace Creature
 {
-
-//-------------------------------------------------------------------------------------------------
-// Metadata about creature identities.
-
-struct IdentityMetadata
-{
-	// Creature of this identity who currently exists, if any.
-	Creature::Handle current_handle = Creature::None;
-
-	// Strongest variant of this identity spawned so far.
-	// They aren't allowed to repeat or regress within a game.
-	float spawned_difficulty = -1.0f;
-};
-
-IdentityMetadata s_identity_metadata [(int)Identity::Count]; 
-
-//-------------------------------------------------------------------------------------------------
-
-// The gingerbread array stores the invariant stats for each creature type.
-// (It is called gingerbread because they are like cookie cutters.)
-// Note that the first entry in the array is reserved for the player.
-// This is the one entry of the array that WILL change during play (as player levels up).
-
-static Creature::Stats s_gingerbread [Creature::Count];
-static Spell::Bitset s_gingerbread_spells [Creature::Count]; 
-static std::unordered_set<NameHash> s_gingerbread_tags [Creature::Count];
-
-void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string);
-void parse_tag_string (std::unordered_set<NameHash> & tag_set, std::string const & tag_string);
-
-void mix_gingerbread (
-	Creature::Type type, Creature::Identity identity, float difficulty, float probability,
-	char const * short_name, char const * long_name,
-	int codepoint, char const * colour, Gender gender,
-	int magic_skill, int max_hp, std::string spell_string,
-	char const * tag_string)
-{
-	s_gingerbread[type] = { identity, difficulty, probability,
-		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
-	parse_spell_string(s_gingerbread_spells[type], spell_string);
-	parse_tag_string(s_gingerbread_tags[type], tag_string);
-}
-
-void parse_spell_string (Spell::Bitset & spell_bitset, std::string const & spell_string)
-{
-	spell_bitset.reset();
-	std::stringstream ss(spell_string);
-
-	std::string token;
-	while (ss >> token)
-	{
-		Spell::Index spell = Spell::get_index_by_abbrev(token);
-		assert(spell != Spell::None);
-		spell_bitset.set(spell, true);
-	}
-}
-
-void parse_tag_string (std::unordered_set<NameHash> & tag_set, std::string const & tag_string)
-{
-	tag_set.clear();
-
-	if (!tag_string.empty())
-	{
-		std::stringstream ss(tag_string);
-		std::string token;
-
-		while (ss >> token)
-		{
-			tag_set.insert(NameHash(token.c_str()));
-		}
-	}
-}
-
-void init ()
-{
-	init_gingerbread(); // Implemented in Gingerbread.cpp
-}
-
-Stats& edit_player_stats()
-{
-	return s_gingerbread[Creature::Player];
-}
 
 //-------------------------------------------------------------------------------------------------
 
@@ -136,16 +55,10 @@ static Creature::Instance & edit_creature_instance (Creature::Handle creature)
 	return s_creatures[creature];
 }
 
-static Creature::Stats const & read_creature_stats (Creature::Handle creature)
+static Gingerbread::Stats const & read_creature_stats (Creature::Handle creature)
 {
 	assert(creature.valid());
-	return s_gingerbread[creature.type()];
-}
-
-static Creature::Stats & edit_creature_stats (Creature::Handle creature)
-{
-	assert(creature.valid());
-	return s_gingerbread[creature.type()];
+	return Gingerbread::read(creature.type());
 }
 
 static Creature::DerivedStats const & read_derived_stats (Creature::Handle creature)
@@ -160,17 +73,18 @@ static Creature::DerivedStats & edit_derived_stats (Creature::Handle creature)
 	return s_derived_stats[creature];
 }
 
+void init ()
+{
+}
+
 void clear ()
 {
 	// empty creature arrays
-	for (Creature::Instance & c : s_creatures)
+	for (int i = 0; i < c_max_creatures; ++i)
 	{
-		c = Creature::Instance{};
-	}
-
-	for (int i = 0; i < (int)Creature::Identity::Count; ++i)
-	{
-		s_identity_metadata[i] = {};
+		s_creatures[i] = Instance{};
+		s_derived_stats[i] = DerivedStats{};
+		s_spells_known[i] = Spell::Bitset{};
 	}
 
 	s_creature_status = make_grid(c_max_creatures, Status::Count, 0);
@@ -179,6 +93,9 @@ void clear ()
 
 	s_visible_creatures.clear();
 	s_visible_creatures.reserve(c_max_creatures);
+
+	s_fainting_creatures.clear();
+	s_fainting_creatures.reserve(10);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -197,7 +114,7 @@ Creature::Type Handle::type () const
 	return read_creature_instance(index).type;
 }
 
-Creature::Identity Handle::identity () const
+Identity::Type Handle::identity () const
 {
 	return read_creature_stats(index).identity;
 }
@@ -296,7 +213,7 @@ bool Handle::knows_spell (Spell::Index spell) const
 bool Handle::has_tag (NameHash tag) const
 {
 	assert(valid());
-	return s_gingerbread_tags[type()].count(tag) > 0;
+	return Gingerbread::has_tag(type(), tag);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -366,13 +283,7 @@ std::vector<Spell::Index> Handle::spells_known () const
 {
 	Spell::Bitset const & spell_bitset = s_spells_known[index];
 	std::vector<Spell::Index> spell_list;
-	for (int i = 0; i < Spell::Index::Count; i++)
-	{
-		if (spell_bitset.test(i))
-		{
-			spell_list.push_back(static_cast<Spell::Index>(i));
-		}
-	}
+	Spell::bitset_to_list(spell_bitset, spell_list);
 	return spell_list;
 }
 
@@ -492,20 +403,15 @@ void Handle::invalidate ()
 {
 	if (identity() != Identity::Generic)
 	{
-		if (s_identity_metadata[(int)identity()].current_handle == *this)
-		{
-			s_identity_metadata[(int)identity()].current_handle = Creature::None;
-		}
+		Gingerbread::release_identity(*this);
 	}
 
 	s_creatures[index].type = Creature::None;
 }
 
-void Handle::reset_to_gingerbread ()
+void Handle::reset_spells ()
 {
-	s_spells_known[index] = s_gingerbread_spells[type()];
-	cure_all();
-	update_derived_stats();
+	s_spells_known[index] = Gingerbread::read_spells(type());
 }
 
 void Handle::learn_spell (Spell::Index spell)
@@ -566,37 +472,6 @@ bool HandleItr::finished () const
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
 
-Stats const& read_stats(Creature::Type type)
-{
-	if (type >= 0 && type <= Creature::Type::Count)
-	{
-		return s_gingerbread[type];
-	}
-	else
-	{
-		DebugBreak();
-		return s_gingerbread[0];
-	}
-}
-
-const char* short_name_from_type (Creature::Type type)
-{
-	if (type >= 0 && type <= Creature::Type::Count)
-	{
-		return s_gingerbread[type].short_name;
-	}
-	return "no one";
-}
-
-const char* long_name_from_type (Creature::Type type)
-{
-	if (type >= 0 && type <= Creature::Type::Count)
-	{
-		return s_gingerbread[type].long_name;
-	}
-	return "no one";
-}
-
 Creature::Handle creature_at_pos (Vec3 pos)
 {
 	PerfTimer perf("creature_at_pos");
@@ -648,117 +523,23 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	s_creatures[new_index] =
 	{
 		type,
-		s_gingerbread[type].max_hp,
+		Gingerbread::read(type).max_hp,
 		pos
 	};
-	s_spells_known[new_index] = s_gingerbread_spells[type];
-	Handle(new_index).cure_all();
-	Handle(new_index).update_derived_stats();
 
-	Bot::init_brain(new_index);
+	Creature::Handle new_creature(new_index);
 
-	// update identity metadata
-	Identity const identity = s_gingerbread[type].identity;
-	if (identity != Identity::Generic)
-	{
-		IdentityMetadata& metadata = s_identity_metadata[(int)identity];
+	new_creature.reset_spells();
+	new_creature.cure_all();
+	new_creature.update_derived_stats();
 
-		if (metadata.current_handle != Creature::None)
-		{
-			// Force unspawn the old instance, and spawn the new one.
-			std::cout << "Unspawning old instance of " << s_gingerbread[type].short_name
-				<< " to spawn new instance.\n";
-			metadata.current_handle.invalidate();
-		}
+	Bot::init_brain(new_creature);
+	Gingerbread::claim_identity(new_creature);
 
-		if (s_gingerbread[type].difficulty <= metadata.spawned_difficulty)
-		{
-			std::cout << "Warning: Spawning " << s_gingerbread[type].short_name
-				<< " at lower or equal difficulty than last time.\n"
-				<< " - New=" << s_gingerbread[type].difficulty
-				<< ", old=" << metadata.spawned_difficulty << "\n";
-		}
-
-		metadata.current_handle = new_index;
-		metadata.spawned_difficulty = s_gingerbread[type].difficulty;
-	}
+	assert(new_creature.valid());
 
 	// return the index of the new creature
-	return Handle(new_index);
-}
-
-Creature::Type find_type_to_spawn (float target_difficulty)
-{
-	std::vector<Type> options;
-	std::vector<float> weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
-
-	float constexpr c_max_over_level = 2.0f;
-	float constexpr c_max_under_level = 4.0f;
-
-	// Probability is multiplied by this factor for each level over/under target.
-	float constexpr c_over_level_factor = 0.5f;
-	float constexpr c_under_level_factor = 0.75f;
-
-	for (int type = 1; // skip player
-		type < Creature::Type::Count;
-		++type)
-	{
-		Stats const& stats = s_gingerbread[type];
-		Identity const identity = stats.identity;
-
-		// Exclusions
-		if (stats.probability <= 0.0f ||
-			Math::FloatGreater(stats.difficulty, target_difficulty + c_max_over_level) ||
-			Math::FloatLess(stats.difficulty, target_difficulty - c_max_under_level))
-		{
-			continue;
-		}
-
-		// Identity-based considerations
-		if (identity != Identity::Generic)
-		{
-			IdentityMetadata const& metadata = s_identity_metadata[(int)identity];
-
-			if (metadata.current_handle != Creature::None ||
-				Math::FloatLessOrEqual(stats.difficulty, metadata.spawned_difficulty))
-			{
-				continue;
-			}
-		}
-
-		// Weight modifications
-		float probability = stats.probability;
-
-		if (Math::FloatGreater(stats.difficulty, target_difficulty))
-		{
-			float const difference = stats.difficulty - target_difficulty;
-			probability *= pow(c_over_level_factor, difference);
-		}
-		else if (Math::FloatLess(stats.difficulty, target_difficulty))
-		{
-			float const difference = target_difficulty - stats.difficulty;
-			probability *= pow(c_under_level_factor, difference);
-		}
-
-		if (probability > 0.0f)
-		{
-			options.push_back((Creature::Type)type);
-			weights.push_back(probability);
-		}
-	}
-
-	if (Util::Size(options) > 0)
-	{
-		int const choice = Random::weighted_index(weights);
-		assert(Util::IsValidIndex(options, choice));
-		return options.at(choice);
-	}
-	else
-	{
-		return Creature::None;
-	}
+	return new_creature;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -786,9 +567,8 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 	if (view.contains_global_pos(pos))
 	{
 		Creature::Type const type = creature.type();
-		int const code = s_gingerbread[type].codepoint;
-		char const * creature_colour = s_gingerbread[type].colour ?
-			s_gingerbread[type].colour : "white";
+		int const code = Gingerbread::read(type).codepoint;
+		char const * creature_colour = Gingerbread::read(type).colour;
 
 		if (Target::is_target(creature))
 		{

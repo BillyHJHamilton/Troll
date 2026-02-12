@@ -265,6 +265,12 @@
     <ClInclude Include="BertieBotts.h">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Gingerbread.h">
+      <Filter>Header Files\Creature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">

@@ -62,39 +62,6 @@ namespace Creature
 		Count
 	};
 
-	enum class Identity : int
-	{
-		Generic = -1,
-		Player = 0,
-
-		// Alphabetic by first name below this point
-		ColinCreevy,
-		DracoMalfoy,
-		GregoryGoyle,
-		HarryPotter,
-		HermioneGranger,
-		NevilleLongbottom,
-		RonWeasley,
-		SallyAnnePerks,
-		VincentCrabbe,
-
-		Count
-	};
-
-	struct Stats
-	{
-		Identity identity = Identity::Generic;
-		float difficulty = 0.0f;
-		float probability = 1.0f;
-		char const * short_name = nullptr;
-		char const * long_name = nullptr;
-		char const * colour = nullptr;
-		int codepoint = 0; // letter to display
-		int skill_magic = 0;
-		int max_hp = 0;
-		Gender gender = Gender::Male;
-	};
-
 	struct Instance
 	{
 		Type type = Creature::None;
@@ -131,7 +98,7 @@ namespace Creature
 		// Simple accessors
 		bool valid () const;
 		Creature::Type type () const;
-		Creature::Identity identity () const;
+		Identity::Type identity () const;
 		bool is_generic () const;
 		std::string short_name () const;
 		std::string long_name () const;
@@ -170,7 +137,7 @@ namespace Creature
 		void rest_step ();
 		void clear_rest_steps ();
 		void invalidate ();
-		void reset_to_gingerbread ();
+		void reset_spells ();
 		void learn_spell (Spell::Index spell);
 		
 		void update_derived_stats ();
@@ -198,26 +165,10 @@ namespace Creature
 	void init ();
 	void clear ();
 
-	void mix_gingerbread (
-		Creature::Type type, Creature::Identity identity, float difficulty, float probability,
-		char const * short_name, char const * long_name,
-		int codepoint, char const * colour, Gender gender,
-		int magic_skill, int max_hp, std::string spell_string,
-		char const * tag_string = "");
-	void init_gingerbread();
-
-	void reset_player_stats(House::Id house);
-	Stats& edit_player_stats();
-
-	Stats const& read_stats(Creature::Type type);
-	const char* short_name_from_type(Creature::Type type);
-	const char* long_name_from_type(Creature::Type type);
 	Creature::Handle creature_at_pos (Vec3 pos);
 	bool is_anyone_at (Vec3 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);
-
-	Creature::Type find_type_to_spawn (float target_difficulty);
 
 	// Visible creature operations
 	void update_visible_creatures ();

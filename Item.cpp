@@ -1,7 +1,10 @@
 #include "Item.h"
 
 #include "BertieBotts.h"
+#include "Creature.h"
 #include "Debug.h"
+#include "Gingerbread.h"
+#include "Random.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -134,5 +137,25 @@ Item::Handle spawn_item (Instance instance, Vec3 const & pos)
 	return Item::Handle(new_index);
 }
 
+Item::Handle spawn_bbb (Vec3 pos)
+{
+	Item::Instance inst;
+	inst.type = Item::BBEFBean;
+	inst.flavour = BertieBotts::random_flavour();
+	return Item::spawn_item(inst, pos);
+}
+
+Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
+{
+	Item::Instance inst;
+	inst.type = Item::Notes;
+	inst.flavour = (int)owner_type;
+
+	std::vector<Spell::Index> spells;
+	Spell::bitset_to_list(Gingerbread::read_spells(owner_type), spells);
+	inst.subtype = (int)Random::from_vector(spells);
+
+	return Item::spawn_item(inst, pos);
+}
 
 } // namespace Item

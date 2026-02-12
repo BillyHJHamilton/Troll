@@ -4,6 +4,7 @@
 #include "Bot.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Gingerbread.h"
 #include "Item.h"
 #include "Input.h"
 #include "Line.h"
@@ -50,6 +51,7 @@ void init()
 	BertieBotts::init();
 	Creature::init();
 	Draw::init();
+	Gingerbread::init();
 	Item::init();
 	LineCache::init();
 	Random::init();
@@ -64,6 +66,7 @@ void clear()
 
 	Creature::clear();
 	Draw::clear();
+	Gingerbread::clear();
 	Item::clear();
 	Input::clear();
 	Player::clear();
@@ -286,7 +289,7 @@ void check_spawning()
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{
 					// TODO difficulty per map
-					Creature::Type type = Creature::find_type_to_spawn(1);
+					Creature::Type type = Gingerbread::find_type_to_spawn(1);
 					if (type != Creature::None)
 					{
 						Creature::Handle creature = Creature::spawn_creature(type, pos3);
@@ -325,10 +328,7 @@ void check_spawning()
 					!World::read().has_item(pos3) &&
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{
-					Item::Instance inst;
-					inst.type = Item::BBEFBean;
-					inst.flavour = BertieBotts::random_flavour();
-					Item::spawn_item(inst, pos3);
+					Item::spawn_bbb(pos3);
 					++beans_spawned;
 					break;
 				}
