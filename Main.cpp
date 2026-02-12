@@ -6,23 +6,17 @@
 #include "PerfTimer.h"
 
 // To do:
+// - Items
+// - Learning spells
+// - Proper miscasts
 // - Name and difficulty level for each map
 // - Improve spawning code
 //  - Find pos by room, instead of spraying at random?
 //  - Or enumerate all open spaces and choose some?
+// - NPC taunts
 // - Improved enemy AI
 //  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
 //  - EQS / find good attack position
-// - XP and level up
-// - Learning spells
-// - Items
-// - Proper miscasts
-// - NPC taunts
-
-// Bugs:
-// - Targeting can get stuck on the other level
-//  - We should probably cache the view each frame
-//  - and then clear the target if it's no longer in the view
 
 // To consider:
 // - How do we handle initiative to support the "ping pong" shield gameplay

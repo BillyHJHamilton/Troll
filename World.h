@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Geometry.h"
+#include "Item.h"
 #include "Types.h"
 
 #include <memory>
@@ -35,6 +36,12 @@ public:
 	void clear_cloud(Vec3 pos);
 	void step_clouds();
 	void clear_clouds();
+
+	// Items
+	bool has_item(Vec3 pos) const;
+	Item::Handle const peek_item(Vec3 pos) const;
+	void add_item(Vec3 pos, Item::Handle item);
+	Item::Handle pop_item(Vec3 pos);
 
 	// Returns direction of stairs starting at pos, or Stairs::None.
 	Stairs::Direction get_stairs(Vec3 pos) const;

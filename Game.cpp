@@ -3,6 +3,7 @@
 #include "Bot.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Item.h"
 #include "Input.h"
 #include "Line.h"
 #include "Map.h"
@@ -47,6 +48,7 @@ void init()
 
 	Creature::init();
 	Draw::init();
+	Item::init();
 	LineCache::init();
 	Random::init();
 	Spell::init();
@@ -60,6 +62,7 @@ void clear()
 
 	Creature::clear();
 	Draw::clear();
+	Item::clear();
 	Input::clear();
 	Player::clear();
 	Target::clear();

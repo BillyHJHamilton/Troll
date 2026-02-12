@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Item.h"
 #include "Cloud.h"
 #include "Geometry.h"
 #include "Stairs.h"
@@ -41,10 +42,17 @@ public:
 	void set_terrain(Vec2 global_pos, Terrain::Type t);
 	void set_visibility(Vec2 global_pos, Visibility v, int current_step);
 	void set_all_explored();
+
 	bool try_add_cloud(Vec2 global_pos, Cloud::Type cloud, int lifetime);
 	void clear_cloud(Vec2 global_pos);
 	void step_clouds();
 	void clear_clouds();
+
+	bool has_item(Vec2 global_pos) const;
+	Item::Handle const peek_item(Vec2 global_pos) const;
+	//std::vector<Item::Handle> get_items(Vec2 global_pos) const;
+	void add_item(Vec2 global_pos, Item::Handle item);
+	Item::Handle pop_item(Vec2 global_pos);
 
 	bool tile_is_solid(Vec2 global_pos) const;
 	bool tile_permits_sight(Vec2 global_pos) const;
@@ -75,6 +83,7 @@ protected:
 	Grid<Terrain::Type> terrain;
 	Grid<int> visibility;
 	Grid<Cloud::Type> clouds;
+	Grid<Item::Handle> items;
 
 	// Lifetimes of clouds currently active on the map.  Key is global pos.
 	std::unordered_map<Vec2,int> cloud_lifetimes;

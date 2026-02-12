@@ -20,6 +20,7 @@ void Map::init(int z, Box2 box, Terrain::Type fill)
 	terrain = make_grid(box.size.x, box.size.y, fill);
 	visibility = make_grid(box.size.x, box.size.y, c_invalid);
 	clouds = make_grid(box.size.x, box.size.y, Cloud::Type::None);
+	items = make_grid(box.size.x, box.size.y, (Item::Handle)c_invalid);
 }
 
 MapGenerator& Map::get_generator()
@@ -165,6 +166,48 @@ void Map::clear_clouds()
 		clear_cloud(pair.first);
 	}
 	cloud_lifetimes.clear();
+}
+
+bool Map::has_item(Vec2 global_pos) const
+{
+	return peek_item(global_pos) != c_invalid;
+}
+
+Item::Handle const Map::peek_item(Vec2 global_pos) const
+{
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	return items[local.x][local.y];
+}
+
+/*std::vector<Item::Handle> Map::get_items(Vec2 global_pos) const
+{
+	std::vector<Item::Handle> output;
+	Item::Handle item = get_top_item(global_pos);
+	while (item.valid())
+	{
+		output.push_back(item);
+		item = item.next_in_stack();
+	}
+	return output;
+}*/
+
+void Map::add_item(Vec2 global_pos, Item::Handle item)
+{
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	item.stack_onto(items[local.x][local.y]);
+	items[local.x][local.y] = item;
+}
+
+Item::Handle Map::pop_item(Vec2 global_pos)
+{
+	Vec2 const local = global_to_local(global_pos);
+	assert(local_pos_valid(local));
+	Item::Handle top = items[local.x][local.y];
+	items[local.x][local.y] = top.next_in_stack();
+	top.stack_onto(c_invalid);
+	return top;
 }
 
 bool Map::tile_is_solid(Vec2 global_pos) const

@@ -56,6 +56,13 @@ namespace House
 	enum Id : int;
 }
 
+namespace Item
+{
+	enum Type : int;
+	struct Instance;
+	class Handle;
+}
+
 namespace LineCache
 {
 	class Itr;

@@ -157,6 +157,40 @@ void World::clear_clouds()
 	}
 }
 
+bool World::has_item(Vec3 pos) const
+{
+	return peek_item(pos) != c_invalid;
+}
+
+Item::Handle const World::peek_item(Vec3 pos) const
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return read_map(map_id).peek_item(pos.xy());
+	}
+	return c_invalid;
+}
+
+void World::add_item(Vec3 pos, Item::Handle item)
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		edit_map(map_id).add_item(pos.xy(), item);
+	}
+}
+
+Item::Handle World::pop_item(Vec3 pos)
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_invalid)
+	{
+		return edit_map(map_id).pop_item(pos.xy());
+	}
+	return c_invalid;
+}
+
 Stairs::Direction World::get_stairs(Vec3 pos) const
 {
 	PerfTimer perf("get_stairs");
