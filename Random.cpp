@@ -49,6 +49,35 @@ int index (int size)
 	return dist(generator);
 }
 
+int weighted_index(const std::vector<int> &weights)
+{
+	assert(weights.size() > 0);
+	int sum = 0;
+	for (int w : weights)
+	{
+		sum += w;
+	}
+
+	const int roll = Random::in_range(0, sum-1);
+	int x = roll;
+
+	for (int i = 0; i < (int)weights.size(); i++)
+	{
+		assert(weights[i] > 0);
+		x -= weights[i];
+		if (x < 0)
+			return i;
+	}
+	std::cerr << "RandomNumbers - weighted_index (int) failed to resolve." << std::endl;
+	std::cerr << "Contents of weight vector: ";
+	for (int w : weights)
+	{
+		std::cerr << w;
+	}
+	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
+	return 0;
+}
+
 int weighted_index(const std::vector<float> &weights)
 {
 	assert(weights.size() > 0);

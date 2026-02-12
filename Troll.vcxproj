@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="Beam.cpp" />
+    <ClCompile Include="BertieBotts.cpp" />
     <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Creature.cpp" />
@@ -195,6 +196,7 @@
   <ItemGroup>
     <ClInclude Include="Action.h" />
     <ClInclude Include="Beam.h" />
+    <ClInclude Include="BertieBotts.h" />
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Creature.h" />

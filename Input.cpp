@@ -3,6 +3,7 @@
 #include "Input.h"
 
 #include "Action.h"
+#include "BertieBotts.h" // test
 #include "Bot.h"
 #include "Draw.h"
 #include "Game.h"
@@ -154,6 +155,17 @@ void handle_next_input ()
 		{
 			Player::stop_automove();
 			Target::cycle();
+			return;
+		}
+
+		if (key == TK_B)
+		{
+			Player::stop_automove();
+
+			int const flavour = BertieBotts::random_flavour();
+			Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
+				+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
+
 			return;
 		}
 

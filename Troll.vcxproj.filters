@@ -152,6 +152,9 @@
     <ClCompile Include="Target.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="BertieBotts.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -258,6 +261,9 @@
     </ClInclude>
     <ClInclude Include="Action.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BertieBotts.h">
+      <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include "BertieBotts.h"
 #include "Bot.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -46,6 +47,7 @@ void init()
 {
 	PerfTimer perf0("game init");
 
+	BertieBotts::init();
 	Creature::init();
 	Draw::init();
 	Item::init();
