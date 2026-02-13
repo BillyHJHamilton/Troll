@@ -618,6 +618,19 @@ void remove_defeated_creatures ()
 		{
 			++num_removed;
 			Player::gain_xp_for(creature.type());
+
+			std::cout << "Fainting " << creature.short_name() << "\n";
+
+			if (creature.has_tag("Drop.Notes"))
+			{
+				std::cout << "Spawning notes\n";
+				Item::spawn_notes(creature.pos(), creature.type());
+			}
+			else
+			{
+				std::cout << "No notes\n";
+			}
+
 			creature.invalidate();
 		}
 	}

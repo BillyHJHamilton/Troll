@@ -5,6 +5,7 @@
 void player_rest_step();
 bool player_try_move(Vec2 relative_move);
 bool player_try_cast_spell(Spell::Index spell);
+void player_use_item(int inventory_slot);
 
 bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode);
 

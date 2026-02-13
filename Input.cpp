@@ -8,6 +8,7 @@
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
+#include "Inventory.h"
 #include "Map.h"
 #include "Menu.h"
 #include "Player.h"
@@ -173,6 +174,20 @@ void handle_next_input ()
 		{
 			Player::stop_automove();
 			Menu::show_help();
+			return;
+		}
+
+		if (key == TK_I)
+		{
+			Player::stop_automove();
+			if (Inventory::read().num_items() > 0)
+			{
+				Menu::show_inventory();
+			}
+			else
+			{
+				Draw::add_message("Your inventory is empty.");
+			}
 			return;
 		}
 

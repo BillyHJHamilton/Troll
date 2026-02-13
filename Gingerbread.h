@@ -48,8 +48,8 @@ namespace Gingerbread
 	bool is_valid_type(Creature::Type type);
 	Stats const& read(Creature::Type type);
 	Spell::Bitset const& read_spells(Creature::Type type);
-	const char* short_name(Creature::Type type);
-	const char* long_name(Creature::Type type);
+	std::string short_name(Creature::Type type);
+	std::string long_name(Creature::Type type);
 	bool has_tag(Creature::Type type, NameHash tag);
 
 	void reset_player_stats(House::Type house);

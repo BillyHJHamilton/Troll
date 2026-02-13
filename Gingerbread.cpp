@@ -46,7 +46,7 @@ void mix_gingerbread (
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
 	int magic_skill, int max_hp, std::string spell_string,
-	char const * tag_string = "");
+	std::string tag_string = "");
 
 //------------------------------------------------------------------------------
 // Global interface
@@ -61,7 +61,8 @@ void init()
 	mix_gingerbread(Creature::Neville_0, Identity::NevilleLongbottom,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,
 		"Neville", "Neville Longbottom", 'N', House::colour(House::Gryffindor), Gender::Male,
-		/*Magic*/ 0, /*HP*/ 7, "VM FP");
+		/*Magic*/ 0, /*HP*/ 7, "VM FP",
+		"Drop.Notes");
 
 	mix_gingerbread(Creature::ColinCreevy_0, Identity::ColinCreevy,
 		/*Difficulty*/ 0.3f, /*Probability*/ 1.0f,
@@ -71,27 +72,32 @@ void init()
 	mix_gingerbread(Creature::SallyAnne_0, Identity::SallyAnnePerks,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.2f,
 		"Sally-Anne", "Sally-Anne Perks", 'S', House::colour(House::Hufflepuff), Gender::Female,
-		/*Magic*/ 0, /*HP*/ 3, "VM", "Faint.Disappear");
+		/*Magic*/ 0, /*HP*/ 3, "VM",
+		"Faint.Disappear");
 
 	mix_gingerbread(Creature::Harry_1, Identity::HarryPotter,
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f,
 		"Harry", "Harry Potter", 'H', House::colour(House::Gryffindor), Gender::Male,
-		/*Magic*/ 10, /*HP*/ 12, "VM FP TA");
+		/*Magic*/ 10, /*HP*/ 12, "VM FP TA",
+		"Drop.Notes");
 	
 	mix_gingerbread(Creature::Malfoy_1, Identity::DracoMalfoy,
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f,
 		"Malfoy", "Draco Malfoy", 'M', House::colour(House::Slytherin), Gender::Male,
-		/*Magic*/ 15, /*HP*/ 10, "VM FP LM");
+		/*Magic*/ 15, /*HP*/ 10, "VM FP LM",
+		"Drop.Notes");
 
 	mix_gingerbread(Creature::Ron_2, Identity::RonWeasley,
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
 		"Ron", "Ron Weasley", 'R', House::colour(House::Gryffindor), Gender::Male,
-		/*Magic*/ 5, /*HP*/ 16, "FP VM"); // + FM
+		/*Magic*/ 5, /*HP*/ 16, "FP VM FM",
+		"Drop.Notes");
 
 	mix_gingerbread(Creature::Hermione_2, Identity::HermioneGranger,
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
 		"Hermione", "Hermione Granger", 'H', House::colour(House::Gryffindor), Gender::Female,
-		/*Magic*/ 35, /*HP*/ 12, "VM MW LC"); // + FI
+		/*Magic*/ 35, /*HP*/ 12, "VM MW LC", // + FI
+		"Drop.Notes");
 
 	mix_gingerbread(Creature::Crabbe_3, Identity::VincentCrabbe,
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
@@ -107,7 +113,7 @@ void init()
 	mix_gingerbread(Creature::Hufflepuff_1, Identity::Generic,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Hufflepuff", "First-Year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
-		/*Magic*/ 6, /*HP*/ 4, "TA VM");//LM VM FP 
+		/*Magic*/ 6, /*HP*/ 4, "TA VM LM");
 }
 
 void clear()
@@ -145,7 +151,7 @@ Spell::Bitset const& read_spells(Creature::Type type)
 	return s_gingerbread_spells[0];
 }
 
-const char* short_name (Creature::Type type)
+std::string short_name (Creature::Type type)
 {
 	if (is_valid_type(type))
 	{
@@ -154,7 +160,7 @@ const char* short_name (Creature::Type type)
 	return "no one";
 }
 
-const char* long_name (Creature::Type type)
+std::string long_name (Creature::Type type)
 {
 	if (is_valid_type(type))
 	{
@@ -318,12 +324,17 @@ void mix_gingerbread (
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
 	int magic_skill, int max_hp, std::string spell_string,
-	char const * tag_string)
+	std::string tag_string)
 {
 	s_gingerbread[type] = { identity, difficulty, probability,
 		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
 	parse_tag_string(s_gingerbread_tags[type], tag_string);
+
+	//if (s_gingerbread_tags[type].size() > 0)
+	//{
+	//	std::cout << short_name << " has " << s_gingerbread_tags[type].size() << " tags.\n";
+	//}
 }
 
 void parse_spell_string (Spell::Bitset & out_spell_bitset, std::string const & spell_string)
@@ -351,6 +362,7 @@ void parse_tag_string (std::unordered_set<NameHash> & out_tag_set, std::string c
 
 		while (ss >> token)
 		{
+			//std::cout << "Adding tag: " << token << "\n";
 			out_tag_set.insert(NameHash(token.c_str()));
 		}
 	}

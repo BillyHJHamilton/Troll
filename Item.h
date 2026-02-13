@@ -5,11 +5,25 @@
 
 namespace Item
 {
+	enum class UseResult : byte
+	{
+		Consumed,
+		NotConsumed
+	};
+
 	enum Type : int
 	{
 		None = c_invalid,
+
+		// School notes from a character.  Can be used to learn a spell.
+		// subtype: Character Type
+		// flavour: Spell contained in the notes
 		Notes,
-		BBEFBean,
+
+		// Bertie Bott's Every Flavour Bean.
+		// flavour: As defined in BertieBotts.cpp
+		BBBean,
+
 		Count
 	};
 
@@ -21,7 +35,6 @@ namespace Item
 		// The names are suggestive but the real meaning depends on the item type.
 		int subtype = c_invalid;
 		int flavour = c_invalid;
-		int ammo = c_invalid;
 
 		// Used only when item is stacked on the ground.
 		// Index of the item lying under this one.
@@ -43,16 +56,31 @@ namespace Item
 		// Simple accessors
 		bool valid () const;
 		Item::Type type () const;
+		bool has_subtype () const { return subtype() != c_invalid; }
+		bool has_flavour () const { return flavour() != c_invalid; }
+		int subtype () const;
+		int flavour () const;
 		Item::Handle next_in_stack () const;
 
+		// Complex accessors
 		int codepoint () const;
 		std::string name () const;
 		std::string colour () const;
+		std::string description () const;
+		std::string interaction_name () const;
+		bool can_use () const;
+		bool can_discard () const;
 
 		// Mutators
+		UseResult use ();
 
 		// Should only be called by Map::add_item
 		void stack_onto (Item::Handle other);
+
+	protected:
+		// Polymorphic stuff
+		UseResult use_bbbean();
+		UseResult use_notes();
 	};
 
 	// Global interface

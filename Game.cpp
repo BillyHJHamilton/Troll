@@ -7,6 +7,7 @@
 #include "Gingerbread.h"
 #include "Item.h"
 #include "Input.h"
+#include "Inventory.h"
 #include "Line.h"
 #include "Map.h"
 #include "MapGenerator.h"
@@ -67,8 +68,9 @@ void clear()
 	Creature::clear();
 	Draw::clear();
 	Gingerbread::clear();
-	Item::clear();
 	Input::clear();
+	Inventory::clear();
+	Item::clear();
 	Player::clear();
 	Target::clear();
 	World::clear();

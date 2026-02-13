@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 
+#include "Action.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -12,6 +13,7 @@
 #include "Gingerbread.h"
 #include "House.h"
 #include "Input.h"
+#include "Inventory.h"
 #include "MapUtil.h"
 #include "Player.h"
 #include "Spell.h"
@@ -39,7 +41,7 @@ struct ListOption
 	std::string text;
 	int value = 0;
 };
-std::vector<ListOption> s_option_list;
+std::vector<ListOption> s_options;
 int s_selection = 0;
 
 using ListDetailsFunc = std::function<void(ListOption)>;
@@ -84,6 +86,11 @@ const char* const c_doc_help =
 	"  To cycle between targets, press Tab.\n"
 	"  To target a square manually, hold shift and use the move controls.\n"
 	"\n"
+	"Items:\n"
+	"  To collect items, simply walk onto them.\n"
+	"  To view your inventory, press 'i'.\n"
+	"  To use an item, select it in the inventory and press Enter.\n"
+	"\n"
 	"To show these instructions again, press 'h'.\n";
 
 //-------------------------------------------------------------------------------------------------
@@ -100,9 +107,12 @@ void draw_list();
 
 void draw_selected_house(ListOption option);
 void draw_selected_spell(ListOption option);
+void draw_selected_item(ListOption option);
 
 void select_house();
 void select_starting_spell();
+void try_use_item();
+void try_discard_item();
 
 //-------------------------------------------------------------------------------------------------
 // Public function implementations
@@ -119,6 +129,9 @@ void show_help()
 {
 	open_menu(Document);
 	s_document_content = c_doc_help;
+
+	s_input_map[TK_ENTER] = &Menu::close;
+	s_input_map[TK_ESCAPE] = &Menu::close;
 }
 
 void show_game_over()
@@ -142,7 +155,7 @@ void show_house_selection()
 
 	for (int i = 0; i < House::Count; ++i)
 	{
-		s_option_list.push_back({House::name((House::Type)i), i});
+		s_options.push_back({House::name((House::Type)i), i});
 	}
 
 	s_input_map[TK_ENTER] = &select_house;
@@ -151,12 +164,11 @@ void show_house_selection()
 void show_starting_spells()
 {
 	open_menu(List);
-	reset_list();
 
 	s_document_content = "Choose three spells to start with:";
 	s_list_details_func = draw_selected_spell;
 
-	s_option_list.reserve(6);
+	s_options.reserve(6);
 
 	int constexpr c_max_difficulty = 25;
 
@@ -169,7 +181,7 @@ void show_starting_spells()
 			ListOption option;
 			option.text = Spell::get_abbrev(spell_index) + " " + Spell::get_name(spell_index);
 			option.value = (int)spell_index;
-			s_option_list.push_back(option);
+			s_options.push_back(option);
 		}
 	}
 
@@ -179,22 +191,42 @@ void show_starting_spells()
 void show_spells_known()
 {
 	open_menu(List);
-	reset_list();
 
 	s_document_content = "Known spells:";
 	s_list_details_func = draw_selected_spell;
 
 	std::vector<Spell::Index> spells_known = Player::handle().spells_known();
-	s_option_list.reserve(spells_known.size());
+	s_options.reserve(spells_known.size());
 	for (Spell::Index spell_index : spells_known)
 	{
 		ListOption option;
 		option.text = Spell::get_abbrev(spell_index) + " " + Spell::get_name(spell_index);
 		option.value = (int)spell_index;
-		s_option_list.push_back(option);
+		s_options.push_back(option);
 	}
 
 	s_input_map[TK_ENTER] = &Menu::close;
+	s_input_map[TK_ESCAPE] = &Menu::close;
+}
+
+void show_inventory()
+{	
+	open_menu(List);
+
+	s_document_content = "Inventory:";
+	s_list_details_func = draw_selected_item;
+
+	for (int slot = 0; slot < Inventory::read().num_items(); ++slot)
+	{
+		Item::Handle const item = Inventory::read().peek_item(slot);
+		ListOption option;
+		option.text = item.name();
+		option.value = slot;
+		s_options.push_back(option);
+	}
+
+	s_input_map[TK_ENTER] = &try_use_item;
+	s_input_map[TK_DELETE] = &try_discard_item;
 	s_input_map[TK_ESCAPE] = &Menu::close;
 }
 
@@ -248,7 +280,7 @@ void handle_input(int key)
 void reset_list()
 {
 	s_document_content.clear();
-	s_option_list.clear();
+	s_options.clear();
 	s_selection = 0;
 	s_list_details_func = nullptr;
 
@@ -279,7 +311,7 @@ void cursor_up()
 
 void cursor_down()
 {
-	if (s_selection < s_option_list.size() - 1)
+	if (s_selection < Util::LastIndex(s_options))
 	{
 		++s_selection;
 	}
@@ -297,18 +329,18 @@ void draw_list()
 	dimensions_t dim = terminal_print(0, 0, s_document_content.c_str());
 	int list_start = dim.height + 1;
 
-	for (int i = 0; i < s_option_list.size(); ++i)
+	for (int i = 0; i < s_options.size(); ++i)
 	{
-		terminal_print(2, list_start + i, s_option_list[i].text.c_str());
+		terminal_print(2, list_start + i, s_options[i].text.c_str());
 	}
 
 	// Show a cursor
 	terminal_put(0, list_start + s_selection, '>');
 
 	if (s_list_details_func &&
-		Check(Util::IsValidIndex(s_option_list, s_selection)))
+		Check(Util::IsValidIndex(s_options, s_selection)))
 	{
-		s_list_details_func(s_option_list[s_selection]);
+		s_list_details_func(s_options[s_selection]);
 	}
 }
 
@@ -331,7 +363,7 @@ void draw_selected_spell(ListOption option)
 {
 	terminal_font("");
 
-	Spell::Index s = (Spell::Index)s_option_list[s_selection].value;
+	Spell::Index s = (Spell::Index)option.value;
 	if (!Spell::is_valid_index(s))
 	{
 		return;
@@ -367,9 +399,43 @@ void draw_selected_spell(ListOption option)
 	terminal_print_ext(40, 2 + dim.height, 60, 20, 1, Spell::get_description(s));
 }
 
+void draw_selected_item(ListOption option)
+{
+	terminal_font("");
+
+	int const slot = option.value;
+	Item::Handle const item = Inventory::read().peek_item(slot);
+
+	if (!item.valid())
+	{
+		return;
+	}
+
+	std::string const name = item.name();
+	std::string const description = item.description();
+	std::string interaction = item.interaction_name();
+
+	std::stringstream ss;
+	ss << item.name() << "\n\n";
+	if (!description.empty())
+	{
+		ss << description << "\n\n";
+	}
+	if (item.can_use())
+	{
+		ss << "[[Enter]]  " << (interaction.empty() ? "Use" : interaction) << "\n";
+	}
+	if (item.can_discard())
+	{
+		ss << "[[Delete]] Discard";
+	}
+
+	dimensions_t dim = terminal_print(40, 2, ss.str().c_str());
+}
+
 void select_house()
 {
-	House::Type house = (House::Type)s_option_list[s_selection].value;
+	House::Type house = (House::Type)s_options[s_selection].value;
 	assert(House::is_valid(house));
 	Gingerbread::reset_player_stats(house);
 	show_starting_spells();
@@ -378,7 +444,7 @@ void select_house()
 
 void select_starting_spell()
 {
-	Spell::Index spell = (Spell::Index)s_option_list[s_selection].value;
+	Spell::Index spell = (Spell::Index)s_options[s_selection].value;
 	Player::handle().learn_spell(spell);
 
 	if (Player::handle().spells_known().size() >= 3)
@@ -387,10 +453,45 @@ void select_starting_spell()
 	}
 	else
 	{
-		Util::RemoveAt(s_option_list, s_selection);
-		if (s_selection >= s_option_list.size())
+		Util::RemoveAt(s_options, s_selection);
+		if (s_selection >= s_options.size())
 		{
 			--s_selection;
+		}
+	}
+}
+
+void try_use_item()
+{
+	int const slot = s_options.at(s_selection).value;
+
+	Item::Handle const item = Inventory::read().peek_item(slot);
+	if (item.can_use())
+	{
+		Menu::close();
+		player_use_item(slot);
+	}
+}
+
+void try_discard_item()
+{
+	int const slot = s_options.at(s_selection).value;
+
+	Item::Handle const item = Inventory::read().peek_item(slot);
+	if (item.can_discard())
+	{
+		Inventory::edit().remove_item(slot);
+
+		if (Inventory::read().num_items() == 0)
+		{
+			Menu::close();
+		}
+		else
+		{
+			// Rebuild the menu since the indices will change.
+			int const old_selection = s_selection;
+			show_inventory();
+			s_selection = std::min(old_selection, Util::LastIndex(s_options));
 		}
 	}
 }

@@ -3,7 +3,9 @@
 #include "BertieBotts.h"
 #include "Creature.h"
 #include "Debug.h"
+#include "Draw.h"
 #include "Gingerbread.h"
+#include "Player.h"
 #include "Random.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -46,7 +48,7 @@ int find_free_index()
 }
 
 //-------------------------------------------------------------------------------------------------
-// Item Handles
+// Item Handle Interface
 
 bool Handle::valid() const
 {
@@ -60,6 +62,16 @@ Item::Type Handle::type () const
 	return read_inst(index).type;
 }
 
+int Handle::subtype () const
+{
+	return read_inst(index).subtype;
+}
+
+int Handle::flavour () const
+{
+	return read_inst(index).flavour;
+}
+
 Item::Handle Handle::next_in_stack () const
 {
 	return read_inst(index).next;
@@ -69,7 +81,7 @@ int Handle::codepoint () const
 {
 	switch (type())
 	{
-		case BBEFBean:		return ',';
+		case BBBean:		return ',';
 		default:			return '?';
 	}
 }
@@ -78,11 +90,22 @@ std::string Handle::name () const
 {
 	switch (type())
 	{
-		case Notes:			return "Notes";
-		case BBEFBean:		return "Bertie Bott's Every Flavour Bean";
+		case Notes:
+		{
+			Creature::Type const owner = (Creature::Type)(read_inst(index).subtype);
+			return Gingerbread::short_name(owner) + "'s notes";
+		}
+
+		case BBBean:
+		{
+			return "Bertie Bott's Every Flavour Bean";
+		}
+
 		default:
+		{
 			DebugBreak();
 			return "";
+		}
 	}
 }
 
@@ -90,7 +113,7 @@ std::string Handle::colour () const
 {
 	switch (type())
 	{
-		case BBEFBean:
+		case BBBean:
 		{
 			int const flavour = read_inst(index).flavour;
 			return BertieBotts::get_colour(flavour);
@@ -103,9 +126,107 @@ std::string Handle::colour () const
 	}
 }
 
+std::string Handle::description () const
+{
+	switch (type())
+	{
+		case Notes:
+		{
+			Creature::Type const owner = (Creature::Type)(read_inst(index).subtype);
+			return "Some parchment covered in " + Gingerbread::short_name(owner) + "'s handwriting.";
+		}
+			
+		default:
+		{
+			return "";
+		}
+	}
+}
+
+std::string Handle::interaction_name () const
+{
+	switch (type())
+	{
+		case Notes:
+		{
+			return "Read";
+		}
+			
+		default:
+		{
+			return "";
+		}
+	}
+}
+
+bool Handle::can_use () const
+{
+	// For now
+	return true;
+}
+
+bool Handle::can_discard () const
+{
+	// For now
+	return true;
+}
+
+UseResult Handle::use ()
+{
+	switch (type())
+	{
+		case Notes:		return use_notes();
+		case BBBean:	return use_bbbean();
+
+		default:
+			DebugBreak();
+			return UseResult::NotConsumed;
+	}
+}
+
 void Handle::stack_onto (Item::Handle other)
 {
 	edit_inst(index).next = other;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Item Handle Helpers
+
+UseResult Handle::use_notes()
+{
+	Draw::add_message("You peruse " + name() + ".");
+	if (has_flavour())
+	{
+		Spell::Index spell = (Spell::Index)flavour();
+		if (!Spell::is_valid_index(spell))
+		{
+			DebugBreak();
+			return UseResult::Consumed;
+		}
+
+		Draw::add_message(" It's all about the " + Spell::get_name(spell) + " spell.");
+
+		if (Player::handle().knows_spell(spell))
+		{
+			Draw::add_message(" But you already know that one.");
+		}
+		else
+		{
+			// TODO: This probably be a longer action, not safe to use in combat.
+
+			Draw::add_message(" Learned to cast " + Spell::get_name(spell) + "!");
+			Player::handle().learn_spell(spell);
+		}
+		return UseResult::Consumed;
+	}
+
+	return UseResult::Consumed;
+}
+
+UseResult Handle::use_bbbean()
+{
+	// Todo
+	return UseResult::Consumed;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -140,7 +261,7 @@ Item::Handle spawn_item (Instance instance, Vec3 const & pos)
 Item::Handle spawn_bbb (Vec3 pos)
 {
 	Item::Instance inst;
-	inst.type = Item::BBEFBean;
+	inst.type = Item::BBBean;
 	inst.flavour = BertieBotts::random_flavour();
 	return Item::spawn_item(inst, pos);
 }
@@ -149,11 +270,12 @@ Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
 {
 	Item::Instance inst;
 	inst.type = Item::Notes;
-	inst.flavour = (int)owner_type;
+
+	inst.subtype = (int)owner_type;
 
 	std::vector<Spell::Index> spells;
 	Spell::bitset_to_list(Gingerbread::read_spells(owner_type), spells);
-	inst.subtype = (int)Random::from_vector(spells);
+	inst.flavour = (int)Random::from_vector(spells);
 
 	return Item::spawn_item(inst, pos);
 }

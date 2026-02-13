@@ -12,6 +12,7 @@ namespace Spell
 	{
 		None = -1,
 		Vermillious = 0,
+		//Megadrill, // Test spell
 		Flipendo,
 		Tarantallegra,
 		LocomotorMortis,

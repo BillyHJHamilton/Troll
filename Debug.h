@@ -8,9 +8,9 @@
 static constexpr bool c_ShowActionDebug		= false;
 static constexpr bool c_ShowBotDebug		= false;
 static constexpr bool c_ShowLineDebug		= false;
-static constexpr bool c_ShowMapDebug		= true;
+static constexpr bool c_ShowMapDebug		= false;
 static constexpr bool c_ShowPathfindDebug	= false;
-static constexpr bool c_ShowSpellDebug		= false;
+static constexpr bool c_ShowSpellDebug		= true;
 #else
 static constexpr bool c_ShowActionDebug		= false;
 static constexpr bool c_ShowBotDebug		= false;

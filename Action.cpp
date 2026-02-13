@@ -6,6 +6,7 @@
 #include "Draw.h"
 #include "Grammar.h"
 #include "Item.h"
+#include "Inventory.h"
 #include "Map.h"
 #include "Player.h"
 #include "Random.h"
@@ -38,11 +39,12 @@ bool player_try_move(Vec2 relative_move)
 	bool const moved = try_move(Player::handle(), relative_move, MoveMode::Walk);
 	if (moved)
 	{
-		// Try pick up items.
+		// Pick up items.
 		Item::Handle item = World::edit().pop_item(Player::pos());
 		while (item != c_invalid)
 		{
-			Draw::add_message("Got " + item.name() + "!");
+			Inventory::edit().add_item(item);
+			Draw::add_message("Got " + item.name() + ".");
 			item = World::edit().pop_item(Player::pos());
 		}
 
@@ -107,6 +109,12 @@ bool player_try_cast_spell (Spell::Index spell)
 		Player::set_acted(true);
 		return true;
 	}
+}
+
+void player_use_item(int inventory_slot)
+{
+	Inventory::edit().use_item(inventory_slot);
+	Player::set_acted(true);
 }
 
 bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode)

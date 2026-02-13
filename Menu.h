@@ -21,6 +21,7 @@ namespace Menu
 	void show_house_selection();
 	void show_starting_spells();
 	void show_spells_known();
+	void show_inventory();
 
 	// Return to normal gameplay
 	void close();

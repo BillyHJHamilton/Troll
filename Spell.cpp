@@ -16,6 +16,7 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour				Dif Drk Dmg			Acc Rng	Effect function			Target type				Miscast type
 	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,			85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
+	//Spell::Data {"Megadrill",			"MG",	"light amber",		5,	0,	20,			99, 8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,			90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,			85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
@@ -32,6 +33,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
 {
 	/* VERMILLIOUS */ "Shoots a shower of hot sparks, dealing minor damage.",
+	/* MEGADRILL */ // "For Emergency Use Only.  Terms And Conditions Apply.  Use At Your Own Risk.",
 	/* FLIPENDO */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals extra damage if the target hits something.",
 	/* TARANTALLEGRA */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
