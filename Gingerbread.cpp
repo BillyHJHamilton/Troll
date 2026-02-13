@@ -102,18 +102,30 @@ void init()
 	mix_gingerbread(Creature::Crabbe_3, Identity::VincentCrabbe,
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
 		"Crabbe", "Vincent Crabbe", 'C', House::colour(House::Slytherin), Gender::Male,
-		/*Magic*/ 20, /*HP*/ 20, "FN RS");
+		/*Magic*/ 15, /*HP*/ 20, "FN RS");
 
 	mix_gingerbread(Creature::Goyle_3, Identity::GregoryGoyle,
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
 		"Goyle", "Gregory Goyle", 'G', House::colour(House::Slytherin), Gender::Male,
-		/*Magic*/ 20, /*HP*/ 20, "VM FP TA");
+		/*Magic*/ 15, /*HP*/ 20, "VM FP TA");
 
-	// Generic student for testing purposes
+	// Generic students:
+
 	mix_gingerbread(Creature::Hufflepuff_1, Identity::Generic,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Hufflepuff", "First-Year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
 		/*Magic*/ 6, /*HP*/ 4, "TA VM LM");
+
+	mix_gingerbread(Creature::Ravenclaw_1, Identity::Generic,
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
+		"Ravenclaw", "First-Year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female,
+		/*Magic*/ 8, /*HP*/ 3, "MW VM RS");
+
+	mix_gingerbread(Creature::Slytherin_1, Identity::Generic,
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
+		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female,
+		/*Magic*/ 6, /*HP*/ 4, "FN FM LM");
+
 }
 
 void clear()
