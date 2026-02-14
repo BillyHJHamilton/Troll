@@ -114,14 +114,14 @@ Creature::Type Handle::type () const
 	return read_creature_instance(index).type;
 }
 
-Identity::Type Handle::identity () const
+NameHash Handle::identity () const
 {
 	return read_creature_stats(index).identity;
 }
 
 bool Handle::is_generic () const
 {
-	return identity() == Identity::Generic;
+	return identity() == c_IdentityGeneric;
 }
 
 std::string Handle::short_name () const
@@ -401,7 +401,7 @@ void Handle::clear_rest_steps ()
 
 void Handle::invalidate ()
 {
-	if (identity() != Identity::Generic)
+	if (identity() != c_IdentityGeneric)
 	{
 		Gingerbread::release_identity(*this);
 	}

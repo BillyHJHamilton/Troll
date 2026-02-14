@@ -101,7 +101,7 @@ namespace Creature
 		// Simple accessors
 		bool valid () const;
 		Creature::Type type () const;
-		Identity::Type identity () const;
+		NameHash identity () const;
 		bool is_generic () const;
 		std::string short_name () const;
 		std::string long_name () const;

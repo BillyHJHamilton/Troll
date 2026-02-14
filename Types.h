@@ -56,11 +56,6 @@ namespace House
 	enum Type : int;
 }
 
-namespace Identity
-{
-	enum Type : int;
-}
-
 namespace Item
 {
 	enum Type : int;

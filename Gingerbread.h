@@ -4,33 +4,13 @@
 #include "Types.h"
 #include "Spell.h" // for bitset
 
-namespace Identity
-{
-	enum Type : int
-	{
-		Generic = -1,
-		Player = 0,
-
-		// Alphabetic by first name below this point
-		ColinCreevy,
-		DracoMalfoy,
-		GregoryGoyle,
-		HarryPotter,
-		HermioneGranger,
-		NevilleLongbottom,
-		RonWeasley,
-		SallyAnnePerks,
-		VincentCrabbe,
-
-		Count
-	};
-}
+NameHash constexpr c_IdentityGeneric {"Generic"};
 
 namespace Gingerbread
 {
 	struct Stats
 	{
-		Identity::Type identity = (Identity::Type)c_invalid;
+		NameHash identity = c_IdentityGeneric;
 		float difficulty = 0.0f;
 		float probability = 1.0f;
 		char const * short_name = nullptr;
