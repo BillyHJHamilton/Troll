@@ -171,12 +171,11 @@ void MapGenerator::PlaceSeedRooms()
 
 	if (c_ShowMapDebug)
 	{
-		std::cout << "Seed rooms: " << seedStairs << " stairs ("
-			<< failedStairs << " failed), "
-			<< seedChambers << " chambers, and "
-			<< seedCorridors << " corridors.\n"
-			<< "Landings: added " << landingChambers << " chambers, "
-			<< landingCorridors << " corridors.\n";
+		std::cout << std::format(
+			"Seed Rooms: {} stairs ({} failed), {} chambers, and {} corridors.\n"
+			"Landings: added {} chambers, {} corridors.\n",
+			seedStairs, failedStairs, seedChambers, seedCorridors,
+			landingChambers, landingCorridors);
 	}
 }
 
@@ -204,8 +203,8 @@ void MapGenerator::PlaceRooms()
 
 	if (c_ShowMapDebug)
 	{
-		std::cout << "Placed " << numPlaced << " rooms; attempted "
-			<< attempts << "; intended " << numRooms << "." << std::endl;
+		std::cout << std::format("Placed {} rooms; attempted {}; intended {}.",
+			numPlaced, attempts, numRooms);
 	}
 }
 
@@ -282,8 +281,8 @@ void MapGenerator::AddJoiningCorridors()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << "Pass " << passes << " - Added " << numAddedThisPass
-				<< " joining corridors." << std::endl;
+			std::cout << std::format("Pass {} - Added {} joining corridors.\n",
+				passes, numAddedThisPass);
 		}
 
 		++ passes;
@@ -312,8 +311,8 @@ void MapGenerator::RemoveDisconnectedRooms()
 
 	if (c_ShowMapDebug)
 	{
-		std::cout << "Deleted " << deletedRooms << " disconnected rooms."
-			<< std::endl;
+		std::cout << std::format("Deleted disconnected rooms.\n",
+			deletedRooms);
 	}
 }
 
@@ -344,9 +343,8 @@ void MapGenerator::AddExtraStairs(bool goingUp, int stairsToAdd)
 
 	if (c_ShowMapDebug)
 	{
-		std::cout << "Placed " << numAdded << "/" << stairsToAdd
-			<< (goingUp ? " up" : " down") << " stairs in "
-			<< attempts << " attempts." << std::endl;
+		std::cout << std::format("Placed {}/{} {} stairs in {} attempts.\n",
+			numAdded, stairsToAdd, (goingUp ? " up" : " down"), attempts);
 	}
 }
 

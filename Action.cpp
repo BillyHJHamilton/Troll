@@ -16,6 +16,7 @@
 #include "World.h"
 
 #include <cassert>
+#include <format>
 
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
@@ -145,8 +146,8 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 			int const roll = Random::in_range(0, 99);
 			if (c_ShowActionDebug && failure > 0)
 			{
-				std::cout << "Walk failure (" << creature.short_name() << "): " << failure
-					<< "; roll: " << roll << std::endl;
+				std::cout << std::format("Walk failure ({0}): {1}; roll: {2}\n",
+					creature.short_name(), failure, roll);
 			}
 
 			if (roll < failure)
@@ -217,8 +218,8 @@ bool check_distraction (Creature::Handle caster)
 	int distractedness_roll = Random::in_range(0,99);
 	if (c_ShowSpellDebug)
 	{
-		std::cout << " Distraction Rate: " << distraction_rate
-			 << "%    Roll: " << distractedness_roll << "\n";
+		std::cout << std::format(" Distraction Rate: {}%; Roll: {}\n",
+			distraction_rate, distractedness_roll);
 	}
 
 	return (distractedness_roll < distraction_rate);
@@ -233,8 +234,8 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 
 	if (c_ShowSpellDebug)
 	{
-		std::cout << " Miscast Rate: " << miscast_rate
-			 << "%    Roll: " << miscast_roll << "\n";
+		std::cout << std::format(" Miscast Rate: {}%; Roll: {}\n",
+			miscast_rate, miscast_roll);
 	}
 
 	if (miscast_roll < miscast_rate)

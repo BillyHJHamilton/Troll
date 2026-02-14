@@ -80,8 +80,9 @@ void init()
 	
 	if (c_ShowLineDebug)
 	{
-		std::cout << "Cached " << s_line_cache.size()
-			<< " lines with a grid area of " << c_line_grid_area << ".\n\n";
+		std::cout << std::format("Cached {} lines with a grid area of {}.\n\n",
+			s_line_cache.size(), c_line_grid_area);
+
 		for (int i = 0; i < s_line_lookup.size(); ++i)
 		{
 			const int n = (int)s_line_lookup[i].size();
@@ -106,7 +107,9 @@ void init()
 				}
 			}
 		}
-		std::cout << "\nFound " << duplicate_pairs << " pairs of duplicate lines.\n";
+
+		std::cout << std::format("\nFound {} pairs of duplicate lines.\n",
+			duplicate_pairs);
 	}
 }
 

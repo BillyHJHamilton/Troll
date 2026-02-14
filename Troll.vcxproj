@@ -240,9 +240,6 @@
     <Text Include="Docs\Fanfic notes.txt" />
     <Text Include="Docs\FontGlyphs.txt" />
     <Text Include="Docs\Game Design Goals.txt" />
-    <Text Include="Scraps\LineCache.txt" />
-    <Text Include="Scraps\Scaps.txt" />
-    <Text Include="TestLOS.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

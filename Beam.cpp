@@ -11,6 +11,7 @@
 #include "World.h"
 
 #include <cassert>
+#include <format>
 
 namespace Beam
 {
@@ -220,8 +221,8 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 
 		if (c_ShowSpellDebug)
 		{
-			std::cout << " Final Accuracy: " << hit_chance
-				<< "; roll: " << accuracy_roll << std::endl;
+			std::cout << std::format(" Final Accuracy: {}; roll: {}\n",
+				hit_chance, accuracy_roll);
 		}
 
 		if (accuracy_roll < hit_chance)
@@ -312,14 +313,13 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 
 	if (c_ShowSpellDebug)
 	{
-		std::cout << " Base Accuracy: " << base_accuracy
-			<< ", Ranged Accuracy: " << range_accuracy
-			<< ", Caster Factor: " << caster_accuracy_factor;
+		std::cout << std::format(" Base Accuracy {}, Ranged Accuracy {}, Caster Factor {}",
+			base_accuracy, range_accuracy, caster_accuracy_factor);
 		if (beam.cloud_accuracy_loss > 0)
 		{
-			std::cout << " (with -" << beam.cloud_accuracy_loss << " from clouds)";
+			std::cout << std::format(" (with -{} from clouds)", beam.cloud_accuracy_loss);
 		}
-		std::cout << ", Target Divisor: " << target_evasion_divisor << "\n";
+		std::cout << std::format(", Target Divisor {}\n", target_evasion_divisor);
 	}
 
 	int const hit_chance = (range_accuracy * caster_accuracy_factor) / target_evasion_divisor;

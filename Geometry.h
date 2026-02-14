@@ -178,6 +178,22 @@ namespace std
 	};
 }
 
+// Support for std::format
+// This didn't work - maybe a bug, or need to update visual studio.  Oh well.
+/*template<>
+struct std::formatter<Vec2>
+{
+	constexpr auto parse(format_parse_context& ctx)
+	{
+		return ctx.begin(); //end(ctx);
+	}
+	auto format(const Vec2& v, format_context& ctx) const
+	{
+		return std::format_to(ctx.out(),
+			"({}, {})", v.x, v.y);
+	}
+};*/
+
 //------------------------------------------------------------------------------
 // Integer Vec3 class
 

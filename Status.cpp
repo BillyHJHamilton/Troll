@@ -11,6 +11,7 @@
 #include "Terrain.h"
 #include "World.h"
 
+#include <format>
 #include <vector>
 
 namespace Status
@@ -128,8 +129,8 @@ void endround_dancing(Creature::Handle creature)
 
 	if (c_ShowActionDebug)
 	{
-		std:: cout << creature.short_name() << " dances on 3+.  Roll (0-"
-			<< roll_max << ") = " << roll << "\n";
+		std::cout << std::format("{} dances on 3+.  Roll (0-{}) = {}\n",
+			creature.short_name(), roll_max, roll);
 	}
 
 	if (roll >= 3)

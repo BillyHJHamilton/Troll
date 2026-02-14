@@ -271,7 +271,7 @@ void check_spawning()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << "\nSpawning for map " << map_id << ".\n";
+			std::cout << std::format("\nSpawning for map {}.\n", map_id);
 		}
 
 		int const num_to_spawn = Random::in_range(4,6);
@@ -298,8 +298,8 @@ void check_spawning()
 
 						if (c_ShowMapDebug)
 						{
-							std::cout << " - Spawned " << creature.long_name()
-								<< " at " << creature.pos().x << ", " << creature.pos().y << ".\n";
+							std::cout << std::format(" - Spawned {} at ({},{}).\n",
+								creature.long_name(), creature.pos().x, creature.pos().y);
 						}
 
 						++num_spawned;
@@ -311,8 +311,8 @@ void check_spawning()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << "Spawned " << num_spawned << "/" << num_to_spawn
-				<< " for map " << map_id << ".\n";
+			std::cout << std::format("Spawned {}/{} for map {}.\n",
+				num_spawned, num_to_spawn, map_id);
 		}
 
 		int const beans_to_spawn = Random::in_range(20,40);
@@ -339,8 +339,8 @@ void check_spawning()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << "Placed " << beans_spawned << "/" << beans_to_spawn
-				<< " beans for map " << map_id << ".\n";
+			std::cout << std::format("Placed {}/{} beans for map {}.\n",
+				beans_spawned, beans_to_spawn, map_id);
 		}
 
 		s_spawned[map_id] = true;

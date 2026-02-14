@@ -12,7 +12,7 @@
 
 #include <cassert>
 #include <iostream>
-#include <string>
+#include <format>
 
 namespace Spell
 {
@@ -24,7 +24,8 @@ namespace Spell
 void vermillious (EffectParams params)
 {
 	Creature::Handle const target = params.target;
-	Draw::creature_message(target, " " + Grammar::You_are(target) + " showered in sparks!");
+	Draw::creature_message(target, std::format(" {0} showed in sparks!",
+		Grammar::You_are(target)));
 }
 
 void flipendo (EffectParams params)
@@ -55,31 +56,35 @@ void flipendo (EffectParams params)
 
 	if (dz > 0)
 	{
-		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the stairs!");
+		Draw::creature_message(target, std::format(" {0} knocked into the stairs!",
+			Grammar::You_are(target)));
 		target.take_damage(1, caster);
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
-		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into the wall!");
+		Draw::creature_message(target, std::format(" {0} knocked into the wall!",
+			Grammar::You_are(target)));
 		target.take_damage(1, caster);
 	}
 	else if (secondary_target != Creature::None)
 	{
-		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked into "
-			+ Grammar::you(secondary_target) + "!");
+		Draw::creature_message(target, std::format(" {0} knocked into {1}!",
+			Grammar::You_are(target), Grammar::you(secondary_target)));
 		target.take_damage(1, caster);
 		secondary_target.take_damage(1, caster);
 	}
 	else if (dz < 0)
 	{
+		Draw::creature_message(target, std::format(" {0} knocked down the stairs!",
+			Grammar::You_are(target)));
 		target.move(knock_pos);
-		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked down the stairs!");
 		target.take_damage(4, caster);
 	}
 	else
 	{
+		Draw::creature_message(target, std::format(" {0} knocked back!",
+			Grammar::You_are(target)));
 		target.move(knock_pos);
-		Draw::creature_message(target, " " + Grammar::You_are(target) + " knocked back!");
 	}
 }
 
@@ -89,7 +94,8 @@ void tarantallegra (EffectParams params)
 
 	if (target.has_status(Status::Dancing))
 	{
-		Draw::creature_message(target, " " + Grammar::Your(target) + " feet quicken their dance!");
+		Draw::creature_message(target, std::format(" {0} feet quicken their dance!",
+			Grammar::Your(target)));
 		target.inflict_status(Status::Dancing, 4);
 	}
 	else
@@ -103,11 +109,13 @@ void tarantallegra (EffectParams params)
 
 		if (target.has_status(Status::LegLocked))
 		{
-			Draw::creature_message(target, " " + Grammar::Your(target) + " legs partially loosen.");
+			Draw::creature_message(target, std::format(" {0} legs partially loosen.",
+				Grammar::Your(target)));
 		}
 		else
 		{
-			Draw::creature_message(target, " " + Grammar::Your(target) + " feet dance!");
+			Draw::creature_message(target, std::format(" {0} feet dance!",
+				Grammar::Your(target)));
 			target.inflict_status(Status::Dancing, apply_amount);
 		}
 	}
@@ -119,7 +127,9 @@ void locomotor_mortis (EffectParams params)
 
 	if (target.has_status(Status::LegLocked))
 	{
-		Draw::creature_message(target, " " + Grammar::Your(target) + " legs are more tightly locked together!");
+		Draw::creature_message(target,
+			std::format(" {0} legs are more tightly locked together!",
+			Grammar::Your(target)));
 		target.inflict_status(Status::LegLocked, 4);
 	}
 	else
@@ -133,11 +143,13 @@ void locomotor_mortis (EffectParams params)
 
 		if (target.has_status(Status::Dancing))
 		{
-			Draw::creature_message(target, " " + Grammar::Your(target) + " feet dance more slowly.");
+			Draw::creature_message(target, std::format(" {0} feet dance more slowly.",
+				Grammar::Your(target)));
 		}
 		else
 		{
-			Draw::creature_message(target, " " + Grammar::Your(target) + " legs are locked together!");
+			Draw::creature_message(target, std::format(" {0} legs are locked together!",
+				Grammar::Your(target)));
 			target.inflict_status(Status::LegLocked, apply_amount);
 		}
 	}
@@ -147,7 +159,8 @@ void rictusempra (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	Draw::creature_message(target, " Something is tickling " + Grammar::you(target) + "!");
+	Draw::creature_message(target, std::format(" Something is tickling {0}!",
+		Grammar::you(target)));
 	target.inflict_status(Status::Tickled, Random::in_range(4,8));
 }
 
@@ -187,16 +200,12 @@ void mimblewimble (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::TongueTied))
-	{
-		Draw::creature_message(target, " " + Grammar::You(target) + " " +
-			Grammar::verbs("become", target) + " more tongue-tied.");
-	}
-	else
-	{
-		Draw::creature_message(target, " " + Grammar::You(target) + " " +
-			Grammar::verbs("become", target) + " tongue-tied.");
-	}
+	char const* fmt = target.has_status(Status::TongueTied) ?
+		" {0} {1} more tongue-tied." :
+		" {0} {1} tongue-tied.";
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
+		Grammar::You(target), Grammar::verbs("become", target))));
+
 	target.inflict_status(Status::TongueTied, 5);
 }
 
@@ -204,14 +213,11 @@ void lacarnum_inflamare (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::Burning))
-	{
-		Draw::creature_message(target, " " + Grammar::Your(target) + " clothes are burning in more places!");
-	}
-	else
-	{
-		Draw::creature_message(target, " " + Grammar::Your(target) + " clothes burst into flames!");
-	}
+	char const* fmt = target.has_status(Status::Burning) ?
+		" {0} clothes are burning in more places!" :
+		" {0} clothes burst into flames!";
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
+		Grammar::Your(target))));
 
 	target.inflict_status(Status::Burning, 5);
 }
@@ -219,7 +225,8 @@ void lacarnum_inflamare (EffectParams params)
 void furnunculus (EffectParams params)
 {
 	Creature::Handle target = params.target;
-	Draw::creature_message(target, " " + Grammar::Your(target) + " skin boils!");
+	Draw::creature_message(target, std::format(" {0} skin boils!",
+		Grammar::Your(target)));
 }
 
 void stupefy (EffectParams params)
@@ -227,22 +234,22 @@ void stupefy (EffectParams params)
 	Creature::Handle const caster = params.target;
 	Creature::Handle const target = params.target;
 
-	std::string bolt_description;
+	char const* bolt_description;
 	if (Spell::get_damage(Spell::Stupefy, caster) > 10)
-		bolt_description = "a spectacular bolt of red light";
+		bolt_description = "spectacular bolt of red light";
 	else if (Spell::get_damage(Spell::Stupefy, caster) > 8)
-		bolt_description = "a mighty bolt of red light";
+		bolt_description = "mighty bolt of red light";
 	else if (Spell::get_damage(Spell::Stupefy, caster) > 6)
-		bolt_description = "a strong bolt of red light";
+		bolt_description = "strong bolt of red light";
 	else if (Spell::get_damage(Spell::Stupefy, caster) > 4)
-		bolt_description = "a solid bolt of red light";
+		bolt_description = "solid bolt of red light";
 	else if (Spell::get_damage(Spell::Stupefy, caster) > 3)
-		bolt_description = "a bolt of red light";
+		bolt_description = "bolt of red light";
 	else
-		bolt_description = "a weak bolt of red light";
+		bolt_description = "weak bolt of red light";
 
-	Draw::creature_message(target, " " + Grammar::You_are(target) + " struck by "
-		+ bolt_description + "!");
+	Draw::creature_message(target, std::format(" {0} struck by a {1}!",
+		Grammar::You_are(target), bolt_description));
 }
 
 void impedementa (EffectParams params)
@@ -251,13 +258,13 @@ void impedementa (EffectParams params)
 
 	if (target.has_status(Status::Impeded))
 	{
-		Draw::creature_message(target, Grammar::Your(target) +
-			" movement is further impeded!");
+		Draw::creature_message(target, std::format(" {0} movement is further impeded!",
+			Grammar::Your(target)));
 	}
 	else
 	{
-		Draw::creature_message(target, "A force impedes "
-			+ Grammar::your(target) + " movement!");
+		Draw::creature_message(target, std::format(" A force impedes {0} movement!",
+			Grammar::your(target)));
 	}
 	target.inflict_status(Status::Impeded, 5);
 }
@@ -266,16 +273,12 @@ void bat_bogey_hex (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::Batty))
-	{
-		Draw::creature_message(target, "The swarm of black winged things around "
-			+ Grammar::you(target) + " thickens!");
-	}
-	else
-	{
-		Draw::creature_message(target, "A swarm of black winged things descends on "
-			+ Grammar::you(target) + "!");
-	}
+	char const* fmt = target.has_status(Status::Batty) ?
+		" The swarm of black winged things around {0} thickens!" :
+		" A swarm of black winged things descends on {0}!";
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
+		Grammar::you(target))));
+
 	target.inflict_status(Status::Batty, 6);
 }
 

@@ -153,10 +153,13 @@ void show_house_selection()
 	s_document_content = "What is your Hogwarts House?";
 	s_list_details_func = draw_selected_house;
 
-	for (int i = 0; i < House::Count; ++i)
+	s_options = 
 	{
-		s_options.push_back({House::name((House::Type)i), i});
-	}
+		{House::name(House::Hufflepuff), House::Hufflepuff},
+		{House::name(House::Ravenclaw), House::Ravenclaw},
+		{House::name(House::Gryffindor), House::Gryffindor},
+		{House::name(House::Slytherin), House::Slytherin}
+	};
 
 	s_input_map[TK_ENTER] = &select_house;
 }

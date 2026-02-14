@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Resource Files\Scraps">
-      <UniqueIdentifier>{4f06e7bc-dc8e-47e8-893f-c6f91990f8dc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Core">
       <UniqueIdentifier>{84f54cbc-d885-4534-9d7a-4cb83691eb87}</UniqueIdentifier>
     </Filter>
@@ -278,15 +275,6 @@
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
       <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Scraps\LineCache.txt">
-      <Filter>Resource Files\Scraps</Filter>
-    </Text>
-    <Text Include="Scraps\Scaps.txt">
-      <Filter>Resource Files\Scraps</Filter>
-    </Text>
-    <Text Include="TestLOS.txt">
-      <Filter>Resource Files\Scraps</Filter>
     </Text>
     <Text Include="Docs\Game Design Goals.txt">
       <Filter>Resource Files</Filter>

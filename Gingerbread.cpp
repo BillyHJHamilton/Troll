@@ -7,6 +7,7 @@
 #include "Spell.h"
 #include "VectorUtil.h"
 
+#include <format>
 #include <sstream>
 #include <unordered_set>
 
@@ -298,17 +299,16 @@ void claim_identity(Creature::Handle creature)
 		if (metadata.current_handle != Creature::None)
 		{
 			// Force unspawn the old instance, and spawn the new one.
-			std::cout << "Unspawning old instance of " << read(type).short_name
-				<< " to spawn new instance.\n";
+			std::cout << std::format("Unspawning old instance of {} to spawn new instance.\n",
+				read(type).short_name);
 			metadata.current_handle.invalidate();
 		}
 
-		if (s_gingerbread[type].difficulty <= metadata.spawned_difficulty)
+		if (read(type).difficulty <= metadata.spawned_difficulty)
 		{
-			std::cout << "Warning: Spawning " << read(type).short_name
-				<< " at lower or equal difficulty than last time.\n"
-				<< " - New=" << read(type).difficulty
-				<< ", old=" << metadata.spawned_difficulty << "\n";
+			std::cout << std::format(
+				"Spawning {} at lower or equal difficulty than last time; New={}, Old={}\n",
+				read(type).short_name, read(type).difficulty, metadata.spawned_difficulty);
 		}
 
 		metadata.current_handle = creature;
@@ -342,11 +342,6 @@ void mix_gingerbread (
 		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
 	parse_tag_string(s_gingerbread_tags[type], tag_string);
-
-	//if (s_gingerbread_tags[type].size() > 0)
-	//{
-	//	std::cout << short_name << " has " << s_gingerbread_tags[type].size() << " tags.\n";
-	//}
 }
 
 void parse_spell_string (Spell::Bitset & out_spell_bitset, std::string const & spell_string)
@@ -374,7 +369,6 @@ void parse_tag_string (std::unordered_set<NameHash> & out_tag_set, std::string c
 
 		while (ss >> token)
 		{
-			//std::cout << "Adding tag: " << token << "\n";
 			out_tag_set.insert(NameHash(token.c_str()));
 		}
 	}

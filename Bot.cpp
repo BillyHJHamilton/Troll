@@ -15,6 +15,8 @@
 #include "VectorUtil.h"
 #include "World.h"
 
+#include <format>
+
 namespace Bot
 {
 
@@ -235,8 +237,8 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 		{
 			if (c_ShowBotDebug)
 			{
-				std::cout << caster.short_name() << " using highest output spell = "
-					<< Spell::get_name(spell_chosen) << "\n";
+				std::cout << std::format("{} using highest output spell = {}\n",
+					caster.short_name(), Spell::get_name(spell_chosen));
 			}
 
 			return spell_chosen;
@@ -268,8 +270,8 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 		{
 			if (c_ShowBotDebug)
 			{
-				std::cout << caster.short_name() << " using random reasonable spell = "
-					<< Spell::get_name(spell_chosen) << "\n";
+				std::cout << std::format("{} using random reasonable spell = {}\n",
+					caster.short_name(), Spell::get_name(spell_chosen));
 			}
 
 			return spell_chosen;
@@ -278,8 +280,8 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 
 	if (c_ShowBotDebug)
 	{
-		std::cout << caster.short_name() << " couldn't find good spell.  Using random = "
-			<< Spell::get_name(spell_chosen) << "\n";
+		std::cout << std::format("{} couldn't find good spell.  Using random = {}\n",
+			caster.short_name(), Spell::get_name(spell_chosen));
 	}
 
 	// if can't find anything that might succeed, give up and just cast whatever
