@@ -10,6 +10,8 @@
 #include "VectorUtil.h"
 #include "World.h"
 
+#include <format>
+
 namespace Item
 {
 
@@ -77,6 +79,11 @@ Item::Handle Handle::next_in_stack () const
 	return read_inst(index).next;
 }
 
+int Handle::stack_height () const
+{
+	return read_inst(index).height;
+}
+
 int Handle::codepoint () const
 {
 	switch (type())
@@ -133,9 +140,15 @@ std::string Handle::description () const
 		case Notes:
 		{
 			Creature::Type const owner = (Creature::Type)(read_inst(index).subtype);
-			return "Some parchment covered in " + Gingerbread::short_name(owner) + "'s handwriting.";
+			return std::format("Some parchment covered in {}'s handwriting.",
+				Gingerbread::short_name(owner));
 		}
-			
+
+		case BBBean:
+		{
+			return "They mean every flavour.";
+		}
+
 		default:
 		{
 			return "";
@@ -148,14 +161,13 @@ std::string Handle::interaction_name () const
 	switch (type())
 	{
 		case Notes:
-		{
 			return "Read";
-		}
-			
+
+		case BBBean:
+			return "Eat";
+
 		default:
-		{
-			return "";
-		}
+			return "Use";
 	}
 }
 
@@ -169,6 +181,18 @@ bool Handle::can_discard () const
 {
 	// For now
 	return true;
+}
+
+bool Handle::stacks_in_bag () const
+{
+	switch (type())
+	{
+		case BBBean:
+			return true;
+
+		default:
+			return false;
+	}
 }
 
 UseResult Handle::use ()
@@ -187,6 +211,26 @@ UseResult Handle::use ()
 void Handle::stack_onto (Item::Handle other)
 {
 	edit_inst(index).next = other;
+
+	edit_inst(index).height = other.valid() ?
+		1 + other.stack_height() :
+		1;
+}
+
+void Handle::invalidate()
+{
+	edit_inst(index) = {};
+}
+
+void Handle::invalidate_stack()
+{
+	Item::Handle next = *this;
+	while (next.valid())
+	{
+		Item::Handle target = next;
+		next = next.next_in_stack();
+		target.invalidate();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -225,7 +269,8 @@ UseResult Handle::use_notes()
 
 UseResult Handle::use_bbbean()
 {
-	// Todo
+	Draw::add_message("You eat a bean.");
+	Draw::add_message(BertieBotts::eat_message(flavour()));
 	return UseResult::Consumed;
 }
 

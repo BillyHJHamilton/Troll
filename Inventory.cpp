@@ -14,7 +14,6 @@ Inventory s_inventory;
 Inventory::Inventory()
 {
 	invent.reserve(200);
-	bean_bag.reserve(200);
 }
 
 void Inventory::clear()
@@ -47,23 +46,34 @@ Item::Handle const Inventory::peek_item (int slot) const
 	return c_invalid;
 }
 
-void Inventory::add_item (Item::Handle item)
+void Inventory::add_item (Item::Handle new_item)
 {
-	switch(item.type())
+	if (new_item.stacks_in_bag())
 	{
-		case Item::BBBean:
+		bool found = false;
+		for (int i = 0; i < invent.size(); ++i)
 		{
-			bean_bag.push_back(item);
-			break;
+			Item::Handle bag_item = invent[i];
+			if (bag_item.type() == new_item.type())
+			{
+				new_item.stack_onto(bag_item);
+				invent[i] = new_item;
+				found = true;
+				break;
+			}
 		}
 
-		default:
+		if (!found)
 		{
-			invent.push_back(item);
-			invent_sort();
-			break;
+			invent.push_back(new_item);
 		}
 	}
+	else
+	{
+		invent.push_back(new_item);
+	}
+
+	invent_sort();
 }
 
 void Inventory::use_item (int slot)
@@ -77,7 +87,16 @@ void Inventory::use_item (int slot)
 	Item::UseResult result = invent[slot].use();
 	if (result == Item::UseResult::Consumed)
 	{
-		remove_item(slot);
+		if (invent[slot].stack_height() > 1)
+		{
+			Item::Handle used = invent[slot];
+			invent[slot] = used.next_in_stack();
+			used.invalidate();
+		}
+		else
+		{
+			remove_item(slot);
+		}
 	}
 }
 
@@ -89,6 +108,10 @@ void Inventory::remove_item (int slot)
 		return;
 	}
 
+	// TODO: Better deallocate it!!
+	// TODO: Better confirm it's not a lot of items deep in a stack!
+
+	invent[slot].invalidate_stack();
 	Util::RemoveAt(invent, slot);
 }
 

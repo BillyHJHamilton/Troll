@@ -13,6 +13,8 @@ namespace Item
 
 	enum Type : int
 	{
+		// This list determines the order items appear in inventory.
+
 		None = c_invalid,
 
 		// School notes from a character.  Can be used to learn a spell.
@@ -39,6 +41,9 @@ namespace Item
 		// Used only when item is stacked on the ground.
 		// Index of the item lying under this one.
 		int next = c_invalid;
+
+		// 1 + number of items below this one.
+		int height = 1;
 	};
 
 	// Represents an item instance, as an integer index to the global array.
@@ -61,6 +66,7 @@ namespace Item
 		int subtype () const;
 		int flavour () const;
 		Item::Handle next_in_stack () const;
+		int stack_height () const;
 
 		// Complex accessors
 		int codepoint () const;
@@ -70,12 +76,13 @@ namespace Item
 		std::string interaction_name () const;
 		bool can_use () const;
 		bool can_discard () const;
+		bool stacks_in_bag () const;
 
 		// Mutators
 		UseResult use ();
-
-		// Should only be called by Map::add_item
 		void stack_onto (Item::Handle other);
+		void invalidate();
+		void invalidate_stack();
 
 	protected:
 		// Polymorphic stuff

@@ -22,5 +22,4 @@ protected:
 	void invent_sort ();
 
 	std::vector<Item::Handle> invent;
-	std::vector<Item::Handle> bean_bag;
 };

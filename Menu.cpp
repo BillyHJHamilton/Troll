@@ -1,9 +1,6 @@
 #include "Menu.h"
 
 #include "BearLibTerminal.h"
-#include <iomanip>
-#include <string>
-#include <functional>
 
 #include "Action.h"
 #include "Creature.h"
@@ -18,6 +15,10 @@
 #include "Player.h"
 #include "Spell.h"
 #include "VectorUtil.h"
+
+#include <iomanip>
+#include <format>
+#include <functional>
 
 namespace Menu
 {
@@ -223,7 +224,11 @@ void show_inventory()
 	{
 		Item::Handle const item = Inventory::read().peek_item(slot);
 		ListOption option;
-		option.text = item.name();
+
+		option.text = (item.stack_height() > 1) ?
+			std::format("{} ({})", item.name(), item.stack_height()) :
+			item.name();
+
 		option.value = slot;
 		s_options.push_back(option);
 	}
@@ -426,14 +431,14 @@ void draw_selected_item(ListOption option)
 	}
 	if (item.can_use())
 	{
-		ss << "[[Enter]]  " << (interaction.empty() ? "Use" : interaction) << "\n";
+		ss << "[[Enter]]  " << interaction << "\n";
 	}
 	if (item.can_discard())
 	{
 		ss << "[[Delete]] Discard";
 	}
 
-	dimensions_t dim = terminal_print(40, 2, ss.str().c_str());
+	terminal_print_ext(50, 2, 60, 20, 1, ss.str().c_str());
 }
 
 void select_house()

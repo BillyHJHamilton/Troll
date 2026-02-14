@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace BertieBotts
 {
 	void init();
@@ -7,4 +9,7 @@ namespace BertieBotts
 	int random_flavour();
 	char const* get_name(int flavour);
 	char const* get_colour(int flavour);
+	std::string get_name_capitalized(int flavour);
+
+	std::string eat_message(int flavour);
 }

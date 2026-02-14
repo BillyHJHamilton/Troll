@@ -3,6 +3,9 @@
 #include "Random.h"
 #include "VectorUtil.h"
 
+#include <cctype>
+#include <format>
+
 namespace BertieBotts
 {
 
@@ -11,8 +14,7 @@ enum class Tastiness
 	Wonderful,
 	Good,
 	Questionable,
-	Terrible,
-	Tasteless
+	Terrible
 };
 
 struct BeanFlavour
@@ -51,7 +53,7 @@ void init()
 	add_flavour(cstr_white, "lychee", c_very_rare, Tastiness::Good);
 	add_flavour(cstr_white, "white blackberry", c_very_rare, Tastiness::Questionable);
 	add_flavour(cstr_white, "marizpan", c_very_rare, Tastiness::Wonderful);
-	add_flavour(cstr_white, "snow", c_very_rare, Tastiness::Tasteless);
+	add_flavour(cstr_white, "snow", c_very_rare, Tastiness::Questionable);
 
 	char const* cstr_light_grey = "lighter grey";
 	add_flavour(cstr_light_grey, "vanilla", c_common, Tastiness::Wonderful);
@@ -141,6 +143,8 @@ void init()
 	add_flavour(cstr_light_orange, "caramel", c_rare, Tastiness::Wonderful);
 	add_flavour(cstr_light_orange, "canteloupe", c_rare, Tastiness::Good);
 	add_flavour(cstr_light_orange, "peanut butter", c_rare, Tastiness::Good);
+	add_flavour(cstr_light_orange, "toast", c_rare, Tastiness::Good);
+	add_flavour(cstr_light_orange, "horseradish", c_rare, Tastiness::Questionable);
 	add_flavour(cstr_light_orange, "croissant", c_very_rare, Tastiness::Good);
 	add_flavour(cstr_light_orange, "garbanzo bean", c_very_rare, Tastiness::Questionable);
 	add_flavour(cstr_light_orange, "parmesan", c_very_rare, Tastiness::Good);
@@ -151,6 +155,7 @@ void init()
 	add_flavour(cstr_dark_orange, "chocolate", c_common, Tastiness::Wonderful);
 	add_flavour(cstr_dark_orange, "coffee", c_uncommon, Tastiness::Good);
 	add_flavour(cstr_dark_orange, "lentil", c_rare, Tastiness::Questionable);
+	add_flavour(cstr_dark_orange, "baked bean", c_rare, Tastiness::Questionable);
 	add_flavour(cstr_dark_orange, "dirt", c_rare, Tastiness::Terrible);
 	add_flavour(cstr_dark_orange, "dog food", c_very_rare, Tastiness::Terrible);
 	add_flavour(cstr_dark_orange, "haggis", c_very_rare, Tastiness::Terrible);
@@ -193,6 +198,7 @@ void init()
 	char const* cstr_light_lime = "light lime";
 	add_flavour(cstr_light_lime, "green apple", c_uncommon, Tastiness::Good);
 	add_flavour(cstr_light_lime, "pistachio", c_very_rare, Tastiness::Good);
+	add_flavour(cstr_light_lime, "sprouts", c_rare, Tastiness::Questionable);
 	add_flavour(cstr_light_lime, "green tea", c_rare, Tastiness::Good);
 	add_flavour(cstr_light_lime, "vomet", c_very_rare, Tastiness::Terrible);
 	add_flavour(cstr_light_lime, "unripe lemon", c_very_rare, Tastiness::Terrible);
@@ -269,7 +275,7 @@ void init()
 
 	char const* cstr_light_azure = "light azure";
 	add_flavour(cstr_light_azure, "toothpaste", c_very_rare, Tastiness::Terrible);
-	add_flavour(cstr_light_azure, "water", c_rare, Tastiness::Tasteless);
+	add_flavour(cstr_light_azure, "water", c_rare, Tastiness::Questionable);
 	add_flavour(cstr_light_azure, "swordfish", c_very_rare, Tastiness::Questionable);
 
 	char const* cstr_light_blue = "light blue";
@@ -284,7 +290,7 @@ void init()
 	add_flavour(cstr_han, "blue corn", c_very_rare, Tastiness::Good);
 	add_flavour(cstr_han, "haskap", c_very_rare, Tastiness::Questionable);
 	add_flavour(cstr_han, "Saskatoon berry", c_very_rare, Tastiness::Wonderful);
-	add_flavour(cstr_han, "dirty sock", c_very_rare, Tastiness::Terrible);
+	add_flavour(cstr_han, "dirty socks", c_very_rare, Tastiness::Terrible);
 	
 	char const* cstr_violet = "violet";
 	add_flavour(cstr_violet, "violet", c_rare, Tastiness::Good);
@@ -365,6 +371,118 @@ char const* get_colour(int flavour)
 	}
 	DebugBreak();
 	return "";
+}
+
+std::string get_name_capitalized(int flavour)
+{
+	std::string s = get_name(flavour);
+	s[0] = toupper(s[0]);
+	return s;
+}
+
+std::string eat_message(int flavour)
+{
+	BeanFlavour bf = s_flavours[flavour];
+
+	char const* fmt = "";
+	bool capitalize = false;
+
+	switch (bf.tastiness)
+	{
+		case Tastiness::Wonderful:
+		{
+			int roll = Random::in_range(0,3);
+			switch (roll)
+			{
+				case 0:
+					fmt = " Mmm, {}!";
+					break;
+				case 1:
+					fmt = " Ah... {}!";
+					break;
+				case 2:
+					fmt = " {}, delicious!";
+					capitalize = true;
+					break;
+				case 3:
+					fmt = " A lovely {} flavour.";
+					break;
+			}
+			break;
+		}
+
+		case Tastiness::Good:
+		{
+			int roll = Random::in_range(0,2);
+			switch (roll)
+			{
+				case 0:
+					fmt = " Not bad, it's {} flavour.";
+					break;
+				case 1:
+					fmt = " It tastes like {}.";
+					break;
+				case 2:
+					fmt = " A nice {} flavour.";
+					break;
+				case 3:
+					fmt = " It tastes pretty good.";
+					break;
+			}
+			break;
+		}
+
+		case Tastiness::Questionable:
+		{
+			int roll = Random::in_range(0,2);
+			switch (roll)
+			{
+				case 0:
+					fmt = " Was that... {}?";
+					break;
+				case 1:
+					fmt = " Seems to be... {}?";
+					break;
+				case 2:
+					fmt = " {} flavour?";
+					capitalize = true;
+					break;
+				case 3:
+					fmt = " It tastes a little strange.";
+					break;
+			}
+			break;
+		}
+
+		case Tastiness::Terrible:
+		{
+			int roll = Random::in_range(0,2);
+			switch (roll)
+			{
+				case 0:
+					fmt = " Blech!  It tastes like {}!";
+					break;
+				case 1:
+					fmt = " Alas!  {}!";
+					capitalize = true;
+					break;
+				case 2:
+					fmt = " {} flavour!?";
+					capitalize = true;
+					break;
+				case 3:
+					fmt = " It tastes horrible!";
+					break;
+			}
+			break;
+		}
+
+		default:
+			DebugBreak();
+	}
+
+	return std::vformat(fmt, std::make_format_args(
+		(capitalize) ? get_name_capitalized(flavour) : bf.name));
 }
 
 } // namespace BertieBotts
