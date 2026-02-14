@@ -21,7 +21,7 @@ namespace House
 		{
 			case Gryffindor: return "light red";
 			case Hufflepuff: return "light yellow";
-			case Ravenclaw:  return "light blue";
+			case Ravenclaw:  return "light azure";
 			case Slytherin:  return "light green";
 			default: DebugBreak(); return "";
 		}

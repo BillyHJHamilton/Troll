@@ -40,14 +40,14 @@ struct IdentityData
 {
 	// The usual features of a character's identity.
 	// These features may be overridden for a specific Type.
-	char const* short_name;
-	char const* long_name;
-	char const* colour;
-	int codepoint;
-	Gender gender;
+	char const* short_name = nullptr;
+	char const* long_name = nullptr;
+	char const* colour = nullptr;
+	int codepoint = 'X';
+	Gender gender = Gender::Male;
 
 	// Data about how this identity has been used in the current game.
-	IdentityMetadata metadata;
+	IdentityMetadata metadata {};
 };
 std::unordered_map<NameHash, IdentityData> s_identities;
 
@@ -75,7 +75,8 @@ void mix_from_identity(
 
 void init()
 {
-	// Alphabetic by short name from here on:
+	// Identities, alphabetic by short name:
+
 	register_identity("Colin", "Colin Creevy", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Crabbe", "Vincent Crabbe", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Goyle", "Gregory Goyle", House::colour(House::Slytherin), Gender::Male);
@@ -85,6 +86,8 @@ void init()
 	register_identity("Neville", "Neville Longbottom", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Ron", "Ron Weasley", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Sally-Anne", "Sally-Anne Perks", House::colour(House::Hufflepuff), Gender::Female);
+
+	// Creature Types, in enum order:
 
 	mix_gingerbread(Creature::Player, c_IdentityGeneric,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
