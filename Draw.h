@@ -5,8 +5,6 @@
 #include "Types.h"
 #include "Geometry.h"
 
-#include <list>
-
 namespace Draw
 {
 	struct View
@@ -44,7 +42,6 @@ namespace Draw
 
 	void print_in_box(Box2 const& box, char const* const str, int align = TK_ALIGN_LEFT);
 	void add_message(std::string&& message);
-	void run_message(std::string&& message); // adds to most recent message
 
 	// Adds a message only if the creature provided is visible.
 	void creature_message(Creature::Handle creature, std::string&& message);
@@ -53,7 +50,9 @@ namespace Draw
 	void pos_message(Vec3 pos, std::string&& message);
 
 	void print_messages(Box2 const& box);
-	std::list<GameMessage> const& read_messages();
+
+	int get_num_recent_messages();
+	GameMessage& get_recent_message(int num_back); // 0 is most recent, 1 is older, etc.
 
 	void draw_screen();
 

@@ -11,16 +11,19 @@
 #include "World.h"
 
 #include <algorithm>
+#include <format>
 #include <iomanip>
 #include <sstream>
-#include <list>
 
 namespace Draw
 {
 
-// TODO: With a little work we could probably ditch the linked list and use a circular array.
-static std::list<GameMessage> s_game_messages;
-static int constexpr c_MaxGameMessages = 100;
+// Circular array.
+std::vector<GameMessage> s_game_messages;
+int constexpr c_MaxGameMessages = 100;
+int s_next_message_id = 0;
+
+//static std::list<GameMessage> s_game_messages;
 
 static int constexpr c_AnimationStepMs = 25;
 static int constexpr c_TileWidthFactor = 2;
@@ -73,11 +76,13 @@ void print_visible_creature_stats(Box2 draw_area);
 
 void init ()
 {
+	s_game_messages.reserve(c_MaxGameMessages);
 }
 
 void clear ()
 {
 	s_game_messages.clear();
+	s_next_message_id = 0;
 }
 
 bool View::contains_global_pos(Vec3 const& global_pos) const
@@ -160,18 +165,16 @@ void print_in_box (Box2 const & box, char const * const str, int align)
 
 void add_message(std::string && message)
 {
-	s_game_messages.push_back({Game::get_turn_number(), message});
-
-	// dump old messages...
-	if (s_game_messages.size() > c_MaxGameMessages)
+	if (Util::Size(s_game_messages) < c_MaxGameMessages)
 	{
-		s_game_messages.pop_front();
+		s_game_messages.push_back({Game::get_turn_number(), message});
 	}
-}
-
-void run_message(std::string && message)
-{
-	s_game_messages.back().text.append(message);
+	else
+	{
+		// It's a circular array.
+		s_game_messages[s_next_message_id] = {Game::get_turn_number(), message};
+		s_next_message_id = (s_next_message_id + 1) % c_MaxGameMessages;
+	}
 }
 
 void creature_message(Creature::Handle creature, std::string&& message)
@@ -200,14 +203,15 @@ void print_messages(Box2 const & box)
 
 	if (!s_game_messages.empty())
 	{
-		int newest_time = s_game_messages.back().turn_number;
+		int const num_messages = get_num_recent_messages();
+		int const newest_time = get_recent_message(0).turn_number;
 
 		std::string combined_message;
-		for (auto itr = s_game_messages.rbegin();
-			itr != s_game_messages.rend();
-			++itr)
+		for (int i = 0; i < num_messages; ++i)
 		{
-			dimensions_t next_size = terminal_measure_ext(box.size.x, box.size.y, itr->text.c_str());
+			GameMessage& message = get_recent_message(i);
+			dimensions_t next_size = terminal_measure_ext(box.size.x, box.size.y,
+				message.text.c_str());
 			lines_left -= next_size.height;
 			if (lines_left < 0)
 			{
@@ -215,13 +219,14 @@ void print_messages(Box2 const & box)
 			}
 			else
 			{
-				if (itr->turn_number < newest_time)
+				if (message.turn_number < newest_time)
 				{
-					combined_message = "[color=grey]" + itr->text + "[/color]\n" + combined_message;
+					combined_message = std::format("[color=grey]{}[/color]\n", message.text)
+						+ combined_message;
 				}
 				else
 				{
-					combined_message = itr->text + "\n" + combined_message;
+					combined_message = message.text + "\n" + combined_message;
 				}
 				
 				// Printing turn numbers - test only
@@ -233,9 +238,24 @@ void print_messages(Box2 const & box)
 	}
 }
 
-std::list<GameMessage> const& read_messages()
+int get_num_recent_messages()
 {
-	return s_game_messages;
+	return Util::Size(s_game_messages);
+}
+
+GameMessage& get_recent_message(int num_back)
+{
+	if (Util::Size(s_game_messages) < c_MaxGameMessages)
+	{
+		int const index = Util::LastIndex(s_game_messages) - num_back;
+		return s_game_messages.at(index);
+	}
+	else
+	{
+		int const index = (c_MaxGameMessages + s_next_message_id - 1 - num_back)
+			% c_MaxGameMessages;
+		return s_game_messages.at(index);
+	}
 }
 
 void draw_screen ()

@@ -9,11 +9,10 @@ void MenuMessages::init()
 	// We should store an index or iterator or something.
 	// Maybe fix it after changing the message list to a circular array.
 	// Also, it doesn't really make sense to use the list menu when you can't select or view anything.
-	std::list<Draw::GameMessage> const& msg_list = Draw::read_messages();
-	int i = 0;
-	for (auto itr = msg_list.cbegin(); itr != msg_list.end(); ++itr)
+	int const num_msg = Draw::get_num_recent_messages();
+	for (int i = num_msg - 1; i >= 0; --i)
 	{
-		add_option(itr->text, i++);
+		add_option(Draw::get_recent_message(i).text, i);
 	}
 
 	reset_cursor();
