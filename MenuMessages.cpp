@@ -3,6 +3,7 @@
 
 void MenuMessages::init()
 {
+	clear_list();
 	set_title("Message history:");
 
 	// There's obviously better ways to do this, without copying everything.

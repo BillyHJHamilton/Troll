@@ -20,7 +20,7 @@ namespace Draw
 
 // Circular array.
 std::vector<GameMessage> s_game_messages;
-int constexpr c_MaxGameMessages = 100;
+int constexpr c_MaxGameMessages = 400;
 int s_next_message_id = 0;
 
 //static std::list<GameMessage> s_game_messages;
