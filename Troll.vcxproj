@@ -166,6 +166,9 @@
     <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Creature.cpp" />
+    <ClCompile Include="MenuInventory.cpp" />
+    <ClCompile Include="MenuSelectHouse.cpp" />
+    <ClCompile Include="MenuDocument.cpp" />
     <ClCompile Include="Gingerbread.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -180,6 +183,9 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MenuList.cpp" />
+    <ClCompile Include="MenuPause.cpp" />
+    <ClCompile Include="MenuSpells.cpp" />
     <ClCompile Include="NameHash.cpp" />
     <ClCompile Include="Pathfind.cpp" />
     <ClCompile Include="PerfTimer.cpp" />
@@ -202,6 +208,9 @@
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="MenuInventory.h" />
+    <ClInclude Include="MenuSelectHouse.h" />
+    <ClInclude Include="MenuDocument.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
@@ -217,6 +226,9 @@
     <ClInclude Include="MapUtil.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="MenuPause.h" />
+    <ClInclude Include="MenuSpells.h" />
+    <ClInclude Include="MenuList.h" />
     <ClInclude Include="MiscastCategory.h" />
     <ClInclude Include="NameHash.h" />
     <ClInclude Include="Pathfind.h" />

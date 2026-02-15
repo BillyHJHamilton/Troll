@@ -71,6 +71,7 @@ void clear()
 	Input::clear();
 	Inventory::clear();
 	Item::clear();
+	Menu::clear();
 	Player::clear();
 	Target::clear();
 	World::clear();

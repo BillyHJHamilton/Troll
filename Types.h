@@ -15,6 +15,8 @@ Grid<T> make_grid (int x, int y, T value)
 	return std::vector<std::vector<T>>(x, std::vector<T>(y, value));
 }
 
+class IMenu;
+
 class Map;
 class MapGenerator;
 class World;

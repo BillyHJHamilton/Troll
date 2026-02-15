@@ -9,5 +9,6 @@ namespace Input
 	void dispatch_automove();
 	std::string get_spell_preview_string();
 
+	void request_quit();
 	bool is_quitting();
 }

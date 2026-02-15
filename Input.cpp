@@ -50,8 +50,6 @@ bool is_keyboard_key (int tk_code);
 bool is_directional (int tk_code);
 CompassDirection parse_directional (int tk_code);
 
-void handle_input_close ();
-
 void blank_spell_input ();
 SpellInputState check_spell_input_state ();
 void handle_input_spell_keys (char letter);
@@ -79,7 +77,7 @@ void handle_next_input ()
 	if (key == TK_CLOSE || // X button in the corner
 	   (key == TK_F4 && terminal_check(TK_ALT))) // Vulcan nerve pinch
 	{
-		handle_input_close();
+		request_quit();
 		return;	
 	}
 
@@ -180,14 +178,14 @@ void handle_next_input ()
 		if (key == TK_I)
 		{
 			Player::stop_automove();
-			if (Inventory::read().num_items() > 0)
-			{
-				Menu::show_inventory();
-			}
-			else
-			{
-				Draw::add_message("Your inventory is empty.");
-			}
+			Menu::show_inventory();
+			return;
+		}
+
+		if (key == TK_ESCAPE)
+		{
+			Player::stop_automove();
+			Menu::show_pause_menu();
 			return;
 		}
 
@@ -331,6 +329,11 @@ bool is_quitting()
 	return s_quit_flag;
 }
 
+void request_quit()
+{
+	s_quit_flag = true;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
 
@@ -457,11 +460,6 @@ void handle_spellcode_complete ()
 		s_selected_spell = spell_index;
 		player_try_cast_spell(s_selected_spell);
 	}
-}
-
-void handle_input_close()
-{
-	s_quit_flag = true;
 }
 
 }

@@ -19,7 +19,7 @@ namespace Gingerbread
 		int codepoint = 0; // letter to display
 		int skill_magic = 0;
 		int max_hp = 0;
-		Gender gender = Gender::Male;
+		Gender gender = (Gender)0;
 	};
 
 	void init();
