@@ -256,7 +256,7 @@ UseResult Handle::use_notes()
 		}
 		else
 		{
-			// TODO: This probably be a longer action, not safe to use in combat.
+			// TODO: This should really be a longer action, not safe to use in combat.
 
 			Draw::add_message(" Learned to cast " + Spell::get_name(spell) + "!");
 			Player::handle().learn_spell(spell);

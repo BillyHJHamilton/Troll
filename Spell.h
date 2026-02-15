@@ -6,13 +6,18 @@
 #include <string>
 #include <vector>
 
+// Enables an overpowered spell for debug purposes.
+#define d_EnableMegadrill false
+
 namespace Spell
 {
 	enum Index : int
 	{
 		None = -1,
 		Vermillious = 0,
-		//Megadrill, // Test spell
+#if d_EnableMegadrill
+		Megadrill, // Test spell
+#endif
 		Flipendo,
 		Tarantallegra,
 		LocomotorMortis,
