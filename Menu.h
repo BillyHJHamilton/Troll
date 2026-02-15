@@ -35,6 +35,7 @@ namespace Menu
 	void show_spells_known();
 	void show_inventory();
 	void show_pause_menu();
+	void show_message_history();
 
 	// Return to normal gameplay
 	void close();

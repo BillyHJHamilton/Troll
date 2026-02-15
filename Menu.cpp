@@ -10,6 +10,7 @@
 #include "MenuDocument.h"
 #include "MenuInventory.h"
 #include "MenuList.h"
+#include "MenuMessages.h"
 #include "MenuPause.h"
 #include "MenuSelectHouse.h"
 #include "MenuSpells.h"
@@ -25,6 +26,7 @@ namespace Menu
 
 MenuDocument s_menu_document;
 MenuInventory s_menu_inventory;
+MenuMessages s_menu_messages;
 MenuSelectHouse s_menu_select_house;
 MenuSpells s_menu_spells;
 MenuPause s_menu_pause;
@@ -156,6 +158,13 @@ void show_pause_menu()
 {
 	set_menu(s_menu_pause);
 	s_menu_pause.reset_cursor();
+}
+
+void show_message_history()
+{
+	set_menu(s_menu_messages);
+	s_menu_messages.init();
+	s_menu_messages.scroll_to_end();
 }
 
 void close()

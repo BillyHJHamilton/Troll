@@ -18,17 +18,12 @@
 namespace Draw
 {
 
-struct GameMessage
-{
-	int turn_number;
-	std::string text;
-};
-
+// TODO: With a little work we could probably ditch the linked list and use a circular array.
 static std::list<GameMessage> s_game_messages;
-static int constexpr MAX_GAME_MESSAGES = 100;
+static int constexpr c_MaxGameMessages = 100;
 
-static int constexpr ANIMATION_STEP_MS = 25;
-static int constexpr TILE_WIDTH_FACTOR = 2;
+static int constexpr c_AnimationStepMs = 25;
+static int constexpr c_TileWidthFactor = 2;
 
 bool s_los_cheat = false;
 
@@ -134,7 +129,7 @@ void draw_tile (int code, Vec2 const & global_pos, Draw::View const & view,
 
 	Vec2 viewport_pos = global_pos + view.viewport.min - view.start;
 
-	terminal_put(viewport_pos.x * TILE_WIDTH_FACTOR, viewport_pos.y, code);
+	terminal_put(viewport_pos.x * c_TileWidthFactor, viewport_pos.y, code);
 }
 
 void draw_tile_bg (int code, Vec2 const & global_pos, Draw::View const & view,
@@ -152,7 +147,7 @@ void draw_tile_temp (int code, Vec2 const & global_pos, Draw::View const & view,
 	terminal_font("tile");
 	draw_tile(code, global_pos, view, colour);
 	terminal_refresh();
-	terminal_delay(ANIMATION_STEP_MS);
+	terminal_delay(c_AnimationStepMs);
 
 	// remove animation after
 	draw_tile(' ', global_pos, view, "white");
@@ -168,7 +163,7 @@ void add_message(std::string && message)
 	s_game_messages.push_back({Game::get_turn_number(), message});
 
 	// dump old messages...
-	if (s_game_messages.size() > MAX_GAME_MESSAGES)
+	if (s_game_messages.size() > c_MaxGameMessages)
 	{
 		s_game_messages.pop_front();
 	}
@@ -194,7 +189,6 @@ void pos_message(Vec3 pos, std::string&& message)
 		add_message(std::move(message));
 	}
 }
-
 
 void print_messages(Box2 const & box)
 {
@@ -237,6 +231,11 @@ void print_messages(Box2 const & box)
 
 		print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
 	}
+}
+
+std::list<GameMessage> const& read_messages()
+{
+	return s_game_messages;
 }
 
 void draw_screen ()

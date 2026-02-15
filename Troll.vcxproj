@@ -167,6 +167,7 @@
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuInventory.cpp" />
+    <ClCompile Include="MenuMessages.cpp" />
     <ClCompile Include="MenuSelectHouse.cpp" />
     <ClCompile Include="MenuDocument.cpp" />
     <ClCompile Include="Gingerbread.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="MenuInventory.h" />
+    <ClInclude Include="MenuMessages.h" />
     <ClInclude Include="MenuSelectHouse.h" />
     <ClInclude Include="MenuDocument.h" />
     <ClInclude Include="Draw.h" />

@@ -173,6 +173,9 @@
     <ClCompile Include="MenuInventory.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="MenuMessages.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -305,6 +308,9 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="MenuInventory.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuMessages.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>

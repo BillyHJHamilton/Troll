@@ -287,6 +287,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 	{
 		// Shot yourself, it seems.
 		int const damage = Spell::get_damage(spell, caster);
+		caster.take_damage(damage, caster);
 
 		Spell::EffectParams params
 		{

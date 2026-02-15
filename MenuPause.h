@@ -17,6 +17,7 @@ protected:
 		SpellsKnown,
 		Inventory,
 		Help,
+		MessageHistory,
 		Quit
 	};
 };

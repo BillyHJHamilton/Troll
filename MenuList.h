@@ -28,13 +28,20 @@ public:
 	void reset_cursor();
 	void cursor_up();
 	void cursor_down();
+	void scroll_to_end();
 
 	int get_cursor() const;
 	const Option& get_selected() const;
 	void remove_selected();
 
 protected:
+	void update_scroll_bottom();
+
+	static int constexpr c_MaxLineY = 29;
+
 	std::string m_title;
 	OptionList m_options;
-	int m_cursor;
+	int m_cursor = 0;
+	int m_scroll_top = 0;
+	int m_scroll_bottom = 0;
 };

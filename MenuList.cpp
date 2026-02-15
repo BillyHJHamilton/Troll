@@ -6,15 +6,32 @@ void MenuList::draw_screen ()
 {
 	terminal_font("");
 	dimensions_t dim = terminal_print(0, 0, m_title.c_str());
-	int list_start = dim.height + 1;
+	int const list_start = dim.height + 1;
 
-	for (int i = 0; i < Util::Size(m_options); ++i)
+	int const max_lines = c_MaxLineY - list_start;
+	m_scroll_bottom = std::min(m_scroll_top + max_lines, Util::LastIndex(m_options));
+
+	bool const goes_off_top = m_scroll_top > 0;
+	bool const goes_off_bottom = m_scroll_bottom < Util::LastIndex(m_options);
+
+	if (goes_off_top)
 	{
-		terminal_print(2, list_start + i, m_options[i].label.c_str());
+		terminal_print(2, list_start - 1, "...");
+	}
+
+	for (int i = m_scroll_top; i <= m_scroll_bottom; ++i)
+	{
+		int const line_y = list_start + (i - m_scroll_top);
+		terminal_print(2, line_y, m_options[i].label.c_str());
+	}
+
+	if (goes_off_bottom)
+	{
+		terminal_print(2, c_MaxLineY + 1, "...");
 	}
 
 	// Show a cursor
-	terminal_put(0, list_start + m_cursor, '>');
+	terminal_put(0, list_start + m_cursor - m_scroll_top, '>');
 
 	/*if (s_list_details_func &&
 		Check(Util::IsValidIndex(s_options, s_selection)))
@@ -81,6 +98,11 @@ void MenuList::cursor_up()
 	if (m_cursor > 0)
 	{
 		--m_cursor;
+
+		if (m_cursor < m_scroll_top)
+		{
+			--m_scroll_top;
+		}
 	}
 }
 
@@ -89,6 +111,25 @@ void MenuList::cursor_down()
 	if (m_cursor < Util::LastIndex(m_options))
 	{
 		++m_cursor;
+
+		if (m_cursor > m_scroll_bottom)
+		{
+			++m_scroll_top;
+		}
+	}
+}
+
+void MenuList::scroll_to_end()
+{
+	m_cursor = Util::LastIndex(m_options);
+
+	dimensions_t dim = terminal_measure(m_title.c_str());
+	int const list_start = dim.height + 1;
+	int const max_lines = c_MaxLineY - list_start;
+
+	if (m_cursor >= max_lines)
+	{
+		m_scroll_top = m_cursor - max_lines;
 	}
 }
 

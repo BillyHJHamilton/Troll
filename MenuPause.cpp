@@ -11,6 +11,7 @@ MenuPause::MenuPause()
 		{"Spells Known", PauseMenuOption::SpellsKnown},
 		{"Inventory", PauseMenuOption::Inventory},
 		{"Help", PauseMenuOption::Help},
+		{"Message History", PauseMenuOption::MessageHistory},
 		{"Quit", PauseMenuOption::Quit},
 	};
 }
@@ -32,6 +33,9 @@ void MenuPause::handle_input (int key)
 				break;
 			case PauseMenuOption::Help:
 				Menu::show_help();
+				break;
+			case PauseMenuOption::MessageHistory:
+				Menu::show_message_history();
 				break;
 			case PauseMenuOption::Quit:
 				Input::request_quit();

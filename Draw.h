@@ -5,6 +5,8 @@
 #include "Types.h"
 #include "Geometry.h"
 
+#include <list>
+
 namespace Draw
 {
 	struct View
@@ -17,6 +19,12 @@ namespace Draw
 
 		Box2 view_area() const { return { start, viewport.size }; }
 		bool contains_global_pos(Vec3 const& global_pos) const;
+	};
+
+	struct GameMessage
+	{
+		int turn_number;
+		std::string text;
 	};
 
 	void init();
@@ -45,6 +53,7 @@ namespace Draw
 	void pos_message(Vec3 pos, std::string&& message);
 
 	void print_messages(Box2 const& box);
+	std::list<GameMessage> const& read_messages();
 
 	void draw_screen();
 
