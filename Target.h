@@ -11,10 +11,6 @@ enum class TargetMode : byte
 	Manual
 };
 
-extern TargetMode g_target_mode;
-extern Creature::Handle g_target_creature;
-extern Vec3 g_target_pos;
-
 char const * const cstr_TargetColour = "darkest grey";
 
 namespace Target

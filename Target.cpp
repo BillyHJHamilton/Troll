@@ -11,44 +11,44 @@
 namespace Target
 {
 
-TargetMode g_target_mode;
-Creature::Handle g_target_creature;
-Vec3 g_target_pos;
+TargetMode s_target_mode;
+Creature::Handle s_target_creature;
+Vec3 s_target_pos;
 
 void clear ()
 {
-	g_target_mode = TargetMode::Automatic;
-	g_target_creature = Creature::None;
+	s_target_mode = TargetMode::Automatic;
+	s_target_creature = Creature::None;
 }
 
 void update ()
 {
-	if (g_target_mode == TargetMode::Automatic)
+	if (s_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_creature != c_Invalid)
+		if (s_target_creature != c_Invalid)
 		{
-			if (g_target_creature.visible())
+			if (s_target_creature.visible())
 			{
 				// track target
-				g_target_pos = g_target_creature.pos();
+				s_target_pos = s_target_creature.pos();
 			}
 			else
 			{
 				// lose target
-				g_target_creature = c_Invalid;
+				s_target_creature = c_Invalid;
 			}
 		}
 
-		if (g_target_creature == c_Invalid)
+		if (s_target_creature == c_Invalid)
 		{
 			// acquire target
 			cycle();
 		}
 	}
-	else if (g_target_mode == TargetMode::Manual)
+	else if (s_target_mode == TargetMode::Manual)
 	{
-		if (g_target_pos.z != Player::pos().z &&
-			!World::read().is_visible(g_target_pos))
+		if (s_target_pos.z != Player::pos().z &&
+			!World::read().is_visible(s_target_pos))
 		{
 			cycle();
 		}
@@ -57,10 +57,10 @@ void update ()
 
 void cycle ()
 {
-	if (g_target_mode == TargetMode::Manual)
+	if (s_target_mode == TargetMode::Manual)
 	{
-		g_target_creature = Creature::creature_at_pos(g_target_pos);
-		g_target_mode = TargetMode::Automatic;
+		s_target_creature = Creature::creature_at_pos(s_target_pos);
+		s_target_mode = TargetMode::Automatic;
 	}
 	
 	std::vector<Creature::Handle> const & visible_creatures = Creature::get_visible_creatures();
@@ -69,12 +69,12 @@ void cycle ()
 		int vci = -1; // visible creature index - that is, index on the vector
 
 		// see if the current target is in the list
-		if (g_target_creature != -1)
+		if (s_target_creature != -1)
 		{
 			auto itr = std::find(
 				visible_creatures.begin(),
 				visible_creatures.end(),
-				g_target_creature);
+				s_target_creature);
 
 			if (itr != visible_creatures.end())
 			{
@@ -91,35 +91,35 @@ void cycle ()
 			vci = 0;
 		}
 
-		g_target_creature = visible_creatures[vci];
-		g_target_pos = g_target_creature.pos();
+		s_target_creature = visible_creatures[vci];
+		s_target_pos = s_target_creature.pos();
 	}
 	else
 	{
-		g_target_creature = -1;
+		s_target_creature = -1;
 	}
 }
 
 void move (Vec2 dir)
 {
-	if (g_target_mode == TargetMode::Automatic)
+	if (s_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_creature == Creature::None)
+		if (s_target_creature == Creature::None)
 		{
-			g_target_pos = Player::pos();
+			s_target_pos = Player::pos();
 		}
-		g_target_mode = TargetMode::Manual;
+		s_target_mode = TargetMode::Manual;
 	}
-	g_target_pos += dir.xy0();
+	s_target_pos += dir.xy0();
 
 	// see if we've slipped onto another level
 	Draw::View const& view = Draw::get_view();
-	g_target_pos.z = view.z;
+	s_target_pos.z = view.z;
 	for (Vec3 peek : view.peek_tiles)
 	{
-		if (peek.xy() == g_target_pos.xy())
+		if (peek.xy() == s_target_pos.xy())
 		{
-			g_target_pos.z = peek.z;
+			s_target_pos.z = peek.z;
 			break;
 		}
 	}
@@ -127,14 +127,14 @@ void move (Vec2 dir)
 
 bool is_target (Creature::Handle creature)
 {
-	if (g_target_mode == TargetMode::Automatic)
+	if (s_target_mode == TargetMode::Automatic)
 	{
-		return creature == g_target_creature;
+		return creature == s_target_creature;
 	}
-	else if (g_target_mode == TargetMode::Manual)
+	else if (s_target_mode == TargetMode::Manual)
 	{
 		return creature.valid()
-			&& creature.pos() == g_target_pos;
+			&& creature.pos() == s_target_pos;
 	}
 	else
 	{
@@ -145,14 +145,14 @@ bool is_target (Creature::Handle creature)
 
 bool is_target (Vec3 const & global_pos)
 {
-	if (g_target_mode == TargetMode::Manual)
+	if (s_target_mode == TargetMode::Manual)
 	{
-		return global_pos == g_target_pos;
+		return global_pos == s_target_pos;
 	}
-	else if (g_target_mode == TargetMode::Automatic)
+	else if (s_target_mode == TargetMode::Automatic)
 	{
-		return g_target_creature.valid()
-			&& g_target_pos == global_pos;
+		return s_target_creature.valid()
+			&& s_target_pos == global_pos;
 	}
 	else
 	{
@@ -163,20 +163,20 @@ bool is_target (Vec3 const & global_pos)
 
 std::optional<Vec3> get_pos ()
 {
-	if (g_target_mode == TargetMode::Automatic)
+	if (s_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_creature.valid())
+		if (s_target_creature.valid())
 		{
-			return g_target_creature.pos();
+			return s_target_creature.pos();
 		}
 		else
 		{
 			return std::optional<Vec3>(); // none
 		}
 	}
-	else if (g_target_mode == TargetMode::Manual)
+	else if (s_target_mode == TargetMode::Manual)
 	{
-		return g_target_pos;
+		return s_target_pos;
 	}
 	else
 	{
