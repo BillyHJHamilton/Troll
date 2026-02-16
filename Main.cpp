@@ -15,6 +15,7 @@
 //  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
 //  - EQS / find good attack position
 // - Proper miscasts
+// - Serialization - Make a serialize class with two modes (save/load).  Pass to each system.
 
 // To consider:
 // - How do we handle initiative to support the "ping pong" shield gameplay

@@ -163,6 +163,17 @@ namespace Util
 	//}
 
 	template<typename VectorItemType>
+	void Fill(std::vector<VectorItemType>& vector, int num, VectorItemType value)
+	{
+		vector.clear();
+		vector.reserve(num);
+		for (int i = 0; i < num; ++i)
+		{
+			vector.push_back(value);
+		}
+	}
+
+	template<typename VectorItemType>
 	VectorItemType PopBack(std::vector<VectorItemType>& vector)
 	{
 		VectorItemType result = vector.back();

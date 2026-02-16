@@ -179,6 +179,9 @@
     <ClCompile Include="Potion.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
+    <ClCompile Include="Spawn.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -322,6 +325,9 @@
     <ClInclude Include="Grid.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Spawn.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
@@ -337,6 +343,9 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Docs\FontGlyphs.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Docs\Students.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

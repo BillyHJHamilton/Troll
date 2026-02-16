@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "Potion.h"
 #include "Random.h"
+#include "Spawn.h"
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
@@ -30,13 +31,10 @@ namespace Game
 int s_turn_number;
 GameMode s_game_mode;
 
-std::vector<bool> s_spawned;
-
 //------------------------------------------------------------------------------
 // Helper function declarations.
 void end_turn();
 void game_over();
-void check_spawning();
 
 //------------------------------------------------------------------------------
 // Interface function implementations
@@ -45,7 +43,8 @@ void check_spawning();
 // Alphabetize the init's in each layer.
 // Avoid any order dependency within a layer.
 
-// Init runs once when the program starts.
+// Init runs once when the program starts, after the terminal starts.
+// All init functions must be independent, and run in alphabetic order.
 void init()
 {
 	PerfTimer perf0("game init");
@@ -63,6 +62,7 @@ void init()
 }
 
 // Clear runs before the start of each game.
+// All clear functions must be independent, and run in alphabetic order.
 void clear()
 {
 	PerfTimer perf0("game clear");
@@ -75,19 +75,19 @@ void clear()
 	Item::clear();
 	Menu::clear();
 	Player::clear();
+	Spawn::clear();
 	Target::clear();
 	World::clear();
 }
 
 // Setup runs at the start of each game, after all clear functions.
+// Here the ordering may be significant as dependencies appear.
 void setup()
 {
 	PerfTimer perf0("game setup");
 
 	s_turn_number = 0;
 	s_game_mode = GameMode::Normal;
-	s_spawned.clear();
-	s_spawned.reserve(7);
 
 	World& world = World::edit();
 
@@ -95,7 +95,6 @@ void setup()
 	int const map1_id = world.add_map(0, 0.0f, map1_box, Terrain::Wall);
 	MapGenerator& gen1 = world.edit_map(0).get_generator();
 	gen1.Generate();
-	s_spawned.push_back(false);
 
 	// Now try to find a place for the player...
 	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
@@ -137,38 +136,12 @@ void setup()
 			Vec2 other_end = pair.first + Stairs::relative_move(pair.second).xy();
 			world.edit_map(map_id - 1).remove_stairs(other_end);
 		}
-
-		s_spawned.push_back(false);
 	}
 
 	world.update_visibility(Player::pos(), Player::vision_radius);
-	check_spawning();
 
-/*	Box2 const map1_box = Box2(0, 0, 24, 24);
-	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
-	Box2 const map2_box = Box2(0, -10, 24, 10);
-	int const map2_id = world.add_map(0, map2_box, Terrain::Wall);
-	int const map3_id = world.add_map(1, map1_box, Terrain::Wall);
-
-	Map& map1 = world.edit_map(map1_id);
-	Map& map2 = world.edit_map(map2_id);
-	Map& map3 = world.edit_map(map3_id);
-
-	map1.fill_box(Box2(4, 4, 15, 15), Terrain::Open);
-	map1.fill_box(Box2(7, 5, 4, 1), Terrain::Wall);
-	map1.fill_box(Box2(14, 8, 1, 5), Terrain::Wall);
-	map1.fill_box(Box2(4, 0, 1, 5), Terrain::Open);
-	map1.add_stairs({6,3}, Stairs::UpNorth);
-
-	map2.fill_box(Box2(1, -9, 9, 9), Terrain::Open);
-	map2.set_terrain({4,-1}, Terrain::Open);
-
-	map3.fill_box(Box2(1,1,12,1), Terrain::Open);
-	map3.add_corresponding_stairs(map1);
-
-	spawn_creature(Creature::Player, {4,4});
-	spawn_creature(Creature::Neville_0, {6,9});
-	spawn_creature(Creature::ColinCreevy_0, {13,15});*/
+	Spawn::post_world_setup();
+	Spawn::check_spawning();
 }
 
 void update()
@@ -232,6 +205,7 @@ void end_turn()
 
 	Status::do_endround(Player::handle());
 	Creature::remove_defeated_creatures();
+	Spawn::check_spawning();
 
 	// Now all other creatures act.
 	for (Creature::HandleItr itr(1);
@@ -253,8 +227,6 @@ void end_turn()
 		return;
 	}
 
-	check_spawning();
-
 	++s_turn_number;
 }
 
@@ -263,101 +235,4 @@ void game_over()
 	Menu::show_game_over();
 }
 
-void check_spawning()
-{
-	// TODO There's probably a better place to put this code.
-	int const map_id = World::read().find_map(Player::pos());
-
-	if (Util::IsValidIndex(s_spawned, map_id) && !s_spawned[map_id])
-	{
-		Map const& map = World::read().read_map(map_id);
-
-		if (c_ShowMapDebug)
-		{
-			std::cout << std::format("\nSpawning for map {}.\n", map_id);
-		}
-
-		float const map_level = map.get_difficulty();
-
-		int const num_to_spawn = Random::in_range(4,6);
-		int num_spawned = 0;
-		for (int i = 0; i < num_to_spawn; ++i)
-		{
-			// Find spawn position
-			// TODO There's definitely a better way to do this.
-			// Like get the list of rooms, etc.
-			int const attempts = 100;
-			for (int a = 0; a < attempts; ++a)
-			{
-				Vec2 const pos2 = Random::in_box(map.get_box());
-				Vec3 const pos3 = pos2.xyz(Player::pos().z);
-				if (map.get_terrain(pos2) == Terrain::Open &&
-					!World::read().is_visible(pos3) &&
-					Creature::creature_at_pos(pos3) == Creature::None)
-				{
-					// TODO difficulty per map
-					Creature::Type type = Gingerbread::find_type_to_spawn(map_level);
-					if (type != Creature::None)
-					{
-						Creature::Handle creature = Creature::spawn_creature(type, pos3);
-
-						if (c_ShowMapDebug)
-						{
-							std::cout << std::format(" - Spawned {} at ({},{}).\n",
-								creature.long_name(), creature.pos().x, creature.pos().y);
-						}
-
-						++num_spawned;
-					}
-					break;
-				}
-			}
-		}
-
-		if (c_ShowMapDebug)
-		{
-			std::cout << std::format("Spawned {}/{} for map {}.\n",
-				num_spawned, num_to_spawn, map_id);
-		}
-
-		int const items_to_spawn = Random::in_range(20,40);
-		int items_spawned = 0;
-		for (int i = 0; i < items_to_spawn; ++i)
-		{
-			// Find spawn position
-			// TODO Repeating code from above...
-			// Again, there must be better ways to do all this.
-			int const attempts = 100;
-			for (int a = 0; a < attempts; ++a)
-			{
-				Vec2 const pos2 = Random::in_box(map.get_box());
-				Vec3 const pos3 = pos2.xyz(Player::pos().z);
-				if (map.get_terrain(pos2) == Terrain::Open &&
-					!World::read().has_item(pos3) &&
-					Creature::creature_at_pos(pos3) == Creature::None)
-				{
-					if (Random::one_in(10))
-					{
-						Item::spawn_potion_by_level(pos3, map_level);
-					}
-					else
-					{
-						Item::spawn_bbb(pos3);
-					}
-					++items_spawned;
-					break;
-				}
-			}
-		}
-
-		if (c_ShowMapDebug)
-		{
-			std::cout << std::format("Placed {}/{} items for map {}.\n",
-				items_spawned, items_to_spawn, map_id);
-		}
-
-		s_spawned[map_id] = true;
-	}
-}
-
-}
+} // namespace Game

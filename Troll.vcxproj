@@ -194,6 +194,7 @@
     <ClCompile Include="Potion.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Spawn.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
     <ClCompile Include="Stairs.cpp" />
@@ -241,6 +242,7 @@
     <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />
     <ClInclude Include="Stairs.h" />
@@ -257,6 +259,7 @@
     <Text Include="Docs\Fanfic notes.txt" />
     <Text Include="Docs\FontGlyphs.txt" />
     <Text Include="Docs\Game Design Goals.txt" />
+    <Text Include="Docs\Students.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

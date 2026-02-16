@@ -25,6 +25,7 @@ namespace Potion
 
 // Some other possible potions:
 // Babbling Beverage
+// Baruffio’s Brain Elixir (dubious brain stimulant)
 // Beautifying Potion
 // Befuddlement Draught
 // Blood-Replenishing Potion
