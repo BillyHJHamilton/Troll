@@ -24,6 +24,7 @@ LANGUAGE FEATURES
 - Use enum class, or enum inside a namespace (nicer for implicit conversions).
   - Define the storage type for all enums.
 - Use "using" instead of "typedef".
+- Avoid using unsigned ints for indices.  Convert to int.
 
 ORGANIZATION
 - Sort functionality into namespaces, with static data in the .cpp file.
