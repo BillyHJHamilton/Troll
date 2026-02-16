@@ -112,6 +112,7 @@ namespace Item
 	Item::Handle spawn_bbb (Vec3 pos);
 	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
 	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);
+	Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty);
 };
 
 // Other possible items:

@@ -83,6 +83,18 @@ std::string verbs(std::string verb, Creature::Handle creature)
 	}
 }
 
+std::string feel (Creature::Handle creature)
+{
+	if (creature.is_player())
+	{
+		return "feel";
+	}
+	else
+	{
+		return "looks";
+	}
+}
+
 std::string Your(Creature::Handle creature)
 {
 	if (creature.is_player())

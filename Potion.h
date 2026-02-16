@@ -7,6 +7,7 @@ namespace Potion
 	enum Type : int
 	{
 		None = c_invalid,
+		Calming,
 		Wiggenweld,
 		Count
 	};
@@ -14,6 +15,7 @@ namespace Potion
 	inline bool is_valid(int potion) { return potion > Potion::None && potion < Potion::Count; }
 
 	int random_flavour();
+	Potion::Type random_by_level(float difficulty);
 	char const* get_name(int potion);
 	char const* get_colour(int potion);
 	char const* get_description(int potion);
@@ -27,7 +29,7 @@ namespace Potion
 // Befuddlement Draught
 // Blood-Replenishing Potion
 // Boil Cure Potion
-// Calming Draught
+// Calming Draught (could stop dancing and tickling, for instance)
 // Draught of Living Death
 // Dr. Ubbly's Oblivious Unction (cures brain-tentacle welts)
 // Elixer to Induce Euphoria
@@ -54,3 +56,9 @@ namespace Potion
 // Baneberry Potion (a poison)
 // Fungiface Potion (causes fungi to grow on face)
 // Manegro Potion (grow a lion's mane... courage?)
+
+// From fanfic:
+// Restorative Draught
+
+// Made up by me just now:
+// Undiscombobulating Draught

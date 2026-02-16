@@ -357,6 +357,16 @@ Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
 
 	std::vector<Spell::Index> spells;
 	Spell::bitset_to_list(Gingerbread::read_spells(owner_type), spells);
+
+	Spell::Index spell = Random::from_vector(spells);
+
+	// Try not to choose a damaging spell since they are so ubiquitous
+	// and the player probably knows them already;
+	for (int i = 0; i < 2 && Spell::is_damaging(spell); ++i)
+	{
+		spell = Random::from_vector(spells);
+	}
+
 	inst.flavour = (int)Random::from_vector(spells);
 
 	return Item::spawn_item(inst, pos);
@@ -368,6 +378,11 @@ Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
 	inst.type = Item::PotionItem;
 	inst.flavour = potion;
 	return Item::spawn_item(inst, pos);
+}
+
+Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty)
+{
+	return spawn_potion(pos, Potion::random_by_level(difficulty));
 }
 
 } // namespace Item

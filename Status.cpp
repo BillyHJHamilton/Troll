@@ -25,6 +25,7 @@ void calc_tongue_tied(Creature::Handle creature, Creature::DerivedStats& ds, int
 void calc_burning(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_impeded(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_batty(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
+void calc_calm(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 
 // functions for updating each status at end of round
 void endround_dancing(Creature::Handle creature);
@@ -34,6 +35,7 @@ void endround_tongue_tied(Creature::Handle creature);
 void endround_burning(Creature::Handle creature);
 void endround_impeded(Creature::Handle creature);
 void endround_batty(Creature::Handle creature);
+void endround_calm(Creature::Handle creature);
 
 // functions for printing message when a status is removed
 void cure_dancing(Creature::Handle const creature);
@@ -43,19 +45,24 @@ void cure_tongue_tied(Creature::Handle const creature);
 void cure_burning(Creature::Handle const creature);
 void cure_impeded(Creature::Handle const creature);
 void cure_batty(Creature::Handle const creature);
+void cure_calm(Creature::Handle const creature);
 
 Status::Data s_status_data [Status::Count];
 
 void init ()
 {
-	s_status_data[Status::Shield] = {"Shield", nullptr, nullptr, nullptr};
-	s_status_data[Status::Dancing] = {"Dance", &calc_dancing, &endround_dancing, &cure_dancing};
-	s_status_data[Status::LegLocked] = { "LegLk", &calc_leg_locked, &endround_leg_locked, &cure_leg_locked };
-	s_status_data[Status::Tickled] = {"Tickle", &calc_tickled, &endround_tickled, &cure_tickled};
-	s_status_data[Status::TongueTied] = {"TngTie", &calc_tongue_tied, &endround_tongue_tied, &cure_tongue_tied};
-	s_status_data[Status::Burning] = {"Fire", &calc_burning, &endround_burning, &cure_burning};
-	s_status_data[Status::Impeded] = {"Imped", &calc_impeded, &endround_impeded, &cure_impeded};
-	s_status_data[Status::Batty] = {"Batty", &calc_batty, &endround_batty, &cure_batty};
+	char const* cstr_Yellow = "lighter yellow";
+	char const* cstr_Violet = "lighter violet";
+
+	s_status_data[Status::Shield] = {"Shield", cstr_Yellow, nullptr, nullptr, nullptr};
+	s_status_data[Status::Dancing] = {"Dance", cstr_Yellow, &calc_dancing, &endround_dancing, &cure_dancing};
+	s_status_data[Status::LegLocked] = { "LegLk", cstr_Yellow, &calc_leg_locked, &endround_leg_locked, &cure_leg_locked };
+	s_status_data[Status::Tickled] = {"Tickle", cstr_Yellow, &calc_tickled, &endround_tickled, &cure_tickled};
+	s_status_data[Status::TongueTied] = {"TngTie", cstr_Yellow, &calc_tongue_tied, &endround_tongue_tied, &cure_tongue_tied};
+	s_status_data[Status::Burning] = {"Fire", cstr_Yellow, &calc_burning, &endround_burning, &cure_burning};
+	s_status_data[Status::Impeded] = {"Imped", cstr_Yellow, &calc_impeded, &endround_impeded, &cure_impeded};
+	s_status_data[Status::Batty] = {"Batty", cstr_Yellow, &calc_batty, &endround_batty, &cure_batty};
+	s_status_data[Status::Calm] = {"Calm", cstr_Violet, &calc_calm, &endround_calm, &cure_calm};
 }
 
 int max_severity (Status::Index status_index)
@@ -70,9 +77,14 @@ int max_severity (Status::Index status_index)
 		return 10;
 }
 
-std::string abbrev(Status::Index status)
+char const* abbrev(Status::Index status)
 {
 	return s_status_data[status].abbrev;
+}
+
+char const* colour(Status::Index status)
+{
+	return s_status_data[status].colour;
 }
 
 void apply_to_derived_stats (Status::Index status, Creature::Handle creature,
@@ -287,5 +299,24 @@ void cure_batty(Creature::Handle const creature)
 		+ " no longer being attacked by black winged things.");
 }
 
+
+// ------------------------------------------------------------------------------------------------
+// Calm
+
+void calc_calm(Creature::Handle creature, Creature::DerivedStats& ds, int severity)
+{
+	ds.distractedness -= 20;
+}
+
+void endround_calm(Creature::Handle creature)
+{
+	creature.reduce_status(Calm, 1);
+}
+
+void cure_calm(Creature::Handle const creature)
+{
+	Draw::creature_message(creature, std::format("{} no longer {} so calm.",
+		Grammar::You(creature), Grammar::feel(creature)));
+}
 
 } // namespace status

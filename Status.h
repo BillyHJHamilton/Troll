@@ -14,6 +14,7 @@ namespace Status
 
 	enum Index : int
 	{
+		// Spell statuses
 		Shield = 0,
 		Dancing,
 		LegLocked,
@@ -23,12 +24,16 @@ namespace Status
 		Impeded,
 		Batty,
 
+		// Potion statuses
+		Calm,
+
 		Count
 	};
 
 	struct Data
 	{
 		char const * abbrev;
+		char const * colour;
 
 		// function pointers
 		CalcFunc calc_func;
@@ -39,7 +44,8 @@ namespace Status
 	void init();
 
 	int max_severity(Status::Index status);
-	std::string abbrev(Status::Index status);
+	char const* abbrev(Status::Index status);
+	char const* colour(Status::Index status);
 
 	void apply_to_derived_stats (Status::Index status, Creature::Handle creature_index,
 		Creature::DerivedStats & derived_stats);

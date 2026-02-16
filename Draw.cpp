@@ -375,9 +375,7 @@ void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 	ss << "[/color]";
 
 	ss << std::endl;
-	ss << "[color=lighter yellow]";
 	ss << creature.status_string();
-	ss << "[/color]";
 }
 
 void print_player_stats(Box2 draw_area)

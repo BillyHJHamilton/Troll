@@ -92,7 +92,12 @@ void tarantallegra (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::Dancing))
+	if (target.has_status(Status::Calm))
+	{
+		Draw::creature_message(target, std::format(" {} {} calm.",
+			Grammar::You(target), Grammar::verbs("remain", target)));
+	}
+	else if (target.has_status(Status::Dancing))
 	{
 		Draw::creature_message(target, std::format(" {0} feet quicken their dance!",
 			Grammar::Your(target)));
@@ -159,9 +164,17 @@ void rictusempra (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	Draw::creature_message(target, std::format(" Something is tickling {0}!",
-		Grammar::you(target)));
-	target.inflict_status(Status::Tickled, Random::in_range(4,8));
+	if (target.has_status(Status::Calm))
+	{
+		Draw::creature_message(target, std::format(" {} {} calm.",
+			Grammar::You(target), Grammar::verbs("remain", target)));
+	}
+	else
+	{
+		Draw::creature_message(target, std::format(" Something is tickling {0}!",
+			Grammar::you(target)));
+		target.inflict_status(Status::Tickled, Random::in_range(4,8));
+	}
 }
 
 void fumos (EffectParams params)

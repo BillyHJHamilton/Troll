@@ -7,7 +7,7 @@
 #include <vector>
 
 // Enables an overpowered spell for debug purposes.
-#define d_EnableMegadrill false
+#define d_EnableMegadrill true
 
 namespace Spell
 {
@@ -100,6 +100,7 @@ namespace Spell
 	int get_difficulty (Spell::Index spell_index);
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
+	int is_damaging (Spell::Index spell_index);
 	TargetType get_target_type (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);
 	int get_range (Spell::Index spell_index);

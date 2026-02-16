@@ -264,13 +264,12 @@ std::string Handle::status_string () const
 		{
 			if (num_out < 5)
 			{
-				int severity = status_severity(si);
-				outs << Status::abbrev(si);
-				outs << "(" << severity << ")  ";
+				outs << std::format("[color={}]{}({})[/color]",
+					Status::colour(si), Status::abbrev(si), status_severity(si));
 			}
 			else
 			{
-				outs << "...";
+				outs << "[color=lighter grey]...[/color]";
 			}
 			num_out += 1;
 		}
@@ -542,6 +541,71 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	return new_creature;
 }
 
+// Helper function
+void creature_drop_item(Vec3 pos, Creature::Type type)
+{
+	Item::Type item_type = Gingerbread::random_item_drop(type);
+	switch (item_type)
+	{
+		case Item::BBBean:
+			Item::spawn_bbb(pos);
+			break;
+		case Item::Notes:
+			Item::spawn_notes(pos, type);
+			break;
+		case Item::PotionItem:
+			Item::spawn_potion_by_level(pos, Gingerbread::read(type).difficulty);
+			break;
+	}
+}
+
+void remove_defeated_creatures ()
+{
+	int num_removed = 0;
+
+	for (std::pair<int,int> const& pair : s_fainting_creatures)
+	{
+		Handle creature = pair.first;
+		Creature::Type const instigator_type = (Creature::Type)pair.second;
+
+		if (creature.visible() || instigator_type == Type::Player)
+		{
+			if (creature.has_tag("Faint.Disappear"))
+			{
+				Draw::add_message(creature.long_name() + " disappears.");
+			}
+			else
+			{
+				Draw::add_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
+			}
+		}
+
+		if (creature.is_player())
+		{
+			Player::set_game_over(instigator_type);
+		}
+		else
+		{
+			++num_removed;
+			Player::gain_xp_for(creature.type());
+
+			creature_drop_item(creature.pos(), creature.type());
+			if (creature.has_tag("Drop.Notes"))
+			{
+				Item::spawn_notes(creature.pos(), creature.type());
+			}
+
+			creature.invalidate();
+		}
+	}
+	s_fainting_creatures.clear();
+
+	if (num_removed > 0)
+	{
+		update_visible_creatures();
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 // Visible creatures operations.
 // We maintain a collection of creatures visible to the player to avoid iterating over the entire
@@ -586,52 +650,6 @@ void draw_visible_creatures (Draw::View const & view)
 	for (int i : s_visible_creatures)
 	{
 		draw_creature(i, view);
-	}
-}
-
-void remove_defeated_creatures ()
-{
-	int num_removed = 0;
-
-	for (std::pair<int,int> const& pair : s_fainting_creatures)
-	{
-		Handle creature = pair.first;
-		Creature::Type const instigator_type = (Creature::Type)pair.second;
-
-		if (creature.visible() || instigator_type == Type::Player)
-		{
-			if (creature.has_tag("Faint.Disappear"))
-			{
-				Draw::add_message(creature.long_name() + " disappears.");
-			}
-			else
-			{
-				Draw::add_message(Grammar::You(creature) + " " + Grammar::verbs("faint", creature) + ".");
-			}
-		}
-
-		if (creature.is_player())
-		{
-			Player::set_game_over(instigator_type);
-		}
-		else
-		{
-			++num_removed;
-			Player::gain_xp_for(creature.type());
-
-			if (creature.has_tag("Drop.Notes"))
-			{
-				Item::spawn_notes(creature.pos(), creature.type());
-			}
-
-			creature.invalidate();
-		}
-	}
-	s_fainting_creatures.clear();
-
-	if (num_removed > 0)
-	{
-		update_visible_creatures();
 	}
 }
 

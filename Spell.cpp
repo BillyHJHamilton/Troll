@@ -111,6 +111,11 @@ int get_damage (Spell::Index spell_index, Creature::Handle caster)
 		return 0;
 }
 
+int is_damaging (Spell::Index spell_index)
+{
+	return s_spell_list[spell_index].damage != 0;
+}
+
 TargetType get_target_type (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].target_type;

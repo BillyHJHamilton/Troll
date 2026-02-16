@@ -172,11 +172,11 @@ namespace Creature
 	bool is_anyone_at (Vec3 pos);
 
 	Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos);
+	void remove_defeated_creatures ();
 
 	// Visible creature operations
 	void update_visible_creatures ();
 	void draw_creature (Creature::Handle creature_index, Draw::View const & view);
 	void draw_visible_creatures (Draw::View const & view);
-	void remove_defeated_creatures ();
 	std::vector<Creature::Handle> const & get_visible_creatures ();
 };

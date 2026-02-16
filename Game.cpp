@@ -276,6 +276,8 @@ void check_spawning()
 			std::cout << std::format("\nSpawning for map {}.\n", map_id);
 		}
 
+		float map_level = 1.0f; // todo
+
 		int const num_to_spawn = Random::in_range(4,6);
 		int num_spawned = 0;
 		for (int i = 0; i < num_to_spawn; ++i)
@@ -293,7 +295,7 @@ void check_spawning()
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{
 					// TODO difficulty per map
-					Creature::Type type = Gingerbread::find_type_to_spawn(1);
+					Creature::Type type = Gingerbread::find_type_to_spawn(map_level);
 					if (type != Creature::None)
 					{
 						Creature::Handle creature = Creature::spawn_creature(type, pos3);
@@ -333,9 +335,9 @@ void check_spawning()
 					!World::read().has_item(pos3) &&
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{
-					if (Random::one_in(5))
+					if (Random::one_in(10))
 					{
-						Item::spawn_potion(pos3, Potion::Wiggenweld);
+						Item::spawn_potion_by_level(pos3, map_level);
 					}
 					else
 					{

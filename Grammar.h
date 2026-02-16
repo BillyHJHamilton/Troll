@@ -14,4 +14,5 @@ namespace Grammar
 	std::string your (Creature::Handle creature);
 	std::string your_pr (Creature::Handle creature); // uses his/her/its instead of name
 	std::string verbs (std::string verb, Creature::Handle creature);
+	std::string feel (Creature::Handle creature);
 }
