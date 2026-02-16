@@ -18,13 +18,16 @@ namespace Item
 		None = c_invalid,
 
 		// School notes from a character.  Can be used to learn a spell.
-		// subtype: Character Type
-		// flavour: Spell contained in the notes
+		// Subtype: Character Type who wrote it.
+		// Flavour: Spell contained in the notes.
 		Notes,
 
 		// Bertie Bott's Every Flavour Bean.
-		// flavour: As defined in BertieBotts.cpp
+		// Flavour: As defined in BertieBotts.cpp
 		BBBean,
+
+		// Flavour: What potion it is.
+		PotionItem,
 
 		Count
 	};
@@ -44,6 +47,13 @@ namespace Item
 
 		// 1 + number of items below this one.
 		int height = 1;
+	};
+
+	enum class BagStack : byte
+	{
+		None = 0,	// Item does not stack in inventory.
+		ByType,		// Item will stack with others of same type.
+		ByFlavour	// Item will stack with others of same type and subtype.
 	};
 
 	// Represents an item instance, as an integer index to the global array.
@@ -76,7 +86,9 @@ namespace Item
 		std::string interaction_name () const;
 		bool can_use () const;
 		bool can_discard () const;
-		bool stacks_in_bag () const;
+		BagStack bag_stack_mode () const;
+		bool stacks_in_bag () const { return bag_stack_mode() != BagStack::None; }
+		bool can_stack_in_bag_with (Item::Handle other) const;
 
 		// Mutators
 		UseResult use ();
@@ -88,6 +100,7 @@ namespace Item
 		// Polymorphic stuff
 		UseResult use_bbbean();
 		UseResult use_notes();
+		UseResult use_potion();
 	};
 
 	// Global interface
@@ -98,4 +111,12 @@ namespace Item
 
 	Item::Handle spawn_bbb (Vec3 pos);
 	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
+	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);
 };
+
+// Other possible items:
+// Camera
+// Doxycide
+// Flesh-Eating Slug Repellant
+// Skele-Gro
+

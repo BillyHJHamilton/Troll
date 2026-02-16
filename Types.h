@@ -81,6 +81,11 @@ namespace Miscast
 	enum Category : int;
 }
 
+namespace Potion
+{
+	enum Type : int;
+}
+
 namespace Player
 {
 	struct Data;

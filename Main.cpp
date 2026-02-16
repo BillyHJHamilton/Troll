@@ -6,9 +6,6 @@
 #include "PerfTimer.h"
 
 // To do:
-// - Items
-// - Learning spells
-// - Proper miscasts
 // - Name and difficulty level for each map
 // - Improve spawning code
 //  - Find pos by room, instead of spraying at random?
@@ -17,6 +14,7 @@
 // - Improved enemy AI
 //  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
 //  - EQS / find good attack position
+// - Proper miscasts
 
 // To consider:
 // - How do we handle initiative to support the "ping pong" shield gameplay

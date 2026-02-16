@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-// Static menu which shows text on the screen and does nothing else.
+// A scrolling list menu with a cursor on the left.
 class MenuList : public IMenu
 {
 public:

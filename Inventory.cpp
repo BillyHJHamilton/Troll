@@ -54,7 +54,7 @@ void Inventory::add_item (Item::Handle new_item)
 		for (int i = 0; i < invent.size(); ++i)
 		{
 			Item::Handle bag_item = invent[i];
-			if (bag_item.type() == new_item.type())
+			if (new_item.can_stack_in_bag_with(bag_item))
 			{
 				new_item.stack_onto(bag_item);
 				invent[i] = new_item;

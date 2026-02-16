@@ -14,6 +14,7 @@
 #include "Menu.h"
 #include "PerfTimer.h"
 #include "Player.h"
+#include "Potion.h"
 #include "Random.h"
 #include "Spell.h"
 #include "Stairs.h"
@@ -316,12 +317,13 @@ void check_spawning()
 				num_spawned, num_to_spawn, map_id);
 		}
 
-		int const beans_to_spawn = Random::in_range(20,40);
-		int beans_spawned = 0;
-		for (int i = 0; i < beans_to_spawn; ++i)
+		int const items_to_spawn = Random::in_range(20,40);
+		int items_spawned = 0;
+		for (int i = 0; i < items_to_spawn; ++i)
 		{
 			// Find spawn position
 			// TODO Repeating code from above...
+			// Again, there must be better ways to do all this.
 			int const attempts = 100;
 			for (int a = 0; a < attempts; ++a)
 			{
@@ -331,8 +333,15 @@ void check_spawning()
 					!World::read().has_item(pos3) &&
 					Creature::creature_at_pos(pos3) == Creature::None)
 				{
-					Item::spawn_bbb(pos3);
-					++beans_spawned;
+					if (Random::one_in(5))
+					{
+						Item::spawn_potion(pos3, Potion::Wiggenweld);
+					}
+					else
+					{
+						Item::spawn_bbb(pos3);
+					}
+					++items_spawned;
 					break;
 				}
 			}
@@ -340,8 +349,8 @@ void check_spawning()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << std::format("Placed {}/{} beans for map {}.\n",
-				beans_spawned, beans_to_spawn, map_id);
+			std::cout << std::format("Placed {}/{} items for map {}.\n",
+				items_spawned, items_to_spawn, map_id);
 		}
 
 		s_spawned[map_id] = true;

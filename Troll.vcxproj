@@ -191,6 +191,7 @@
     <ClCompile Include="Pathfind.cpp" />
     <ClCompile Include="PerfTimer.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Potion.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="Spell.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="Pathfind.h" />
     <ClInclude Include="PerfTimer.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="Spell.h" />

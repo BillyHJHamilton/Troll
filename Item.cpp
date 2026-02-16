@@ -6,6 +6,7 @@
 #include "Draw.h"
 #include "Gingerbread.h"
 #include "Player.h"
+#include "Potion.h"
 #include "Random.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -89,6 +90,7 @@ int Handle::codepoint () const
 	switch (type())
 	{
 		case BBBean:		return ',';
+		case PotionItem:	return '!';
 		default:			return '?';
 	}
 }
@@ -104,15 +106,14 @@ std::string Handle::name () const
 		}
 
 		case BBBean:
-		{
 			return "Bertie Bott's Every Flavour Bean";
-		}
+
+		case PotionItem:
+			return Potion::get_name(flavour());
 
 		default:
-		{
 			DebugBreak();
 			return "";
-		}
 	}
 }
 
@@ -121,15 +122,13 @@ std::string Handle::colour () const
 	switch (type())
 	{
 		case BBBean:
-		{
-			int const flavour = read_inst(index).flavour;
-			return BertieBotts::get_colour(flavour);
-		}
-			
+			return BertieBotts::get_colour(flavour());
+
+		case PotionItem:
+			return Potion::get_colour(flavour());
+
 		default:
-		{
 			return "white";
-		}
 	}
 }
 
@@ -149,6 +148,11 @@ std::string Handle::description () const
 			return "They mean every flavour.";
 		}
 
+		case PotionItem:
+		{
+			return Potion::get_description(flavour());
+		}
+
 		default:
 		{
 			return "";
@@ -165,6 +169,9 @@ std::string Handle::interaction_name () const
 
 		case BBBean:
 			return "Eat";
+
+		case PotionItem:
+			return "Imbibe";
 
 		default:
 			return "Use";
@@ -183,24 +190,47 @@ bool Handle::can_discard () const
 	return true;
 }
 
-bool Handle::stacks_in_bag () const
+Item::BagStack Handle::bag_stack_mode () const
 {
 	switch (type())
 	{
 		case BBBean:
-			return true;
+			return BagStack::ByType;
+
+		case PotionItem:
+			return BagStack::ByFlavour;
 
 		default:
-			return false;
+			return BagStack::None;
 	}
+}
+
+bool Handle::can_stack_in_bag_with (Item::Handle other) const
+{
+	if (other.type() == type())
+	{
+		if (bag_stack_mode() == BagStack::ByType)
+		{
+			return true;
+		}
+
+		if (other.flavour() == flavour()
+			&& bag_stack_mode() == BagStack::ByFlavour)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 UseResult Handle::use ()
 {
 	switch (type())
 	{
-		case Notes:		return use_notes();
-		case BBBean:	return use_bbbean();
+		case Notes:			return use_notes();
+		case BBBean:		return use_bbbean();
+		case PotionItem:	return use_potion();
 
 		default:
 			DebugBreak();
@@ -274,6 +304,13 @@ UseResult Handle::use_bbbean()
 	return UseResult::Consumed;
 }
 
+UseResult Handle::use_potion()
+{
+	Draw::add_message(std::format("You drink the {}.", name()));
+	Potion::drink(Player::handle(), flavour());
+	return UseResult::Consumed;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Global interface
 
@@ -322,6 +359,14 @@ Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
 	Spell::bitset_to_list(Gingerbread::read_spells(owner_type), spells);
 	inst.flavour = (int)Random::from_vector(spells);
 
+	return Item::spawn_item(inst, pos);
+}
+
+Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
+{
+	Item::Instance inst;
+	inst.type = Item::PotionItem;
+	inst.flavour = potion;
 	return Item::spawn_item(inst, pos);
 }
 
