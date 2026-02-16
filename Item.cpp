@@ -360,14 +360,26 @@ Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
 
 	Spell::Index spell = Random::from_vector(spells);
 
+	if (c_ShowItemDebug)
+	{
+		std::cout << std::format("{}'s Notes: Selected {}.\n",
+			Gingerbread::read(owner_type).short_name, Spell::get_name(spell));
+	}
+
 	// Try not to choose a damaging spell since they are so ubiquitous
 	// and the player probably knows them already;
 	for (int i = 0; i < 2 && Spell::is_damaging(spell); ++i)
 	{
 		spell = Random::from_vector(spells);
+
+		if (c_ShowItemDebug)
+		{
+			std::cout << std::format(" - Rerolling, selected {}.\n",
+				Spell::get_name(spell));
+		}
 	}
 
-	inst.flavour = (int)Random::from_vector(spells);
+	inst.flavour = (int)spell;
 
 	return Item::spawn_item(inst, pos);
 }

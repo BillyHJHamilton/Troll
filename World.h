@@ -16,7 +16,7 @@ public:
 	static World& edit();
 	static World const& read();
 
-	int add_map(int z, Box2 box, Terrain::Type fill);
+	int add_map(int z, float difficulty, Box2 box, Terrain::Type fill);
 	int num_maps() const;
 	Map& edit_map(int index);
 	const Map& read_map(int index) const;

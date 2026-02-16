@@ -226,6 +226,7 @@ void init()
 	char const* cstr_dark_chartreuse = "dark chartreuse";
 	add_flavour(cstr_dark_chartreuse, "avocodo", c_rare, Tastiness::Questionable);
 	add_flavour(cstr_dark_chartreuse, "thyme", c_rare, Tastiness::Questionable);
+	add_flavour(cstr_dark_chartreuse, "dill pickle", c_rare, Tastiness::Questionable);
 
 	char const* cstr_green = "green";
 	add_flavour(cstr_green, "parsley", c_rare, Tastiness::Questionable);

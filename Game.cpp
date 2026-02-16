@@ -91,7 +91,7 @@ void setup()
 	World& world = World::edit();
 
 	Box2 const map1_box = Box2(0, 0, 30, 30);
-	int const map1_id = world.add_map(0, map1_box, Terrain::Wall);
+	int const map1_id = world.add_map(0, 0.0f, map1_box, Terrain::Wall);
 	MapGenerator& gen1 = world.edit_map(0).get_generator();
 	gen1.Generate();
 	s_spawned.push_back(false);
@@ -111,7 +111,7 @@ void setup()
 	int constexpr c_num_levels = 6;
 	for (int z = 1; z <= c_num_levels; ++z)
 	{
-		int const map_id = world.add_map(z, map1_box, Terrain::Wall);
+		int const map_id = world.add_map(z, (z * 0.5f), map1_box, Terrain::Wall);
 
 		MapGenerator::Parameters param{};
 		if (z == c_num_levels)
@@ -276,7 +276,7 @@ void check_spawning()
 			std::cout << std::format("\nSpawning for map {}.\n", map_id);
 		}
 
-		float map_level = 1.0f; // todo
+		float const map_level = map.get_difficulty();
 
 		int const num_to_spawn = Random::in_range(4,6);
 		int num_spawned = 0;

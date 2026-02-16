@@ -12,9 +12,10 @@
 #include <cassert>
 #include <iostream>
 
-void Map::init(int z, Box2 box, Terrain::Type fill)
+void Map::init(int z, float map_difficulty, Box2 box, Terrain::Type fill)
 {
 	global_z = z;
+	difficulty = map_difficulty;
 	map_box = box;
 
 	terrain = make_grid(box.size.x, box.size.y, fill);

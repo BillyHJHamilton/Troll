@@ -42,7 +42,7 @@ std::array<Info,Potion::Count> s_potions =
 	Info{ "Calming Draught", "light violet", 10, &drink_calming,
 	  "A potion to help settle anxious nerves.  It stops uncontrollable dancing and prevents tickling sensations." },
 	Info{ "Wiggenweld Potion", "sea", 20, &drink_wiggenweld,
-	  "A healing potion prepared with Wiggentree bark." },
+	  "A healing potion prepared with Wiggentree bark.  It restores up to 8 HP." },
 };
 
 //-------------------------------------------------------------------------------------------------

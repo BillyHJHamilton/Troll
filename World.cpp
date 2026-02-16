@@ -25,10 +25,10 @@ World const& World::read()
 	return s_world;
 }
 
-int World::add_map(int z, Box2 box, Terrain::Type fill)
+int World::add_map(int z, float difficulty, Box2 box, Terrain::Type fill)
 {
 	maps.emplace_back(std::make_shared<Map>());
-	maps.back()->init(z, box, fill);
+	maps.back()->init(z, difficulty, box, fill);
 	return (int)maps.size() - 1;
 }
 

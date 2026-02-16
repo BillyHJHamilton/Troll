@@ -21,12 +21,13 @@ class Map
 {
 	// functions
 public:
-	void init(int z, Box2 box, Terrain::Type fill);
+	void init(int z, float map_difficulty, Box2 box, Terrain::Type fill);
 
 	MapGenerator& get_generator();
 
 	Box2 get_box() const { return map_box; }
 	int get_z() const { return global_z; }
+	float get_difficulty() const { return difficulty; }
 
 	inline Vec2 global_to_local(Vec2 global) const { return global - map_box.min; }
 	inline bool local_pos_valid(Vec2 local_pos) const { return Box2{Vec2{0,0}, map_box.size}.contains(local_pos); }
@@ -77,6 +78,9 @@ protected:
 
 	// All maps are flat, so it only needs a single z coordinate.
 	int global_z = 0;
+
+	// Map's difficulty rating, for creature and item placement.
+	float difficulty = 0.0f;
 
 	// Data in local space.  Warning: Local coords may be confusing.
 	// Use the get/set functions if you want to do things in global space.
