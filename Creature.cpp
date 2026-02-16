@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Grid.h"
 #include "Gingerbread.h"
 #include "Math.h"
 #include "PerfTimer.h"
@@ -33,7 +34,7 @@ namespace Creature
 
 int constexpr c_max_creatures = 200;
 static Creature::Instance s_creatures [c_max_creatures];
-static Grid<int> s_creature_status; // [creature][status]
+static Grid<int> s_creature_status; // (creature, status)
 static Creature::DerivedStats s_derived_stats [c_max_creatures];
 static Spell::Bitset s_spells_known [c_max_creatures];
 static int s_max_creature_index;
@@ -87,7 +88,7 @@ void clear ()
 		s_spells_known[i] = Spell::Bitset{};
 	}
 
-	s_creature_status = make_grid(c_max_creatures, Status::Count, 0);
+	s_creature_status = Grid(c_max_creatures, Status::Count, 0);
 
 	s_max_creature_index = 0;
 
@@ -171,12 +172,12 @@ Vec3 Handle::pos () const
 
 bool Handle::has_status (Status::Index status) const
 {
-	return s_creature_status[index][status] > 0;
+	return s_creature_status.read(index, status) > 0;
 }
 
 int Handle::status_severity (Status::Index status) const
 {
-	return s_creature_status[index][status];
+	return s_creature_status.read(index, status);
 }
 
 int Handle::distractedness () const
@@ -323,16 +324,16 @@ void Handle::inflict_status (Status::Index status, int severity)
 {
 	if (!has_status(status))
 	{
-		s_creature_status[index][status] = severity;
+		s_creature_status.edit(index, status) = severity;
 	}
 	else
 	{
-		s_creature_status[index][status] += severity;
+		s_creature_status.edit(index, status) += severity;
 	}
 
-	if (s_creature_status[index][status] > Status::max_severity(status))
+	if (s_creature_status.read(index, status) > Status::max_severity(status))
 	{
-		s_creature_status[index][status] = Status::max_severity(status);
+		s_creature_status.edit(index, status) = Status::max_severity(status);
 	}
 
 	update_derived_stats();
@@ -347,10 +348,10 @@ void Handle::reduce_status (Status::Index status, int reduction)
 	}
 	else
 	{
-		s_creature_status[index][status] -= reduction;
-		if (s_creature_status[index][status] <= 0)
+		s_creature_status.edit(index, status) -= reduction;
+		if (s_creature_status.read(index, status) <= 0)
 		{
-			s_creature_status[index][status] = 0;
+			s_creature_status.edit(index, status) = 0;
 			if (visible())
 			{
 				Status::print_cure_message(*this, status);
@@ -369,7 +370,7 @@ void Handle::cure_status (Status::Index status)
 void Handle::cure_all ()
 {
 	// blank all statuses (with no message)
-	s_creature_status[index] = std::vector<int>(Status::Count, 0);
+	s_creature_status.fill(0);
 	edit_creature_instance(index).hp = max_hp();
 }
 

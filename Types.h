@@ -7,13 +7,7 @@ static int constexpr c_invalid = -1;
 using byte = unsigned char;
 
 template<class T>
-using Grid = std::vector<std::vector<T>>;
-
-template<class T>
-Grid<T> make_grid (int x, int y, T value)
-{
-	return std::vector<std::vector<T>>(x, std::vector<T>(y, value));
-}
+using Ragged = std::vector<std::vector<T>>;
 
 class IMenu;
 

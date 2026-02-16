@@ -4,6 +4,7 @@
 #include "Item.h"
 #include "Cloud.h"
 #include "Geometry.h"
+#include "Grid.h"
 #include "Stairs.h"
 
 #include <memory>

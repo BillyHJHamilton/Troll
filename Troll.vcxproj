@@ -210,6 +210,7 @@
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="MenuInventory.h" />
     <ClInclude Include="MenuMessages.h" />
     <ClInclude Include="MenuSelectHouse.h" />

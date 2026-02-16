@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Debug.h"
+#include "Grid.h"
 #include "PerfTimer.h"
 #include "VectorUtil.h"
 
@@ -23,7 +24,7 @@ int constexpr c_line_grid_dimension = (2 * c_max_range) + 1;
 int constexpr c_line_grid_area = c_line_grid_dimension * c_line_grid_dimension;
 
 // Cache of precomputed lines.
-Grid<Vec2> s_line_cache;
+Ragged<Vec2> s_line_cache;
 
 // For each square in a grid around the origin, a list of (1 or 2) cached lines that target it.
 // - Outer array index is the line's lookup index (see get_lookup_index below).
@@ -31,7 +32,7 @@ Grid<Vec2> s_line_cache;
 // Note: We don't include any entries at the origin, since EVERY line starts there.
 // Note: Does not include every possible line passing through a square,
 //       because this causes asymmetric LOS.
-Grid<int> s_line_lookup;
+Ragged<int> s_line_lookup;
 
 //------------------------------------------------------------------------------
 // Helper function declarations

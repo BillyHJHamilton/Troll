@@ -18,10 +18,10 @@ void Map::init(int z, float map_difficulty, Box2 box, Terrain::Type fill)
 	difficulty = map_difficulty;
 	map_box = box;
 
-	terrain = make_grid(box.size.x, box.size.y, fill);
-	visibility = make_grid(box.size.x, box.size.y, c_invalid);
-	clouds = make_grid(box.size.x, box.size.y, Cloud::Type::None);
-	items = make_grid(box.size.x, box.size.y, (Item::Handle)c_invalid);
+	terrain = Grid(box.size.x, box.size.y, fill);
+	visibility = Grid(box.size.x, box.size.y, c_invalid);
+	clouds = Grid(box.size.x, box.size.y, Cloud::Type::None);
+	items = Grid(box.size.x, box.size.y, (Item::Handle)c_invalid);
 }
 
 MapGenerator& Map::get_generator()
@@ -38,14 +38,14 @@ Terrain::Type Map::get_terrain(Vec2 global_pos) const
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	return terrain[local.x][local.y];
+	return terrain.read(local.x, local.y);
 }
 
 Visibility Map::get_visibility(Vec2 global_pos, int current_step) const
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	int const vis = visibility[local.x][local.y];
+	int const vis = visibility.read(local.x, local.y);
 	if (vis == current_step)
 	{
 		return Visibility::Visible;
@@ -64,21 +64,23 @@ Cloud::Type Map::get_cloud(Vec2 global_pos) const
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	return clouds[local.x][local.y];
+	return clouds.read(local.x, local.y);
 }
 
 int Map::get_cloud_lifetime(Vec2 global_pos) const
 {
-	Vec2 const local = global_to_local(global_pos);
-	assert(local_pos_valid(local));
-	return clouds[local.x][local.y];
+	if (int const* lifetime = Util::Find(cloud_lifetimes, global_pos))
+	{
+		return *lifetime;
+	}
+	return 0;
 }
 
 void Map::set_terrain(Vec2 global_pos, Terrain::Type t)
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	terrain[local.x][local.y] = t;
+	terrain.edit(local.x, local.y) = t;
 }
 
 void Map::set_visibility(Vec2 global_pos, Visibility v, int current_step)
@@ -87,16 +89,16 @@ void Map::set_visibility(Vec2 global_pos, Visibility v, int current_step)
 	assert(local_pos_valid(local));
 	if (v == Visibility::Visible)
 	{
-		visibility[local.x][local.y] = current_step;
+		visibility.edit(local.x, local.y) = current_step;
 	}
 	else if (v == Visibility::Explored)
 	{
 		assert(current_step > 0);
-		visibility[local.x][local.y] = 0;
+		visibility.edit(local.x, local.y) = 0;
 	}
 	else
 	{
-		visibility[local.x][local.y] = c_invalid;
+		visibility.edit(local.x, local.y) = c_invalid;
 	}
 }
 
@@ -125,7 +127,7 @@ bool Map::try_add_cloud(Vec2 global_pos, Cloud::Type cloud, int lifetime)
 			}
 		}
 
-		clouds[local.x][local.y] = cloud;
+		clouds.edit(local.x, local.y) = cloud;
 		cloud_lifetimes.insert_or_assign(global_pos, lifetime);
 		return true;
 	}
@@ -136,7 +138,7 @@ void Map::clear_cloud(Vec2 global_pos)
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	clouds[local.x][local.y] = Cloud::None;
+	clouds.edit(local.x, local.y) = Cloud::None;
 }
 
 void Map::step_clouds()
@@ -178,7 +180,7 @@ Item::Handle const Map::peek_item(Vec2 global_pos) const
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	return items[local.x][local.y];
+	return items.read(local.x, local.y);
 }
 
 /*std::vector<Item::Handle> Map::get_items(Vec2 global_pos) const
@@ -198,18 +200,19 @@ void Map::add_item(Vec2 global_pos, Item::Handle item)
 	assert(item.valid());
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	item.stack_onto(items[local.x][local.y]);
-	items[local.x][local.y] = item;
+	Item::Handle item_on_floor = items.read(local.x, local.y);
+	item.stack_onto(item_on_floor);
+	items.edit(local.x, local.y) = item;
 }
 
 Item::Handle Map::pop_item(Vec2 global_pos)
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	Item::Handle top = items[local.x][local.y];
+	Item::Handle top = items.read(local.x, local.y);
 	if (top.valid())
 	{
-		items[local.x][local.y] = top.next_in_stack();
+		items.edit(local.x, local.y) = top.next_in_stack();
 		top.stack_onto(c_invalid);
 	}
 	return top;

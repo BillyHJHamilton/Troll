@@ -319,6 +319,9 @@
     <ClInclude Include="Potion.h">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
