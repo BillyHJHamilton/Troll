@@ -2,7 +2,7 @@
 
 #include <vector>
 
-static int constexpr c_invalid = -1;
+static int constexpr c_Invalid = -1;
 
 using byte = unsigned char;
 

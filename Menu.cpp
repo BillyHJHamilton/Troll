@@ -36,7 +36,7 @@ IMenu* s_current_menu = nullptr;
 //-------------------------------------------------------------------------------------------------
 // Static Data
 
-const char* const c_doc_title =
+const char* const cstr_DocTitle =
 	"\n"
 	"  ------------------------------------\n\n"
 	"  TTTTTTT RRRR    OOO    L      L     \n"
@@ -51,7 +51,7 @@ const char* const c_doc_title =
 	"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 	"  (press enter)";
 
-const char* const c_doc_help =
+const char* const cstr_DocHelp =
 	"How To Play\n"
 	"\n"
 	"Movement:\n"
@@ -91,6 +91,11 @@ void set_menu(IMenu& menu)
 //-------------------------------------------------------------------------------------------------
 // Public function implementations
 
+void init()
+{
+	s_menu_select_house.init();
+}
+
 void clear()
 {
 	s_current_menu = nullptr;
@@ -99,13 +104,13 @@ void clear()
 void show_title()
 {
 	set_menu(s_menu_document);
-	s_menu_document.init(c_doc_title, &show_house_selection);
+	s_menu_document.init(cstr_DocTitle, &show_house_selection);
 }
 
 void show_help()
 {
 	set_menu(s_menu_document);
-	s_menu_document.init(c_doc_help, &Menu::close);
+	s_menu_document.init(cstr_DocHelp, &Menu::close);
 }
 
 void show_game_over()

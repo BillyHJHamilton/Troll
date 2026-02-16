@@ -43,7 +43,7 @@ Item::Handle const Inventory::peek_item (int slot) const
 		return invent.at(slot);
 	}
 	DebugBreak();
-	return c_invalid;
+	return c_Invalid;
 }
 
 void Inventory::add_item (Item::Handle new_item)

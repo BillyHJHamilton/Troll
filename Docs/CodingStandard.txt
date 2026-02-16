@@ -1,32 +1,58 @@
 MEMORY MANAGEMENT
-- avoid new/delete - use arrays and/or vectors
-- avoid smart pointers (which are just another form of new/delete)
-- don't store pointers to things in vectors - use index handles (the vector may reallocate)
-- whenever possible, allocate everything at program startup
-- use RAII when applicable (if a class MUST manage a resource)
+- Avoid new/delete; use arrays and/or vectors when possible.
+- Never store pointers to values in vectors; use index handles (the vector may reallocate).
+- Avoid smart pointers unless object is too large to copy (e.g. Map class).
+- When possible, allocate storage at program startup.
+- Use RAII when applicable (if a class needs to manage a resource).
+- Use char const* instead of std::string if it isn't dynamic.
 
 OBJECTS
-- use "struct" for POD and "class" for things with constructors, etc.
-- use POD structs (instead of classes) whenever feasible
-- if necessary, define separate (or static) function to construct a POD struct
-- avoid pointless getters/setters - use public members for access outside class
-- use getter/setter to give multiple useful ways to access the same thing
-- use free functions for things that seem to involve multiple objects
-- avoid virtual functions whenever possible (e.g., use enum/switch)
-
-STYLE
-- do only one thing per line (no clever K&R tricks)
-- make function calls clear to read (no naked true/false)
-- east const
-- keep lines to 100 characters long
-- space before parens in function definition but NOT in function call
-- if for-loop has any complex part, separate the three loop parts onto three lines
+- Use "struct" for POD and "class" for things with constructors, etc.
+- Use POD structs (instead of classes) when feasible.
+- Use free functions for things that seem to involve multiple objects.
+- Avoid virtual functions (prefer enum/switch).
+  - Unless the virtual objects can be managed with static lifetime, as in Menu.cpp.
+- Avoid static initialization except for simple POD structs (or containers of same).
+  - Init things via Game::init() so the initialization order is properly defined.
 
 LANGUAGE FEATURES
-- goto considered acceptable
-- use const as much as possible (https://www.youtube.com/watch?v=ZWRRXP-XFvY)
-- use constexpr as much as possible
-- don't throw exceptions
-- no lambdas
-- use enum class
-- use "using" instead of "typedef"
+- goto considered acceptable.
+- Use const as much as possible (https://www.youtube.com/watch?v=ZWRRXP-XFvY).
+- Use constexpr as much as possible.
+- Don't throw exceptions (though the standard library may).
+- Prefer named functions to lambdas when possible.
+- Use enum class, or enum inside a namespace (nicer for implicit conversions).
+  - Define the storage type for all enums.
+- Use "using" instead of "typedef".
+
+ORGANIZATION
+- Sort functionality into namespaces, with static data in the .cpp file.
+- Or use a static singleton with edit/read functions for const correctness.
+- Avoid needless includes in headers (if a forward declaration will work).
+- Add forward declarations to Types.h and include it (instead of repeating them in each header).
+- List includes in these groups, then in alphabetic order:
+  - Header file for the current cpp file
+  - Header files from this project
+  - Library header files
+
+STYLE
+- Do only one thing per line.  Avoid clever K&R tricks, postincrements, etc.
+- Make function calls clear to read.  Add inline comments for non-obvious bool parameters.
+- East const.
+- Keep lines to 100 characters long.
+- If for-loop has any complex part, separate the three loop parts onto three lines.
+
+NAMING CONVENTIONS
+- TypeName (class, struct, enum, namespace)
+- IInterface
+- local_variable_or_function
+- s_static_variable
+- m_member_variable (sometimes)
+- c_NamedConstant
+- cstr_CharString
+- d_DefineMacro
+
+AND FINALLY
+Go with the flow.  Not everything is consistent right now, and that's OK.
+There is code here originally from several projects with different styles.
+Try to leave the code better than you found it.

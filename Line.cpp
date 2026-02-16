@@ -19,9 +19,9 @@ namespace LineCache
 // I guess the lines targeted on inner squares can also be added onto outer squares, but not vice versa.
 // 
 // The sides of the square will have length (2*range + 1).
-int constexpr c_max_range = 8;
-int constexpr c_line_grid_dimension = (2 * c_max_range) + 1;
-int constexpr c_line_grid_area = c_line_grid_dimension * c_line_grid_dimension;
+int constexpr c_MaxRange = 8;
+int constexpr c_LineGridDimension = (2 * c_MaxRange) + 1;
+int constexpr c_LineGridArea = c_LineGridDimension * c_LineGridDimension;
 
 // Cache of precomputed lines.
 Ragged<Vec2> s_line_cache;
@@ -53,27 +53,27 @@ void init()
 	PerfTimer perf0("LineCache init");
 
 	// Initialize lookup table with empty vectors.
-	s_line_lookup.resize(c_line_grid_area);
+	s_line_lookup.resize(c_LineGridArea);
 
 	s_line_cache.reserve(184); // empirical result with max_range=8
 
 	// Add all the lines to the cache and lookup table.
 
 	// Start with the perfect straight lines and diagonals.
-	add_perfect_line_to_cache({ 0, c_max_range});
-	add_perfect_line_to_cache({ 0,-c_max_range});
-	add_perfect_line_to_cache({ c_max_range, 0});
-	add_perfect_line_to_cache({-c_max_range, 0});
-	add_perfect_line_to_cache({ c_max_range, c_max_range});
-	add_perfect_line_to_cache({ c_max_range,-c_max_range});
-	add_perfect_line_to_cache({-c_max_range, c_max_range});
-	add_perfect_line_to_cache({-c_max_range,-c_max_range});
+	add_perfect_line_to_cache({ 0, c_MaxRange});
+	add_perfect_line_to_cache({ 0,-c_MaxRange});
+	add_perfect_line_to_cache({ c_MaxRange, 0});
+	add_perfect_line_to_cache({-c_MaxRange, 0});
+	add_perfect_line_to_cache({ c_MaxRange, c_MaxRange});
+	add_perfect_line_to_cache({ c_MaxRange,-c_MaxRange});
+	add_perfect_line_to_cache({-c_MaxRange, c_MaxRange});
+	add_perfect_line_to_cache({-c_MaxRange,-c_MaxRange});
 
 	// Then work outwards, starting with the inner ring.
 	// The reasoning is that we're happy to index a nice line (from an inner ring)
 	// to a point in an outer ring, but don't want to index some weird line (from
 	// an outer ring) to a nice point on an inner ring.
-	for (int range = 1; range <= c_max_range; ++range)
+	for (int range = 1; range <= c_MaxRange; ++range)
 	{
 		add_ring_of_lines_to_cache(range);
 		add_ring_of_lines_to_cache(range);
@@ -82,13 +82,13 @@ void init()
 	if (c_ShowLineDebug)
 	{
 		std::cout << std::format("Cached {} lines with a grid area of {}.\n\n",
-			s_line_cache.size(), c_line_grid_area);
+			s_line_cache.size(), c_LineGridArea);
 
 		for (int i = 0; i < s_line_lookup.size(); ++i)
 		{
 			const int n = (int)s_line_lookup[i].size();
 			std::cout << n << " ";
-			if (i % c_line_grid_dimension == (c_line_grid_dimension - 1))
+			if (i % c_LineGridDimension == (c_LineGridDimension - 1))
 			{
 				std::cout << "\n";
 			}
@@ -116,7 +116,7 @@ void init()
 
 std::vector<int> const& get_lines(Vec2 relative_pos)
 {
-	assert(s_line_lookup.size() == c_line_grid_area);
+	assert(s_line_lookup.size() == c_LineGridArea);
 
 	int lookup = get_lookup_index(relative_pos);
 
@@ -144,18 +144,18 @@ int get_num()
 
 int get_lookup_index(Vec2 pos)
 {
-	if (pos.x < -c_max_range || pos.x > c_max_range ||
-		pos.y < -c_max_range || pos.y > c_max_range)
+	if (pos.x < -c_MaxRange || pos.x > c_MaxRange ||
+		pos.y < -c_MaxRange || pos.y > c_MaxRange)
 	{
-		return c_invalid;
+		return c_Invalid;
 	}
 
 	// Transform from range (-r,r) to (0, 2r)
-	int const adjusted_x = pos.x + c_max_range;
-	int const adjusted_y = pos.y + c_max_range;
+	int const adjusted_x = pos.x + c_MaxRange;
+	int const adjusted_y = pos.y + c_MaxRange;
 
 	// Map onto a one-dimensional array.
-	return adjusted_x + (c_line_grid_dimension * adjusted_y);
+	return adjusted_x + (c_LineGridDimension * adjusted_y);
 }
 
 bool is_duplicate(LineItr line1, LineCache::Itr line2)
@@ -209,11 +209,11 @@ void add_perfect_line_to_cache(Vec2 end)
 {
 	int const new_line_index = (int)s_line_cache.size();
 	std::vector<Vec2> new_line;
-	new_line.reserve(c_max_range);
+	new_line.reserve(c_MaxRange);
 
 	Vec2 start{ 0,0 };
 	LineItr itr(start, end, LineItr::RoundUp);
-	for (int step = 1; step <= c_max_range; ++step)
+	for (int step = 1; step <= c_MaxRange; ++step)
 	{
 		++itr; // Skip the origin since it's the same for all lines.
 
@@ -235,13 +235,13 @@ void add_line_to_cache_both_modes(Vec2 end, int range)
 void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range)
 {
 	std::vector<Vec2> new_line;
-	new_line.reserve(c_max_range);
+	new_line.reserve(c_MaxRange);
 
 	std::vector<int> possible_duplicates;
 
 	Vec2 start{ 0,0 };
 	LineItr itr(start, end, mode);
-	for (int step = 1; step <= c_max_range; ++step)
+	for (int step = 1; step <= c_MaxRange; ++step)
 	{
 		++itr; // Skip the origin since it's the same for all lines.
 
@@ -287,7 +287,7 @@ Itr::Itr(Vec2 start_pos, int line_id) :
 
 int Itr::steps_left() const
 {
-	return c_max_range - step;
+	return c_MaxRange - step;
 }
 
 void Itr::advance()
@@ -308,7 +308,7 @@ void Itr::advance()
 
 void Itr::advance_and_loop()
 {
-	if (step == c_max_range)
+	if (step == c_MaxRange)
 	{
 		start = current;
 		step = 0;

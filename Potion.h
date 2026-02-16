@@ -6,7 +6,7 @@ namespace Potion
 {
 	enum Type : int
 	{
-		None = c_invalid,
+		None = c_Invalid,
 		Calming,
 		Wiggenweld,
 		Count

@@ -1,6 +1,6 @@
 #include "PerfTimer.h"
 
-#if PERF_TEST
+#if d_PerfTest
 #include <iomanip>
 #include <iostream>
 #include "MapUtil.h"

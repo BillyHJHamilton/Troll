@@ -25,7 +25,7 @@ void update ()
 {
 	if (g_target_mode == TargetMode::Automatic)
 	{
-		if (g_target_creature != c_invalid)
+		if (g_target_creature != c_Invalid)
 		{
 			if (g_target_creature.visible())
 			{
@@ -35,11 +35,11 @@ void update ()
 			else
 			{
 				// lose target
-				g_target_creature = c_invalid;
+				g_target_creature = c_Invalid;
 			}
 		}
 
-		if (g_target_creature == c_invalid)
+		if (g_target_creature == c_Invalid)
 		{
 			// acquire target
 			cycle();

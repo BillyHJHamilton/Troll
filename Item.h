@@ -15,7 +15,7 @@ namespace Item
 	{
 		// This list determines the order items appear in inventory.
 
-		None = c_invalid,
+		None = c_Invalid,
 
 		// School notes from a character.  Can be used to learn a spell.
 		// Subtype: Character Type who wrote it.
@@ -38,12 +38,12 @@ namespace Item
 
 		// Item parameters.  Sort of an implicit union.
 		// The names are suggestive but the real meaning depends on the item type.
-		int subtype = c_invalid;
-		int flavour = c_invalid;
+		int subtype = c_Invalid;
+		int flavour = c_Invalid;
 
 		// Used only when item is stacked on the ground.
 		// Index of the item lying under this one.
-		int next = c_invalid;
+		int next = c_Invalid;
 
 		// 1 + number of items below this one.
 		int height = 1;
@@ -63,7 +63,7 @@ namespace Item
 		int index;
 	public:
 		// int interface
-		Handle () : index(c_invalid) { }
+		Handle () : index(c_Invalid) { }
 		Handle (int const i) : index(i) { }
 		operator int () { return index; }
 		operator int const () const { return index; }
@@ -71,8 +71,8 @@ namespace Item
 		// Simple accessors
 		bool valid () const;
 		Item::Type type () const;
-		bool has_subtype () const { return subtype() != c_invalid; }
-		bool has_flavour () const { return flavour() != c_invalid; }
+		bool has_subtype () const { return subtype() != c_Invalid; }
+		bool has_flavour () const { return flavour() != c_Invalid; }
 		int subtype () const;
 		int flavour () const;
 		Item::Handle next_in_stack () const;

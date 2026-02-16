@@ -22,7 +22,7 @@ public:
 	const Map& read_map(int index) const;
 
 	// Find index of the first map (hopefully only) containing the given position.
-	// If no map contains the position, returns c_invalid.
+	// If no map contains the position, returns c_Invalid.
 	int find_map(Vec3 global_pos) const;
 
 	Terrain::Type get_terrain(Vec3 pos) const;
@@ -60,7 +60,7 @@ public:
 
 	// Returns the id of a clear line (in the line cache) from start to end.
 	// Use range = -1 for unlimited range.
-	// If no clear line exists, returns c_invalid.
+	// If no clear line exists, returns c_Invalid.
 	int get_los(Vec3 start, Vec3 end, int range) const;
 
 	// Checks los along a single line trajectory.
@@ -68,7 +68,7 @@ public:
 	// Called by get_los for each relevant trajectory.
 	bool has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const;
 
-	// Runs get_los and returns true if the result was not c_invalid.
+	// Runs get_los and returns true if the result was not c_Invalid.
 	// Use range = -1 for unlimited range.
 	// Use this if you don't plan to use the line you found.
 	bool has_los(Vec3 start, Vec3 end, int range) const;
@@ -92,5 +92,5 @@ private:
 	int visibility_step = 1;
 
 	// speed up map searches by first checking the one it was last time
-	mutable int temp_last_map = c_invalid;
+	mutable int temp_last_map = c_Invalid;
 };

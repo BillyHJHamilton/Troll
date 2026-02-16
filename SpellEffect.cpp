@@ -39,7 +39,7 @@ void flipendo (EffectParams params)
 	{
 		// If you shoot yourself, just push in a random direction.
 		CompassDirection dir = Random::compass_direction(false);
-		knock_pos = params.target_pos + c_compass[dir].xy0();
+		knock_pos = params.target_pos + c_Compass[dir].xy0();
 	}
 	else
 	{
@@ -185,7 +185,7 @@ void fumos (EffectParams params)
 	for (CompassItr itr(true); itr; ++itr)
 	{
 		CompassDirection dir = *itr;
-		Vec3 const cloud_pos = target_pos + c_compass[dir].xy0();
+		Vec3 const cloud_pos = target_pos + c_Compass[dir].xy0();
 			
 		if (World::read().is_solid(cloud_pos))
 		{

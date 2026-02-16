@@ -67,7 +67,7 @@ inline CompassDirection get_counterclockwise(CompassDirection dir)
 
 // Directions from east, counterclockwise, plus {0,0} at the end.
 // Inspired by similar approach in Linley's Dungeon Crawl.
-Vec2 constexpr c_compass [c_CompassCount] =
+Vec2 constexpr c_Compass [c_CompassCount] =
 {
 	{ 1, 0},
 	{ 1,-1},
@@ -88,7 +88,7 @@ public:
 	void advance () { dir = (CompassDirection)(dir + 1); }
 	bool finished () const { return dir >= (include ? c_CompassCount : c_CompassNoMove); }
 	CompassDirection get () const { return dir; }
-	Vec2 get_vec2 () const { return c_compass[dir]; }
+	Vec2 get_vec2 () const { return c_Compass[dir]; }
 
 	// iterator style functions
 	operator bool () const { return !finished(); }

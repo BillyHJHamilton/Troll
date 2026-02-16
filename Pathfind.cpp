@@ -18,8 +18,8 @@ namespace Pathfind
 // Wrapper based on the redblob link below.
 struct AStarPriorityQueue
 {
-	typedef int PriorityType;
-	typedef std::pair<PriorityType, Vec3> PQElement;
+	using PriorityType = int;
+	using PQElement = std::pair<PriorityType, Vec3>;
 
 	struct Comparator
 	{

@@ -5,7 +5,7 @@
 class MenuSelectHouse : public MenuList
 {
 public:
-	MenuSelectHouse();
+	void init();
 
 	virtual void draw_screen();
 	virtual void handle_input (int key);

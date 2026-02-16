@@ -6,7 +6,7 @@
 
 #include "BearLibTerminal.h"
 
-MenuSelectHouse::MenuSelectHouse()
+void MenuSelectHouse::init()
 {
 	set_title("What is your Hogwarts House?");
 

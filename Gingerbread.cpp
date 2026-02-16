@@ -276,12 +276,12 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 	options.reserve(Creature::Count);
 	weights.reserve(Creature::Count);
 
-	float constexpr c_max_over_level = 2.0f;
-	float constexpr c_max_under_level = 4.0f;
+	float constexpr c_MaxOverLevel = 2.0f;
+	float constexpr c_MaxUnderLevel = 4.0f;
 
 	// Probability is multiplied by this factor for each level over/under target.
-	float constexpr c_over_level_factor = 0.5f;
-	float constexpr c_under_level_factor = 0.75f;
+	float constexpr c_OverLevelFactor = 0.5f;
+	float constexpr c_UnderLevelFactor = 0.75f;
 
 	for (int type = 1; // skip player
 		type < Creature::Type::Count;
@@ -292,8 +292,8 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 
 		// Exclusions
 		if (stats.probability <= 0.0f ||
-			Math::FloatGreater(stats.difficulty, target_difficulty + c_max_over_level) ||
-			Math::FloatLess(stats.difficulty, target_difficulty - c_max_under_level))
+			Math::FloatGreater(stats.difficulty, target_difficulty + c_MaxOverLevel) ||
+			Math::FloatLess(stats.difficulty, target_difficulty - c_MaxUnderLevel))
 		{
 			continue;
 		}
@@ -316,12 +316,12 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 		if (Math::FloatGreater(stats.difficulty, target_difficulty))
 		{
 			float const difference = stats.difficulty - target_difficulty;
-			probability *= pow(c_over_level_factor, difference);
+			probability *= pow(c_OverLevelFactor, difference);
 		}
 		else if (Math::FloatLess(stats.difficulty, target_difficulty))
 		{
 			float const difference = target_difficulty - stats.difficulty;
-			probability *= pow(c_under_level_factor, difference);
+			probability *= pow(c_UnderLevelFactor, difference);
 		}
 
 		if (probability > 0.0f)

@@ -19,9 +19,9 @@ void Map::init(int z, float map_difficulty, Box2 box, Terrain::Type fill)
 	map_box = box;
 
 	terrain = Grid(box.size.x, box.size.y, fill);
-	visibility = Grid(box.size.x, box.size.y, c_invalid);
+	visibility = Grid(box.size.x, box.size.y, c_Invalid);
 	clouds = Grid(box.size.x, box.size.y, Cloud::Type::None);
-	items = Grid(box.size.x, box.size.y, (Item::Handle)c_invalid);
+	items = Grid(box.size.x, box.size.y, (Item::Handle)c_Invalid);
 }
 
 MapGenerator& Map::get_generator()
@@ -98,7 +98,7 @@ void Map::set_visibility(Vec2 global_pos, Visibility v, int current_step)
 	}
 	else
 	{
-		visibility.edit(local.x, local.y) = c_invalid;
+		visibility.edit(local.x, local.y) = c_Invalid;
 	}
 }
 
@@ -173,7 +173,7 @@ void Map::clear_clouds()
 
 bool Map::has_item(Vec2 global_pos) const
 {
-	return peek_item(global_pos) != c_invalid;
+	return peek_item(global_pos) != c_Invalid;
 }
 
 Item::Handle const Map::peek_item(Vec2 global_pos) const
@@ -213,7 +213,7 @@ Item::Handle Map::pop_item(Vec2 global_pos)
 	if (top.valid())
 	{
 		items.edit(local.x, local.y) = top.next_in_stack();
-		top.stack_onto(c_invalid);
+		top.stack_onto(c_Invalid);
 	}
 	return top;
 }

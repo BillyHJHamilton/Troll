@@ -64,13 +64,13 @@ int World::find_map(Vec3 global_pos) const
 		}
 	}
 
-	return c_invalid;
+	return c_Invalid;
 }
 
 Terrain::Type World::get_terrain(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).get_terrain(pos.xy());
 	}
@@ -81,7 +81,7 @@ Terrain::Type World::get_terrain(Vec3 pos) const
 bool World::is_solid(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).tile_is_solid(pos.xy());
 	}
@@ -92,7 +92,7 @@ bool World::is_solid(Vec3 pos) const
 bool World::permits_sight(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).tile_permits_sight(pos.xy());
 	}
@@ -103,7 +103,7 @@ bool World::permits_sight(Vec3 pos) const
 Cloud::Type World::get_cloud(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).get_cloud(pos.xy());
 	}
@@ -114,7 +114,7 @@ Cloud::Type World::get_cloud(Vec3 pos) const
 int World::get_cloud_lifetime(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).get_cloud_lifetime(pos.xy());
 	}
@@ -125,7 +125,7 @@ int World::get_cloud_lifetime(Vec3 pos) const
 bool World::try_add_cloud(Vec3 pos, Cloud::Type cloud, int lifetime)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return edit_map(map_id).try_add_cloud(pos.xy(), cloud, lifetime);
 	}
@@ -135,7 +135,7 @@ bool World::try_add_cloud(Vec3 pos, Cloud::Type cloud, int lifetime)
 void World::clear_cloud(Vec3 pos)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return edit_map(map_id).clear_cloud(pos.xy());
 	}
@@ -159,23 +159,23 @@ void World::clear_clouds()
 
 bool World::has_item(Vec3 pos) const
 {
-	return peek_item(pos) != c_invalid;
+	return peek_item(pos) != c_Invalid;
 }
 
 Item::Handle const World::peek_item(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).peek_item(pos.xy());
 	}
-	return c_invalid;
+	return c_Invalid;
 }
 
 void World::add_item(Vec3 pos, Item::Handle item)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		edit_map(map_id).add_item(pos.xy(), item);
 	}
@@ -184,11 +184,11 @@ void World::add_item(Vec3 pos, Item::Handle item)
 Item::Handle World::pop_item(Vec3 pos)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return edit_map(map_id).pop_item(pos.xy());
 	}
-	return c_invalid;
+	return c_Invalid;
 }
 
 Stairs::Direction World::get_stairs(Vec3 pos) const
@@ -196,7 +196,7 @@ Stairs::Direction World::get_stairs(Vec3 pos) const
 	PerfTimer perf("get_stairs");
 
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).get_stairs(pos.xy());
 	}
@@ -229,7 +229,7 @@ int World::get_stairs_dz(Vec3 old_pos, Vec2 new_pos) const
 Visibility World::get_visibility(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		return read_map(map_id).get_visibility(pos.xy(), visibility_step);
 	}
@@ -245,7 +245,7 @@ bool World::is_visible(Vec3 pos) const
 void World::set_visibility(Vec3 pos, Visibility v)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_invalid)
+	if (map_id != c_Invalid)
 	{
 		edit_map(map_id).set_visibility(pos.xy(), v, visibility_step);
 	}
@@ -368,7 +368,7 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 
 	if (range != -1 && !within_range(start, end, range))
 	{
-		return c_invalid;
+		return c_Invalid;
 	}
 
 	if (start.z != end.z)
@@ -378,11 +378,11 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 		if (dir != Stairs::None &&
 			start + Stairs::relative_move(dir) == end)
 		{
-			return LineCache::c_stairs_line;
+			return LineCache::c_StairsLine;
 		}
 
 		// Without stairs, can't see between floors.
-		return c_invalid;
+		return c_Invalid;
 	}
 
 	// Find possible trajectory lines and test each one.
@@ -395,7 +395,7 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 		}
 	}
 
-	return c_invalid;
+	return c_Invalid;
 }
 
 bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
@@ -434,7 +434,7 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 
 bool World::has_los(Vec3 start, Vec3 end, int range) const
 {
-	return (get_los(start, end, range) != c_invalid);
+	return (get_los(start, end, range) != c_Invalid);
 }
 
 void World::draw(Draw::View view) const
@@ -486,7 +486,7 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 			{
 				// If no cloud, check for item to draw.
 				Item::Handle const item = peek_item(pos);
-				if (item != c_invalid)
+				if (item != c_Invalid)
 				{
 					code = item.codepoint();
 					draw_colour = item.colour();
@@ -497,7 +497,7 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		const bool is_target = Target::is_target(pos);
 		if (is_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), c_target_colour);
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), cstr_TargetColour);
 		}
 		else
 		{

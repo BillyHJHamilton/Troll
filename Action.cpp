@@ -42,7 +42,7 @@ bool player_try_move(Vec2 relative_move)
 	{
 		// Pick up items.
 		Item::Handle item = World::edit().pop_item(Player::pos());
-		while (item != c_invalid)
+		while (item != c_Invalid)
 		{
 			Inventory::edit().add_item(item);
 			Draw::add_message("Got " + item.name() + ".");
@@ -67,7 +67,7 @@ bool player_try_cast_spell (Spell::Index spell)
 
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
-		try_cast_spell(spell, Creature::Player, Player::pos(), c_invalid);
+		try_cast_spell(spell, Creature::Player, Player::pos(), c_Invalid);
 		return true;
 	}
 	else
@@ -84,7 +84,7 @@ bool player_try_cast_spell (Spell::Index spell)
 		{
 			// Special case for shooting yourself.
 			//Draw::add_message("Don't shoot that spell at yourself.");
-			try_cast_spell(spell, Creature::Player, Player::pos(), c_invalid);
+			try_cast_spell(spell, Creature::Player, Player::pos(), c_Invalid);
 			Player::set_acted(true);
 			return true;
 		}
@@ -97,7 +97,7 @@ bool player_try_cast_spell (Spell::Index spell)
 
 		int const line_id = World::read().get_los(Player::pos(), target_pos.value(),
 			Player::vision_radius);
-		if (line_id == c_invalid)
+		if (line_id == c_Invalid)
 		{
 			Draw::add_message("Target not visible.");
 			return false;
@@ -283,7 +283,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 		Spell::execute_effect(spell, params);
 	}
-	else if (line_id == c_invalid)
+	else if (line_id == c_Invalid)
 	{
 		// Shot yourself, it seems.
 		int const damage = Spell::get_damage(spell, caster);

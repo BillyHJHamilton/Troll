@@ -1,9 +1,10 @@
-* Spells and creatures are taken from Harry Potter (books, films, games)
+* Spells and creatures are taken from Harry Potter (books, films, games).
  - They are portrayed in a manner recognizably accurate to the source material
+ - Additionally, include things from memorable Harry Potter fanfics.
 
 * Absurdity
- - There's a reason the game is called "The Revenge Of Luna Lovegood" rather than "Harry Potter's Quest for the Deathly Hallows"
- - Use characters and situations in a ridiculous manner
- - Have surprising situations occur
+ - There's a reason the game is called "The Revenge Of Luna Lovegood" rather than "Harry Potter and the Canon-Compliant Adventure."
+ - Use characters and situations in a ridiculous manner.
+ - Have surprising situations occur.
 
-* 
+ ...

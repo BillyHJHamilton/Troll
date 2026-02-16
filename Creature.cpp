@@ -32,14 +32,14 @@ namespace Creature
 // Just as with the gingerbread array, the first entry is reserved for the player.
 // This means the Creature::Player constant applies to *both* gingerbread *and* g_creatures.
 
-int constexpr c_max_creatures = 200;
-static Creature::Instance s_creatures [c_max_creatures];
-static Grid<int> s_creature_status; // (creature, status)
-static Creature::DerivedStats s_derived_stats [c_max_creatures];
-static Spell::Bitset s_spells_known [c_max_creatures];
-static int s_max_creature_index;
+int constexpr c_MaxCreatures = 200;
+int constexpr c_RestTurnsPerHp = 5;
 
-int constexpr c_rest_turns_per_hp = 5;
+Creature::Instance s_creatures [c_MaxCreatures];
+Grid<int> s_creature_status; // (creature, status)
+Creature::DerivedStats s_derived_stats [c_MaxCreatures];
+Spell::Bitset s_spells_known [c_MaxCreatures];
+int s_max_creature_index;
 
 std::vector<Creature::Handle> s_visible_creatures;
 std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
@@ -81,19 +81,19 @@ void init ()
 void clear ()
 {
 	// empty creature arrays
-	for (int i = 0; i < c_max_creatures; ++i)
+	for (int i = 0; i < c_MaxCreatures; ++i)
 	{
 		s_creatures[i] = Instance{};
 		s_derived_stats[i] = DerivedStats{};
 		s_spells_known[i] = Spell::Bitset{};
 	}
 
-	s_creature_status = Grid(c_max_creatures, Status::Count, 0);
+	s_creature_status = Grid(c_MaxCreatures, Status::Count, 0);
 
 	s_max_creature_index = 0;
 
 	s_visible_creatures.clear();
-	s_visible_creatures.reserve(c_max_creatures);
+	s_visible_creatures.reserve(c_MaxCreatures);
 
 	s_fainting_creatures.clear();
 	s_fainting_creatures.reserve(10);
@@ -382,7 +382,7 @@ void Handle::rest_step ()
 		&& read_derived_stats(index).distractedness == 0)
 	{
 		++ inst.rest_turns;
-		if (inst.rest_turns >= c_rest_turns_per_hp)
+		if (inst.rest_turns >= c_RestTurnsPerHp)
 		{
 			++ inst.hp;
 			inst.rest_turns = 0;
@@ -501,7 +501,7 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	}
 
 	// find creature number
-	int new_index = c_invalid;
+	int new_index = c_Invalid;
 	for (int i = 0; i < s_max_creature_index; i++)
 	{
 		if (!Handle(i).valid())
@@ -511,13 +511,13 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 		}
 	}
 
-	if (new_index == c_invalid && s_max_creature_index < c_max_creatures)
+	if (new_index == c_Invalid && s_max_creature_index < c_MaxCreatures)
 	{
 		new_index = s_max_creature_index;
 		++ s_max_creature_index;
 	}
 
-	assert(new_index != c_invalid); // if this fails, increase creature memory budget
+	assert(new_index != c_Invalid); // if this fails, increase creature memory budget
 
 	// allocate new creature on the arrays
 	s_creatures[new_index] =
@@ -637,7 +637,7 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 
 		if (Target::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, c_target_colour);
+			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, cstr_TargetColour);
 		}
 		else
 		{

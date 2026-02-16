@@ -1,5 +1,8 @@
 #include "MenuList.h"
+
+#include "Debug.h"
 #include "VectorUtil.h"
+
 #include "BearLibTerminal.h"
 
 void MenuList::draw_screen ()
@@ -191,7 +194,12 @@ void MenuList::remove_selected()
 
 void MenuList::calc_layout()
 {
-	dimensions_t dim = terminal_measure(m_title.c_str());
+	dimensions_t const dim = terminal_measure(m_title.c_str());
+	if (dim.height == 0 && !m_title.empty())
+	{
+		DebugBreak("Cannot init menus before terminal is ready.  Defer initialization to Menu::init.");
+	}
+
 	m_list_start = dim.height + 1;
 	m_max_lines = c_MaxLineY - m_list_start;
 }

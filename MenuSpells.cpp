@@ -63,13 +63,13 @@ void MenuSpells::show_starting_spells ()
 	set_title("Choose three spells to start with:");
 	reserve(10);
 
-	int constexpr c_max_difficulty = 25;
+	int constexpr c_MaxDifficulty = 25;
 
 	for (Spell::Index spell_index = (Spell::Index)0;
 		Spell::is_valid_index(spell_index);
 		spell_index = (Spell::Index)(spell_index + 1))
 	{
-		if (Spell::get_difficulty(spell_index) <= c_max_difficulty)
+		if (Spell::get_difficulty(spell_index) <= c_MaxDifficulty)
 		{
 			std::string label = Spell::get_abbrev(spell_index) + " " + Spell::get_name(spell_index);
 			int const value = (int)spell_index;

@@ -56,6 +56,7 @@ void init()
 	Gingerbread::init();
 	Item::init();
 	LineCache::init();
+	Menu::init();
 	Random::init();
 	Spell::init();
 	Status::init();
@@ -108,13 +109,13 @@ void setup()
 	}
 
 	// Now let's create a number of additional levels on top!
-	int constexpr c_num_levels = 6;
-	for (int z = 1; z <= c_num_levels; ++z)
+	int constexpr c_NumLevels = 6;
+	for (int z = 1; z <= c_NumLevels; ++z)
 	{
 		int const map_id = world.add_map(z, (z * 0.5f), map1_box, Terrain::Wall);
 
 		MapGenerator::Parameters param{};
-		if (z == c_num_levels)
+		if (z == c_NumLevels)
 		{
 			param.UpStairsToAdd = 0;
 		}

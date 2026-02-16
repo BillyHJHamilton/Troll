@@ -23,10 +23,10 @@ namespace Bot
 static bool constexpr TERMINATOR_MODE = false;
 
 // Number of turns a bot will remain "aware" after losing sight of player.
-static int constexpr c_max_awareness = 10;
+static int constexpr c_MaxAwareness = 10;
 
 // Maximum path length to consider when using a-star pathfinding.
-static int constexpr c_max_path_cost = 25;
+static int constexpr c_MaxPathCost = 25;
 
 static std::vector<Brain> s_brains;
 
@@ -73,7 +73,7 @@ void do_turn (Creature::Handle creature)
 
 	World const& world = World::read();
 	int line_id = world.get_los(pos, Player::pos(), creature_vision);
-	bool const player_is_visible = (line_id != c_invalid);
+	bool const player_is_visible = (line_id != c_Invalid);
 
 	if (player_is_visible)
 	{
@@ -104,7 +104,7 @@ void do_turn (Creature::Handle creature)
 			}
 		}
 
-		brain.awareness = c_max_awareness;
+		brain.awareness = c_MaxAwareness;
 		brain.last_seen = Player::pos();
 	}
 	else
@@ -174,7 +174,7 @@ void go_to_last_seen(Creature::Handle creature)
 		if (!moved)
 		{
 			// Try to formulate a new plan.
-			brain.move_stack = Pathfind::astar(pos, brain.last_seen, c_max_path_cost);
+			brain.move_stack = Pathfind::astar(pos, brain.last_seen, c_MaxPathCost);
 
 			if (!brain.move_stack.empty())
 			{

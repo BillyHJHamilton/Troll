@@ -16,8 +16,8 @@
 namespace Beam
 {
 
-int constexpr c_accuracy_loss = 3; // per square
-int constexpr c_min_ranged_accuracy = 40; // before character stats are applied
+int constexpr c_AccuracyLoss = 3; // per square
+int constexpr c_MinRangedAccuracy = 40; // before character stats are applied
 
 // ------------------------------------------------------------------------------------------------
 // helper function declarations
@@ -55,8 +55,8 @@ void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,
 int accuracy_at_range(int base_accuracy, Vec3 start, Vec3 end)
 {
 	int const dist = (int)euclidean_distance(start, end);
-	int const loss = dist * c_accuracy_loss;
-	return std::max(c_min_ranged_accuracy, base_accuracy - loss);
+	int const loss = dist * c_AccuracyLoss;
+	return std::max(c_MinRangedAccuracy, base_accuracy - loss);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	bool caster_aimed, int line_id)
 {
 	assert(caster.pos() != target_pos); // Should not be shooting beam with zero trajectory.
-	assert(line_id != c_invalid);
+	assert(line_id != c_Invalid);
 
 	Creature::Handle intended_target = Creature::None;
 	if (caster_aimed)
@@ -97,7 +97,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 
 void shoot_beam (Beam::Data & beam)
 {
-	if (beam.trajectory == LineCache::c_stairs_line)
+	if (beam.trajectory == LineCache::c_StairsLine)
 	{
 		shoot_beam_on_stairs(beam);
 	}

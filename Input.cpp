@@ -130,7 +130,7 @@ void handle_next_input ()
 			else
 			{
 				Player::stop_automove();
-				Vec2 const vec = c_compass[dir];
+				Vec2 const vec = c_Compass[dir];
 				player_try_move(vec);
 				return;
 			}
@@ -204,7 +204,7 @@ void handle_next_input ()
 		//{
 		//	Draw::toggle_los_cheat();
 		//	//int const map_index = World::read().find_map(Player::pos());
-		//	//if (map_index != c_invalid)
+		//	//if (map_index != c_Invalid)
 		//	//{
 		//	//	World::edit().edit_map(map_index).set_all_explored();
 		//	//}
@@ -229,7 +229,7 @@ void handle_next_input ()
 
 		if (is_directional(key))
 		{
-			Vec2 const vec = c_compass[parse_directional(key)];
+			Vec2 const vec = c_Compass[parse_directional(key)];
 			Target::move(vec);
 			return;
 		}
@@ -263,13 +263,13 @@ void dispatch_automove()
 		CompassDirection const clockwise = get_clockwise(dir);
 		CompassDirection const counterclockwise = get_counterclockwise(dir);
 		Vec3 const p0 = Player::pos();
-		Vec3 const p1 = p0 + c_compass[clockwise].xy0();
-		Vec3 const p2 = p0 + c_compass[counterclockwise].xy0();
+		Vec3 const p1 = p0 + c_Compass[clockwise].xy0();
+		Vec3 const p2 = p0 + c_Compass[counterclockwise].xy0();
 		Terrain::Type t0 = World::read().get_terrain(p0);
 		Terrain::Type t1 = World::read().get_terrain(p1);
 		Terrain::Type t2 = World::read().get_terrain(p2);
 
-		bool const moved = player_try_move(c_compass[dir]);
+		bool const moved = player_try_move(c_Compass[dir]);
 
 		if (!moved)
 		{
@@ -278,8 +278,8 @@ void dispatch_automove()
 		else
 		{
 			Vec3 const new_p0 = Player::pos();
-			Vec3 const new_p1 = new_p0 + c_compass[clockwise].xy0();
-			Vec3 const new_p2 = new_p0 + c_compass[counterclockwise].xy0();
+			Vec3 const new_p1 = new_p0 + c_Compass[clockwise].xy0();
+			Vec3 const new_p2 = new_p0 + c_Compass[counterclockwise].xy0();
 			Terrain::Type new_t0 = World::read().get_terrain(new_p0);
 			Terrain::Type new_t1 = World::read().get_terrain(new_p1);
 			Terrain::Type new_t2 = World::read().get_terrain(new_p2);

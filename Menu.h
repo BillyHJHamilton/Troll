@@ -22,6 +22,7 @@ namespace Menu
 		Count
 	};
 
+	void init();
 	void clear();
 
 	// Document Menus

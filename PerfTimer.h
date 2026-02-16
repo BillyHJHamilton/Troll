@@ -1,8 +1,8 @@
 #pragma once
 
-#define PERF_TEST true
+#define d_PerfTest true
 
-#if PERF_TEST
+#if d_PerfTest
 #include <chrono>
 #endif
 
@@ -18,7 +18,7 @@ public:
 	static void PrintAll();
 
 private:
-#if PERF_TEST
+#if d_PerfTest
 	const char* m_TimerName;
 	std::chrono::steady_clock::time_point m_StartTime;
 #endif
