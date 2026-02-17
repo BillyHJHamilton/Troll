@@ -46,6 +46,14 @@ public:
 		char const* debug_name) = 0;
 };
 
+// Generic function to serialize raw data.  Good for stable structs, enums and the like.
+// Obviously NOT safe for things with pointers or dynamic data.
+template<typename ValueType>
+void srz_value(ISerializer& s, ValueType& x)
+{
+	s.srz_raw((char*)&x, sizeof(x));
+}
+
 // For serializing a vector of raw data, call srz_vector.
 
 // If your vector is complex, you call srz_vector_size,

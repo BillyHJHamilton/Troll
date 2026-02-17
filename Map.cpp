@@ -31,29 +31,9 @@ void Map::serialize(ISerializer& s)
 	s.srz_float(difficulty);
 
 	srz_grid(s, terrain, "map.terrain");
-	//srz_grid_size(s, terrain, "map.terrain");
-	//srz_array_data(s, terrain.edit_data().data(), terrain.num());
-	/*for (Terrain::Type& t : terrain.edit_data())
-	{
-		s.srz_byte((byte&)t);
-	}*/
-
 	srz_grid(s, visibility, "map.visibility");
-	//s.srz_int_grid(visibility, "map.visibility");
-
 	srz_grid(s, clouds, "map.clouds");
-	//srz_grid_size(s, clouds, "map.clouds");
-	//for (Cloud::Type& c : clouds.edit_data())
-	//{
-	//	s.srz_int((int&)c);
-	//}
-
 	srz_grid(s, items, "map.items");
-	//srz_grid_size(s, items, "map.items");
-	//for (Item::Handle& h : items.edit_data())
-	//{
-	//	s.srz_item_handle(h);
-	//}
 
 	s.srz_vec2_int_hashmap(cloud_lifetimes, "map.cloud_lifetimes");
 	s.srz_vec2_stairs_hashmap(stairs, "map.stairs");

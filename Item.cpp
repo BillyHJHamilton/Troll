@@ -328,7 +328,7 @@ void clear()
 
 void Instance::serialize(ISerializer& s)
 {
-	s.srz_int((int&)type);
+	srz_value(s, type);
 	s.srz_int(subtype);
 	s.srz_int(flavour);
 	s.srz_int(next);

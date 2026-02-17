@@ -102,7 +102,7 @@ void clear ()
 
 void Creature::Instance::serialize(ISerializer& s)
 {
-	s.srz_int((int&)type);
+	srz_value(s, type);
 	s.srz_int(hp);
 	s.srz_vec3(pos);
 	s.srz_int(rest_turns);
