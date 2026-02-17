@@ -53,7 +53,7 @@ int chessboard_distance(Vec2 p0, Vec2 p1)
 {
 	int const dx = abs(p0.x - p1.x);
 	int const dy = abs(p0.y - p1.y);
-	return std::min(dx, dy);
+	return std::max(dx, dy);
 }
 
 //------------------------------------------------------------------------------
