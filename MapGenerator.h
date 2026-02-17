@@ -31,9 +31,13 @@ public:
 
 		int UpStairsToAdd = 2;
 		int DownStairsToAdd = 0;
+
+		void Serialize(ISerializer& s);
 	};
 
 	MapGenerator(Map& map);
+
+	void Serialize(ISerializer& s);
 
 	void SetParameters(Parameters parameters) { m_Param = parameters; }
 

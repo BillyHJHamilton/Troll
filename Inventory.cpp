@@ -1,6 +1,7 @@
 #include "Inventory.h"
 
 #include "Debug.h"
+#include "Serialize.h"
 #include "VectorUtil.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -29,6 +30,15 @@ Inventory& Inventory::edit()
 Inventory const& Inventory::read()
 {
 	return s_inventory;
+}
+
+void Inventory::serialize(ISerializer& s)
+{
+	srz_vec_size(s, s_inventory.invent);
+	for (Item::Handle item : s_inventory.invent)
+	{
+		s.srz_item_handle(item);
+	}
 }
 
 int Inventory::num_items () const

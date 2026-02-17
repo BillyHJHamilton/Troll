@@ -47,6 +47,8 @@ namespace Item
 
 		// 1 + number of items below this one.
 		int height = 1;
+
+		void serialize(ISerializer& s);
 	};
 
 	enum class BagStack : byte
@@ -106,6 +108,7 @@ namespace Item
 	// Global interface
 	void init();
 	void clear();
+	void serialize(ISerializer& s);
 
 	Item::Handle spawn_item (Vec3 pos, Instance instance);
 

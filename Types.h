@@ -10,6 +10,7 @@ template<class T>
 using Ragged = std::vector<std::vector<T>>;
 
 class IMenu;
+class ISerializer;
 
 class Map;
 class MapGenerator;
@@ -24,7 +25,7 @@ enum CompassDirection : int;
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
-enum class RoomType : byte;
+enum class RoomType : int;
 enum class TargetMode : byte;
 enum class Visibility : byte;
 

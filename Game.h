@@ -17,6 +17,9 @@ namespace Game
 	void clear();	// Runs before the start of each game.
 	void setup();	// Runs at the start of each game, after clear.
 
+	// Serializes the entire game state.
+	void serialize_all(ISerializer& s);
+
 	// Redraw the screen and process input.
 	void update();
 

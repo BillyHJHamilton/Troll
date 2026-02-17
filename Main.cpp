@@ -6,10 +6,10 @@
 #include "PerfTimer.h"
 
 // To do:
-// - Name and difficulty level for each map
-// - Improve spawning code
-//  - Find pos by room, instead of spraying at random?
-//  - Or enumerate all open spaces and choose some?
+// - Improve map generation
+//  - Named regions
+//  - Special rooms
+//  - Locked doors, treausre chests
 // - NPC taunts
 // - Improved enemy AI
 //  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
@@ -19,6 +19,7 @@
 
 // To consider:
 // - How do we handle initiative to support the "ping pong" shield gameplay
+//  - But without making it too hard to aim at moving characters.
 
 void config_terminal()
 {
@@ -54,7 +55,7 @@ int main()
 		Game::update();
 	}
   
-#if PERF_TEST
+#if d_PerfTest
 	PerfTimer::PrintAll();
 #endif
 

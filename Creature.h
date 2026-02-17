@@ -71,6 +71,8 @@ namespace Creature
 		int hp = 0;
 		Vec3 pos = {0,0,0};
 		int rest_turns = 0; // counter for healing by resting
+
+		void serialize(ISerializer& s);
 	};
 
 	struct DerivedStats
@@ -167,6 +169,7 @@ namespace Creature
 
 	void init ();
 	void clear ();
+	void serialize (ISerializer& s);
 
 	Creature::Handle creature_at_pos (Vec3 pos);
 	bool is_anyone_at (Vec3 pos);

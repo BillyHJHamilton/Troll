@@ -4,8 +4,9 @@
 #include "Geometry.h"
 #include "Stairs.h"
 
-enum class RoomType : byte
+enum class RoomType : int
 {
+	Invalid = c_Invalid,
 	Chamber,
 	Corridor,
 	Stairs
@@ -20,9 +21,14 @@ protected:
 	Room(Vec2 localEnd, Stairs::Direction stairsDirection); // stairs constructor
 
 public:
+	// Default constructor needed for serialization.  Makes invalid room.
+	Room() : m_RoomType(RoomType::Invalid) {}
+
 	inline static Room MakeChamber(Box2 box) { return Room(box, RoomType::Chamber); }
 	inline static Room MakeCorridor(Box2 box, Axis corridorAxis) { return Room(box, corridorAxis); }
 	inline static Room MakeStairs(Vec2 localEnd, Stairs::Direction direction) { return Room(localEnd, direction); }
+
+	void Serialize(ISerializer& s);
 
 	const Box2 &GetBox() const { return m_Box; }
 	RoomType GetRoomType() const { return m_RoomType; }
@@ -59,6 +65,6 @@ private:
 	Box2 m_Box; // Space occupied by the room, in (2D) global space
 	RoomType m_RoomType;
 
-	Axis m_CorridorAxis = AXIS_X;
 	Stairs::Direction m_StairsDirection = Stairs::None;
+	Axis m_CorridorAxis = AXIS_X;
 };

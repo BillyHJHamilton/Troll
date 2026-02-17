@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "MiscastCategory.h"
+#include "Serialize.h"
 #include "SpellEffect.h"
 
 #include <array>
@@ -72,6 +73,21 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 void init()
 {
 	// none required, thank you constexpr
+}
+
+void srz_bitset(ISerializer& s, Spell::Bitset& bitset)
+{
+	std::string str;
+	if (s.is_load())
+	{
+		s.srz_string(str);
+		bitset = Spell::Bitset(str);
+	}
+	else
+	{
+		str = bitset.to_string();
+		s.srz_string(str);
+	}
 }
 
 bool is_valid_index(Spell::Index index)

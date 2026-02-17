@@ -5,6 +5,7 @@
 #include "Cloud.h"
 #include "Geometry.h"
 #include "Grid.h"
+#include "Serialize.h"
 #include "Stairs.h"
 
 #include <memory>
@@ -23,6 +24,7 @@ class Map
 	// functions
 public:
 	void init(int z, float map_difficulty, Box2 box, Terrain::Type fill);
+	void serialize(ISerializer& s);
 
 	MapGenerator& get_generator();
 

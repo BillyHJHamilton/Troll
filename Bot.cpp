@@ -10,6 +10,7 @@
 #include "Pathfind.h"
 #include "Player.h"
 #include "Random.h"
+#include "Serialize.h"
 #include "Spell.h"
 #include "Stairs.h"
 #include "VectorUtil.h"
@@ -45,6 +46,32 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 
 // ------------------------------------------------------------------------------------------------
 // Interface functions
+
+void clear()
+{
+	s_brains.clear();
+}
+
+void Brain::serialize(ISerializer& s)
+{
+	s.srz_int(awareness);
+	s.srz_vec3(last_seen);
+
+	srz_vec_size(s, move_stack);
+	for (Vec3& v : move_stack)
+	{
+		s.srz_vec3(v);
+	}
+}
+
+void serialize(ISerializer& s)
+{
+	srz_vec_size(s, s_brains);
+	for (Brain& b : s_brains)
+	{
+		b.serialize(s);
+	}
+}
 
 void init_brain(Creature::Handle handle)
 {

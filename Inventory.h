@@ -10,6 +10,7 @@ public:
 	static void clear();
 	static Inventory& edit();
 	static Inventory const& read();
+	static void serialize(ISerializer& s);
 
 	int num_items () const;
 	Item::Handle const peek_item (int slot) const;

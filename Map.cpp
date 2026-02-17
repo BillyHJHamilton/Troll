@@ -24,6 +24,39 @@ void Map::init(int z, float map_difficulty, Box2 box, Terrain::Type fill)
 	items = Grid(box.size.x, box.size.y, (Item::Handle)c_Invalid);
 }
 
+void Map::serialize(ISerializer& s)
+{
+	s.srz_box2(map_box);
+	s.srz_int(global_z);
+	s.srz_float(difficulty);
+
+	srz_grid_size(s, terrain);
+	for (Terrain::Type t : terrain.edit_data())
+	{
+		s.srz_byte((byte&)t);
+	}
+
+	s.srz_int_grid(visibility);
+
+	srz_grid_size(s, clouds);
+	for (Cloud::Type c : clouds.edit_data())
+	{
+		s.srz_int((int&)c);
+	}
+
+	srz_grid_size(s, items);
+	for (Item::Handle h : items.edit_data())
+	{
+		s.srz_item_handle(h);
+	}
+
+	s.srz_vec2_int_hashmap(cloud_lifetimes);
+	s.srz_vec2_stairs_hashmap(stairs);
+
+	// TODO!
+	std::shared_ptr<MapGenerator> generator;
+}
+
 MapGenerator& Map::get_generator()
 {
 	if (!generator)

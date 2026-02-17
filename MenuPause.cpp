@@ -1,5 +1,8 @@
 #include "MenuPause.h"
+
 #include "Input.h"
+#include "Serialize.h"
+
 #include "BearLibTerminal.h"
 
 MenuPause::MenuPause()
@@ -12,6 +15,8 @@ MenuPause::MenuPause()
 		{"Inventory", PauseMenuOption::Inventory},
 		{"Help", PauseMenuOption::Help},
 		{"Message History", PauseMenuOption::MessageHistory},
+		{"Save", PauseMenuOption::Save},
+		{"Load", PauseMenuOption::Load},
 		{"Quit", PauseMenuOption::Quit},
 	};
 }
@@ -36,6 +41,13 @@ void MenuPause::handle_input (int key)
 				break;
 			case PauseMenuOption::MessageHistory:
 				Menu::show_message_history();
+				break;
+			case PauseMenuOption::Save:
+				SaveGame("test.sav");
+				Menu::close();
+				break;
+			case PauseMenuOption::Load:
+				LoadGame("test.sav");
 				break;
 			case PauseMenuOption::Quit:
 				Input::request_quit();

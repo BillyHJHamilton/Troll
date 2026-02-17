@@ -48,6 +48,7 @@ struct History
 	int items_spawned = 0;
 
 	bool has_ever_spawned() const { return next_spawn_time > 0; }
+	void serialize(ISerializer& s);
 };
 
 std::vector<Spawn::History> s_spawned;
@@ -86,6 +87,22 @@ int spawn_items(Map const& map, int items_to_spawn);
 void clear()
 {
 	s_spawned.clear();
+}
+
+void History::serialize(ISerializer& s)
+{
+	s.srz_int(next_spawn_time);
+	s.srz_int(creatures_spawned);
+	s.srz_int(items_spawned);
+}
+
+void serialize(ISerializer& s)
+{
+	srz_vec_size(s, s_spawned);
+	for (History& history : s_spawned)
+	{
+		history.serialize(s);
+	}
 }
 
 void post_world_setup()

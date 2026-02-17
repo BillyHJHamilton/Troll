@@ -15,6 +15,7 @@ public:
 	static void clear();
 	static World& edit();
 	static World const& read();
+	void serialize(ISerializer& s);
 
 	int add_map(int z, float difficulty, Box2 box, Terrain::Type fill);
 	int num_maps() const;

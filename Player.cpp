@@ -2,13 +2,18 @@
 #include "Player.h"
 
 #include "Creature.h"
+#include "Debug.h"
 #include "Draw.h"
 #include "Gingerbread.h"
 #include "Math.h"
+#include "Serialize.h"
 #include "Spell.h"
 
 namespace Player
 {
+
+//-------------------------------------------------------------------------------------------------
+// Data
 
 Player::Data s_player_data;
 
@@ -22,9 +27,32 @@ Player::Data & edit_data()
 	return s_player_data;
 }
 
+//-------------------------------------------------------------------------------------------------
+// Global interface
+
 void Player::clear()
 {
 	s_player_data = Player::Data();
+}
+
+void Player::Data::serialize(ISerializer& s)
+{
+	// Don't need to serialize this since we shouldn't automove on reload.
+	// CompassDirection automove
+
+	s.srz_bool(acted);
+
+	// Don't need to serialize these since we shouldn't be saving after game over!
+	assert(!game_over);
+	assert(defeated_by == Creature::None);
+	
+	s.srz_int(level);
+	s.srz_int(xp);
+}
+
+void serialize(ISerializer& s)
+{
+	s_player_data.serialize(s);
 }
 
 Vec3 pos()

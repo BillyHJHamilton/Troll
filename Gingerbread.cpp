@@ -6,6 +6,7 @@
 #include "Math.h"
 #include "MapUtil.h"
 #include "Random.h"
+#include "Serialize.h"
 #include "Spell.h"
 #include "VectorUtil.h"
 
@@ -32,6 +33,7 @@ TagSet s_gingerbread_tags [Creature::Count];
 std::vector<Item::Type> s_item_drops [Creature::Count];
 std::vector<int> s_item_weights [Creature::Count];
 
+// Data about how this identity has been used in the current game.
 struct IdentityMetadata
 {
 	// Creature of this identity who currently exists, if any.
@@ -40,6 +42,8 @@ struct IdentityMetadata
 	// Strongest variant of this identity spawned so far.
 	// They aren't allowed to repeat or regress within a game.
 	float spawned_difficulty = -1.0f;
+
+	void serialize(ISerializer& s);
 };
 
 struct IdentityData
@@ -51,11 +55,9 @@ struct IdentityData
 	char const* colour = nullptr;
 	int codepoint = 'X';
 	Gender gender = Gender::Male;
-
-	// Data about how this identity has been used in the current game.
-	IdentityMetadata metadata {};
 };
 std::unordered_map<NameHash, IdentityData> s_identities;
+std::unordered_map<NameHash, IdentityMetadata> s_metadata;
 
 //------------------------------------------------------------------------------
 // Helper function declarations
@@ -173,9 +175,43 @@ void init()
 
 void clear()
 {
-	for (auto& pair : s_identities)
+	s_metadata.clear();
+}
+
+void IdentityMetadata::serialize(ISerializer& s)
+{
+	s.srz_creature_handle(current_handle);
+	s.srz_float(spawned_difficulty);
+}
+
+void serialize(ISerializer& s)
+{
+	// It will be easiest to do this one manually.
+	if (s.is_load())
 	{
-		pair.second.metadata = {};
+		int count;
+		s.srz_int(count);
+		s_metadata.clear();
+		s_metadata.reserve(count);
+		for (int i = 0; i < count; ++i)
+		{
+			NameHash name_hash("");
+			IdentityMetadata metadata;
+			s.srz_name_hash(name_hash);
+			metadata.serialize(s);
+			s_metadata[name_hash] = metadata;
+		}
+	}
+	else
+	{
+		int count = Util::Size(s_metadata);
+		s.srz_int(count);
+		for (auto& pair : s_metadata)
+		{
+			NameHash name_hash = pair.first;
+			s.srz_name_hash(name_hash);
+			pair.second.serialize(s);
+		}
 	}
 }
 
@@ -301,7 +337,7 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 		// Identity-based considerations
 		if (identity != c_IdentityGeneric)
 		{
-			IdentityMetadata const& metadata = s_identities[identity].metadata;
+			IdentityMetadata const& metadata = s_metadata[identity];
 
 			if (metadata.current_handle != Creature::None ||
 				Math::FloatLessOrEqual(stats.difficulty, metadata.spawned_difficulty))
@@ -349,7 +385,7 @@ void claim_identity(Creature::Handle creature)
 	NameHash const identity = creature.identity();
 	if (is_valid_type(type) && identity != c_IdentityGeneric)
 	{
-		IdentityMetadata& metadata = s_identities[identity].metadata;
+		IdentityMetadata& metadata = s_metadata[identity];
 
 		if (metadata.current_handle != Creature::None)
 		{
@@ -376,9 +412,10 @@ void release_identity(Creature::Handle creature)
 	NameHash const identity = creature.identity();
 	if (identity != c_IdentityGeneric)
 	{
-		if (s_identities[identity].metadata.current_handle == creature)
+		IdentityMetadata* metadata = Util::Find(s_metadata, identity);
+		if (metadata && metadata->current_handle == creature)
 		{
-			s_identities[identity].metadata.current_handle = Creature::None;
+			metadata->current_handle = Creature::None;
 		}
 	}
 }
@@ -397,6 +434,8 @@ void register_identity (char const* short_name, char const* long_name,
 		short_name[0],
 		gender
 	};
+
+	s_metadata[short_name] = IdentityMetadata{};
 }
 
 void mix_gingerbread (

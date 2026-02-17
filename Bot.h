@@ -14,7 +14,12 @@ namespace Bot
 		int awareness = 0;
 		Vec3 last_seen {0,0,0};
 		std::vector<Vec3> move_stack;
+
+		void serialize(ISerializer& s);
 	};
+
+	void clear();
+	void serialize(ISerializer& s);
 
 	void init_brain(Creature::Handle creature);
 

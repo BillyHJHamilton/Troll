@@ -4,25 +4,50 @@
 #include "Line.h"
 #include "Map.h"
 #include "PerfTimer.h"
+#include "Serialize.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 
 World s_world;
 
-void World::clear()
+/*static*/ void World::clear()
 {
 	s_world = World();
 }
 
-World& World::edit()
+/*static*/ World& World::edit()
 {
 	return s_world;
 }
 
-World const& World::read()
+/*static*/ World const& World::read()
 {
 	return s_world;
+}
+
+void World::serialize(ISerializer& s)
+{
+	if (s.is_load())
+	{
+		int map_num;
+		s.srz_int(map_num);
+		maps.clear();
+		maps.reserve(map_num);
+		for (int i = 0; i < map_num; ++i)
+		{
+			maps.emplace_back(std::make_shared<Map>());
+			maps.back()->serialize(s);
+		}
+	}
+	else
+	{
+		srz_vec_size(s, maps);
+		for (std::shared_ptr<Map>& map_ptr : maps)
+		{
+			map_ptr->serialize(s);
+		}
+	}
 }
 
 int World::add_map(int z, float difficulty, Box2 box, Terrain::Type fill)

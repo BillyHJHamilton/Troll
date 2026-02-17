@@ -15,6 +15,7 @@
 #include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
+#include "Serialize.h"
 #include "Spell.h"
 #include "Status.h"
 #include "Target.h"
@@ -97,6 +98,41 @@ void clear ()
 
 	s_fainting_creatures.clear();
 	s_fainting_creatures.reserve(10);
+}
+
+void Creature::Instance::serialize(ISerializer& s)
+{
+	s.srz_int((int&)type);
+	s.srz_int(hp);
+	s.srz_vec3(pos);
+	s.srz_int(rest_turns);
+}
+
+void serialize (ISerializer& s)
+{
+	s.srz_int_grid(s_creature_status);
+
+	s.srz_int(s_max_creature_index);
+	for (int i = 0; i < s_max_creature_index; ++i)
+	{
+		s_creatures[i].serialize(s);
+		Spell::srz_bitset(s, s_spells_known[i]);
+
+		// Don't save/load derived stats; just regenerate them.
+		if (s.is_load())
+		{
+			Creature::Handle(i).update_derived_stats();
+		}
+	}
+
+	srz_vec_size(s, s_visible_creatures);
+	for (Creature::Handle& h : s_visible_creatures)
+	{
+		s.srz_creature_handle(h);
+	}
+
+	// Shouldn't need to serialize because it will be empty by end of turn:
+	assert(s_fainting_creatures.empty());
 }
 
 //-------------------------------------------------------------------------------------------------

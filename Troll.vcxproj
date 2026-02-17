@@ -194,6 +194,7 @@
     <ClCompile Include="Potion.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Serialize.cpp" />
     <ClCompile Include="Spawn.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
@@ -242,6 +243,7 @@
     <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Serialize.h" />
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />

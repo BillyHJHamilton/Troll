@@ -5,12 +5,65 @@
 #include "Math.h"
 #include "PerfTimer.h"
 #include "Random.h"
+#include "Serialize.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 
 MapGenerator::MapGenerator(Map& owner)
 	: m_Map(owner)
 {
+}
+
+void MapGenerator::Parameters::Serialize(ISerializer& s)
+{
+	s.srz_int(MapBorder);
+
+	s.srz_int(MinRoomDimension);
+	s.srz_int(MaxRoomDimension);
+	s.srz_int(MinRoomArea);
+	s.srz_int(MaxRoomArea);
+
+	s.srz_int(MinNumRooms);
+	s.srz_int(MaxNumRooms);
+
+	s.srz_int(MinStairsProximity);
+	s.srz_int(MinFacingStairsProximity);
+
+	s.srz_int(UpStairsToAdd);
+	s.srz_int(DownStairsToAdd);
+}
+
+void MapGenerator::Serialize(ISerializer& s)
+{
+	srz_vec_size(s, m_SeedRooms);
+	for (Room& r : m_SeedRooms)
+	{
+		r.Serialize(s);
+	}
+
+	srz_vec_size(s, m_RoomVec);
+	for (Room& r : m_SeedRooms)
+	{
+		r.Serialize(s);
+	}
+
+	// Shouldn't need to save this.
+	assert(m_JoinedRooms.empty());
+
+	srz_vec_size(s, m_FailedStairs);
+	for (Stairs::Pair& pair : m_FailedStairs)
+	{
+		s.srz_vec2(pair.first);
+		s.srz_byte((byte&)pair.second);
+	}
+
+	// Can't serialize this.  Should be setup during construction.
+	//Map& m_Map;
+
+	m_Param.Serialize(s);
+
+	// Presumably yes...
+	s.srz_bool(m_HasGenerated);
 }
 
 void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)

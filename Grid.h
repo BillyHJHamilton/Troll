@@ -20,7 +20,7 @@ public:
 	Grid& operator=(Grid&& other) = default;
 
 	int get_width() const { return width; }
-	int get_height() const { return ((int)(data.size()))/width; }
+	int get_height() const { return width <= 0 ? 0 : ((int)(data.size()))/width; }
 
 	void fill(ValueType new_value)
 	{
@@ -38,6 +38,16 @@ public:
 	ValueType const& read(int x, int y) const
 	{
 		return data.at(x + y*width);
+	}
+
+	std::vector<ValueType> & edit_data()
+	{
+		return data;
+	}
+
+	std::vector<ValueType> const& read_data() const
+	{
+		return data;
 	}
 
 protected:

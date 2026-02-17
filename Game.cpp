@@ -67,6 +67,7 @@ void clear()
 {
 	PerfTimer perf0("game clear");
 
+	Bot::clear();
 	Creature::clear();
 	Draw::clear();
 	Gingerbread::clear();
@@ -78,6 +79,36 @@ void clear()
 	Spawn::clear();
 	Target::clear();
 	World::clear();
+}
+
+void serialize_all(ISerializer& s)
+{
+	s.srz_int(s_turn_number);
+
+	Bot::serialize(s);
+	Creature::serialize(s);
+	Gingerbread::serialize(s);
+	Inventory::serialize(s);
+	Item::serialize(s);
+	Player::serialize(s);
+	Spawn::serialize(s);
+	World::edit().serialize(s);
+
+	if (s.is_load())
+	{
+		// A few things we just shrug and reset.
+		Draw::clear();
+		Input::clear();
+		Menu::clear();
+		Target::clear();
+
+		s_game_mode = GameMode::Normal;
+		Draw::add_message("Welcome back.");
+	}
+	else
+	{
+		Draw::add_message("Game saved.");
+	}
 }
 
 // Setup runs at the start of each game, after all clear functions.

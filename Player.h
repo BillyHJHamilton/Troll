@@ -17,10 +17,13 @@ namespace Player
 
 		int level = 1;
 		int xp = 0;
+
+		void serialize(ISerializer& s);
 	};
 
 	// Initialization
 	void clear();
+	void serialize(ISerializer& s);
 
 	// Getters
 	Vec3 pos ();

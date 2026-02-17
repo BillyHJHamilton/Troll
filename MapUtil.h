@@ -4,6 +4,13 @@
 
 namespace Util
 {
+	// Get the size and convert to int (to suppress size_t warnings).
+	template<typename KeyType, typename ValueType>
+	inline int Size(std::unordered_map<typename KeyType, typename ValueType> const& map)
+	{
+		return static_cast<int>(map.size());
+	}
+
 	// If key is not found, add one using the default constructor.
 	template<typename KeyType, typename ValueType>
 	ValueType& FindOrAdd(std::unordered_map<KeyType,ValueType>& map, const KeyType& key)

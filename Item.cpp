@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Potion.h"
 #include "Random.h"
+#include "Serialize.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -323,6 +324,24 @@ void clear()
 {
 	s_items.clear();
 	s_items.reserve(200); // get us started
+}
+
+void Instance::serialize(ISerializer& s)
+{
+	s.srz_int((int&)type);
+	s.srz_int(subtype);
+	s.srz_int(flavour);
+	s.srz_int(next);
+	s.srz_int(height);
+}
+
+void serialize(ISerializer& s)
+{
+	srz_vec_size(s, s_items);
+	for (Item::Instance inst : s_items)
+	{
+		inst.serialize(s);
+	}
 }
 
 Item::Handle spawn_item (Instance instance, Vec3 const & pos)

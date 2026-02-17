@@ -25,6 +25,8 @@ namespace Gingerbread
 	void init();
 	void clear();
 
+	void serialize(ISerializer& s);
+
 	bool is_valid_type(Creature::Type type);
 	Stats const& read(Creature::Type type);
 	Spell::Bitset const& read_spells(Creature::Type type);

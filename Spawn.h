@@ -6,6 +6,7 @@
 namespace Spawn
 {
 	void clear();
+	void serialize(ISerializer& s);
 
 	void post_world_setup();
 	void check_spawning();
