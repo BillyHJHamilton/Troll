@@ -52,6 +52,7 @@ NAMING CONVENTIONS
 - c_NamedConstant
 - cstr_CharString
 - d_DefineMacro
+- L_LabelName (for goto)
 
 AND FINALLY
 Go with the flow.  Not everything is consistent right now, and that's OK.

@@ -14,8 +14,113 @@
 
 namespace Spawn
 {
-	
+
+//-----------------------------------------------------------------------------
+// Data
+
 std::vector<bool> s_spawned;
+
+// Declared statically here to avoid needless reallocations.
+std::vector<Vec2> s_spawn_positions;
+
+//-----------------------------------------------------------------------------
+// Helpers
+
+void find_spawn_positions(const Map& map)
+{
+	s_spawn_positions.clear();
+
+	for (BoxItr itr(map.get_box()); itr; ++itr)
+	{
+		Vec2 const pos2 = *itr;
+		Vec3 const pos3 = itr->xyz(map.get_z());
+
+		if (map.get_terrain(pos2) == Terrain::Open &&
+			!map.has_item(pos2) &&
+			!World::read().is_visible(pos3) &&
+			Creature::creature_at_pos(pos3) == Creature::None)
+		{
+			s_spawn_positions.push_back(pos2);
+		}
+	}
+}
+
+bool has_spawn_positions()
+{
+	return !s_spawn_positions.empty();
+}
+
+Vec2 next_spawn_position()
+{
+	int const i = Random::index(s_spawn_positions);
+	Vec2 const pos = s_spawn_positions.at(i);
+	Util::RemoveSwap(s_spawn_positions, i);
+	return pos;
+}
+
+// Call find_spawn_positions first.
+void spawn_creatures(Map const& map, int creatures_to_spawn)
+{
+	float const difficulty = map.get_difficulty();
+	int creatures_spawned = 0;
+	while (has_spawn_positions() && creatures_spawned < creatures_to_spawn)
+	{
+		Vec2 const pos = next_spawn_position();
+		Vec3 const pos3 = pos.xyz(map.get_z());
+
+		Creature::Type type = Gingerbread::find_type_to_spawn(map.get_difficulty());
+		if (type == Creature::None)
+		{
+			break;
+		}
+
+		Creature::Handle creature = Creature::spawn_creature(type, pos3);
+		if (c_ShowMapDebug)
+		{
+			std::cout << std::format(" - Spawned {} (difficulty {}) at ({},{}).\n",
+				creature.long_name(), Gingerbread::read(creature.type()).difficulty,
+				creature.pos().x, creature.pos().y);
+		}
+
+		++creatures_spawned;
+	}
+
+	if (c_ShowMapDebug)
+	{
+		std::cout << std::format("Spawned {}/{} creatures.\n",
+			creatures_spawned, creatures_to_spawn);
+	}
+}
+
+void spawn_items(Map const& map, int items_to_spawn)
+{
+	float const difficulty = map.get_difficulty();
+	int items_spawned = 0;
+	while (has_spawn_positions() && items_spawned < items_to_spawn)
+	{
+		Vec2 const pos = next_spawn_position();
+		Vec3 const pos3 = pos.xyz(map.get_z());
+
+		if (Random::one_in(11))
+		{
+			Item::spawn_potion_by_level(pos3, difficulty);
+		}
+		else
+		{
+			Item::spawn_bbb(pos3);
+		}
+		++items_spawned;
+	}
+
+	if (c_ShowMapDebug)
+	{
+		std::cout << std::format("Placed {}/{} items.\n",
+			items_spawned, items_to_spawn);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Interface
 
 void clear()
 {
@@ -38,87 +143,17 @@ void check_spawning()
 
 		if (c_ShowMapDebug)
 		{
-			std::cout << std::format("\nSpawning for map {}.\n", map_id);
+			std::cout << std::format("\nSpawning for map {}, difficulty {}.\n",
+				map_id, map.get_difficulty());
 		}
 
-		float const map_level = map.get_difficulty();
+		find_spawn_positions(map);
 
-		int const num_to_spawn = Random::in_range(4,6);
-		int num_spawned = 0;
-		for (int i = 0; i < num_to_spawn; ++i)
-		{
-			// Find spawn position
-			// TODO There's definitely a better way to do this.
-			// Like get the list of rooms, etc.
-			int const attempts = 100;
-			for (int a = 0; a < attempts; ++a)
-			{
-				Vec2 const pos2 = Random::in_box(map.get_box());
-				Vec3 const pos3 = pos2.xyz(Player::pos().z);
-				if (map.get_terrain(pos2) == Terrain::Open &&
-					!World::read().is_visible(pos3) &&
-					Creature::creature_at_pos(pos3) == Creature::None)
-				{
-					// TODO difficulty per map
-					Creature::Type type = Gingerbread::find_type_to_spawn(map_level);
-					if (type != Creature::None)
-					{
-						Creature::Handle creature = Creature::spawn_creature(type, pos3);
-
-						if (c_ShowMapDebug)
-						{
-							std::cout << std::format(" - Spawned {} at ({},{}).\n",
-								creature.long_name(), creature.pos().x, creature.pos().y);
-						}
-
-						++num_spawned;
-					}
-					break;
-				}
-			}
-		}
-
-		if (c_ShowMapDebug)
-		{
-			std::cout << std::format("Spawned {}/{} for map {}.\n",
-				num_spawned, num_to_spawn, map_id);
-		}
+		int const creatures_to_spawn = Random::in_range(4,6);
+		spawn_creatures(map, creatures_to_spawn);
 
 		int const items_to_spawn = Random::in_range(20,40);
-		int items_spawned = 0;
-		for (int i = 0; i < items_to_spawn; ++i)
-		{
-			// Find spawn position
-			// TODO Repeating code from above...
-			// Again, there must be better ways to do all this.
-			int const attempts = 100;
-			for (int a = 0; a < attempts; ++a)
-			{
-				Vec2 const pos2 = Random::in_box(map.get_box());
-				Vec3 const pos3 = pos2.xyz(Player::pos().z);
-				if (map.get_terrain(pos2) == Terrain::Open &&
-					!World::read().has_item(pos3) &&
-					Creature::creature_at_pos(pos3) == Creature::None)
-				{
-					if (Random::one_in(10))
-					{
-						Item::spawn_potion_by_level(pos3, map_level);
-					}
-					else
-					{
-						Item::spawn_bbb(pos3);
-					}
-					++items_spawned;
-					break;
-				}
-			}
-		}
-
-		if (c_ShowMapDebug)
-		{
-			std::cout << std::format("Placed {}/{} items for map {}.\n",
-				items_spawned, items_to_spawn, map_id);
-		}
+		spawn_items(map, items_to_spawn);
 
 		s_spawned[map_id] = true;
 	}
