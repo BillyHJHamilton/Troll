@@ -35,14 +35,14 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 void MapGenerator::Serialize(ISerializer& s)
 {
-	srz_vec_size(s, m_SeedRooms);
+	srz_vector_size(s, m_SeedRooms, "m_SeedRooms");
 	for (Room& r : m_SeedRooms)
 	{
 		r.Serialize(s);
 	}
 
-	srz_vec_size(s, m_RoomVec);
-	for (Room& r : m_SeedRooms)
+	srz_vector_size(s, m_RoomVec, "m_RoomVec");
+	for (Room& r : m_RoomVec)
 	{
 		r.Serialize(s);
 	}
@@ -50,12 +50,7 @@ void MapGenerator::Serialize(ISerializer& s)
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
 
-	srz_vec_size(s, m_FailedStairs);
-	for (Stairs::Pair& pair : m_FailedStairs)
-	{
-		s.srz_vec2(pair.first);
-		s.srz_byte((byte&)pair.second);
-	}
+	srz_vector(s, m_FailedStairs, "m_FailedStairs");
 
 	// Can't serialize this.  Should be setup during construction.
 	//Map& m_Map;

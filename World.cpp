@@ -42,11 +42,19 @@ void World::serialize(ISerializer& s)
 	}
 	else
 	{
-		srz_vec_size(s, maps);
+		int map_num = Util::Size(maps);
+		s.srz_int(map_num);
 		for (std::shared_ptr<Map>& map_ptr : maps)
 		{
 			map_ptr->serialize(s);
 		}
+	}
+
+	s.srz_int(visibility_step);
+
+	if (s.is_load())
+	{
+		temp_last_map = c_Invalid;
 	}
 }
 

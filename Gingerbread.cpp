@@ -191,6 +191,10 @@ void serialize(ISerializer& s)
 	{
 		int count;
 		s.srz_int(count);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Load Gingerbread::s_metadata, size={}", count);
+		}
 		s_metadata.clear();
 		s_metadata.reserve(count);
 		for (int i = 0; i < count; ++i)
@@ -206,6 +210,10 @@ void serialize(ISerializer& s)
 	{
 		int count = Util::Size(s_metadata);
 		s.srz_int(count);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Save Gingerbread::s_metadata, size={}", count);
+		}
 		for (auto& pair : s_metadata)
 		{
 			NameHash name_hash = pair.first;

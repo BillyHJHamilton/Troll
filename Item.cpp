@@ -337,8 +337,8 @@ void Instance::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	srz_vec_size(s, s_items);
-	for (Item::Instance inst : s_items)
+	srz_vector_size(s, s_items, "s_items");
+	for (Item::Instance& inst : s_items)
 	{
 		inst.serialize(s);
 	}

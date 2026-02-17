@@ -5,6 +5,7 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Geometry.h"
 #include "Grammar.h"
 #include "Math.h"
 #include "Pathfind.h"
@@ -57,16 +58,12 @@ void Brain::serialize(ISerializer& s)
 	s.srz_int(awareness);
 	s.srz_vec3(last_seen);
 
-	srz_vec_size(s, move_stack);
-	for (Vec3& v : move_stack)
-	{
-		s.srz_vec3(v);
-	}
+	srz_vector(s, move_stack, "brain.move_stack");
 }
 
 void serialize(ISerializer& s)
 {
-	srz_vec_size(s, s_brains);
+	srz_vector_size(s, s_brains, "brains");
 	for (Brain& b : s_brains)
 	{
 		b.serialize(s);

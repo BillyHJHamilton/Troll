@@ -34,11 +34,7 @@ Inventory const& Inventory::read()
 
 void Inventory::serialize(ISerializer& s)
 {
-	srz_vec_size(s, s_inventory.invent);
-	for (Item::Handle item : s_inventory.invent)
-	{
-		s.srz_item_handle(item);
-	}
+	srz_vector(s, s_inventory.invent, "s_inventory");
 }
 
 int Inventory::num_items () const

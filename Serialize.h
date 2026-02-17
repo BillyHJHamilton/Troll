@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Debug.h"
 #include "Grid.h"
 #include "NameHash.h"
 #include "Types.h"
 
+#include <format>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,21 +37,32 @@ public:
 	virtual void srz_item_handle(Item::Handle& h) = 0;
 
 	virtual void srz_string(std::string& str) = 0;
-	virtual void srz_int_vec(std::vector<int>& v) = 0;
-	virtual void srz_int_grid(Grid<int>& g) = 0;
 
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m) = 0;
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m) = 0;
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m) = 0;
+	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
+		char const* debug_name) = 0;
+	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m,
+		char const* debug_name) = 0;
+	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
+		char const* debug_name) = 0;
 };
 
+// For serializing a vector of raw data, call srz_vector.
+
+// If your vector is complex, you call srz_vector_size,
+// then iterate over the vector and serialize each element with custom logic.
+// Make sure not to serialize a COPY of the elements, or nothing will load!
+
 template<typename ValueType>
-void srz_vec_size(ISerializer& s, std::vector<ValueType> v)
+void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debug_name)
 {
 	int vec_size;
 	if (s.is_load())
 	{
 		s.srz_int(vec_size);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << "Load " << debug_name << ", size " << vec_size << "\n";
+		}
 		if ((int)v.size() != vec_size)
 		{
 			v.resize(vec_size);
@@ -59,20 +72,45 @@ void srz_vec_size(ISerializer& s, std::vector<ValueType> v)
 	{
 		vec_size = (int)v.size();
 		s.srz_int(vec_size);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << "Save " << debug_name << ", size " << vec_size << "\n";
+		}
 	}
 }
 
 template<typename ValueType>
-void srz_grid_size(ISerializer& s, Grid<ValueType> g)
+void srz_array_data(ISerializer& s, ValueType* raw_data, int num)
+{
+	s.srz_raw((char*)raw_data, num * sizeof(ValueType));
+}
+
+template<typename ValueType>
+void srz_vector(ISerializer& s, std::vector<ValueType>& v, char const* debug_name)
+{
+	srz_vector_size(s, v, debug_name);
+	srz_array_data(s, v.data(), (int)v.size());
+}
+
+template<typename ValueType>
+void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 {
 	if (s.is_load())
 	{
 		int w, h;
 		s.srz_int(w);
 		s.srz_int(h);
+		bool resized = false;
 		if (g.get_width() != w || g.get_height() != h)
 		{
 			g = Grid<ValueType>(w,h,{});
+			resized = true;
+		}
+		int const length = w * h;
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Load {} - w={}, h={}, resized={}, length={}\n",
+				debug_name, w, h, resized, length);
 		}
 	}
 	else
@@ -81,5 +119,24 @@ void srz_grid_size(ISerializer& s, Grid<ValueType> g)
 		int h = g.get_height();
 		s.srz_int(w);
 		s.srz_int(h);
+		int const length = w * h;
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Save {} - w={}, h={}; length={}\n",
+				debug_name, w, h, length);
+		}
 	}
+}
+
+template<typename ValueType>
+void srz_grid_data(ISerializer& s, Grid<ValueType>& g)
+{
+	s.srz_raw((char*)g.edit_data().data(), g.num() * sizeof(ValueType));
+}
+
+template<typename ValueType>
+void srz_grid(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
+{
+	srz_grid_size(s, g, debug_name);
+	srz_grid_data(s, g);
 }

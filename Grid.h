@@ -21,6 +21,7 @@ public:
 
 	int get_width() const { return width; }
 	int get_height() const { return width <= 0 ? 0 : ((int)(data.size()))/width; }
+	int num() const { return (int)data.size(); }
 
 	void fill(ValueType new_value)
 	{

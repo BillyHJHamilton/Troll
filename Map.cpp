@@ -30,31 +30,49 @@ void Map::serialize(ISerializer& s)
 	s.srz_int(global_z);
 	s.srz_float(difficulty);
 
-	srz_grid_size(s, terrain);
-	for (Terrain::Type t : terrain.edit_data())
+	srz_grid(s, terrain, "map.terrain");
+	//srz_grid_size(s, terrain, "map.terrain");
+	//srz_array_data(s, terrain.edit_data().data(), terrain.num());
+	/*for (Terrain::Type& t : terrain.edit_data())
 	{
 		s.srz_byte((byte&)t);
-	}
+	}*/
 
-	s.srz_int_grid(visibility);
+	srz_grid(s, visibility, "map.visibility");
+	//s.srz_int_grid(visibility, "map.visibility");
 
-	srz_grid_size(s, clouds);
-	for (Cloud::Type c : clouds.edit_data())
+	srz_grid(s, clouds, "map.clouds");
+	//srz_grid_size(s, clouds, "map.clouds");
+	//for (Cloud::Type& c : clouds.edit_data())
+	//{
+	//	s.srz_int((int&)c);
+	//}
+
+	srz_grid(s, items, "map.items");
+	//srz_grid_size(s, items, "map.items");
+	//for (Item::Handle& h : items.edit_data())
+	//{
+	//	s.srz_item_handle(h);
+	//}
+
+	s.srz_vec2_int_hashmap(cloud_lifetimes, "map.cloud_lifetimes");
+	s.srz_vec2_stairs_hashmap(stairs, "map.stairs");
+
+	bool has_generator;
+	if (s.is_load())
 	{
-		s.srz_int((int&)c);
+		s.srz_bool(has_generator);
 	}
-
-	srz_grid_size(s, items);
-	for (Item::Handle h : items.edit_data())
+	else
 	{
-		s.srz_item_handle(h);
+		has_generator = (generator != nullptr);
+		s.srz_bool(has_generator);
 	}
 
-	s.srz_vec2_int_hashmap(cloud_lifetimes);
-	s.srz_vec2_stairs_hashmap(stairs);
-
-	// TODO!
-	std::shared_ptr<MapGenerator> generator;
+	if (has_generator)
+	{
+		get_generator().Serialize(s);
+	}
 }
 
 MapGenerator& Map::get_generator()

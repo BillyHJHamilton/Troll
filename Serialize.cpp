@@ -25,9 +25,13 @@ public:
 	}
 
 	template<typename KeyType, typename ValueType>
-	void write_map(std::unordered_map<KeyType,ValueType>& m)
+	void write_map(std::unordered_map<KeyType,ValueType>& m, char const* debug_name)
 	{
 		write(Util::Size(m));
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Save {}, size={}\n", debug_name, Util::Size(m));
+		}
 		for (auto& pair : m)
 		{
 			write(pair.first);
@@ -63,34 +67,22 @@ public:
 		fout.write(str.data(), str_size);
 	}
 
-	virtual void srz_int_vec(std::vector<int>& v) override
+	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
+		char const* debug_name) override
 	{
-		int const v_size = Util::Size(v);
-		write(v_size);
-		fout.write((char*) v.data(), v_size * sizeof(int));
+		write_map(m, debug_name);
 	}
 
-	virtual void srz_int_grid(Grid<int>& g) override
+	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m,
+		char const* debug_name) override
 	{
-		write(g.get_width());
-		write(g.get_height());
-		int const length = Util::Size(g.read_data());
-		fout.write((char*) g.read_data().data(), length * sizeof(int));
+		write_map(m, debug_name);
 	}
 
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m) override
+	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
+		char const* debug_name) override
 	{
-		write_map(m);
-	}
-
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m) override
-	{
-		write_map(m);
-	}
-
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m) override
-	{
-		write_map(m);
+		write_map(m, debug_name);
 	}
 
 protected:
@@ -111,12 +103,16 @@ public:
 	}
 
 	template<typename KeyType, typename ValueType>
-	void read_map(std::unordered_map<KeyType,ValueType>& m)
+	void read_map(std::unordered_map<KeyType,ValueType>& m, char const* debug_name)
 	{
 		int map_size;
 		read(map_size);
 		m.clear();
 		m.reserve(map_size);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Load {}, size={}\n", debug_name, map_size);
+		}
 		for (int i = 0; i < map_size; ++i)
 		{
 			KeyType a;
@@ -156,42 +152,22 @@ public:
 		fin.read(str.data(), str_size);
 	}
 
-	virtual void srz_int_vec(std::vector<int>& v) override
+	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
+		char const* debug_name) override
 	{
-		int vec_size;
-		read(vec_size);
-		if (Util::Size(v) != vec_size)
-		{
-			v.resize(vec_size);
-		}
-		fin.read( (char*) v.data(), vec_size * sizeof(int) );
-	}
-
-	virtual void srz_int_grid(Grid<int>& g) override
-	{
-		int w, h;
-		read(w);
-		read(h);
-		if (g.get_width() != w || g.get_height() != h)
-		{
-			g = Grid<int>(w,h,0);
-		}
-		fin.read( (char*) g.edit_data().data(), w*h*sizeof(int) );
-	}
-
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m) override
-	{
-		read_map(m);
+		read_map(m, debug_name);
 	}
 	
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m) override
+	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m, char const*
+		debug_name) override
 	{
-		read_map(m);
+		read_map(m, debug_name);
 	}
 
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m) override
+	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
+		char const* debug_name) override
 	{
-		read_map(m);
+		read_map(m, debug_name);
 	}
 
 protected:
