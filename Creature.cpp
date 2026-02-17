@@ -265,7 +265,7 @@ std::string Handle::status_string () const
 		{
 			if (num_out < 5)
 			{
-				outs << std::format("[color={}]{}({})[/color]",
+				outs << std::format("[color={}]{}({})[/color] ",
 					Status::colour(si), Status::abbrev(si), status_severity(si));
 			}
 			else
