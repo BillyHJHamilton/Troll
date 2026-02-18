@@ -9,11 +9,13 @@
 #include "Inventory.h"
 #include "MenuDocument.h"
 #include "MenuInventory.h"
-#include "MenuList.h"
+#include "MenuLoad.h"
 #include "MenuMessages.h"
+#include "MenuName.h"
 #include "MenuPause.h"
 #include "MenuSelectHouse.h"
 #include "MenuSpells.h"
+#include "MenuTitle.h"
 #include "Player.h"
 
 #include <format>
@@ -22,34 +24,23 @@ namespace Menu
 {
 
 //-------------------------------------------------------------------------------------------------
-// Dynamic Data
+// Data
 
+// Menus in alphabetic order
 MenuDocument s_menu_document;
 MenuInventory s_menu_inventory;
+MenuLoad s_menu_load;
 MenuMessages s_menu_messages;
+MenuName s_menu_name;
 MenuSelectHouse s_menu_select_house;
 MenuSpells s_menu_spells;
+MenuTitle s_menu_title;
 MenuPause s_menu_pause;
 
 IMenu* s_current_menu = nullptr;
 
 //-------------------------------------------------------------------------------------------------
 // Static Data
-
-const char* const cstr_DocTitle =
-	"\n"
-	"  ------------------------------------\n\n"
-	"  TTTTTTT RRRR    OOO    L      L     \n"
-	"     T    R   R  O   O   L      L     \n"
-	"     T    R  R  O     O  L      L     \n"
-	"     T    RRR   O     O  L      L     \n"
-	"     T    R  R   O   O   L      L     \n"
-	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
-	"  ------------------------------------\n"
-	"      The Revenge Of Luna Lovegood    \n"
-	"  ------------------------------------\n"
-	"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-	"  (press enter)";
 
 const char* const cstr_DocHelp =
 	"How To Play\n"
@@ -94,6 +85,7 @@ void set_menu(IMenu& menu)
 void init()
 {
 	s_menu_select_house.init();
+	s_menu_title.init();
 }
 
 void clear()
@@ -103,8 +95,20 @@ void clear()
 
 void show_title()
 {
-	set_menu(s_menu_document);
-	s_menu_document.init(cstr_DocTitle, &show_house_selection);
+	set_menu(s_menu_title);
+	s_menu_title.reset_cursor();
+}
+
+void show_load()
+{
+	set_menu(s_menu_load);
+	s_menu_load.refresh();
+}
+
+void show_name_entry()
+{
+	set_menu(s_menu_name);
+	s_menu_name.init();
 }
 
 void show_help()
@@ -135,12 +139,14 @@ void show_starting_spells()
 {
 	set_menu(s_menu_spells);
 	s_menu_spells.show_starting_spells();
+	s_menu_load.reset_cursor();
 }
 
 void show_spells_known()
 {
 	set_menu(s_menu_spells);
 	s_menu_spells.show_known_spells();
+	s_menu_load.reset_cursor();
 }
 
 void show_inventory()

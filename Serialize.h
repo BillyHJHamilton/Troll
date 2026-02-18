@@ -18,6 +18,8 @@ void LoadGame(const std::string& filename);
 class ISerializer
 {
 public:
+	virtual ~ISerializer() {}
+
 	virtual bool is_load() const = 0;
 
 	virtual void srz_raw(char* c, int size) = 0;
@@ -144,7 +146,7 @@ void srz_grid(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 
 // Serialize a map with value types.
 template<typename KeyType, typename ValueType>
-void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType> m,
+void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType>& m,
 	char const* debug_name)
 {
 	if (s.is_load())

@@ -40,6 +40,7 @@ protected:
 	void calc_layout();
 	void calc_scroll_bottom();
 
+	static int constexpr c_Indent = 3;
 	static int constexpr c_MaxLineY = 29;
 
 	std::string m_title;

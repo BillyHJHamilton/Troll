@@ -25,16 +25,23 @@
 #include "VectorUtil.h"
 #include "World.h"
 
+#include <filesystem>
+
 namespace Game
 {
 
+int constexpr c_VersionNumber = 0;
+
 int s_turn_number;
 GameMode s_game_mode;
+std::string s_filename;
 
 //------------------------------------------------------------------------------
 // Helper function declarations.
 void end_turn();
 void game_over();
+void create_savefile();
+void delete_savefile();
 
 //------------------------------------------------------------------------------
 // Interface function implementations
@@ -79,10 +86,21 @@ void clear()
 	Spawn::clear();
 	Target::clear();
 	World::clear();
+
+	s_filename.clear();
 }
 
 void serialize_all(ISerializer& s)
 {
+	int version = c_VersionNumber;
+	s.srz_int(version);
+	if (s.is_load() && version != c_VersionNumber)
+	{
+		// TODO some better in-game handling.
+		std::cerr << "Version mismatch.  Cannot load.";
+		return;
+	}
+
 	s.srz_int(s_turn_number);
 
 	Bot::serialize(s);
@@ -111,13 +129,16 @@ void serialize_all(ISerializer& s)
 	}
 }
 
-// Setup runs at the start of each game, after all clear functions.
+// Setup runs at the start of each game, after character creation.
 // Here the ordering may be significant as dependencies appear.
 void setup()
 {
 	PerfTimer perf0("game setup");
 
-	s_turn_number = 0;
+	create_savefile();
+
+	s_turn_number = -1;
+
 	s_game_mode = GameMode::Normal;
 
 	World& world = World::edit();
@@ -127,13 +148,14 @@ void setup()
 	MapGenerator& gen1 = world.edit_map(0).get_generator();
 	gen1.Generate();
 
-	// Now try to find a place for the player...
+	// Now try to find a place for the player.
 	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
 	{
 		Vec3 pos = itr->xy0();
 		if (world.get_terrain(pos) == Terrain::Open)
 		{
-			spawn_creature(Creature::Player, pos);
+			assert(Player::handle().valid());
+			Player::handle().move(pos);
 			break;
 		}
 	}
@@ -173,6 +195,9 @@ void setup()
 
 	Spawn::post_world_setup();
 	Spawn::check_spawning();
+
+	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
+	++s_turn_number; // Advance to turn 0
 }
 
 void update()
@@ -204,12 +229,24 @@ void update()
 void reset()
 {
 	clear();
-	setup();
 	Menu::show_title();
+}
 
-	--s_turn_number;
-	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
-	++s_turn_number;
+void save()
+{
+	if (!s_filename.empty())
+	{
+		SaveGame(s_filename);
+	}
+}
+
+void load(std::string filename)
+{
+	s_filename = filename;
+	if (!s_filename.empty())
+	{
+		LoadGame(s_filename);
+	}
 }
 
 GameMode get_mode()
@@ -263,7 +300,45 @@ void end_turn()
 
 void game_over()
 {
+	// Now it's a roguelike!
+	delete_savefile();
+
 	Menu::show_game_over();
+}
+
+void create_savefile()
+{
+	if (!std::filesystem::exists("Save/"))
+	{
+		std::filesystem::create_directory("Save/");
+	}
+
+	s_filename = std::format("Save/{}.sav", Player::name());
+
+	int attempt = 0;
+	while (std::filesystem::exists(s_filename) // file already exists
+		&& attempt < INT_MAX)
+	{
+		s_filename = std::format("Save/{}_{}.sav",
+			Player::name(), attempt);
+		++attempt;
+	}
+
+	// Make initial save.
+	SaveGame(s_filename);
+}
+
+void delete_savefile()
+{
+	// Let's try not to delete some other file by mistake.
+	if (!s_filename.empty() &&
+		s_filename.substr(0,5) == "Save/" &&
+		s_filename.substr(s_filename.size()-4,4) == ".sav" &&
+		std::filesystem::exists(s_filename))
+	{
+		std::filesystem::remove(s_filename);
+		s_filename.clear();
+	}
 }
 
 } // namespace Game

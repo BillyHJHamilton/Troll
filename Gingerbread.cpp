@@ -186,6 +186,12 @@ void IdentityMetadata::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
+	// First, need to serialize the player's mutable stats.
+	Gingerbread::Stats& player_stats = s_gingerbread[0];
+	s.srz_int(player_stats.skill_magic);
+	s.srz_int(player_stats.max_hp);
+
+	// Then serialize the identity metadata.
 	// It will be easiest to do this one manually.
 	if (s.is_load())
 	{
@@ -293,19 +299,21 @@ Item::Type random_item_drop(Creature::Type type)
 
 void reset_player_stats(House::Type house)
 {
-	mix_gingerbread(Creature::Player, c_IdentityGeneric,
-		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
-		"You", "You", '@',
-		"white", // House::colour(house),
-		Gender::Female,
-		/*Magic*/ (house == House::Ravenclaw) ? 15 : 10,
-		/*HP*/ (house == House::Hufflepuff) ? 12 : 10,
-		"", "",
-		{Item::None}, {100});
+	edit_player_stats().skill_magic = (house == House::Ravenclaw) ? 15 : 10;
+	edit_player_stats().max_hp = (house == House::Hufflepuff) ? 12 : 10;
 
-	Creature::Handle(0).reset_spells();
-	Creature::Handle(0).cure_all();
-	Creature::Handle(0).update_derived_stats();
+	Creature::Handle player_handle(0);
+	if (!player_handle.valid())
+	{
+		// Create player instance and put it... somewhere.
+		Creature::spawn_creature(Creature::Type::Player,{0,0,0});
+	}
+	else
+	{
+		Creature::Handle(0).reset_spells();
+		Creature::Handle(0).cure_all();
+		Creature::Handle(0).update_derived_stats();
+	}
 }
 
 Gingerbread::Stats& edit_player_stats()

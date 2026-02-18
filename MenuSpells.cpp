@@ -3,6 +3,7 @@
 #include "Action.h"
 #include "Creature.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Player.h"
 #include "Spell.h"
 #include "VectorUtil.h"
@@ -86,6 +87,7 @@ void MenuSpells::draw_selected_spell ()
 		return;
 	}
 
+
 	float const base_success = 100.0f - Spell::get_miscast_rate(s, Player::handle().skill_magic());
 	int const damage = Spell::get_damage(s, Player::handle());
 	int const range = Spell::get_range(s);
@@ -123,7 +125,9 @@ void MenuSpells::select_starting_spell ()
 
 	if (Player::handle().spells_known().size() >= 3)
 	{
+		// That's it!  Start the game!
 		Menu::close();
+		Game::setup();
 	}
 	else
 	{

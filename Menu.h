@@ -14,25 +14,21 @@ public:
 
 namespace Menu
 {
-	enum Type : int
-	{
-		None,
-		Document,
-		List,
-		Count
-	};
-
 	void init();
 	void clear();
 
-	// Document Menus
+	// Menus at startup:
 	void show_title();
+	void show_load();
+	void show_name_entry();
+	void show_house_selection();
+	void show_starting_spells();
+
+	// Other Documents
 	void show_help();
 	void show_game_over();
 
 	// List Menus
-	void show_house_selection();
-	void show_starting_spells();
 	void show_spells_known();
 	void show_inventory();
 	void show_pause_menu();
@@ -40,6 +36,8 @@ namespace Menu
 
 	// Return to normal gameplay
 	void close();
+
+	// TODO could add Menu::back() with a stack to return to previous menus.
 
 	void update_screen();
 	void handle_input(int key);

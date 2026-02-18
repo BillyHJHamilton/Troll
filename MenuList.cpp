@@ -1,5 +1,6 @@
 #include "MenuList.h"
 
+#include "Codepoint.h"
 #include "Debug.h"
 #include "VectorUtil.h"
 
@@ -17,22 +18,23 @@ void MenuList::draw_screen ()
 
 	if (goes_off_top)
 	{
-		terminal_print(2, m_list_start - 1, "...");
+		terminal_print(c_Indent, m_list_start - 1, "...");
 	}
 
 	for (int i = m_scroll_top; i <= m_scroll_bottom; ++i)
 	{
 		int const line_y = m_list_start + (i - m_scroll_top);
-		terminal_print(2, line_y, m_options[i].label.c_str());
+		terminal_print(c_Indent, line_y, m_options[i].label.c_str());
 	}
 
 	if (goes_off_bottom)
 	{
-		terminal_print(2, c_MaxLineY + 1, "...");
+		terminal_print(c_Indent, c_MaxLineY + 1, "...");
 	}
 
 	// Show a cursor
-	terminal_put(0, m_list_start + m_cursor - m_scroll_top, '>');
+	terminal_put(1, m_list_start + m_cursor - m_scroll_top, Codepoint::HandRight);
+		//'>');
 
 	/*if (s_list_details_func &&
 		Check(Util::IsValidIndex(s_options, s_selection)))

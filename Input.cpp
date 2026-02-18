@@ -331,6 +331,9 @@ bool is_quitting()
 
 void request_quit()
 {
+	// First, save the game if a save file is open.
+	Game::save();
+
 	s_quit_flag = true;
 }
 

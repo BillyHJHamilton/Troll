@@ -121,7 +121,11 @@ void serialize (ISerializer& s)
 		// Don't save/load derived stats; just regenerate them.
 		if (s.is_load())
 		{
-			Creature::Handle(i).update_derived_stats();
+			Creature::Handle handle(i);
+			if (handle.valid())
+			{
+				Creature::Handle(i).update_derived_stats();
+			}
 		}
 	}
 

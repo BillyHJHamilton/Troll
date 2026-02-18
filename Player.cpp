@@ -37,12 +37,11 @@ void Player::clear()
 
 void Player::Data::serialize(ISerializer& s)
 {
-	// Don't need to serialize this since we shouldn't automove on reload.
-	// CompassDirection automove
+	s.srz_string(name);
 
-	s.srz_bool(acted);
-
-	// Don't need to serialize these since we shouldn't be saving after game over!
+	// Don't need to serialize these since we won't save in the middle of a turn.
+	assert(automove == c_Invalid);
+	assert(!acted);
 	assert(!game_over);
 	assert(defeated_by == Creature::None);
 	
@@ -65,6 +64,11 @@ Creature::Handle Player::handle()
 	return 0;
 }
 
+const std::string& name()
+{
+	return read_data().name;
+}
+
 bool is_automoving()
 {
 	return read_data().automove != c_CompassInvalid;
@@ -73,6 +77,11 @@ bool is_automoving()
 CompassDirection get_automove ()
 {
 	return read_data().automove;
+}
+
+void set_name (std::string str)
+{
+	edit_data().name = str;
 }
 
 void start_automove(CompassDirection dir)

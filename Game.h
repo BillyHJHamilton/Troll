@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include <string>
 
 class World;
 
@@ -14,8 +15,8 @@ namespace Game
 {
 	// Initialization is in several layers:
 	void init();	// Runs only once, when the program starts.
-	void clear();	// Runs before the start of each game.
-	void setup();	// Runs at the start of each game, after clear.
+	void clear();	// Runs at the start of each game, before the main menu.
+	void setup();	// Runs at the end of character creation, to start the game.
 
 	// Serializes the entire game state.
 	void serialize_all(ISerializer& s);
@@ -23,8 +24,11 @@ namespace Game
 	// Redraw the screen and process input.
 	void update();
 
-	// Call to restart the game and return to the beginning.
+	// Clears everything and returns to the main menu.
 	void reset();
+
+	void save();
+	void load(std::string filename);
 
 	GameMode get_mode();
 	void set_mode(GameMode mode);

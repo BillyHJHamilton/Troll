@@ -167,7 +167,9 @@
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuInventory.cpp" />
+    <ClCompile Include="MenuLoad.cpp" />
     <ClCompile Include="MenuMessages.cpp" />
+    <ClCompile Include="MenuName.cpp" />
     <ClCompile Include="MenuSelectHouse.cpp" />
     <ClCompile Include="MenuDocument.cpp" />
     <ClCompile Include="Gingerbread.cpp" />
@@ -187,6 +189,7 @@
     <ClCompile Include="MenuList.cpp" />
     <ClCompile Include="MenuPause.cpp" />
     <ClCompile Include="MenuSpells.cpp" />
+    <ClCompile Include="MenuTitle.cpp" />
     <ClCompile Include="NameHash.cpp" />
     <ClCompile Include="Pathfind.cpp" />
     <ClCompile Include="PerfTimer.cpp" />
@@ -210,11 +213,14 @@
     <ClInclude Include="BertieBotts.h" />
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Cloud.h" />
+    <ClInclude Include="Codepoint.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="MenuInventory.h" />
+    <ClInclude Include="MenuLoad.h" />
     <ClInclude Include="MenuMessages.h" />
+    <ClInclude Include="MenuName.h" />
     <ClInclude Include="MenuSelectHouse.h" />
     <ClInclude Include="MenuDocument.h" />
     <ClInclude Include="Draw.h" />
@@ -235,6 +241,7 @@
     <ClInclude Include="MenuPause.h" />
     <ClInclude Include="MenuSpells.h" />
     <ClInclude Include="MenuList.h" />
+    <ClInclude Include="MenuTitle.h" />
     <ClInclude Include="MiscastCategory.h" />
     <ClInclude Include="NameHash.h" />
     <ClInclude Include="Pathfind.h" />

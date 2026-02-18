@@ -18,8 +18,8 @@ protected:
 		Inventory,
 		Help,
 		MessageHistory,
-		Save,
-		Load,
-		Quit
+		//Save,
+		//Load,
+		SaveAndQuit
 	};
 };

@@ -9,6 +9,8 @@ namespace Player
 
 	struct Data
 	{
+		std::string name;
+
 		CompassDirection automove = c_CompassInvalid;
 		bool acted = false;
 
@@ -28,6 +30,7 @@ namespace Player
 	// Getters
 	Vec3 pos ();
 	Creature::Handle handle ();
+	const std::string& name ();
 	bool is_automoving ();
 	CompassDirection get_automove ();
 	bool has_acted ();
@@ -38,6 +41,7 @@ namespace Player
 	int next_xp_threshold ();
 
 	// Mutators
+	void set_name (std::string str);
 	void start_automove (CompassDirection dir);
 	void stop_automove ();
 	void set_acted (bool acted);
