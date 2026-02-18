@@ -5,19 +5,40 @@
 
 #include "BearLibTerminal.h"
 
-char const* MenuTitle::cstr_TitleText =
-	"\n"
-	"  ------------------------------------\n\n"
-	"  TTTTTTT RRRR    OOO    L      L     \n"
-	"     T    R   R  O   O   L      L     \n"
-	"     T    R  R  O     O  L      L     \n"
-	"     T    RRR   O     O  L      L     \n"
-	"     T    R  R   O   O   L      L     \n"
-	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
-	"  ------------------------------------\n"
-	"      The Revenge Of Luna Lovegood    \n"
-	"  ------------------------------------\n"
-	"\n";
+// d888888b d8888b.  .d88b.  db      db      
+// `~~88~~` 88  `8D .8P  Y8. 88      88      
+//    88    88oobY` 88    88 88      88      
+//    88    88`8b   88    88 88      88      
+//    88    88 `88. `8b  d8` 88booo. 88booo. 
+//    YP    88   YD  `Y88P'  Y88888P Y88888P 
+
+//char const* MenuTitle::cstr_TitleText =
+//	"\n"
+//	"  ------------------------------------\n\n"
+//	"  TTTTTTT RRRR    OOO    L      L     \n"
+//	"     T    R   R  O   O   L      L     \n"
+//	"     T    R  R  O     O  L      L     \n"
+//	"     T    RRR   O     O  L      L     \n"
+//	"     T    R  R   O   O   L      L     \n"
+//	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
+//	"  ------------------------------------\n"
+//	"      The Revenge Of Luna Lovegood    \n"
+//	"  ------------------------------------\n"
+//	"\n";
+       
+char const* MenuTitle::cstr_TitleText = "\n"
+"  ==============================================\n"
+"                                     		     \n"
+"   aa@@@@aa a@@@b    ad@@ba  qa@e    qa&p       \n"
+"    ~~@@~~  @@~~@@  d@P~~Y@b  @@*     @@        \n"
+"      @@    @@  @a  @@   *@@  @@      @@        \n"
+"      @@    @@@@b   @@    @@  @@      @@        \n"
+"      @@    @@*q@b  *@b  d@P  @@aeba  @@&adb    \n"
+"      @@    @@  ~@b  aq@@@P  d@@@@@@a @$@@@@a   \n"
+"  											     \n"
+"  ==============================================\n"
+"       THE   REVENGE   OF   LUNA   LOVEGOOD     \n"
+"  ==============================================\n\n";
 
 void MenuTitle::init()
 {

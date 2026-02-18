@@ -30,7 +30,11 @@ void MenuName::handle_input (int key)
 {
 	// TODO Should we store the player name in wstring to support unusual characters?
 
-	if (key == TK_BACKSPACE)
+	if (key == TK_ESCAPE)
+	{
+		Menu::show_title();
+	}
+	else if (key == TK_BACKSPACE)
 	{
 		if (name.size() > 0)
 		{

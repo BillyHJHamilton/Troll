@@ -275,6 +275,10 @@ void end_turn()
 	Creature::remove_defeated_creatures();
 	Spawn::check_spawning();
 
+	// Need to update visibility since player has likely moved.
+	World::edit().update_visibility(Player::pos(), Player::vision_radius);
+	Creature::update_visible_creatures();
+
 	// Now all other creatures act.
 	for (Creature::HandleItr itr(1);
 		itr && !Player::is_game_over();
