@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Troll save games
+Save/
+
 # User-specific files
 *.rsuser
 *.suo

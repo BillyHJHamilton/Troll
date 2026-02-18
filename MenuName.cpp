@@ -63,5 +63,10 @@ void MenuName::init()
 
 bool MenuName::is_valid_character (char c)
 {
-	return true; // what's the worst that could happen?
+	// Allow a bunch of characters that are legal in filenames.
+	return isalnum(c) ||
+		c == ' ' || c == '.' || c == ',' || c == '!' ||
+		c == '-' || c == '(' || c == ')' || c == ';' ||
+		c == '@' || c == '#' || c == '$' || c == '%' ||
+		c == '^' || c == '&' || c == '\'' || c == '~';
 }
