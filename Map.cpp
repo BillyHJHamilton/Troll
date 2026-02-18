@@ -35,8 +35,8 @@ void Map::serialize(ISerializer& s)
 	srz_grid(s, clouds, "map.clouds");
 	srz_grid(s, items, "map.items");
 
-	s.srz_vec2_int_hashmap(cloud_lifetimes, "map.cloud_lifetimes");
-	s.srz_vec2_stairs_hashmap(stairs, "map.stairs");
+	srz_hashmap(s, cloud_lifetimes, "map.cloud_lifetimes");
+	srz_hashmap(s, stairs, "map.stairs");
 
 	bool has_generator;
 	if (s.is_load())

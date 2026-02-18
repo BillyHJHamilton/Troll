@@ -24,21 +24,6 @@ public:
 		fout.write( (char*) &t, sizeof(t) );
 	}
 
-	template<typename KeyType, typename ValueType>
-	void write_map(std::unordered_map<KeyType,ValueType>& m, char const* debug_name)
-	{
-		write(Util::Size(m));
-		if (c_ShowSerializeDebug)
-		{
-			std::cout << std::format("Save {}, size={}\n", debug_name, Util::Size(m));
-		}
-		for (auto& pair : m)
-		{
-			write(pair.first);
-			write(pair.second);
-		}
-	}
-
 	virtual bool is_load() const override { return false; }
 
 	virtual void srz_raw(char* c, int size) override
@@ -67,24 +52,6 @@ public:
 		fout.write(str.data(), str_size);
 	}
 
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
-		char const* debug_name) override
-	{
-		write_map(m, debug_name);
-	}
-
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m,
-		char const* debug_name) override
-	{
-		write_map(m, debug_name);
-	}
-
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
-		char const* debug_name) override
-	{
-		write_map(m, debug_name);
-	}
-
 protected:
 	std::ofstream fout;
 };
@@ -100,27 +67,6 @@ public:
 	void read(T& t)
 	{
 		fin.read( (char*) &t, sizeof(t) );
-	}
-
-	template<typename KeyType, typename ValueType>
-	void read_map(std::unordered_map<KeyType,ValueType>& m, char const* debug_name)
-	{
-		int map_size;
-		read(map_size);
-		m.clear();
-		m.reserve(map_size);
-		if (c_ShowSerializeDebug)
-		{
-			std::cout << std::format("Load {}, size={}\n", debug_name, map_size);
-		}
-		for (int i = 0; i < map_size; ++i)
-		{
-			KeyType a;
-			ValueType b;
-			read(a);
-			read(b);
-			m.emplace(a,b);
-		}
 	}
 
 	virtual bool is_load() const override { return true; }
@@ -150,24 +96,6 @@ public:
 		read(str_size);
 		str.resize(str_size);
 		fin.read(str.data(), str_size);
-	}
-
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
-		char const* debug_name) override
-	{
-		read_map(m, debug_name);
-	}
-	
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m, char const*
-		debug_name) override
-	{
-		read_map(m, debug_name);
-	}
-
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
-		char const* debug_name) override
-	{
-		read_map(m, debug_name);
 	}
 
 protected:

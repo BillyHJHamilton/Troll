@@ -37,13 +37,6 @@ public:
 	virtual void srz_item_handle(Item::Handle& h) = 0;
 
 	virtual void srz_string(std::string& str) = 0;
-
-	virtual void srz_int_int_hashmap(std::unordered_map<int,int>& m,
-		char const* debug_name) = 0;
-	virtual void srz_vec2_int_hashmap(std::unordered_map<Vec2,int>& m,
-		char const* debug_name) = 0;
-	virtual void srz_vec2_stairs_hashmap(std::unordered_map<Vec2,Stairs::Direction>& m,
-		char const* debug_name) = 0;
 };
 
 // Generic function to serialize raw data.  Good for stable structs, enums and the like.
@@ -147,4 +140,44 @@ void srz_grid(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 {
 	srz_grid_size(s, g, debug_name);
 	srz_grid_data(s, g);
+}
+
+// Serialize a map with value types.
+template<typename KeyType, typename ValueType>
+void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType> m,
+	char const* debug_name)
+{
+	if (s.is_load())
+	{
+		int map_size;
+		s.srz_int(map_size);
+		m.clear();
+		m.reserve(map_size);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Load {}, size={}\n", debug_name, map_size);
+		}
+		for (int i = 0; i < map_size; ++i)
+		{
+			KeyType a;
+			ValueType b;
+			srz_value(s, a);
+			srz_value(s, b);
+			m.emplace(a,b);
+		}
+	}
+	else
+	{
+		int map_size = (int)m.size();
+		s.srz_int(map_size);
+		if (c_ShowSerializeDebug)
+		{
+			std::cout << std::format("Save {}, size={}\n", debug_name, map_size);
+		}
+		for (auto& pair : m)
+		{
+			srz_value(s, pair.first);
+			srz_value(s, pair.second);
+		}
+	}
 }
