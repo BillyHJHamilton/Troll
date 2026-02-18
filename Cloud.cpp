@@ -1,4 +1,5 @@
 #include "Cloud.h"
+#include "Codepoint.h"
 #include "Debug.h"
 
 //int constexpr SOLID_BLOCK = 9608;
@@ -10,7 +11,7 @@ namespace Cloud
 		switch (c)
 		{
 			case Cloud::Smoke:
-				return 0x3e8; // backwards S squiggle
+				return Codepoint::BackwardsSquiggle;
 			default: DebugBreak(); return '?';
 		}
 	}

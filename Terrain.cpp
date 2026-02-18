@@ -1,8 +1,7 @@
 #include "Terrain.h"
+#include "Codepoint.h"
 
 #include <cassert>
-
-int constexpr SOLID_BLOCK = 9608;
 
 namespace Terrain
 {
@@ -11,9 +10,9 @@ namespace Terrain
 		switch (t)
 		{
 		case Terrain::Open: return '.';
-		case Terrain::Wall: return SOLID_BLOCK;
-		case Terrain::UpStairs: return 0x2191; //'+';
-		case Terrain::DownStairs: return 0x2193; //'-';
+		case Terrain::Wall: return Codepoint::SolidBlock;
+		case Terrain::UpStairs: return Codepoint::ArrowUp;
+		case Terrain::DownStairs: return Codepoint::ArrowDown;
 		default: assert(false); return '?';
 		}
 	}
