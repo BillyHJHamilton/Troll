@@ -9,11 +9,11 @@ namespace Terrain
 	{
 		switch (t)
 		{
-		case Terrain::Open: return '.';
-		case Terrain::Wall: return Codepoint::SolidBlock;
-		case Terrain::UpStairs: return Codepoint::ArrowUp;
-		case Terrain::DownStairs: return Codepoint::ArrowDown;
-		default: assert(false); return '?';
+			case Terrain::Open: return '.';
+			case Terrain::Wall: return Codepoint::SolidBlock;
+			case Terrain::UpStairs: return Codepoint::ArrowUp;
+			case Terrain::DownStairs: return Codepoint::ArrowDown;
+			default: assert(false); return '?';
 		}
 	}
 
@@ -21,11 +21,11 @@ namespace Terrain
 	{
 		switch (t)
 		{
-		case Terrain::Open: return true;
-		case Terrain::Wall: return false;
-		case Terrain::UpStairs: return false;
-		case Terrain::DownStairs: return false;
-		default: assert(false); return false;
+			case Terrain::Open: return true;
+			case Terrain::Wall: return false;
+			case Terrain::UpStairs: return false;
+			case Terrain::DownStairs: return false;
+			default: assert(false); return false;
 		}
 	}
 
@@ -33,11 +33,11 @@ namespace Terrain
 	{
 		switch (t)
 		{
-		case Terrain::Open: return false;
-		case Terrain::Wall: return true;
-		case Terrain::UpStairs: return false;
-		case Terrain::DownStairs: return false;
-		default: assert(false); return false;
+			case Terrain::Open: return false;
+			case Terrain::Wall: return true;
+			case Terrain::UpStairs: return false;
+			case Terrain::DownStairs: return false;
+			default: assert(false); return false;
 		}
 	}
 }

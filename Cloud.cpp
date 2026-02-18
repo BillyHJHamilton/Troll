@@ -2,8 +2,6 @@
 #include "Codepoint.h"
 #include "Debug.h"
 
-//int constexpr SOLID_BLOCK = 9608;
-
 namespace Cloud
 {
 	int get_character(Cloud::Type c)
