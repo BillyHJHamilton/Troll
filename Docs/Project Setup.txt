@@ -1,3 +1,12 @@
+Differences between the three build configurations:
+
+            Debug   Profile     Release
+Optimized   No      Yes         Yes
+Terminal    Yes     Yes         No
+Logging     Yes     Perf Only   No
+Unitybuild  Yes     Yes         No
+
+
 Here is how the Visual Studio project is set up:
 
 All Configurations:
@@ -9,10 +18,14 @@ All Configurations:
     Input: Additional dependencies: BearLibTerminal.lib
 
 Debug / Profile Builds:
+  Advanced:
+    Enable Unity (JUMBO) Build: Yes
   Linker:
-    System: Subsystem: Console  // Make a console window
+    System: Subsystem: Console
 
 Release Build:
+  Advanced:
+    Enable Unity (JUMBO) Build: No
   C/C++:
     Preprocessor: Preprocessor Definitions: RELEASE
   Linker:
