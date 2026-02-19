@@ -216,8 +216,10 @@ void mimblewimble (EffectParams params)
 	char const* fmt = target.has_status(Status::TongueTied) ?
 		" {0} {1} more tongue-tied." :
 		" {0} {1} tongue-tied.";
-	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
-		Grammar::You(target), Grammar::verbs("become", target))));
+	
+	std::string s1 = Grammar::You(target);
+	std::string s2 = Grammar::verbs("become", target);
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1,s2)));
 
 	target.inflict_status(Status::TongueTied, 5);
 }
@@ -229,8 +231,8 @@ void lacarnum_inflamare (EffectParams params)
 	char const* fmt = target.has_status(Status::Burning) ?
 		" {0} clothes are burning in more places!" :
 		" {0} clothes burst into flames!";
-	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
-		Grammar::Your(target))));
+	std::string s1 = Grammar::Your(target);
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
 
 	target.inflict_status(Status::Burning, 5);
 }
@@ -289,8 +291,8 @@ void bat_bogey_hex (EffectParams params)
 	char const* fmt = target.has_status(Status::Batty) ?
 		" The swarm of black winged things around {0} thickens!" :
 		" A swarm of black winged things descends on {0}!";
-	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(
-		Grammar::you(target))));
+	std::string s1 = Grammar::you(target);
+	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
 
 	target.inflict_status(Status::Batty, 6);
 }

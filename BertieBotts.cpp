@@ -482,8 +482,8 @@ std::string eat_message(int flavour)
 			DebugBreak();
 	}
 
-	return std::vformat(fmt, std::make_format_args(
-		(capitalize) ? get_name_capitalized(flavour) : bf.name));
+	std::string name = (capitalize) ? get_name_capitalized(flavour) : bf.name;
+	return std::vformat(fmt, std::make_format_args(name));
 }
 
 } // namespace BertieBotts
