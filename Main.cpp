@@ -5,22 +5,6 @@
 #include "Input.h"
 #include "PerfTimer.h"
 
-// To do:
-// - Improve map generation
-//  - Named regions
-//  - Special rooms
-//  - Locked doors, treausre chests
-// - NPC taunts
-// - Improved enemy AI
-//  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
-//  - EQS / find good attack position
-// - Proper miscasts
-// - Serialization - Make a serialize class with two modes (save/load).  Pass to each system.
-
-// To consider:
-// - How do we handle initiative to support the "ping pong" shield gameplay
-//  - But without making it too hard to aim at moving characters.
-
 void config_terminal()
 {
 	char const* FONT1 = "FSEX302.ttf";

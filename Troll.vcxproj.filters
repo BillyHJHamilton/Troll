@@ -378,5 +378,8 @@
     <Text Include="Docs\Project Setup.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="Docs\To Do List.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

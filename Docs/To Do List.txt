@@ -1,0 +1,46 @@
+-------------------------------------------------------------------------------
+To Do:
+-------------------------------------------------------------------------------
+
+- Bot
+ - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
+ - EQS / find good attack position
+
+- Creatures
+ - Melee attacks
+ - Creature special abilities (distinct from spells?  yes, I suppose so)
+
+- Map generation
+ - Named regions, more layout
+ - Special rooms
+ - Locked doors, treasure chests
+ - Secret treasure rooms
+ - (Advanced) Staircases that change
+
+- Miscast effects
+
+- Serialization
+ - Show file preview
+ - High score table
+
+- Spells
+ - More spells from HPADS
+ - Alohomora
+
+- Sweets
+ - They need to have a purpose.  Healing?  Hunger/Sugar?
+ - Chocolate frogs (with wizard cards)
+ - Other types (cauldron cakes, etc)
+
+- Taunts
+
+- Terrain
+ - Furniture for cover/obstacles?
+ - Breakable terrain?
+
+-------------------------------------------------------------------------------
+To consider:
+-------------------------------------------------------------------------------
+
+- How do we handle initiative to support the "ping pong" shield gameplay
+ - But without making it too hard to aim at moving characters.

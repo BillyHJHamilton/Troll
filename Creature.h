@@ -62,6 +62,9 @@ namespace Creature
 		Ravenclaw_1,
 		Slytherin_1,
 
+		// AU's!
+		HarryTheHufflepuff_1,
+
 		Count
 	};
 

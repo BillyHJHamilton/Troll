@@ -344,6 +344,7 @@
     <Text Include="Docs\Game Design Goals.txt" />
     <Text Include="Docs\Project Setup.txt" />
     <Text Include="Docs\Students.txt" />
+    <Text Include="Docs\To Do List.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -171,6 +171,16 @@ void init()
 		/*Magic*/ 6, /*HP*/ 4, "FN FM LM", "",
 		{}, {});
 
+	// Alternate universe characters!
+
+	// Currently has same spells/stats as normal Harry.  Think about how to make it unique.
+	// Technically his notes shouldn't be in his own handwriting, should they?
+	mix_gingerbread(Creature::HarryTheHufflepuff_1, "Harry",
+		/*Difficulty*/ 1.0f, /*Probability*/ 0.1f,
+		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
+		/*Magic*/ 10, /*HP*/ 12, "VM FP TA", "",
+		{Item::Notes, Item::PotionItem}, {60, 40});
+
 }
 
 void clear()
