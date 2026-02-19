@@ -1,0 +1,25 @@
+Here is how the Visual Studio project is set up:
+
+All Configurations:
+  C/C++:
+    General: Additional include directories: External\BearLib\
+    Language: C++ language standard: C++20
+  Linker:
+    General: Additional library directories: External\BearLib\
+    Input: Additional dependencies: BearLibTerminal.lib
+
+Debug / Profile Builds:
+  Linker:
+    System: Subsystem: Console  // Make a console window
+
+Release Build:
+  C/C++:
+    Preprocessor: Preprocessor Definitions: RELEASE
+  Linker:
+    System: Subsystem: Windows  // Don't make a console window
+    Advanced: Entry Point: mainCRTStartup  // Still use main()
+
+Preprocessor defines (C/C++: Preprocessor)
+  Debug:    _DEBUG, _CONSOLE
+  Profile:  NDEBUG, _CONSOLE
+  Release:  NDEBUG, RELEASE

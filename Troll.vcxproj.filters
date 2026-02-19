@@ -375,5 +375,8 @@
     <Text Include="Docs\Students.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="Docs\Project Setup.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

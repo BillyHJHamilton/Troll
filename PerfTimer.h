@@ -1,6 +1,10 @@
 #pragma once
 
-#define d_PerfTest true
+#ifdef RELEASE
+	#define d_PerfTest false
+#else
+	#define d_PerfTest true
+#endif
 
 #if d_PerfTest
 #include <chrono>
@@ -8,7 +12,6 @@
 
 // Limitations:
 //  - Multiple timers with the same name (in different places) are not supported.
-//  - Recursive timers are not supported.
 class PerfTimer
 {
 public:

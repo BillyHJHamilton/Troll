@@ -1,12 +1,13 @@
 #include "Line.h"
 
-#include <cassert>
-#include <iostream>
-
 #include "Debug.h"
 #include "Grid.h"
 #include "PerfTimer.h"
 #include "VectorUtil.h"
+
+#include <cassert>
+#include <iostream>
+#include <format>
 
 namespace LineCache
 {
