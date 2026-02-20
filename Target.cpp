@@ -1,5 +1,6 @@
 #include "Target.h"
 
+#include "Colour.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Player.h"
@@ -8,12 +9,19 @@
 #include <algorithm>
 #include <cassert>
 
+char const* g_TargetColour;
+
 namespace Target
 {
 
 TargetMode s_target_mode;
 Creature::Handle s_target_creature;
 Vec3 s_target_pos;
+
+void init ()
+{
+	g_TargetColour = cstr_DarkestGrey;
+}
 
 void clear ()
 {

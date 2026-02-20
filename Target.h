@@ -11,10 +11,11 @@ enum class TargetMode : byte
 	Manual
 };
 
-char const * const cstr_TargetColour = "darkest grey";
+extern char const * g_TargetColour;
 
 namespace Target
 {
+	void init();
 	void clear();
 	void update();
 	void cycle();

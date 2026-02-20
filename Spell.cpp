@@ -14,6 +14,9 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 
 // Note: Spell accuracy is generally 10-20 pts higher than in HPADS.
 
+// Note: I'd like to use the colour constants from Colour.h, but this is static init'd right now,
+// so it's undefined whether the colours are initialized yet.  If only cstrings could be constexpr!
+
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour				Dif Drk Dmg			Acc Rng	Effect function			Target type				Miscast type
 	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,			85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },

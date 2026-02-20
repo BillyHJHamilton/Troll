@@ -66,6 +66,7 @@ void init()
 	Random::init();
 	Spell::init();
 	Status::init();
+	Target::init();
 }
 
 // Clear runs before the start of each game.

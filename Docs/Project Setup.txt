@@ -4,7 +4,12 @@ Differences between the three build configurations:
 Optimized   No      Yes         Yes
 Terminal    Yes     Yes         No
 Logging     Yes     Perf Only   No
-Unitybuild  Yes     Yes         No
+Unitybuild  Yes     No          Yes
+
+Preprocessor defines (C/C++: Preprocessor)
+  Debug:    _DEBUG, _CONSOLE
+  Profile:  NDEBUG, _CONSOLE
+  Release:  NDEBUG, RELEASE
 
 
 Here is how the Visual Studio project is set up:
@@ -18,21 +23,16 @@ All Configurations:
     Input: Additional dependencies: BearLibTerminal.lib
 
 Debug / Profile Builds:
-  Advanced:
-    Enable Unity (JUMBO) Build: Yes
   Linker:
     System: Subsystem: Console
 
-Release Build:
+Debug / Release Builds:
   Advanced:
-    Enable Unity (JUMBO) Build: No
+    Enable Unity (JUMBO) Build: Yes
+
+Release Build:
   C/C++:
     Preprocessor: Preprocessor Definitions: RELEASE
   Linker:
     System: Subsystem: Windows  // Don't make a console window
     Advanced: Entry Point: mainCRTStartup  // Still use main()
-
-Preprocessor defines (C/C++: Preprocessor)
-  Debug:    _DEBUG, _CONSOLE
-  Profile:  NDEBUG, _CONSOLE
-  Release:  NDEBUG, RELEASE

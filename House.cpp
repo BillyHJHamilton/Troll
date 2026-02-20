@@ -1,3 +1,4 @@
+#include "Colour.h"
 #include "House.h"
 #include "Debug.h"
 
@@ -19,10 +20,10 @@ namespace House
 	{
 		switch (house)
 		{
-			case Gryffindor: return "light red";
-			case Hufflepuff: return "light yellow";
-			case Ravenclaw:  return "light azure";
-			case Slytherin:  return "light green";
+			case Gryffindor: return cstr_LightRed;
+			case Hufflepuff: return cstr_Yellow;
+			case Ravenclaw:  return cstr_Azure;
+			case Slytherin:  return cstr_LightGreen;
 			default: DebugBreak(); return "";
 		}
 	}

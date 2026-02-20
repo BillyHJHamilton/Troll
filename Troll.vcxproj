@@ -67,6 +67,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -74,7 +75,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableUnitySupport>true</EnableUnitySupport>
+    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -239,6 +240,7 @@
     <ClCompile Include="BertieBotts.cpp" />
     <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Cloud.cpp" />
+    <ClCompile Include="Colour.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
     <ClCompile Include="MenuInventory.cpp" />
@@ -290,6 +292,7 @@
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Codepoint.h" />
+    <ClInclude Include="Colour.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />

@@ -724,7 +724,7 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 
 		if (Target::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, cstr_TargetColour);
+			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, g_TargetColour);
 		}
 		else
 		{

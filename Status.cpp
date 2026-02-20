@@ -1,6 +1,7 @@
 #include "Status.h"
 
 #include "Action.h"
+#include "Colour.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -51,18 +52,15 @@ Status::Data s_status_data [Status::Count];
 
 void init ()
 {
-	char const* cstr_Yellow = "lighter yellow";
-	char const* cstr_Violet = "lighter violet";
-
-	s_status_data[Status::Shield] = {"Shield", cstr_Yellow, nullptr, nullptr, nullptr};
-	s_status_data[Status::Dancing] = {"Dance", cstr_Yellow, &calc_dancing, &endround_dancing, &cure_dancing};
-	s_status_data[Status::LegLocked] = { "LegLk", cstr_Yellow, &calc_leg_locked, &endround_leg_locked, &cure_leg_locked };
-	s_status_data[Status::Tickled] = {"Tickle", cstr_Yellow, &calc_tickled, &endround_tickled, &cure_tickled};
-	s_status_data[Status::TongueTied] = {"TngTie", cstr_Yellow, &calc_tongue_tied, &endround_tongue_tied, &cure_tongue_tied};
-	s_status_data[Status::Burning] = {"Fire", cstr_Yellow, &calc_burning, &endround_burning, &cure_burning};
-	s_status_data[Status::Impeded] = {"Imped", cstr_Yellow, &calc_impeded, &endround_impeded, &cure_impeded};
-	s_status_data[Status::Batty] = {"Batty", cstr_Yellow, &calc_batty, &endround_batty, &cure_batty};
-	s_status_data[Status::Calm] = {"Calm", cstr_Violet, &calc_calm, &endround_calm, &cure_calm};
+	s_status_data[Status::Shield] = {"Shield", cstr_LighterYellow, nullptr, nullptr, nullptr};
+	s_status_data[Status::Dancing] = {"Dance", cstr_LighterYellow, &calc_dancing, &endround_dancing, &cure_dancing};
+	s_status_data[Status::LegLocked] = { "LegLk", cstr_LighterYellow, &calc_leg_locked, &endround_leg_locked, &cure_leg_locked };
+	s_status_data[Status::Tickled] = {"Tickle", cstr_LighterYellow, &calc_tickled, &endround_tickled, &cure_tickled};
+	s_status_data[Status::TongueTied] = {"TngTie", cstr_LighterYellow, &calc_tongue_tied, &endround_tongue_tied, &cure_tongue_tied};
+	s_status_data[Status::Burning] = {"Fire", cstr_LighterYellow, &calc_burning, &endround_burning, &cure_burning};
+	s_status_data[Status::Impeded] = {"Imped", cstr_LighterYellow, &calc_impeded, &endround_impeded, &cure_impeded};
+	s_status_data[Status::Batty] = {"Batty", cstr_LighterYellow, &calc_batty, &endround_batty, &cure_batty};
+	s_status_data[Status::Calm] = {"Calm", cstr_LighterViolet, &calc_calm, &endround_calm, &cure_calm};
 }
 
 int max_severity (Status::Index status_index)
