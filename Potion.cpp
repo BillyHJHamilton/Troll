@@ -140,7 +140,7 @@ void drink_calming(Creature::Handle imbiber)
 
 	Draw::creature_message(imbiber, std::format(" {} {} suddenly calm.",
 			Grammar::You(imbiber), Grammar::feel(imbiber)));
-	imbiber.inflict_status(Status::Calm, 6);
+	imbiber.inflict_status(Status::Calm, 9);
 }
 
 void drink_wiggenweld(Creature::Handle imbiber)

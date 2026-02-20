@@ -203,7 +203,7 @@ void rictusempra (EffectParams params)
 	{
 		Draw::creature_message(target, std::format(" Something is tickling {0}!",
 			Grammar::you(target)));
-		target.inflict_status(Status::Tickled, Random::in_range(4,8));
+		target.inflict_status(Status::Tickled, Random::in_range(4,6));
 	}
 }
 
