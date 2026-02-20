@@ -9,6 +9,7 @@
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Stairs.h"
+#include "Terrain.h"
 #include "World.h"
 
 #include <cassert>
@@ -190,17 +191,14 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 			Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
 		}
 
-		if (beam.pos == beam.target_pos
+		// see if we hit anything; this may also change done to true
+		test_for_impact(beam, line_itr);
+
+		if (!beam.done && beam.pos == beam.target_pos
 			&& Util::IsFlagSet(beam.flags, f_StopOnTarget))
 		{
 			detonate_in_midair(beam, line_itr);
 			beam.done = true;
-		}
-
-		// see if we hit anything; this may also change done to true
-		if (!beam.done)
-		{
-			test_for_impact(beam, line_itr);
 		}
 
 		if (!beam.done)
@@ -217,10 +215,18 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	World const& world = World::read();
 
 	// hit wall
-	if (world.is_solid(beam.pos))
+	Terrain::Type t = world.get_terrain(beam.pos);
+	if (Terrain::is_solid(t))
 	{
-		Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the wall.");
+		Draw::pos_message(beam.pos, std::format(" The {} hits the {}.",
+			Beam::beam_description(beam), Terrain::get_name(t)));
 		beam.done = true;
+
+		if (Util::IsFlagSet(beam.flags, f_StopOnTarget))
+		{
+			detonate_in_midair(beam, line);
+		}
+
 		return;
 	}
 

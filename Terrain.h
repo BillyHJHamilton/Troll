@@ -4,7 +4,7 @@
 
 namespace Terrain
 {
-	// Using byte here will save a lot of memory in the map arrays.
+	// Use byte for Terrain::Type to save memory in map arrays.
 
 	enum Type : byte
 	{
@@ -16,7 +16,7 @@ namespace Terrain
 	};
 
 	int get_character(Terrain::Type t);
+	char const* get_name(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
-
 }

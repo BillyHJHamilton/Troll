@@ -18,6 +18,19 @@ namespace Terrain
 		}
 	}
 
+	const char* get_name(Terrain::Type t)
+	{
+		switch (t)
+		{
+			case Terrain::Open: return "floor";
+			case Terrain::Wall: return "wall";
+			case Terrain::UpStairs: return "stairs";
+			case Terrain::DownStairs: return "stairs";
+			case Terrain::Chest: return "chest";
+			default: assert(false); return "invalid terrain";
+		}
+	}
+
 	bool permits_sight(Terrain::Type t)
 	{
 		switch (t)
