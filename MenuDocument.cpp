@@ -2,6 +2,12 @@
 
 #include "BearLibTerminal.h"
 
+void MenuDocument::init(std::string content)
+{
+	m_text = content;
+	m_on_complete = nullptr;
+}
+
 void MenuDocument::init(std::string content, VoidFunction on_complete)
 {
 	m_text = content;
@@ -26,7 +32,7 @@ void MenuDocument::handle_input (int key)
 			}
 			else
 			{
-				Menu::close();
+				Menu::back();
 			}
 			break;
 	}

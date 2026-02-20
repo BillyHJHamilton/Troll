@@ -39,7 +39,7 @@ void MenuSelectHouse::handle_input (int key)
 			select_house();
 			break;
 		case TK_ESCAPE:
-			// There's no escape!
+			Menu::show_name_entry();
 			break;
 		default:
 			MenuList::handle_input(key);

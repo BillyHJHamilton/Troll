@@ -17,6 +17,7 @@
 #include "MenuSpells.h"
 #include "MenuTitle.h"
 #include "Player.h"
+#include "VectorUtil.h"
 
 #include <format>
 
@@ -38,6 +39,7 @@ MenuTitle s_menu_title;
 MenuPause s_menu_pause;
 
 IMenu* s_current_menu = nullptr;
+std::vector<IMenu*> s_back_stack;
 
 //-------------------------------------------------------------------------------------------------
 // Static Data
@@ -93,6 +95,50 @@ void clear()
 	s_current_menu = nullptr;
 }
 
+void close()
+{
+	s_current_menu = nullptr;
+	s_back_stack.clear();
+	Game::set_mode(GameMode::Normal);
+	Input::clear();
+}
+
+void back()
+{
+	if (s_back_stack.empty())
+	{
+		close();
+	}
+	else
+	{
+		s_current_menu = Util::PopBack(s_back_stack);
+	}
+}
+
+void push()
+{
+	s_back_stack.push_back(s_current_menu);
+}
+
+void update_screen()
+{
+	if (s_current_menu)
+	{
+		s_current_menu->draw_screen();
+	}
+}
+
+void handle_input(int key)
+{
+	if (s_current_menu)
+	{
+		s_current_menu->handle_input(key);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// List of menus
+
 void show_title()
 {
 	set_menu(s_menu_title);
@@ -114,7 +160,7 @@ void show_name_entry()
 void show_help()
 {
 	set_menu(s_menu_document);
-	s_menu_document.init(cstr_DocHelp, &Menu::close);
+	s_menu_document.init(cstr_DocHelp);
 }
 
 void show_game_over()
@@ -176,29 +222,6 @@ void show_message_history()
 	set_menu(s_menu_messages);
 	s_menu_messages.init();
 	s_menu_messages.scroll_to_end();
-}
-
-void close()
-{
-	s_current_menu = nullptr;
-	Game::set_mode(GameMode::Normal);
-	Input::clear();
-}
-
-void update_screen()
-{
-	if (s_current_menu)
-	{
-		s_current_menu->draw_screen();
-	}
-}
-
-void handle_input(int key)
-{
-	if (s_current_menu)
-	{
-		s_current_menu->handle_input(key);
-	}
 }
 
 } // namespace Menu

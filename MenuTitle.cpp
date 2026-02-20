@@ -61,6 +61,7 @@ void MenuTitle::handle_input (int key)
 				Menu::show_name_entry();
 				break;
 			case TitleMenuOption::LoadGame:
+				Menu::push();
 				Menu::show_load();
 				break;
 			case TitleMenuOption::Quit:

@@ -17,6 +17,21 @@ namespace Menu
 	void init();
 	void clear();
 
+	// Return to normal gameplay.
+	void close();
+
+	// Return to a previous menu, or close if none.
+	void back();
+
+	// Remember the current menu (so we can go back later).
+	void push();
+
+	void update_screen();
+	void handle_input(int key);
+
+	//-----------------------------------------------------
+	// List of menus:
+
 	// Menus at startup:
 	void show_title();
 	void show_load();
@@ -33,12 +48,4 @@ namespace Menu
 	void show_inventory();
 	void show_pause_menu();
 	void show_message_history();
-
-	// Return to normal gameplay
-	void close();
-
-	// TODO could add Menu::back() with a stack to return to previous menus.
-
-	void update_screen();
-	void handle_input(int key);
 }

@@ -38,7 +38,7 @@ void MenuLoad::handle_input (int key)
 	{
 		if (get_selected().value == c_Invalid)
 		{
-			Menu::show_title();
+			Menu::back();
 		}
 		else
 		{
@@ -51,7 +51,7 @@ void MenuLoad::handle_input (int key)
 	}
 	else if (key == TK_ESCAPE)
 	{
-		Menu::show_title();
+		Menu::back();
 	}
 	else
 	{

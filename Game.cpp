@@ -123,10 +123,6 @@ void serialize_all(ISerializer& s)
 		s_game_mode = GameMode::Normal;
 		Draw::add_message("Welcome back.");
 	}
-	else
-	{
-		Draw::add_message("Game saved.");
-	}
 }
 
 // Setup runs at the start of each game, after character creation.
@@ -134,8 +130,6 @@ void serialize_all(ISerializer& s)
 void setup()
 {
 	PerfTimer perf0("game setup");
-
-	create_savefile();
 
 	s_turn_number = -1;
 
@@ -198,6 +192,8 @@ void setup()
 
 	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
 	++s_turn_number; // Advance to turn 0
+
+	create_savefile();
 }
 
 void update()
@@ -329,7 +325,7 @@ void create_savefile()
 	}
 
 	// Make initial save.
-	SaveGame(s_filename);
+	save();
 }
 
 void delete_savefile()

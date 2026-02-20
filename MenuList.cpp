@@ -71,7 +71,7 @@ void MenuList::handle_input (int key)
 
 		case TK_ENTER:
 		case TK_ESCAPE:
-			Menu::close();
+			Menu::back();
 			break;
 	}
 }

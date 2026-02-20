@@ -31,15 +31,19 @@ void MenuPause::handle_input (int key)
 				Menu::close();
 				break;
 			case PauseMenuOption::SpellsKnown:
+				Menu::push();
 				Menu::show_spells_known();
 				break;
 			case PauseMenuOption::Inventory:
+				Menu::push();
 				Menu::show_inventory();
 				break;
 			case PauseMenuOption::Help:
+				Menu::push();
 				Menu::show_help();
 				break;
 			case PauseMenuOption::MessageHistory:
+				Menu::push();
 				Menu::show_message_history();
 				break;
 			//case PauseMenuOption::Save:
@@ -47,6 +51,7 @@ void MenuPause::handle_input (int key)
 			//	Menu::close();
 			//	break;
 			//case PauseMenuOption::Load:
+			//	Menu::push();
 			//	Menu::show_load();
 			//	break;
 			case PauseMenuOption::SaveAndQuit:

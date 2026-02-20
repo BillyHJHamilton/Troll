@@ -20,17 +20,31 @@ void MenuSpells::draw_screen ()
 
 void MenuSpells::handle_input (int key)
 {
-	if (key == TK_ENTER && m_mode == Mode::StartingSpells)
+	if (key == TK_ENTER)
 	{
-		select_starting_spell();
+		if (m_mode == Mode::StartingSpells)
+		{
+			select_starting_spell();
+		}
+		else if (m_mode == Mode::KnownSpells)
+		{
+			Menu::close();
+			Spell::Index spell = (Spell::Index)get_selected().value;
+			Draw::add_message(std::format("To cast {}, hold shift and type {}.",
+				Spell::get_name(spell), Spell::get_abbrev(spell)));
+			//player_try_cast_spell((Spell::Index)get_selected().value);
+		}
 	}
-	else if (key == TK_ENTER && m_mode == Mode::KnownSpells)
+	else if (key == TK_ESCAPE)
 	{
-		Menu::close();
-		Spell::Index spell = (Spell::Index)get_selected().value;
-		Draw::add_message(std::format("To cast {}, hold shift and type {}.",
-			Spell::get_name(spell), Spell::get_abbrev(spell)));
-		//player_try_cast_spell((Spell::Index)get_selected().value);
+		if (m_mode == Mode::StartingSpells)
+		{
+			Menu::show_house_selection();
+		}
+		else
+		{
+			Menu::back();
+		}
 	}
 	else
 	{
