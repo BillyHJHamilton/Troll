@@ -21,7 +21,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Megadrill",			"MG",	"light amber",		5,	0,	20,			999,8,	nullptr,				TargetType::Creature,	Miscast::Beam },
 #endif
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			90, 8,	&alohomora,				TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			50, 8,	&alohomora,				TargetType::Tile,		Miscast::Beam },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,			90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,			85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,			90,	8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
@@ -29,6 +29,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			50, 8,  &accio,					TargetType::Tile,		Miscast::Beam },
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,			80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
@@ -49,6 +50,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
 	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
 	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",
+	/* ACCIO */ "The Summoning Charm.  Causes an object to fly through the air to the caster.",
 	/* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
 	/* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
 	// /* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster."

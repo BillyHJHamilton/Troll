@@ -157,16 +157,26 @@ void handle_next_input ()
 			return;
 		}
 
-		if (key == TK_B)
+		// Bean test
+		//if (key == TK_B)
+		//{
+		//	Player::stop_automove();
+		//
+		//	int const flavour = BertieBotts::random_flavour();
+		//	Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
+		//		+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
+		//
+		//	return;
+		//}
+
+#if _DEBUG
+		if (key == TK_D)
 		{
 			Player::stop_automove();
-
-			int const flavour = BertieBotts::random_flavour();
-			Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
-				+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
-
+			Menu::show_debug_menu();
 			return;
 		}
+#endif
 
 		if (key == TK_H)
 		{

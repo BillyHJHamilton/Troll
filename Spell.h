@@ -32,6 +32,7 @@ namespace Spell
 		LacarnumInflamare,
 		Furnunculus,
 		// FiniteIncantatem,
+		Accio,
 		Stupefy,
 		Impedementa,
 		// Protego,

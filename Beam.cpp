@@ -374,10 +374,10 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 	{
 		Spell::EffectParams params
 		{
-			beam.caster,
-			target,
-			target.pos(),
-			&line
+			.caster = beam.caster,
+			.target = target,
+			.target_pos = target.pos(),
+			.impact_line = &line
 		};
 
 		effect_func(params);

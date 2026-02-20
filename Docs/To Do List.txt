@@ -35,6 +35,10 @@ To Do:
 
 - Spells
  - More spells from HPADS
+ - Accio!
+  - Add smite targeting
+  - Steal item from opponent
+  - Drag character closer, perhaps.
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?

@@ -54,6 +54,10 @@ Item::Handle const Inventory::peek_item (int slot) const
 
 void Inventory::add_item (Item::Handle new_item)
 {
+	// Item must be removed from world stack before being added to bag.
+	// Otherwise the world stack and bag stack will get joined!
+	assert(new_item.next_in_stack() == c_Invalid);
+
 	if (new_item.stacks_in_bag())
 	{
 		bool found = false;

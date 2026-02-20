@@ -7,6 +7,7 @@
 #include "Gingerbread.h"
 #include "Input.h"
 #include "Inventory.h"
+#include "MenuDebug.h"
 #include "MenuDocument.h"
 #include "MenuInventory.h"
 #include "MenuLoad.h"
@@ -28,6 +29,7 @@ namespace Menu
 // Data
 
 // Menus in alphabetic order
+MenuDebug s_menu_debug;
 MenuDocument s_menu_document;
 MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
@@ -86,6 +88,7 @@ void set_menu(IMenu& menu)
 
 void init()
 {
+	s_menu_debug.init();
 	s_menu_select_house.init();
 	s_menu_title.init();
 }
@@ -223,6 +226,12 @@ void show_message_history()
 	set_menu(s_menu_messages);
 	s_menu_messages.init();
 	s_menu_messages.scroll_to_end();
+}
+
+void show_debug_menu()
+{
+	set_menu(s_menu_debug);
+	s_menu_messages.reset_cursor();
 }
 
 } // namespace Menu

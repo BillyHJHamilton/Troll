@@ -5,6 +5,7 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Inventory.h"
 #include "Pathfind.h"
 #include "Random.h"
 #include "Spell.h"
@@ -115,6 +116,10 @@ void alohomora(EffectParams params)
 			Item::spawn_potion_by_level(Random::from_vector(open_pos),
 				World::read().find_map_difficulty(pos) + 1.0f);
 		}
+	}
+	else
+	{
+		Draw::pos_message(pos, " It has no effect.");
 	}
 }
 
@@ -274,9 +279,31 @@ void furnunculus (EffectParams params)
 		Grammar::Your(target)));
 }
 
+void accio (EffectParams params)
+{
+	Vec3 const pos = params.target_pos;
+	Item::Handle item = World::read().peek_item(pos);
+	if (item != c_Invalid)
+	{
+		// TODO It would be great to show the item fly through the air.
+		// And in theory, it could hit someone and stop.
+		// That would work better if we make the spell "smite targeted", which I'd like to do.
+
+		World::edit().pop_item(pos);
+		Inventory::edit().add_item(item);
+	}
+	else
+	{
+		Draw::pos_message(pos, " But nothing happens.");
+	}
+
+	// TODO Could pull carried item off an NPC (stealing notes, potions, etc.)
+	// TODO Perhaps at higher spell levels, it could actually pull a creature towards you?
+}
+
 void stupefy (EffectParams params)
 {
-	Creature::Handle const caster = params.target;
+	Creature::Handle const caster = params.caster;
 	Creature::Handle const target = params.target;
 
 	char const* bolt_description;

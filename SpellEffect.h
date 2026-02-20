@@ -35,6 +35,7 @@ namespace Spell
 	void mimblewimble(EffectParams params);
 	void lacarnum_inflamare(EffectParams params);
 	void furnunculus(EffectParams params);
+	void accio(EffectParams params);
 	void stupefy(EffectParams params);
 	void impedementa(EffectParams params);
 	void bat_bogey_hex(EffectParams params);
