@@ -34,6 +34,7 @@ namespace Gingerbread
 	std::string long_name(Creature::Type type);
 	bool has_tag(Creature::Type type, NameHash tag);
 	Item::Type random_item_drop(Creature::Type type);
+	Item::Handle make_item_for_creature(Creature::Type type);
 
 	void reset_player_stats(House::Type house);
 	Stats& edit_player_stats();

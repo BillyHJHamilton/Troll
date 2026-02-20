@@ -86,6 +86,7 @@ namespace Item
 		std::string colour () const;
 		std::string description () const;
 		std::string interaction_name () const;
+		//bool is_plural () const;
 		bool can_use () const;
 		bool can_discard () const;
 		BagStack bag_stack_mode () const;
@@ -110,8 +111,15 @@ namespace Item
 	void clear();
 	void serialize(ISerializer& s);
 
-	Item::Handle spawn_item (Vec3 pos, Instance instance);
+	// Create item without adding it to the world.
+	Item::Handle make_item (Instance instance);
+	Item::Handle make_bbb ();
+	Item::Handle make_notes (Creature::Type owner);
+	Item::Handle make_potion (Potion::Type potion);
+	Item::Handle make_potion_by_level (float difficulty);
 
+	// Create item and add it to the world.
+	Item::Handle spawn_item (Vec3 pos, Instance instance);
 	Item::Handle spawn_bbb (Vec3 pos);
 	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
 	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);

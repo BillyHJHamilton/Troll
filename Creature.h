@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Geometry.h"
+#include "Item.h"
 #include "NameHash.h"
 
 #include <iostream>
@@ -83,6 +84,7 @@ namespace Creature
 		int hp = 0;
 		Vec3 pos = {0,0,0};
 		int rest_turns = 0; // counter for healing by resting
+		Item::Handle carried_item = c_Invalid;
 
 		void serialize(ISerializer& s);
 	};
@@ -135,6 +137,8 @@ namespace Creature
 		int walk_failure () const;
 		bool knows_spell (Spell::Index spell) const;
 		bool has_tag (NameHash tag) const;
+		bool has_item () const;
+		Item::Handle peek_item () const;
 
 		// Complex accessors
 		bool is_player () const;
@@ -156,6 +160,9 @@ namespace Creature
 		void invalidate ();
 		void reset_spells ();
 		void learn_spell (Spell::Index spell);
+		void push_item (Item::Handle item);
+		Item::Handle pop_item ();
+		void drop_all_items ();
 		
 		void update_derived_stats ();
 	};

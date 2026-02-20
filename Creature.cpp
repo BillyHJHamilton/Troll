@@ -253,6 +253,18 @@ bool Handle::has_tag (NameHash tag) const
 	return Gingerbread::has_tag(type(), tag);
 }
 
+bool Handle::has_item () const
+{
+	assert(valid());
+	return read_creature_instance(index).carried_item != c_Invalid;
+}
+
+Item::Handle Handle::peek_item () const
+{
+	assert(valid());
+	return read_creature_instance(index).carried_item;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Complex accessor functions
 
@@ -456,6 +468,42 @@ void Handle::learn_spell (Spell::Index spell)
 	s_spells_known[index].set((int)spell);
 }
 
+void Handle::push_item (Item::Handle item)
+{
+	assert(valid());
+
+	// Item must not already be in a different stack.
+	assert(item.next_in_stack() == c_Invalid);
+
+	item.stack_onto(read_creature_instance(index).carried_item);
+	edit_creature_instance(index).carried_item = item;
+}
+
+Item::Handle Handle::pop_item ()
+{
+	if (!has_item())
+	{
+		return Item::Handle(c_Invalid);
+	}
+	else
+	{
+		Item::Handle item = read_creature_instance(index).carried_item;
+		edit_creature_instance(index).carried_item = item.next_in_stack();
+		return item;
+	}
+}
+
+void Handle::drop_all_items ()
+{
+	// They'll end up stacked the other way, but that's ok
+	Item::Handle item = pop_item();
+	while (item != c_Invalid)
+	{
+		World::edit().add_item(pos(), item);
+		item = pop_item();
+	}
+}
+
 void Handle::update_derived_stats ()
 {
 	Creature::DerivedStats & ds = edit_derived_stats(index);
@@ -572,28 +620,16 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	Bot::init_brain(new_creature);
 	Gingerbread::claim_identity(new_creature);
 
+	Item::Handle item = Gingerbread::make_item_for_creature(type);
+	if (item.valid())
+	{
+		new_creature.push_item(item);
+	}
+
 	assert(new_creature.valid());
 
 	// return the index of the new creature
 	return new_creature;
-}
-
-// Helper function
-void creature_drop_item(Vec3 pos, Creature::Type type)
-{
-	Item::Type item_type = Gingerbread::random_item_drop(type);
-	switch (item_type)
-	{
-		case Item::BBBean:
-			Item::spawn_bbb(pos);
-			break;
-		case Item::Notes:
-			Item::spawn_notes(pos, type);
-			break;
-		case Item::PotionItem:
-			Item::spawn_potion_by_level(pos, Gingerbread::read(type).difficulty);
-			break;
-	}
 }
 
 void remove_defeated_creatures ()
@@ -626,11 +662,7 @@ void remove_defeated_creatures ()
 			++num_removed;
 			Player::gain_xp_for(creature.type());
 
-			creature_drop_item(creature.pos(), creature.type());
-			if (creature.has_tag("Drop.Notes"))
-			{
-				Item::spawn_notes(creature.pos(), creature.type());
-			}
+			creature.drop_all_items();
 
 			creature.invalidate();
 		}

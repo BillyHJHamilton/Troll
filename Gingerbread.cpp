@@ -347,6 +347,25 @@ Item::Type random_item_drop(Creature::Type type)
 	return s_item_drops[type].at(r);
 }
 
+Item::Handle make_item_for_creature(Creature::Type type)
+{
+	Item::Type item_type = random_item_drop(type);
+	if (item_type != Item::None)
+	{
+		switch (item_type)
+		{
+			case Item::BBBean:
+				return Item::make_bbb();
+			case Item::Notes:
+				return Item::make_notes(type);
+			case Item::PotionItem:
+				return Item::make_potion_by_level(Gingerbread::read(type).difficulty);
+		}
+	}
+
+	return c_Invalid;
+}
+
 void reset_player_stats(House::Type house)
 {
 	edit_player_stats().skill_magic = (house == House::Ravenclaw) ? 15 : 10;

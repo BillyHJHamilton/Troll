@@ -281,24 +281,65 @@ void furnunculus (EffectParams params)
 
 void accio (EffectParams params)
 {
-	Vec3 const pos = params.target_pos;
-	Item::Handle item = World::read().peek_item(pos);
-	if (item != c_Invalid)
-	{
-		// TODO It would be great to show the item fly through the air.
-		// And in theory, it could hit someone and stop.
-		// That would work better if we make the spell "smite targeted", which I'd like to do.
+	// TODO It would be great to show the item fly through the air.
+	// And in theory, it could hit someone and stop.
+	// That would work better if we make the spell "smite targeted", which I'd like to do.
 
-		World::edit().pop_item(pos);
-		Inventory::edit().add_item(item);
+	// TODO Need to get an item from player's inventory if player is targeted.
+
+	// TODO The grammar for items is more complex.  Problem cases:
+	//  Harry hangs onto his Harry's notes  ->  Harry hangs onto his notes
+	//  Harry's notes flies into your hand    ->  Harry's notes fly into your hand
+	// Maybe we need a function to get indefinite: "a potion flies..." "his potion" "a sheaf of parchment"
+
+	Creature::Handle caster = params.caster;
+	Vec3 const pos = params.target_pos;
+
+	Creature::Handle creature = Creature::creature_at_pos(pos);
+	if (creature.valid())
+	{
+		Item::Handle creature_item = creature.peek_item();
+		if (creature_item.valid())
+		{
+			if (Random::one_in(3))
+			{
+				Draw::creature_message(creature, std::format(
+					" {} {} onto {} {}.",
+					Grammar::You(creature), Grammar::verbs("hang", creature),
+					Grammar::your(creature), creature_item.name()));
+				return;
+			}
+			else
+			{
+				Item::Handle summon_item = creature.pop_item();
+
+				if (caster.is_player())
+				{
+					Inventory::edit().add_item(summon_item);
+				}
+				else
+				{
+					caster.push_item(summon_item);
+				}
+
+				Draw::creature_message(creature, std::format(" {} {} flies into {} hand.",
+					Grammar::Your(creature), summon_item.name(), Grammar::your(caster)));
+				return;
+			}
+		}
+
+		// TODO Perhaps at higher spell levels, it could actually pull a creature towards you?
+	}
+
+	Item::Handle summon_item = World::edit().pop_item(pos);
+	if (summon_item.valid())
+	{
+		Inventory::edit().add_item(summon_item);
 	}
 	else
 	{
 		Draw::pos_message(pos, " But nothing happens.");
 	}
-
-	// TODO Could pull carried item off an NPC (stealing notes, potions, etc.)
-	// TODO Perhaps at higher spell levels, it could actually pull a creature towards you?
 }
 
 void stupefy (EffectParams params)

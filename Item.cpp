@@ -179,6 +179,18 @@ std::string Handle::interaction_name () const
 	}
 }
 
+/*bool Handle::is_plural () const
+{
+	switch (type())
+	{
+		case Notes:
+			return true;
+
+		default:
+			return false;
+	}
+}*/
+
 bool Handle::can_use () const
 {
 	// For now
@@ -344,30 +356,24 @@ void serialize(ISerializer& s)
 	}
 }
 
-Item::Handle spawn_item (Instance instance, Vec3 const & pos)
+Item::Handle make_item (Instance instance)
 {
 	int const new_index = find_free_index();
 
 	Instance& new_inst = s_items[new_index];
 	new_inst = instance;
-
-	World::edit().add_item(pos, new_index);
-
-	// Confirm that we added to a valid map.
-	assert(World::read().peek_item(pos) == new_index);
-
 	return Item::Handle(new_index);
 }
 
-Item::Handle spawn_bbb (Vec3 pos)
+Item::Handle make_bbb ()
 {
 	Item::Instance inst;
 	inst.type = Item::BBBean;
 	inst.flavour = BertieBotts::random_flavour();
-	return Item::spawn_item(inst, pos);
+	return make_item(inst);
 }
 
-Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
+Item::Handle make_notes (Creature::Type owner_type)
 {
 	Item::Instance inst;
 	inst.type = Item::Notes;
@@ -400,15 +406,52 @@ Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
 
 	inst.flavour = (int)spell;
 
-	return Item::spawn_item(inst, pos);
+	return make_item(inst);
 }
 
-Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
+Item::Handle make_potion (Potion::Type potion)
 {
 	Item::Instance inst;
 	inst.type = Item::PotionItem;
 	inst.flavour = potion;
-	return Item::spawn_item(inst, pos);
+	return make_item(inst);
+}
+
+Item::Handle make_potion_by_level (float difficulty)
+{
+	return make_potion(Potion::random_by_level(difficulty));
+}
+
+Item::Handle spawn_item (Instance instance, Vec3 const & pos)
+{
+	Item::Handle item = make_item(instance);
+	World::edit().add_item(pos, item);
+
+	// Confirm that we added to a valid map.
+	assert(World::read().peek_item(pos) == item);
+
+	return item;
+}
+
+Item::Handle spawn_bbb (Vec3 pos)
+{
+	Item::Handle item = make_bbb();
+	World::edit().add_item(pos, item);
+	return item;
+}
+
+Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
+{
+	Item::Handle item = make_notes(owner_type);
+	World::edit().add_item(pos, item);
+	return item;
+}
+
+Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
+{
+	Item::Handle item = make_potion(potion);
+	World::edit().add_item(pos, item);
+	return item;
 }
 
 Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty)

@@ -228,7 +228,7 @@ Item::Handle const World::peek_item(Vec3 pos) const
 void World::add_item(Vec3 pos, Item::Handle item)
 {
 	int const map_id = find_map(pos);
-	if (map_id != c_Invalid)
+	if (Check(map_id != c_Invalid, "Failed to add item to world."))
 	{
 		edit_map(map_id).add_item(pos.xy(), item);
 	}

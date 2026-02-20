@@ -37,8 +37,10 @@ To Do:
  - More spells from HPADS
  - Accio!
   - Add smite targeting
-  - Steal item from opponent
+  - Still several issues, see the spell effect for details
   - Drag character closer, perhaps.
+ - Lumos?
+  - We could have darkness maps in the dungeons
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?
