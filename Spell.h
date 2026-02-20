@@ -7,7 +7,11 @@
 #include <vector>
 
 // Enables an overpowered spell for debug purposes.
-#define d_EnableMegadrill true
+#if _DEBUG
+	#define d_EnableMegadrill true
+#else
+	#define d_EnableMegadrill false
+#endif
 
 namespace Spell
 {

@@ -365,6 +365,12 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 	float miscast_rate = caster.miscast_rate_for_spell(spell);
 	if (miscast_rate >= 99.0)
 		return true;
+
+	// Non-combat spells
+	if (spell == Spell::Alohomora)
+	{
+		return true;
+	}
 	
 	// finite inc. is useless if there's no enchantment to break
 	//if (spell_index == Spell::FINITE_INC)

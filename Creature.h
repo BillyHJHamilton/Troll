@@ -57,6 +57,15 @@ namespace Creature
 		Crabbe_3,
 		Goyle_3,
 
+		Harry_4,
+		Cedric_4,
+		Fleur_4,
+
+		Krum_5,
+		Neville_5,
+		Ginny_5,
+		Luna_5,
+
 		// Generic Students
 		Hufflepuff_1,
 		Ravenclaw_1,

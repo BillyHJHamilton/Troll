@@ -93,6 +93,7 @@ void init()
 void clear()
 {
 	s_current_menu = nullptr;
+	s_back_stack.clear();
 }
 
 void close()

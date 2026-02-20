@@ -6,6 +6,10 @@ To Do:
  - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
  - EQS / find good attack position
 
+- Chests
+ - They should really be placed as part of Map Generation, not creature spawning
+ - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
+
 - Creatures
  - Melee attacks
  - Creature special abilities (distinct from spells?  yes, I suppose so)
@@ -31,7 +35,6 @@ To Do:
 
 - Spells
  - More spells from HPADS
- - Alohomora
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?

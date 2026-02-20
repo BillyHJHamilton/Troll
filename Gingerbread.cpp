@@ -87,11 +87,16 @@ void init()
 {
 	// Identities, alphabetic by short name:
 
+	register_identity("Cedric", "Cedric Diggory", House::colour(House::Hufflepuff), Gender::Male);
 	register_identity("Colin", "Colin Creevy", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Crabbe", "Vincent Crabbe", House::colour(House::Slytherin), Gender::Male);
+	register_identity("Fleur", "Fleur Delacour", "sky", Gender::Female);
+	register_identity("Ginny", "Ginny Weasley", House::colour(House::Gryffindor), Gender::Female);
 	register_identity("Goyle", "Gregory Goyle", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Harry", "Harry Potter", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Hermione", "Hermione Granger", House::colour(House::Gryffindor), Gender::Female);
+	register_identity("Krum", "Victor Krum", "flame", Gender::Male);
+	register_identity("Luna", "Luna Lovegood", House::colour(House::Ravenclaw), Gender::Female);
 	register_identity("Malfoy", "Draco Malfoy", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Neville", "Neville Longbottom", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Ron", "Ron Weasley", House::colour(House::Gryffindor), Gender::Male);
@@ -137,7 +142,7 @@ void init()
 
 	mix_from_identity(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 35, /*HP*/ 12, "VM MW LC", // + FI
+		/*Magic*/ 35, /*HP*/ 12, "VM MW LC AL", // + FI
 		"",
 		{Item::Notes}, {100});
 
@@ -150,6 +155,41 @@ void init()
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
 		/*Magic*/ 15, /*HP*/ 20, "VM FP TA", "",
 		{}, {});
+
+	mix_from_identity(Creature::Harry_4, "Harry",
+		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 45, /*HP*/ 18, "VM FP TA SP IP", "",
+		{Item::Notes, Item::PotionItem}, {60, 40});
+
+	mix_from_identity(Creature::Cedric_4, "Cedric",
+		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 50, /*HP*/ 18, "SP RS", "", // PT, Lapifors?
+		{Item::Notes}, {100});
+
+	mix_from_identity(Creature::Fleur_4, "Fleur",
+		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 70, /*HP*/ 16, "MW LM FP", "", // FI PT, Sleepiness?
+		{Item::Notes, Item::PotionItem, Item::None}, {30,30,40});
+
+	mix_from_identity(Creature::Krum_5, "Krum",
+		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 50, /*HP*/ 20, "SP FN", "",
+		{Item::PotionItem, Item::None}, {50,50});
+
+	mix_from_identity(Creature::Neville_5, "Neville",
+		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 50, /*HP*/ 20, "SP IP LM", "", // PT
+		{Item::Notes}, {100});
+
+	mix_from_identity(Creature::Ginny_5, "Ginny",
+		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 60, /*HP*/ 18, "SP BT", "", // PT
+		{Item::Notes}, {100});
+
+	mix_from_identity(Creature::Luna_5, "Luna",
+		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
+		/*Magic*/ 50, /*HP*/ 17, "SP MW FM TA", "", // PT
+		{Item::Notes}, {100});
 
 	// Generic students:
 
@@ -360,13 +400,15 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 			continue;
 		}
 
-		// Identity-based considerations
+		// Identity-based considerations.
+		// Can't have two of the same person running around at the same time,
+		// and must increase difficulty by at least 1.0 when respawning the same character.
 		if (identity != c_IdentityGeneric)
 		{
 			IdentityMetadata const& metadata = s_metadata[identity];
 
 			if (metadata.current_handle != Creature::None ||
-				Math::FloatLessOrEqual(stats.difficulty, metadata.spawned_difficulty))
+				Math::FloatLess(stats.difficulty, metadata.spawned_difficulty + 1.0f))
 			{
 				continue;
 			}
