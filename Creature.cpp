@@ -11,6 +11,7 @@
 #include "Grammar.h"
 #include "Grid.h"
 #include "Gingerbread.h"
+#include "Inventory.h"
 #include "Math.h"
 #include "PerfTimer.h"
 #include "Player.h"
@@ -256,12 +257,26 @@ bool Handle::has_tag (NameHash tag) const
 bool Handle::has_item () const
 {
 	assert(valid());
+
+	if (is_player())
+	{
+		return Inventory::read().has_item();
+	}
+
 	return read_creature_instance(index).carried_item != c_Invalid;
 }
 
 Item::Handle Handle::peek_item () const
 {
 	assert(valid());
+
+	if (is_player())
+	{
+		return has_item() ?
+			Inventory::read().peek_item(0) :
+			Item::Handle(c_Invalid);
+	}
+
 	return read_creature_instance(index).carried_item;
 }
 
@@ -487,9 +502,13 @@ Item::Handle Handle::pop_item ()
 	}
 	else
 	{
-		Item::Handle item = read_creature_instance(index).carried_item;
-		edit_creature_instance(index).carried_item = item.next_in_stack();
-		return item;
+		if (is_player())
+		{
+			int const slot = Inventory::read().random_slot();
+			return Inventory::edit().pop_item(slot);
+		}
+
+		return Item::unstack(edit_creature_instance(index).carried_item);
 	}
 }
 

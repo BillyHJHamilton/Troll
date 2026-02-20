@@ -240,13 +240,7 @@ Item::Handle Map::pop_item(Vec2 global_pos)
 {
 	Vec2 const local = global_to_local(global_pos);
 	assert(local_pos_valid(local));
-	Item::Handle top = items.read(local.x, local.y);
-	if (top.valid())
-	{
-		items.edit(local.x, local.y) = top.next_in_stack();
-		top.stack_onto(c_Invalid);
-	}
-	return top;
+	return Item::unstack(items.edit(local.x, local.y));
 }
 
 bool Map::tile_is_solid(Vec2 global_pos) const

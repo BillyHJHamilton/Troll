@@ -206,9 +206,11 @@ void init()
 		{}, {});
 
 	mix_gingerbread(Creature::Slytherin_1, c_IdentityGeneric,
-		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
+	//	/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
+		/*Difficulty*/ 0.6f, /*Probability*/ 2500.0f,
 		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female,
-		/*Magic*/ 6, /*HP*/ 4, "FN FM LM", "",
+	//	/*Magic*/ 6, /*HP*/ 4, "FN FM LM", "",
+		/*Magic*/ 60, /*HP*/ 4, "AC", "",
 		{}, {});
 
 	// Alternate universe characters!

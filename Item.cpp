@@ -459,4 +459,16 @@ Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty)
 	return spawn_potion(pos, Potion::random_by_level(difficulty));
 }
 
+Item::Handle unstack(Item::Handle& item_stack)
+{
+	if (item_stack.valid())
+	{
+		Item::Handle top = item_stack;
+		item_stack = top.next_in_stack();
+		top.stack_onto(c_Invalid);
+		return top;
+	}
+	return Item::Handle(c_Invalid);
+}
+
 } // namespace Item

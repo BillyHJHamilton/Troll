@@ -124,6 +124,9 @@ namespace Item
 	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
 	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);
 	Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty);
+
+	// Returns item from top of stack, while redirecting referenced variable to next item down.
+	Item::Handle unstack(Item::Handle& item_stack);
 };
 
 // Other possible items:

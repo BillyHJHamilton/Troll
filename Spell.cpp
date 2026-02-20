@@ -29,7 +29,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			50, 8,  &accio,					TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			99, 8,  &accio,					TargetType::Tile,		Miscast::Beam },
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,			80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },

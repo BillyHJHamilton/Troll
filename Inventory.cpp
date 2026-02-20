@@ -1,6 +1,7 @@
 #include "Inventory.h"
 
 #include "Debug.h"
+#include "Random.h"
 #include "Serialize.h"
 #include "VectorUtil.h"
 
@@ -37,9 +38,26 @@ void Inventory::serialize(ISerializer& s)
 	srz_vector(s, s_inventory.invent, "s_inventory");
 }
 
+bool Inventory::has_item () const
+{
+	return !invent.empty();
+}
+
 int Inventory::num_items () const
 {
 	return Util::Size(invent);
+}
+
+int Inventory::random_slot () const
+{
+	if (num_items() == 0)
+	{
+		return c_Invalid;
+	}
+	else
+	{
+		return Random::index(invent);
+	}
 }
 
 Item::Handle const Inventory::peek_item (int slot) const
@@ -84,6 +102,24 @@ void Inventory::add_item (Item::Handle new_item)
 	}
 
 	invent_sort();
+}
+
+Item::Handle Inventory::pop_item (int slot)
+{
+	if (!Util::IsValidIndex(invent, slot))
+	{
+		DebugBreak();
+		return Item::Handle(c_Invalid);
+	}
+
+	Item::Handle item = Item::unstack(invent[slot]);
+
+	if (!invent[slot].valid())
+	{
+		Util::RemoveAt(invent, slot);
+	}
+
+	return item;
 }
 
 void Inventory::use_item (int slot)

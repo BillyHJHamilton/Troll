@@ -281,9 +281,10 @@ void furnunculus (EffectParams params)
 
 void accio (EffectParams params)
 {
+	// TODO Add "Smite targeting" for spells like this
+
 	// TODO It would be great to show the item fly through the air.
-	// And in theory, it could hit someone and stop.
-	// That would work better if we make the spell "smite targeted", which I'd like to do.
+	// And in theory, it could hit someone and stop, dealing damage based on its heft.
 
 	// TODO Need to get an item from player's inventory if player is targeted.
 
@@ -293,52 +294,55 @@ void accio (EffectParams params)
 	// Maybe we need a function to get indefinite: "a potion flies..." "his potion" "a sheaf of parchment"
 
 	Creature::Handle caster = params.caster;
+	Creature::Handle target = params.target;
 	Vec3 const pos = params.target_pos;
 
-	Creature::Handle creature = Creature::creature_at_pos(pos);
-	if (creature.valid())
+	Item::Handle summon_item;
+
+	if (target.valid())
 	{
-		Item::Handle creature_item = creature.peek_item();
-		if (creature_item.valid())
+		if (target.has_item())
 		{
 			if (Random::one_in(3))
 			{
-				Draw::creature_message(creature, std::format(
-					" {} {} onto {} {}.",
-					Grammar::You(creature), Grammar::verbs("hang", creature),
-					Grammar::your(creature), creature_item.name()));
+				Draw::creature_message(target, std::format(
+					" {} {} onto {} belongings.",
+					Grammar::You(target), Grammar::verbs("hang", target),
+					Grammar::your_pr(target)));
 				return;
 			}
 			else
 			{
-				Item::Handle summon_item = creature.pop_item();
-
-				if (caster.is_player())
-				{
-					Inventory::edit().add_item(summon_item);
-				}
-				else
-				{
-					caster.push_item(summon_item);
-				}
-
-				Draw::creature_message(creature, std::format(" {} {} flies into {} hand.",
-					Grammar::Your(creature), summon_item.name(), Grammar::your(caster)));
-				return;
+				summon_item = target.pop_item();
 			}
 		}
 
 		// TODO Perhaps at higher spell levels, it could actually pull a creature towards you?
 	}
 
-	Item::Handle summon_item = World::edit().pop_item(pos);
+	if (!summon_item.valid())
+	{
+		Item::Handle summon_item = World::edit().pop_item(pos);
+	}
+
 	if (summon_item.valid())
 	{
-		Inventory::edit().add_item(summon_item);
+		if (caster.is_player())
+		{
+			Inventory::edit().add_item(summon_item);
+		}
+		else
+		{
+			caster.push_item(summon_item);
+		}
+
+		Draw::creature_message(target, std::format(" Whoosh!  {} got {}!",
+			Grammar::You(caster), summon_item.name()));
+		return;
 	}
-	else
+	else if (target.valid())
 	{
-		Draw::pos_message(pos, " But nothing happens.");
+		Draw::creature_message(caster, " Nothing happened.");
 	}
 }
 
