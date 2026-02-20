@@ -5,6 +5,7 @@
 static int constexpr c_Invalid = -1;
 
 using byte = unsigned char;
+using uint = uint32_t;
 
 template<class T>
 using Ragged = std::vector<std::vector<T>>;

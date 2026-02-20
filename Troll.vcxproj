@@ -285,6 +285,7 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="Beam.h" />
     <ClInclude Include="BertieBotts.h" />
+    <ClInclude Include="BitFlag.h" />
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Codepoint.h" />

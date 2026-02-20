@@ -43,12 +43,8 @@ void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle tar
 {
 	PerfTimer perf0("find_open_neighbours");
 
-	{
-		PerfTimer perf1("find_open_neighbours - clear/reserve");
-
-		out.clear();
-		out.reserve(8);
-	}
+	out.clear();
+	out.reserve(8);
 
 	World const& world = World::read();
 

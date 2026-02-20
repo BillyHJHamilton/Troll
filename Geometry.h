@@ -61,7 +61,21 @@ inline CompassDirection get_clockwise(CompassDirection dir)
 inline CompassDirection get_counterclockwise(CompassDirection dir)
 {
 	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
-		(CompassDirection)(((int)dir + 8 - 1) % 8) :
+		(CompassDirection)(((int)dir + 7) % 8) :
+		c_CompassInvalid;
+}
+
+inline CompassDirection get_clockwise_90(CompassDirection dir)
+{
+	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
+		(CompassDirection)(((int)dir + 2) % 8) :
+		c_CompassInvalid;
+}
+
+inline CompassDirection get_counterclockwise_90(CompassDirection dir)
+{
+	return (dir >= c_CompassEast && dir <= c_CompassSoutheast) ?
+		(CompassDirection)(((int)dir + 6) % 8) :
 		c_CompassInvalid;
 }
 

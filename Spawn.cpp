@@ -21,10 +21,6 @@ namespace Spawn
 
 struct Parameters
 {
-	// Amount of items to spawn.
-	int min_items = 20;
-	int max_items = 40;
-
 	// Amount of creatures to spawn initially.
 	int min_creatures = 4;
 	int max_creatures = 6;
@@ -39,6 +35,14 @@ struct Parameters
 
 	// Total amount of creatures to ever spawn on the map.
 	int lifetime_max_creatures = 9;
+
+	// Amount of items to spawn.
+	int min_items = 20;
+	int max_items = 40;
+
+	// Amount of chests to spawn.
+	int min_chests = 10;
+	int max_chests = 30;
 };
 
 struct History
@@ -46,16 +50,20 @@ struct History
 	int next_spawn_time = 0;
 	int creatures_spawned = 0;
 	int items_spawned = 0;
+	int chests_spanwed = 0;
 
 	bool has_ever_spawned() const { return next_spawn_time > 0; }
 	void serialize(ISerializer& s);
 };
 
-std::vector<Spawn::History> s_spawned;
+std::vector<Spawn::History> s_spawn_history;
 
 // List of open positions on current level.
 // Declared here in static memory to reduce allocations.
 std::vector<Vec2> s_spawn_positions;
+
+// Valid positions for treasure chests.  A subset of spawn positions.
+std::vector<Vec2> s_special_positions;
 
 //-----------------------------------------------------------------------------
 // Helper declarations
@@ -71,22 +79,30 @@ bool has_spawn_positions();
 // Removes and returns a random spawn position from the cached list.
 Vec2 next_spawn_position();
 
+// Searches remaining spawn positions, so should be called after normal spawning.
+// Calling next_chest_position removes from main list and chest list.
+void find_chest_positions(const Map& map);
+bool is_ok_chest_position(const Map& map, Vec2 pos);
+bool has_special_positions();
+Vec2 next_special_position();
+
 // Check if a map meets the conditions to spawn.
 bool is_map_ready(int map_id, int player_map, Parameters const& param);
 
 // Do spawning for a single map.
-void spawn_for_map(Map const& map, History& history, Parameters const& param);
+void spawn_for_map(Map& map, History& history, Parameters const& param);
 
 // Note: Must call find_spawn_positions first.
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
+int spawn_chests(Map& map, int chests_to_spawn);
 
 //-----------------------------------------------------------------------------
 // Interface
 
 void clear()
 {
-	s_spawned.clear();
+	s_spawn_history.clear();
 }
 
 void History::serialize(ISerializer& s)
@@ -98,8 +114,8 @@ void History::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	srz_vector_size(s, s_spawned, "s_spawned");
-	for (History& history : s_spawned)
+	srz_vector_size(s, s_spawn_history, "s_spawn_history");
+	for (History& history : s_spawn_history)
 	{
 		history.serialize(s);
 	}
@@ -108,13 +124,13 @@ void serialize(ISerializer& s)
 void post_world_setup()
 {
 	int const num_maps = World::read().num_maps();
-	Util::Fill(s_spawned, num_maps, Spawn::History{});
+	Util::Fill(s_spawn_history, num_maps, Spawn::History{});
 }
 
 void check_spawning()
 {
 	int const player_map = World::read().find_map(Player::pos());
-	if (!Util::IsValidIndex(s_spawned, player_map))
+	if (!Util::IsValidIndex(s_spawn_history, player_map))
 	{
 		return;
 	}
@@ -126,8 +142,8 @@ void check_spawning()
 	{
 		if (is_map_ready(map_id, player_map, param))
 		{
-			Map const& map = World::read().read_map(map_id);
-			History& history = s_spawned[map_id];
+			Map& map = World::edit().edit_map(map_id);
+			History& history = s_spawn_history[map_id];
 
 			if (c_ShowMapDebug)
 			{
@@ -217,9 +233,72 @@ Vec2 next_spawn_position()
 	return pos;
 }
 
+bool is_ok_chest_position(const Map& map, Vec2 pos)
+{
+	CompassDirection constexpr dirs[4] = {
+		c_CompassEast, c_CompassNorth, c_CompassWest, c_CompassSouth };
+
+	for (CompassDirection const dir : dirs)
+	{
+		CompassDirection const l1 = get_counterclockwise(dir);
+		CompassDirection const l2 = get_counterclockwise_90(dir);
+		CompassDirection const r1 = get_clockwise(dir);
+		CompassDirection const r2 = get_clockwise_90(dir);
+
+		Terrain::Type const t_front = map.get_terrain(pos + c_Compass[dir]);
+		Terrain::Type const t_back = map.get_terrain(pos - c_Compass[dir]);
+		Terrain::Type const t_l1 = map.get_terrain(pos + c_Compass[l1]);
+		Terrain::Type const t_l2 = map.get_terrain(pos + c_Compass[l2]);
+		Terrain::Type const t_r1 = map.get_terrain(pos + c_Compass[r1]);
+		Terrain::Type const t_r2 = map.get_terrain(pos + c_Compass[r2]);
+
+		// We want it against a wall, with open space in front.
+		// And not blocking a hallway on either side.
+		bool const front_ok = t_front == Terrain::Open;
+		bool const back_ok = t_back == Terrain::Wall;
+		bool const left_ok = (t_l1 == Terrain::Wall || t_l2 == Terrain::Open) && t_l1 == t_l2;
+		bool const right_ok = (t_r1 == Terrain::Wall || t_r2 == Terrain::Open) && t_r1 == t_r2;
+
+		if (front_ok && back_ok && left_ok && right_ok)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+// TODO: We don't really want to place chests adjacent.  This is kind of flawed in that respect.
+// TODO: Also this should really happen during map gen since it's a form of terrain.
+void find_chest_positions(const Map& map)
+{
+	s_special_positions.clear();
+
+	for (Vec2 v : s_spawn_positions)
+	{
+		if (is_ok_chest_position(map, v))
+		{
+			s_special_positions.push_back(v);
+		}
+	}
+}
+
+bool has_special_positions()
+{
+	return !s_special_positions.empty();
+}
+
+Vec2 next_special_position()
+{
+	int const i = Random::index(s_special_positions);
+	Vec2 const pos = s_special_positions.at(i);
+	Util::RemoveSwap(s_special_positions, i);
+	Util::RemoveSwapFirstMatchingItem(s_spawn_positions, pos);
+	return pos;
+}
+
 bool is_map_ready(int map_id, int player_map, Parameters const& param)
 {
-	const Spawn::History& history = s_spawned[map_id];
+	const Spawn::History& history = s_spawn_history[map_id];
 
 	// Spawning doesn't start for a map until visited by player.
 	if (!history.has_ever_spawned() && map_id != player_map)
@@ -237,21 +316,32 @@ bool is_map_ready(int map_id, int player_map, Parameters const& param)
 	return true;
 }
 
-void spawn_for_map(Map const& map, History& history, Parameters const& param)
+void spawn_for_map(Map& map, History& history, Parameters const& param)
 {
 	bool const is_first_spawn = (history.next_spawn_time == 0);
 
-	int const creatures_to_spawn = is_first_spawn ?
-		Random::in_range(param.min_creatures, param.max_creatures) :
-		1;
-	int const items_to_spawn = is_first_spawn ?
-		Random::in_range(param.min_items, param.max_items) :
-		0;
-	int const min_range = is_first_spawn ? 1 : param.min_range_from_player;
+	int creatures_to_spawn = 1;
+	int items_to_spawn = 0;
+	int chests_to_spawn = 0;
+	int min_range = param.min_range_from_player;
+
+	if (is_first_spawn)
+	{
+		creatures_to_spawn = Random::in_range(param.min_creatures, param.max_creatures);
+		items_to_spawn = Random::in_range(param.min_items, param.max_items);
+		chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
+		min_range = 2;
+	}
 
 	find_spawn_positions(map, min_range);
 
 	history.creatures_spawned += spawn_creatures(map, creatures_to_spawn);
+
+	if (chests_to_spawn > 0)
+	{
+		find_chest_positions(map);
+		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
+	}
 
 	if (items_to_spawn > 0)
 	{
@@ -327,6 +417,25 @@ int spawn_items(Map const& map, int items_to_spawn)
 	}
 
 	return items_spawned;
+}
+
+int spawn_chests(Map& map, int chests_to_spawn)
+{
+	int spawned = 0;
+	while (has_special_positions() && spawned < chests_to_spawn)
+	{
+		Vec2 const pos = next_special_position();
+		map.set_terrain(pos, Terrain::Chest);
+		++spawned;
+	}
+
+	if (c_ShowMapDebug)
+	{
+		std::cout << std::format("Placed {}/{} chests.\n",
+			spawned, chests_to_spawn);
+	}
+
+	return spawned;
 }
 
 } // namespace Spawn

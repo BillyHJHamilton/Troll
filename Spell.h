@@ -7,7 +7,7 @@
 #include <vector>
 
 // Enables an overpowered spell for debug purposes.
-#define d_EnableMegadrill false
+#define d_EnableMegadrill true
 
 namespace Spell
 {
@@ -19,6 +19,7 @@ namespace Spell
 		Megadrill, // Test spell
 #endif
 		Flipendo,
+		Alohomora,
 		Tarantallegra,
 		LocomotorMortis,
 		Rictusempra,

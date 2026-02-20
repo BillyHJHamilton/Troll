@@ -1,4 +1,5 @@
 #include "Beam.h"
+#include "BitFlag.h"
 #include "Cloud.h"
 #include "Creature.h"
 #include "Debug.h"
@@ -76,22 +77,30 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 
 	int const spell_range = Spell::get_range(spell);
 	const World& world = World::read();
-	const bool stop_on_target = (Spell::get_target_type(spell) == Spell::TargetType::Tile);
+
+	uint flags = f_None;
+	if (Spell::get_target_type(spell) == Spell::TargetType::Tile)
+	{
+		Util::SetFlag(flags, f_StopOnTarget);
+	}
+	if (caster_aimed)
+	{
+		Util::SetFlag(flags, f_CasterAimed);
+	}
 
 	return Beam::Data
 	{
-		caster.pos(),
-		target_pos,
-		caster.pos(),
-		Beam::Type::Spell,
-		caster,
-		intended_target,
-		line_id,
-		spell_range,
-		0 /*cloud accuracy loss*/,
-		caster_aimed,
-		false,
-		stop_on_target
+		.start_pos = caster.pos(),
+		.target_pos = target_pos,
+		.pos = caster.pos(),
+		.type = Beam::Type::Spell,
+		.caster = caster,
+		.intended_target = intended_target,
+		.trajectory = line_id,
+		.max_range = spell_range,
+		.cloud_accuracy_loss = 0,
+		.flags = flags,
+		.done = false
 	};
 }
 
@@ -181,13 +190,17 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 			Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
 		}
 
-		// see if we hit anything; this may change done to true
-		test_for_impact(beam, line_itr);
-
-		if (!beam.done && beam.pos == beam.target_pos && beam.stop_on_target)
+		if (beam.pos == beam.target_pos
+			&& Util::IsFlagSet(beam.flags, f_StopOnTarget))
 		{
 			detonate_in_midair(beam, line_itr);
 			beam.done = true;
+		}
+
+		// see if we hit anything; this may also change done to true
+		if (!beam.done)
+		{
+			test_for_impact(beam, line_itr);
 		}
 
 		if (!beam.done)
@@ -272,7 +285,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	// Range falloff
 	int const range_accuracy = accuracy_at_range(base_accuracy, beam.start_pos, beam.pos);
 
-	if (beam.caster == Creature::None || !beam.caster_aimed)
+	if (beam.caster == Creature::None || !Util::IsFlagSet(beam.flags, f_CasterAimed))
 	{
 		// if not aimed by caster, don't factor in caster's accuracy.
 		caster_accuracy_factor = 100;

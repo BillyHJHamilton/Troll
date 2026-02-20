@@ -5,9 +5,11 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Pathfind.h"
 #include "Random.h"
 #include "Spell.h"
 #include "Status.h"
+#include "Terrain.h"
 #include "World.h"
 
 #include <cassert>
@@ -85,6 +87,34 @@ void flipendo (EffectParams params)
 		Draw::creature_message(target, std::format(" {0} knocked back!",
 			Grammar::You_are(target)));
 		target.move(knock_pos);
+	}
+}
+
+void alohomora(EffectParams params)
+{
+	Vec3 const pos = params.target_pos;
+	Terrain::Type t = World::read().get_terrain(pos);
+	if (t == Terrain::Chest)
+	{
+		Draw::pos_message(pos, " The chest bursts open!");
+		World::edit().set_terrain(pos, Terrain::Open);
+
+		// To Do: Variable treasure based on current map
+		std::vector<Vec3> open_pos;
+		open_pos.reserve(9);
+		Pathfind::find_open_neighbours(pos, open_pos);
+		open_pos.push_back(pos);
+
+		int const num_beans = Random::in_range(3,6);
+		for (int i = 0; i < num_beans; ++i)
+		{
+			Item::spawn_bbb(Random::from_vector(open_pos));
+		}
+		if (Random::coinflip())
+		{
+			Item::spawn_potion_by_level(Random::from_vector(open_pos),
+				World::read().find_map_difficulty(pos) + 1.0f);
+		}
 	}
 }
 

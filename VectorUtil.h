@@ -29,7 +29,14 @@ namespace Util
 	// Basic functions for searching.
 
 	template<typename VectorItemType, typename ValueType>
-	auto Find(std::vector<VectorItemType> const& vector, ValueType value)
+	std::vector<VectorItemType>::const_iterator Find(std::vector<VectorItemType> const& vector, ValueType value)
+	{
+		return std::find(vector.begin(), vector.end(), value);
+	}
+
+	// Non-const version which is needed for RemoveSwapFirstMatchingItem
+	template<typename VectorItemType, typename ValueType>
+	std::vector<VectorItemType>::iterator Find(std::vector<VectorItemType>& vector, ValueType value)
 	{
 		return std::find(vector.begin(), vector.end(), value);
 	}

@@ -26,9 +26,12 @@ public:
 	// If no map contains the position, returns c_Invalid.
 	int find_map(Vec3 global_pos) const;
 
+	float find_map_difficulty(Vec3 global_pos) const;
+
 	Terrain::Type get_terrain(Vec3 pos) const;
 	bool is_solid(Vec3 pos) const;
 	bool permits_sight(Vec3 pos) const;
+	void set_terrain(Vec3 pos, Terrain::Type new_terrain);
 
 	// Clouds
 	Cloud::Type get_cloud(Vec3 pos) const;
@@ -73,9 +76,6 @@ public:
 	// Use range = -1 for unlimited range.
 	// Use this if you don't plan to use the line you found.
 	bool has_los(Vec3 start, Vec3 end, int range) const;
-
-	// Finds spaces that are not solid and not occupied by any creature.
-	std::vector<Vec3> find_open_neighbours(Vec3 pos) const;
 
 	void draw(Draw::View view) const;
 

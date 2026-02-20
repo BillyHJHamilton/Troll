@@ -50,6 +50,7 @@ NAMING CONVENTIONS
 - s_static_variable
 - m_member_variable (sometimes)
 - c_NamedConstant
+- f_BitFlagConstant
 - cstr_CharString
 - d_DefineMacro
 - L_LabelName (for goto)

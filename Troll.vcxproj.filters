@@ -355,6 +355,9 @@
     <ClInclude Include="MenuTitle.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
+    <ClInclude Include="BitFlag.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">

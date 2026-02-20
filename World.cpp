@@ -100,6 +100,17 @@ int World::find_map(Vec3 global_pos) const
 	return c_Invalid;
 }
 
+float World::find_map_difficulty(Vec3 pos) const
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_Invalid)
+	{
+		return read_map(map_id).get_difficulty();
+	}
+
+	return 0;
+}
+
 Terrain::Type World::get_terrain(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
@@ -131,6 +142,15 @@ bool World::permits_sight(Vec3 pos) const
 	}
 
 	return false; // off the map, it's unsightly
+}
+
+void World::set_terrain(Vec3 pos, Terrain::Type new_terrain)
+{
+	int const map_id = find_map(pos);
+	if (map_id != c_Invalid)
+	{
+		return edit_map(map_id).set_terrain(pos.xy(), new_terrain);
+	}
 }
 
 Cloud::Type World::get_cloud(Vec3 pos) const

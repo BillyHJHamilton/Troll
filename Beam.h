@@ -19,6 +19,10 @@ namespace Beam
 		Projectile
 	};
 
+	// Beam flags
+	uint constexpr f_CasterAimed   = 1 << 0;
+	uint constexpr f_StopOnTarget = 1 << 2;
+
 	struct Data
 	{
 		Vec3 start_pos;
@@ -30,9 +34,8 @@ namespace Beam
 		int trajectory; // index in the line cache
 		int max_range;
 		int cloud_accuracy_loss;
-		bool caster_aimed;
+		uint flags;
 		bool done;
-		bool stop_on_target;
 	};
 
 	void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,

@@ -13,6 +13,7 @@ namespace Terrain
 			case Terrain::Wall: return Codepoint::SolidBlock;
 			case Terrain::UpStairs: return Codepoint::ArrowUp;
 			case Terrain::DownStairs: return Codepoint::ArrowDown;
+			case Terrain::Chest: return Codepoint::BoxEmpty;
 			default: assert(false); return '?';
 		}
 	}
@@ -21,10 +22,15 @@ namespace Terrain
 	{
 		switch (t)
 		{
-			case Terrain::Open: return true;
-			case Terrain::Wall: return false;
-			case Terrain::UpStairs: return false;
-			case Terrain::DownStairs: return false;
+			case Terrain::Open:
+			case Terrain::Chest:
+				return true;
+
+			case Terrain::Wall:
+			case Terrain::UpStairs:
+			case Terrain::DownStairs:
+				return false;
+
 			default: assert(false); return false;
 		}
 	}
@@ -33,10 +39,15 @@ namespace Terrain
 	{
 		switch (t)
 		{
-			case Terrain::Open: return false;
-			case Terrain::Wall: return true;
-			case Terrain::UpStairs: return false;
-			case Terrain::DownStairs: return false;
+			case Terrain::Open:
+			case Terrain::UpStairs:
+			case Terrain::DownStairs:
+				return false;
+
+			case Terrain::Wall:
+			case Terrain::Chest:
+				return true;
+
 			default: assert(false); return false;
 		}
 	}
