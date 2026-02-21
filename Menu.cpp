@@ -7,7 +7,6 @@
 #include "Gingerbread.h"
 #include "Input.h"
 #include "Inventory.h"
-#include "MenuDebug.h"
 #include "MenuDocument.h"
 #include "MenuInventory.h"
 #include "MenuLoad.h"
@@ -22,6 +21,10 @@
 
 #include <format>
 
+#if _DEBUG
+	#include "MenuDebug.h"
+#endif
+
 namespace Menu
 {
 
@@ -29,7 +32,6 @@ namespace Menu
 // Data
 
 // Menus in alphabetic order
-MenuDebug s_menu_debug;
 MenuDocument s_menu_document;
 MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
@@ -39,6 +41,12 @@ MenuSelectHouse s_menu_select_house;
 MenuSpells s_menu_spells;
 MenuTitle s_menu_title;
 MenuPause s_menu_pause;
+
+// Debug menus
+#if _DEBUG
+	MenuDebug s_menu_debug;
+	MenuDebugLogCategories s_menu_debug_log_categories;
+#endif
 
 IMenu* s_current_menu = nullptr;
 std::vector<IMenu*> s_back_stack;
@@ -230,10 +238,19 @@ void show_message_history()
 	s_menu_messages.scroll_to_end();
 }
 
+#if _DEBUG
 void show_debug_menu()
 {
 	set_menu(s_menu_debug);
-	s_menu_messages.reset_cursor();
+	s_menu_debug.reset_cursor();
 }
+
+void show_debug_log_categories()
+{
+	set_menu(s_menu_debug_log_categories);
+	s_menu_debug_log_categories.refresh();
+	s_menu_debug_log_categories.reset_cursor();
+}
+#endif
 
 } // namespace Menu

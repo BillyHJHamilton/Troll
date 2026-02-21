@@ -261,7 +261,7 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 		spell_chosen = highest_predicted_damage_spell(caster, target, spell_list);
 		if (spell_chosen != Spell::None)
 		{
-			if (c_ShowBotDebug)
+			if (Debug::enabled(Debug::Bot))
 			{
 				std::cout << std::format("{} using highest output spell = {}\n",
 					caster.short_name(), Spell::get_name(spell_chosen));
@@ -294,7 +294,7 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 		if ( !spell_is_useless(spell_chosen, caster, target)
 			 && Random::in_range(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
 		{
-			if (c_ShowBotDebug)
+			if (Debug::enabled(Debug::Bot))
 			{
 				std::cout << std::format("{} using random reasonable spell = {}\n",
 					caster.short_name(), Spell::get_name(spell_chosen));
@@ -304,7 +304,7 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 		}
 	}
 
-	if (c_ShowBotDebug)
+	if (Debug::enabled(Debug::Bot))
 	{
 		std::cout << std::format("{} couldn't find good spell.  Using random = {}\n",
 			caster.short_name(), Spell::get_name(spell_chosen));

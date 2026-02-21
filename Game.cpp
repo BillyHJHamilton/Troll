@@ -58,6 +58,7 @@ void init()
 
 	BertieBotts::init();
 	Creature::init();
+	Debug::init();
 	Draw::init();
 	Gingerbread::init();
 	Item::init();

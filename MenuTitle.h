@@ -14,6 +14,9 @@ protected:
 	{
 		NewGame = 0,
 		LoadGame,
+#if _DEBUG
+		SetLogging,
+#endif
 		Quit
 	};
 

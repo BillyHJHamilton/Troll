@@ -62,7 +62,7 @@ void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debu
 	if (s.is_load())
 	{
 		s.srz_int(vec_size);
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << "Load " << debug_name << ", size " << vec_size << "\n";
 		}
@@ -75,7 +75,7 @@ void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debu
 	{
 		vec_size = (int)v.size();
 		s.srz_int(vec_size);
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << "Save " << debug_name << ", size " << vec_size << "\n";
 		}
@@ -110,7 +110,7 @@ void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 			resized = true;
 		}
 		int const length = w * h;
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << std::format("Load {} - w={}, h={}, resized={}, length={}\n",
 				debug_name, w, h, resized, length);
@@ -123,7 +123,7 @@ void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 		s.srz_int(w);
 		s.srz_int(h);
 		int const length = w * h;
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << std::format("Save {} - w={}, h={}; length={}\n",
 				debug_name, w, h, length);
@@ -155,7 +155,7 @@ void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType>& m,
 		s.srz_int(map_size);
 		m.clear();
 		m.reserve(map_size);
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << std::format("Load {}, size={}\n", debug_name, map_size);
 		}
@@ -172,7 +172,7 @@ void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType>& m,
 	{
 		int map_size = (int)m.size();
 		s.srz_int(map_size);
-		if (c_ShowSerializeDebug)
+		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << std::format("Save {}, size={}\n", debug_name, map_size);
 		}

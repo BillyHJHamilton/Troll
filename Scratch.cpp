@@ -36,7 +36,7 @@ namespace Scratchpad
 		s_unfreed_memory += bytes;
 		++s_unfreed_allocations;
 
-		if (c_ShowMemoryDebug)
+		if (Debug::enabled(Debug::Memory))
 		{
 			std::cout << std::format(
 				"Scratch alloc {} bytes with alignment {}, padding {}.  Got: {:x}\n",
@@ -48,7 +48,7 @@ namespace Scratchpad
 
 	void free(void* p, int bytes)
 	{
-		if (c_ShowMemoryDebug)
+		if (Debug::enabled(Debug::Memory))
 		{
 			std::cout << std::format("Scratch free {} bytes.\n", bytes);
 		}
@@ -61,7 +61,7 @@ namespace Scratchpad
 		if (s_unfreed_allocations == 0)
 		{
 			assert(s_unfreed_memory == 0);
-			if (c_ShowMemoryDebug)
+			if (Debug::enabled(Debug::Memory))
 			{
 				std::cout << std::format("Scratch released with mark={}, highwater={}.\n",
 					s_mark, s_highwater);

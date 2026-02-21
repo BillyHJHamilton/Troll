@@ -137,7 +137,7 @@ void endround_dancing(Creature::Handle creature)
 	int const roll_max = 2 + creature.status_severity(Dancing);
 	int const roll = Random::in_range(0, roll_max);
 
-	if (c_ShowActionDebug)
+	if (Debug::enabled(Debug::Action))
 	{
 		std::cout << std::format("{} dances on 3+.  Roll (0-{}) = {}\n",
 			creature.short_name(), roll_max, roll);

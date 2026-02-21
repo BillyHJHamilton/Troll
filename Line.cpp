@@ -80,7 +80,7 @@ void init()
 		add_ring_of_lines_to_cache(range);
 	}
 	
-	if (c_ShowLineDebug)
+	if (Debug::enabled(Debug::Line))
 	{
 		std::cout << std::format("Cached {} lines with a grid area of {}.\n\n",
 			s_line_cache.size(), c_LineGridArea);

@@ -4,27 +4,36 @@
 #include <iostream>
 #include <string>
 
-#ifdef _DEBUG
-static constexpr bool c_ShowActionDebug		= false;
-static constexpr bool c_ShowBotDebug		= false;
-static constexpr bool c_ShowItemDebug		= false;
-static constexpr bool c_ShowLineDebug		= false;
-static constexpr bool c_ShowMapDebug		= true;
-static constexpr bool c_ShowMemoryDebug		= false;
-static constexpr bool c_ShowPathfindDebug	= false;
-static constexpr bool c_ShowSerializeDebug	= false;
-static constexpr bool c_ShowSpellDebug		= false;
-#else
-static constexpr bool c_ShowActionDebug		= false;
-static constexpr bool c_ShowBotDebug		= false;
-static constexpr bool c_ShowItemDebug		= false;
-static constexpr bool c_ShowLineDebug		= false;
-static constexpr bool c_ShowMapDebug		= false;
-static constexpr bool c_ShowMemoryDebug		= false;
-static constexpr bool c_ShowPathfindDebug	= false;
-static constexpr bool c_ShowSerializeDebug	= false;
-static constexpr bool c_ShowSpellDebug		= false;
-#endif
+namespace Debug
+{
+	enum Category
+	{
+		Action,
+		Bot,
+		Item,
+		Line,
+		Map,
+		Memory,
+		Pathfind,
+		Serialize,
+		Spell,
+		Count
+	};
+
+	#ifdef _DEBUG
+	void init();
+	bool enabled(Category category);
+	void set_enabled(Category category, bool new_value);
+	void set_all_enabled(bool new_value);
+	char const* category_name(Category category);
+	#else
+	inline void init() {}
+	constexpr bool enabled(DebugCategory category) { return false; }
+	inline void set_enabled(Category category, bool new_value) {}
+	inline void set_all_enabled(bool new_value) {}
+	inline char const* category_name(Category category) { return ""; }
+	#endif
+}
 
 inline void DebugBreak(std::string msg = "Error")
 {

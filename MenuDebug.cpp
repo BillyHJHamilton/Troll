@@ -1,12 +1,19 @@
 #include "MenuDebug.h"
 
+#if _DEBUG
+
+#include "Debug.h"
 #include "Draw.h"
 #include "Creature.h"
 #include "Gingerbread.h"
 #include "Player.h"
 #include "Spell.h"
 
+#include <format>
 #include "BearLibTerminal.h"
+
+//-------------------------------------------------------------------------------------------------
+// Main debug menu
 
 void MenuDebug::init()
 {
@@ -16,6 +23,7 @@ void MenuDebug::init()
 		{"Cancel", DebugMenuOption::Cancel},
 		{"Learn All Spells", DebugMenuOption::LearnAllSpells},
 		{"Increase Stats", DebugMenuOption::IncreaseStats},
+		{"Set Log Categories", DebugMenuOption::SetLogCategories},
 	});
 }
 
@@ -42,7 +50,11 @@ void MenuDebug::handle_input (int key)
 				Player::handle().heal_hp(100);
 				Menu::close();
 				Draw::add_message("You feel remarkably fit.");
-				break;				
+				break;
+			case DebugMenuOption::SetLogCategories:
+				Menu::push();
+				Menu::show_debug_log_categories();
+				break;
 		}
 	}
 	else
@@ -50,3 +62,53 @@ void MenuDebug::handle_input (int key)
 		MenuList::handle_input(key);
 	}
 }
+
+//-------------------------------------------------------------------------------------------------
+// Debug log category menu
+
+void MenuDebugLogCategories::refresh()
+{
+	set_title("Log Categories:");
+
+	m_options.resize(Debug::Category::Count + 2);
+	for (int i = 0; i < Debug::Category::Count; ++i)
+	{
+		bool const enabled = Debug::enabled((Debug::Category)i);
+		m_options[i].label = std::format("[[{}]] {}",
+			enabled ? "ON" : "  ",
+			Debug::category_name((Debug::Category)i));
+		m_options[i].value = i;
+	}
+	m_options[Debug::Category::Count] = {"Enable All", c_EnableAll};
+	m_options[Debug::Category::Count + 1] = {"Disable All", c_DisableAll};
+}
+
+void MenuDebugLogCategories::handle_input (int key)
+{
+	if (key == TK_ENTER)
+	{
+		int const value = get_selected().value;
+		if (value == c_EnableAll)
+		{
+			Debug::set_all_enabled(true);
+			refresh();
+		}
+		else if (value == c_DisableAll)
+		{
+			Debug::set_all_enabled(false);
+			refresh();
+		}
+		else
+		{
+			Debug::Category category = (Debug::Category)value;
+			Debug::set_enabled(category, !Debug::enabled(category));
+			refresh();
+		}
+	}
+	else
+	{
+		MenuList::handle_input(key);
+	}
+}
+
+#endif // _DEBUG

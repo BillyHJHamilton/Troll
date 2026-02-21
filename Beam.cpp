@@ -239,7 +239,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		int hit_chance = get_hit_chance(beam, creature_in_path);
 		int accuracy_roll = Random::in_range(0,99);
 
-		if (c_ShowSpellDebug)
+		if (Debug::enabled(Debug::Spell))
 		{
 			std::cout << std::format(" Final Accuracy: {}; roll: {}\n",
 				hit_chance, accuracy_roll);
@@ -331,7 +331,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	assert(caster_accuracy_factor > 0);
 	assert(target_evasion_divisor > 0);
 
-	if (c_ShowSpellDebug)
+	if (Debug::enabled(Debug::Spell))
 	{
 		std::cout << std::format(" Base Accuracy {}, Ranged Accuracy {}, Caster Factor {}",
 			base_accuracy, range_accuracy, caster_accuracy_factor);

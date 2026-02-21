@@ -385,7 +385,7 @@ Item::Handle make_notes (Creature::Type owner_type)
 	Spell::TempList spells = Spell::bitset_to_temp_list(bitset);
 	Spell::Index spell = Random::from_vector(spells);
 
-	if (c_ShowItemDebug)
+	if (Debug::enabled(Debug::Item))
 	{
 		std::cout << std::format("{}'s Notes: Selected {}.\n",
 			Gingerbread::read(owner_type).short_name, Spell::get_name(spell));
@@ -397,7 +397,7 @@ Item::Handle make_notes (Creature::Type owner_type)
 	{
 		spell = Random::from_vector(spells);
 
-		if (c_ShowItemDebug)
+		if (Debug::enabled(Debug::Item))
 		{
 			std::cout << std::format(" - Rerolling, selected {}.\n",
 				Spell::get_name(spell));

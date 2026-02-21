@@ -153,7 +153,7 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 		{
 			int const failure = creature.walk_failure();
 			int const roll = Random::in_range(0, 99);
-			if (c_ShowActionDebug && failure > 0)
+			if (Debug::enabled(Debug::Action) && failure > 0)
 			{
 				std::cout << std::format("Walk failure ({0}): {1}; roll: {2}\n",
 					creature.short_name(), failure, roll);
@@ -182,7 +182,7 @@ void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_po
 	// Update the screen because we'll do some animation for the spell
 	Draw::draw_screen();
 
-	if (c_ShowSpellDebug)
+	if (Debug::enabled(Debug::Spell))
 	{
 		std::cout << caster.short_name() << " casting " << Spell::get_name(spell) << "\n";
 	}
@@ -225,7 +225,7 @@ bool check_distraction (Creature::Handle caster)
 	}
 
 	int distractedness_roll = Random::in_range(0,99);
-	if (c_ShowSpellDebug)
+	if (Debug::enabled(Debug::Spell))
 	{
 		std::cout << std::format(" Distraction Rate: {}%; Roll: {}\n",
 			distraction_rate, distractedness_roll);
@@ -241,7 +241,7 @@ bool check_miscast (Creature::Handle caster, Spell::Index spell)
 	float miscast_rate = caster.miscast_rate_for_spell(spell);
 	float miscast_roll = Random::in_range(0.0f, 100.0f);
 
-	if (c_ShowSpellDebug)
+	if (Debug::enabled(Debug::Spell))
 	{
 		std::cout << std::format(" Miscast Rate: {}%; Roll: {}\n",
 			miscast_rate, miscast_roll);

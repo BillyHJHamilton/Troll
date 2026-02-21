@@ -47,6 +47,9 @@ void MenuTitle::init()
 	{
 		{"New Game", TitleMenuOption::NewGame},
 		{"Load Game", TitleMenuOption::LoadGame},
+#if _DEBUG
+		{"Set Logging", TitleMenuOption::SetLogging},
+#endif
 		{"Quit", TitleMenuOption::Quit}
 	};
 }
@@ -64,6 +67,12 @@ void MenuTitle::handle_input (int key)
 				Menu::push();
 				Menu::show_load();
 				break;
+#if _DEBUG
+			case TitleMenuOption::SetLogging:
+				Menu::push();
+				Menu::show_debug_log_categories();
+				break;
+#endif
 			case TitleMenuOption::Quit:
 				Input::request_quit();
 				break;

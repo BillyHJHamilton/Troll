@@ -145,7 +145,7 @@ void check_spawning()
 			Map& map = World::edit().edit_map(map_id);
 			History& history = s_spawn_history[map_id];
 
-			if (c_ShowMapDebug)
+			if (Debug::enabled(Debug::Map))
 			{
 				std::cout << std::format("\nSpawning for map {} at difficulty level {}.\n",
 					map_id, map.get_difficulty());
@@ -211,7 +211,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 		s_spawn_positions.push_back(pos2);
 	}
 
-	if (c_ShowMapDebug)
+	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Found {} valid spawn positions.\n"
 			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
@@ -370,7 +370,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		}
 
 		Creature::Handle creature = Creature::spawn_creature(type, pos3);
-		if (c_ShowMapDebug)
+		if (Debug::enabled(Debug::Map))
 		{
 			std::cout << std::format(" - Spawned {} at ({},{}) - diff {}.\n",
 				creature.long_name(), creature.pos().x, creature.pos().y,
@@ -380,7 +380,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		++creatures_spawned;
 	}
 
-	if (c_ShowMapDebug)
+	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Spawned {}/{} creatures.\n",
 			creatures_spawned, creatures_to_spawn);
@@ -410,7 +410,7 @@ int spawn_items(Map const& map, int items_to_spawn)
 		++items_spawned;
 	}
 
-	if (c_ShowMapDebug)
+	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Placed {}/{} items.\n",
 			items_spawned, items_to_spawn);
@@ -429,7 +429,7 @@ int spawn_chests(Map& map, int chests_to_spawn)
 		++spawned;
 	}
 
-	if (c_ShowMapDebug)
+	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Placed {}/{} chests.\n",
 			spawned, chests_to_spawn);

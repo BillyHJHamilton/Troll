@@ -48,5 +48,10 @@ namespace Menu
 	void show_inventory();
 	void show_pause_menu();
 	void show_message_history();
+
+	// Debug menus
+#if _DEBUG
 	void show_debug_menu();
+	void show_debug_log_categories();
+#endif
 }

@@ -241,6 +241,7 @@
     <ClCompile Include="Bot.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Colour.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
     <ClCompile Include="MenuInventory.cpp" />
