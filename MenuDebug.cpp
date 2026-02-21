@@ -73,11 +73,12 @@ void MenuDebugLogCategories::refresh()
 	m_options.resize(Debug::Category::Count + 2);
 	for (int i = 0; i < Debug::Category::Count; ++i)
 	{
-		bool const enabled = Debug::enabled((Debug::Category)i);
+		Debug::Category category = (Debug::Category)(i);
+		bool const enabled = Debug::enabled(category);
 		m_options[i].label = std::format("[[{}]] {}",
 			enabled ? "ON" : "  ",
-			Debug::category_name((Debug::Category)i));
-		m_options[i].value = i;
+			Debug::category_name(category));
+		m_options[i].value = (int)category;
 	}
 	m_options[Debug::Category::Count] = {"Enable All", c_EnableAll};
 	m_options[Debug::Category::Count + 1] = {"Disable All", c_DisableAll};
@@ -88,7 +89,11 @@ void MenuDebugLogCategories::handle_input (int key)
 	if (key == TK_ENTER)
 	{
 		int const value = get_selected().value;
-		if (value == c_EnableAll)
+		if (value == c_Invalid)
+		{
+			Menu::back();
+		}
+		else if (value == c_EnableAll)
 		{
 			Debug::set_all_enabled(true);
 			refresh();

@@ -111,7 +111,8 @@ void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 		Vec3 come_from;
 		int total_cost;
 	};
-	std::unordered_map<Vec3, NodeInfo> discovered;
+	std::unordered_map<Vec3, NodeInfo, std::hash<Vec3>, std::equal_to<Vec3>,
+		Scratch<std::pair<const Vec3,NodeInfo>>> discovered;
 
 	Vec3TempList neighbours; // to avoid reallocating inside loop
 
