@@ -405,8 +405,5 @@
     <Text Include="Docs\To Do List.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="Fragm.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
 </Project>

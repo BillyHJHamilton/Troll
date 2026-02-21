@@ -22,7 +22,7 @@ struct Scratch
 	template<class OtherType>
 	Scratch<T>(const Scratch<OtherType>&) noexcept {}
 
-	[[nodiscard]] value_type* allocate(std::size_t n)
+	[[nodiscard]] value_type* allocate(size_t n)
 	{
 		size_t const bytes = n * sizeof(value_type);
 		size_t constexpr alignment = alignof(value_type);
@@ -30,7 +30,7 @@ struct Scratch
 		return (value_type*) Scratchpad::alloc((int)bytes, (int)alignment);
 	}
 
-	void deallocate(value_type* p, std::size_t n) noexcept
+	void deallocate(value_type* p, size_t n) noexcept
 	{
 		size_t const bytes = n * sizeof(value_type);
 		assert(bytes < (size_t)INT_MAX);

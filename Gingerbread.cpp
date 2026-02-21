@@ -159,7 +159,7 @@ void init()
 
 	mix_from_identity(Creature::Harry_4, "Harry",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 45, /*HP*/ 18, "VM FP TA SP IP", "",
+		/*Magic*/ 45, /*HP*/ 18, "FP TA SP IP AC", "",
 		{Item::Notes, Item::PotionItem}, {60, 40});
 
 	mix_from_identity(Creature::Cedric_4, "Cedric",

@@ -28,7 +28,7 @@ namespace Debug
 	char const* category_name(Category category);
 	#else
 	inline void init() {}
-	constexpr bool enabled(DebugCategory category) { return false; }
+	constexpr bool enabled(Category category) { return false; }
 	inline void set_enabled(Category category, bool new_value) {}
 	inline void set_all_enabled(bool new_value) {}
 	inline char const* category_name(Category category) { return ""; }

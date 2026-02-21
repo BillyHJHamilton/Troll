@@ -354,7 +354,6 @@
     <Text Include="Docs\Project Setup.txt" />
     <Text Include="Docs\Students.txt" />
     <Text Include="Docs\To Do List.txt" />
-    <Text Include="Fragm.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

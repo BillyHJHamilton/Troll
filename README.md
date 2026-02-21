@@ -29,5 +29,6 @@ Permission is hereby granted to re-use the code in this repository freely for no
 ## Acknowledgements
 
 Elements of the game have been borrowed from the following fan fiction stories:
+- "Harry the Hufflepuff", by BajaB 
 - "The Strange Disappearance of Sally-Anne Perks", by Paimpont
 - (To be expanded)

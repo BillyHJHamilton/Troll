@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Creature.h"
 #include "Scratch.h"
 #include "Types.h"
 #include "Geometry.h"

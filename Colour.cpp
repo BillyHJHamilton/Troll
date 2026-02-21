@@ -1,4 +1,4 @@
-#pragma once
+#include "Colour.h"
 
 char const* const cstr_White = "white";
 

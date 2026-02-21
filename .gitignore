@@ -6,6 +6,9 @@
 # Troll save games
 Save/
 
+# Local notes
+Local/
+
 # User-specific files
 *.rsuser
 *.suo
