@@ -142,8 +142,7 @@ void init()
 
 	mix_from_identity(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 35, /*HP*/ 12, "VM MW LC AL", // + FI
-		"",
+		/*Magic*/ 35, /*HP*/ 12, "VM MW LC AL FI", "",
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Crabbe_3, "Crabbe",
@@ -168,7 +167,7 @@ void init()
 
 	mix_from_identity(Creature::Fleur_4, "Fleur",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 70, /*HP*/ 16, "MW LM FP", "", // FI PT, Sleepiness?
+		/*Magic*/ 70, /*HP*/ 16, "MW LM FP FI", "", // PT, Sleepiness?
 		{Item::Notes, Item::PotionItem, Item::None}, {30,30,40});
 
 	mix_from_identity(Creature::Krum_5, "Krum",
@@ -215,6 +214,7 @@ void init()
 
 	// Currently has same spells/stats as normal Harry.  Think about how to make it unique.
 	// Technically his notes shouldn't be in his own handwriting, should they?
+	// Possible items: monogrammed socks, magic robes, self-stirring cauldron stick, magic jar...
 	mix_gingerbread(Creature::HarryTheHufflepuff_1, "Harry",
 		/*Difficulty*/ 1.0f, /*Probability*/ 0.1f,
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,

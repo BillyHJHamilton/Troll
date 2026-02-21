@@ -24,15 +24,16 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Megadrill",			"MG",	"light amber",		5,	0,	20,			999,8,	nullptr,				TargetType::Creature,	Miscast::Beam },
 #endif
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			50, 8,	&alohomora,				TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			50, 8,	&alohomora,				TargetType::Tile,		Miscast::Charm },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,			90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,			85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,			90,	8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	0,			-1, 8,	&fumos,					TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	0,			-1, 8,	&fumos,					TargetType::Tile,		Miscast::Conjuring },
 	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			99, 8,  &accio,					TargetType::Tile,		Miscast::Beam },
+	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  0,			-1, 8,  &finite_incantatem,		TargetType::Self,		Miscast::Charm },
+	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			-1, 8,  &accio,					TargetType::Sight,		Miscast::Conjuring },
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,			80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
@@ -56,7 +57,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* ACCIO */ "The Summoning Charm.  Causes an object to fly through the air to the caster.",
 	/* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
 	/* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
-	// /* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster."
+	/* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster.",
 	// /* PROTEGO */ "The Shield Charm.  Provides protection against hostile spells, and may deflect a spell back at its caster.  More powerful spells may penetrate the shield."
 	/* BAT_BOGEY */ "Causes a swarm of black winged things to descend on the target.  This is highly distracting, but also makes the victim somewhat harder to hit.",
 	// /* AVIS */ "Conjures one or more birds with shark beaks and claws.  The Oppugno spell is required to make the birds attack."

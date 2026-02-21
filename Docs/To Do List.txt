@@ -36,11 +36,12 @@ To Do:
 - Spells
  - More spells from HPADS
  - Accio!
-  - Add smite targeting
   - Still several issues, see the spell effect for details
   - Drag character closer, perhaps.
  - Lumos?
   - We could have darkness maps in the dungeons
+ - Finite Incantatem
+  - In principle it could be targeted, once we have spells on squares
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?

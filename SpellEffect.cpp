@@ -279,6 +279,44 @@ void furnunculus (EffectParams params)
 		Grammar::Your(target)));
 }
 
+// helper function
+void finite_option(std::vector<Status::Index>& list, Creature::Handle caster, Status::Index status)
+{
+	if (caster.has_status(status))
+	{
+		list.push_back(status);
+	}
+}
+
+void finite_incantatem (EffectParams params)
+{
+	Creature::Handle caster = params.caster;
+	std::vector<Status::Index> options;
+	options.reserve(7);
+
+	finite_option(options, caster, Status::Dancing);
+	finite_option(options, caster, Status::LegLocked);
+	finite_option(options, caster, Status::Tickled);
+	finite_option(options, caster, Status::TongueTied);
+	finite_option(options, caster, Status::Impeded);
+	finite_option(options, caster, Status::Batty);
+	//finite_option(options, caster, Status::Confused);
+	//finite_option(options, caster, Status::Water);
+
+	// while you're adding to this list, add to the list in the
+	// Bot::spell_is_useless() as well
+
+	if (!options.empty())
+	{
+		Status::Index to_cure = Random::from_vector(options);
+		caster.cure_status(to_cure);
+	}
+	else
+	{
+		Draw::creature_message(caster, " Nothing happens.");
+	}
+}
+
 void accio (EffectParams params)
 {
 	// TODO Add "Smite targeting" for spells like this

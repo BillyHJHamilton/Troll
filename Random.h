@@ -33,7 +33,7 @@ namespace Random
 	}
 
 	template<class T>
-	void shuffle_vector (std::vector<T> v)
+	void shuffle_vector (std::vector<T>& v)
 	{
 		std::shuffle(v.begin(), v.end(), get_generator());
 	}

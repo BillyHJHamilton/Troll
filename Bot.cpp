@@ -14,6 +14,7 @@
 #include "Serialize.h"
 #include "Spell.h"
 #include "Stairs.h"
+#include "Status.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -253,8 +254,8 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 	Spell::Index spell_chosen = Spell::None;
 	std::vector<Spell::Index> spell_list = caster.spells_known();
 
-	// 50% chance of doing attack with best predicted damage
-	if (Random::coinflip())
+	// 1/3 chance of doing attack with best predicted damage
+	if (Random::one_in(3))
 	{
 		spell_chosen = highest_predicted_damage_spell(caster, target, spell_list);
 		if (spell_chosen != Spell::None)
@@ -373,19 +374,20 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 	}
 	
 	// finite inc. is useless if there's no enchantment to break
-	//if (spell_index == Spell::FINITE_INC)
-	//{
-	//	if ( !caster.has_status(Status::BATTY)
-	//		&& !caster.has_status(Status::CONFUSED)
-	//		&& !caster.has_status(Status::DANCING)
-	//		&& !caster.has_status(Status::IMPEDED)
-	//		&& !caster.has_status(Status::LEG_LOCKED)
-	//		&& !caster.has_status(Status::TICKLED)
-	//		&& !caster.has_status(Status::TONGUE_TIED) )
-	//	{
-	//		return true;
-	//	}
-	//}
+	if (spell == Spell::FiniteIncantatem)
+	{
+		if ( !caster.has_status(Status::Batty)
+			//&& !caster.has_status(Status::Confused)
+			//&& !caster.has_status(Status::Water)
+			&& !caster.has_status(Status::Dancing)
+			&& !caster.has_status(Status::Impeded)
+			&& !caster.has_status(Status::LegLocked)
+			&& !caster.has_status(Status::Tickled)
+			&& !caster.has_status(Status::TongueTied) )
+		{
+			return true;
+		}
+	}
 
 	//// oppugno ohne birds is useless
 	//if (spell_index == Spell::OPPUGNO

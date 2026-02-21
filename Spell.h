@@ -31,7 +31,7 @@ namespace Spell
 		Mimblewimble,
 		LacarnumInflamare,
 		Furnunculus,
-		// FiniteIncantatem,
+		FiniteIncantatem,
 		Accio,
 		Stupefy,
 		Impedementa,
@@ -58,9 +58,10 @@ namespace Spell
 
 	enum class TargetType
 	{
-		Creature,
-		Tile,
-		Self
+		Creature, // Beam that continues until it hits a creature
+		Tile,     // Beam that stops at the target tile
+		Sight,    // Affects a tile without needing a beam
+		Self      // Spell that only affects the caster
 	};
 
 	using Bitset = std::bitset<Spell::Index::Count>;

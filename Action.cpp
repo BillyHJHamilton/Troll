@@ -64,15 +64,17 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	std::optional<Vec3> target_pos = Target::get_pos();
+	Spell::TargetType target_type = Spell::get_target_type(spell);
 
-	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
+	if (target_type == Spell::TargetType::Self)
 	{
 		try_cast_spell(spell, Creature::Player, Player::pos(), c_Invalid);
+		Player::set_acted(true);
 		return true;
 	}
 	else
 	{
-		// It's a beam spell.  Check that targeting is valid.
+		// It's a targeted spell.  Check that targeting is valid.
 
 		if (!target_pos.has_value())
 		{
@@ -95,7 +97,7 @@ bool player_try_cast_spell (Spell::Index spell)
 			return false;
 		}
 
-		int const line_id = World::read().get_los(Player::pos(), target_pos.value(),
+		int line_id = World::read().get_los(Player::pos(), target_pos.value(),
 			Player::vision_radius);
 		if (line_id == c_Invalid)
 		{
@@ -103,9 +105,16 @@ bool player_try_cast_spell (Spell::Index spell)
 			return false;
 		}
 
+		if (target_type == Spell::TargetType::Sight)
+		{
+			// Don't actually use the line - it's a sight-targed spell.
+			// This will make the spell automatically affect the target square.
+			line_id = c_Invalid;
+		}
+
 		// Having confirmed it is plausible for the player to try to cast the spell,
 		// we now continue to the generic spell-casting function.
-		try_cast_spell(spell, Creature::Player, *target_pos, line_id);
+		try_cast_spell(spell, Creature::Player, target_pos.value(), line_id);
 
 		Player::set_acted(true);
 		return true;
@@ -275,26 +284,31 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 	{
 		Spell::EffectParams params
 		{
-			caster,
-			Creature::None,
-			caster.pos(),
-			nullptr
+			.caster = caster,
+			.target = Creature::None,
+			.target_pos = caster.pos(),
+			.impact_line = nullptr
 		};
 
 		Spell::execute_effect(spell, params);
 	}
 	else if (line_id == c_Invalid)
 	{
-		// Shot yourself, it seems.
-		int const damage = Spell::get_damage(spell, caster);
-		caster.take_damage(damage, caster);
+		// Spell is configured to go off without a beam.
+
+		Creature::Handle target = Creature::creature_at_pos(target_pos);
+		if (target.valid())
+		{
+			int const damage = Spell::get_damage(spell, caster);
+			caster.take_damage(damage, caster);
+		}
 
 		Spell::EffectParams params
 		{
-			caster,
-			caster,
-			caster.pos(),
-			nullptr
+			.caster = caster,
+			.target = target,
+			.target_pos = target_pos,
+			.impact_line = nullptr
 		};
 
 		Spell::execute_effect(spell, params);
