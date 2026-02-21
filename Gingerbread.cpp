@@ -1,6 +1,8 @@
+#include "Gingerbread.h"
+
+#include "Colour.h"
 #include "Creature.h"
 #include "Debug.h"
-#include "Gingerbread.h"
 #include "House.h"
 #include "Item.h"
 #include "Math.h"
@@ -90,12 +92,12 @@ void init()
 	register_identity("Cedric", "Cedric Diggory", House::colour(House::Hufflepuff), Gender::Male);
 	register_identity("Colin", "Colin Creevy", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Crabbe", "Vincent Crabbe", House::colour(House::Slytherin), Gender::Male);
-	register_identity("Fleur", "Fleur Delacour", "sky", Gender::Female);
+	register_identity("Fleur", "Fleur Delacour", cstr_Sky, Gender::Female);
 	register_identity("Ginny", "Ginny Weasley", House::colour(House::Gryffindor), Gender::Female);
 	register_identity("Goyle", "Gregory Goyle", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Harry", "Harry Potter", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Hermione", "Hermione Granger", House::colour(House::Gryffindor), Gender::Female);
-	register_identity("Krum", "Victor Krum", "flame", Gender::Male);
+	register_identity("Krum", "Victor Krum", cstr_Flame, Gender::Male);
 	register_identity("Luna", "Luna Lovegood", House::colour(House::Ravenclaw), Gender::Female);
 	register_identity("Malfoy", "Draco Malfoy", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Neville", "Neville Longbottom", House::colour(House::Gryffindor), Gender::Male);
@@ -106,7 +108,7 @@ void init()
 
 	mix_gingerbread(Creature::Player, c_IdentityGeneric,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
-		"You", "You", '@', "white", Gender::Female,
+		"You", "You", '@', cstr_White, Gender::Female,
 		/*Magic*/ 70, /*HP*/ 90, "", "",
 		{}, {});
 

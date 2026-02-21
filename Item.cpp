@@ -1,6 +1,7 @@
 #include "Item.h"
 
 #include "BertieBotts.h"
+#include "Colour.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -129,7 +130,7 @@ std::string Handle::colour () const
 			return Potion::get_colour(flavour());
 
 		default:
-			return "white";
+			return cstr_White;
 	}
 }
 

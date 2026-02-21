@@ -1,5 +1,6 @@
 #include "Beam.h"
 #include "BitFlag.h"
+#include "Colour.h"
 #include "Cloud.h"
 #include "Creature.h"
 #include "Debug.h"
@@ -410,7 +411,7 @@ std::string get_colour (Beam::Data const & beam)
 	}
 	else
 	{
-		return "white"; // todo - projectiles
+		return cstr_White;
 	}
 }
 

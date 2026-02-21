@@ -1,5 +1,6 @@
 #include "World.h"
 
+#include "Colour.h"
 #include "Draw.h"
 #include "Line.h"
 #include "Map.h"
@@ -524,7 +525,7 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		}
 
 		int code = Terrain::get_character(t);
-		std::string draw_colour = (v == Visibility::Visible) ? "white" : "darker grey";
+		std::string draw_colour = (v == Visibility::Visible) ? cstr_White : cstr_DarkGrey;
 
 		if (v == Visibility::Visible)
 		{

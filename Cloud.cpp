@@ -1,5 +1,6 @@
 #include "Cloud.h"
 #include "Codepoint.h"
+#include "Colour.h"
 #include "Debug.h"
 
 namespace Cloud
@@ -18,8 +19,8 @@ namespace Cloud
 	{
 		switch (c)
 		{
-			case Cloud::Smoke:		return "grey";
-			default: DebugBreak();	return "white";
+			case Cloud::Smoke:		return cstr_Grey;
+			default: DebugBreak();	return cstr_White;
 		}
 	}
 

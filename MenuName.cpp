@@ -1,4 +1,5 @@
 #include "MenuName.h"
+#include "Colour.h"
 #include "Codepoint.h"
 #include "Player.h"
 #include "BearLibTerminal.h"
@@ -14,12 +15,12 @@ void MenuName::draw_screen ()
 
 	terminal_put(1, 2, Codepoint::HandRight); // hand
 
-	terminal_color("grey");
+	terminal_color(cstr_Grey);
 	for (int x = 3; x < (3 + c_MaxNameLength); ++x)
 	{
 		terminal_put(x, 2, '_');
 	}
-	terminal_color("white");
+	terminal_color(cstr_White);
 
 	terminal_layer(1);
 	terminal_print(3, 2, name.c_str());

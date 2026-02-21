@@ -1,5 +1,6 @@
 #include "Draw.h"
 
+#include "Colour.h"
 #include "Creature.h"
 #include "Game.h"
 #include "Input.h"
@@ -155,7 +156,7 @@ void draw_tile_temp (int code, Vec2 const & global_pos, Draw::View const & view,
 	terminal_delay(c_AnimationStepMs);
 
 	// remove animation after
-	draw_tile(' ', global_pos, view, "white");
+	draw_tile(' ', global_pos, view, cstr_White);
 }
 
 void print_in_box (Box2 const & box, char const * const str, int align)
@@ -304,7 +305,7 @@ void update_screen()
 
 	// restore default font for printing text
 	terminal_font("");
-	terminal_color("white");
+	terminal_color(cstr_White);
 
 	// player stat areas
 	Box2 player_stat_area = Box2(63, 1, 60, 6);
