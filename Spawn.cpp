@@ -47,7 +47,7 @@ struct Parameters
 
 struct History
 {
-	int next_spawn_time = 0;
+	int next_spawn_time = -1;
 	int creatures_spawned = 0;
 	int items_spawned = 0;
 	int chests_spanwed = 0;

@@ -36,8 +36,14 @@ void add_flavour(char const* colour, char const* name, int frequency, Tastiness 
 
 void init()
 {
-	s_flavours.clear();
-	s_weights.clear();
+	int constexpr c_BeanReserveSize = 200;
+
+	// This should only ever run once.
+	assert(s_flavours.empty());
+	assert(s_weights.empty());
+
+	s_flavours.reserve(c_BeanReserveSize);
+	s_weights.reserve(c_BeanReserveSize);
 
 	int constexpr c_Common = 30;
 	int constexpr c_Uncommon = 10;
@@ -298,6 +304,9 @@ void init()
 	add_flavour(cstr_DarkCrimson, "cherry", c_Common, Tastiness::Wonderful);
 	add_flavour(cstr_DarkCrimson, "beet", c_Rare, Tastiness::Questionable);
 	add_flavour(cstr_DarkCrimson, "kidney bean", c_Rare, Tastiness::Questionable);
+
+	// If you add flavours, increase the vector reservation.
+	assert(Util::Size(s_flavours) <= c_BeanReserveSize);
 }
 
 int random_flavour()
