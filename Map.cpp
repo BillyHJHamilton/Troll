@@ -214,18 +214,6 @@ Item::Handle const Map::peek_item(Vec2 global_pos) const
 	return items.read(local.x, local.y);
 }
 
-/*std::vector<Item::Handle> Map::get_items(Vec2 global_pos) const
-{
-	std::vector<Item::Handle> output;
-	Item::Handle item = get_top_item(global_pos);
-	while (item.valid())
-	{
-		output.push_back(item);
-		item = item.next_in_stack();
-	}
-	return output;
-}*/
-
 void Map::add_item(Vec2 global_pos, Item::Handle item)
 {
 	assert(item.valid());

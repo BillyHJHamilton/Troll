@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "Item.h"
 #include "NameHash.h"
+#include "Spell.h"
 
 #include <iostream>
 
@@ -40,6 +41,9 @@ enum class MoveMode : byte
 
 namespace Creature
 {
+	int constexpr c_MaxCreatures = 200;
+	int constexpr c_RestTurnsPerHp = 5;
+
 	enum Type : int
 	{
 		None = -1,	 // not included in count
@@ -135,6 +139,7 @@ namespace Creature
 		int evasion () const;
 		int accuracy () const;
 		int walk_failure () const;
+		int num_spells () const;
 		bool knows_spell (Spell::Index spell) const;
 		bool has_tag (NameHash tag) const;
 		bool has_item () const;
@@ -145,7 +150,7 @@ namespace Creature
 		bool visible () const;
 		float miscast_rate_for_spell (Spell::Index spell) const;
 		std::string status_string () const;
-		std::vector<Spell::Index> spells_known () const;
+		Spell::TempList spells_known () const;
 
 		// Mutators
 		void take_damage (int damage, Creature::Handle instigator);

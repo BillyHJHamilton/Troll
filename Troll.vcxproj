@@ -274,6 +274,7 @@
     <ClCompile Include="Potion.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Scratch.cpp" />
     <ClCompile Include="Serialize.cpp" />
     <ClCompile Include="Spawn.cpp" />
     <ClCompile Include="Spell.cpp" />
@@ -330,6 +331,7 @@
     <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
@@ -351,6 +353,7 @@
     <Text Include="Docs\Project Setup.txt" />
     <Text Include="Docs\Students.txt" />
     <Text Include="Docs\To Do List.txt" />
+    <Text Include="Fragm.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

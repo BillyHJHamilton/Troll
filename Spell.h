@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Scratch.h"
 
 #include <bitset>
 #include <string>
@@ -55,6 +56,8 @@ namespace Spell
 
 		Count
 	};
+
+	using TempList = std::vector<Spell::Index,Scratch<Spell::Index>>;
 
 	enum class TargetType
 	{
@@ -124,7 +127,7 @@ namespace Spell
 	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
 	Spell::Instance & get_current_instance ();
 
-	void bitset_to_list(Spell::Bitset const& bitset, std::vector<Spell::Index>& out_list);
+	TempList bitset_to_temp_list(Spell::Bitset const& bitset);
 
 	void execute_effect(Spell::Index spell_index, Spell::EffectParams params);
 }

@@ -78,6 +78,7 @@ void print_visible_creature_stats(Box2 draw_area);
 void init ()
 {
 	s_game_messages.reserve(c_MaxGameMessages);
+	s_view.peek_tiles.reserve(1);
 }
 
 void clear ()
@@ -95,32 +96,26 @@ bool View::contains_global_pos(Vec3 const& global_pos) const
 void update_view ()
 {
 	int constexpr view_size = 31;
-	Box2 viewport = Box2(0,0,view_size, view_size);
+	s_view.viewport = Box2(0,0,view_size, view_size);
 
 	// Centre the view on the player
 	int constexpr half_size = view_size / 2;
 	Vec2 constexpr half_vec {half_size, half_size};
 	Vec3 const viewer = Player::pos();
-	Vec2 const start = viewer.xy() - half_vec;
+	s_view.start = viewer.xy() - half_vec;
+	s_view.z = viewer.z;
+
+	s_view.ignore_visibility = s_los_cheat;
 
 	// Add stairs exception
+	s_view.peek_tiles.clear();
 	World const& world = World::read();
 	Stairs::Direction dir = world.get_stairs(viewer);
-	std::vector<Vec3> peek_tiles;
 	if (dir != Stairs::None)
 	{
 		Vec3 const stairs_pos = viewer + Stairs::relative_move(dir);
-		peek_tiles.push_back(stairs_pos);
+		s_view.peek_tiles.push_back(stairs_pos);
 	}
-
-	s_view =
-	{
-		viewport,
-		start,
-		viewer.z,
-		s_los_cheat, // ignore visibility
-		peek_tiles
-	};
 }
 
 View const& get_view ()
@@ -399,7 +394,7 @@ void print_visible_creature_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 
-	std::vector<Creature::Handle> visible_creatures = Creature::get_visible_creatures();
+	const std::vector<Creature::Handle>& visible_creatures = Creature::get_visible_creatures();
 	for (int vci = 0; vci < visible_creatures.size(); vci++)
 	{
 		Creature::Handle ci = visible_creatures[vci];

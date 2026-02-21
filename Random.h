@@ -20,20 +20,20 @@ namespace Random
 	bool one_in (int x);
 	CompassDirection compass_direction(bool include_no_move);
 
-	template<class T>
-	int index (std::vector<T> v)
+	template<class T, typename Alc>
+	int index (std::vector<T,Alc> v)
 	{
 		return Random::index((int)v.size());
 	}
 
-	template<class T>
-	T from_vector (std::vector<T> v)
+	template<class T, typename Alc>
+	T from_vector (std::vector<T,Alc> v)
 	{
 		return v.at(Random::index((int)v.size()));
 	}
 
-	template<class T>
-	void shuffle_vector (std::vector<T>& v)
+	template<typename T, typename Alc>
+	void shuffle_vector (std::vector<T,Alc>& v)
 	{
 		std::shuffle(v.begin(), v.end(), get_generator());
 	}

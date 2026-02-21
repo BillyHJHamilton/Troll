@@ -91,6 +91,8 @@ void init()
 	s_menu_debug.init();
 	s_menu_select_house.init();
 	s_menu_title.init();
+
+	s_back_stack.reserve(4);
 }
 
 void clear()

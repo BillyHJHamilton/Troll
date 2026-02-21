@@ -21,6 +21,7 @@ namespace Item
 //-------------------------------------------------------------------------------------------------
 // Data
 
+int constexpr c_ItemReserveSize = 1'000;
 std::vector<Item::Instance> s_items;
 
 //-------------------------------------------------------------------------------------------------
@@ -330,13 +331,12 @@ UseResult Handle::use_potion()
 
 void init()
 {
-
+	s_items.reserve(c_ItemReserveSize);
 }
 
 void clear()
 {
 	s_items.clear();
-	s_items.reserve(200); // get us started
 }
 
 void Instance::serialize(ISerializer& s)
@@ -381,9 +381,8 @@ Item::Handle make_notes (Creature::Type owner_type)
 
 	inst.subtype = (int)owner_type;
 
-	std::vector<Spell::Index> spells;
-	Spell::bitset_to_list(Gingerbread::read_spells(owner_type), spells);
-
+	const Spell::Bitset& bitset = Gingerbread::read_spells(owner_type);
+	Spell::TempList spells = Spell::bitset_to_temp_list(bitset);
 	Spell::Index spell = Random::from_vector(spells);
 
 	if (c_ShowItemDebug)

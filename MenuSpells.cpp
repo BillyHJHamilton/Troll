@@ -59,7 +59,7 @@ void MenuSpells::show_known_spells ()
 
 	set_title("Known spells:");
 	
-	std::vector<Spell::Index> spells_known = Player::handle().spells_known();
+	Spell::TempList spells_known = Player::handle().spells_known();
 	reserve(Util::Size(spells_known));
 
 	for (Spell::Index spell_index : spells_known)
@@ -137,7 +137,7 @@ void MenuSpells::select_starting_spell ()
 	Spell::Index spell = (Spell::Index)get_selected().value;
 	Player::handle().learn_spell(spell);
 
-	if (Player::handle().spells_known().size() >= 3)
+	if (Player::handle().num_spells() >= 3)
 	{
 		// That's it!  Start the game!
 		Menu::close();

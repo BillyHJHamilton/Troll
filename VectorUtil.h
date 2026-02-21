@@ -7,77 +7,57 @@
 namespace Util
 {
 	// Get the size and convert to int (to suppress size_t warnings).
-	template<class T>
-	inline int Size(std::vector<T> const& vector)
+	template<class VectorItemType, typename Alc>
+	inline int Size(std::vector<VectorItemType,Alc> const& vector)
 	{
 		return static_cast<int>(vector.size());
 	}
 
 	// Get index of the last item added to the back of the vector.
-	template<class T>
-	inline int LastIndex(std::vector<T> const& vector)
+	template<class VectorItemType, typename Alc>
+	inline int LastIndex(std::vector<VectorItemType,Alc> const& vector)
 	{
 		return Size(vector) - 1;
 	}
 
-	template<typename VectorItemType>
-	bool IsValidIndex(std::vector<VectorItemType> const& vector, int index)
+	template<typename VectorItemType, typename Alc>
+	bool IsValidIndex(std::vector<VectorItemType,Alc> const& vector, int index)
 	{
 		return index >= 0 && index < vector.size();
 	}
 
 	// Basic functions for searching.
 
-	template<typename VectorItemType, typename ValueType>
-	std::vector<VectorItemType>::const_iterator Find(std::vector<VectorItemType> const& vector, ValueType value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	std::vector<VectorItemType,Alc>::const_iterator Find(std::vector<VectorItemType,Alc> const& vector, ValueType value)
 	{
 		return std::find(vector.begin(), vector.end(), value);
 	}
 
 	// Non-const version which is needed for RemoveSwapFirstMatchingItem
-	template<typename VectorItemType, typename ValueType>
-	std::vector<VectorItemType>::iterator Find(std::vector<VectorItemType>& vector, ValueType value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	std::vector<VectorItemType,Alc>::iterator Find(std::vector<VectorItemType,Alc>& vector, ValueType value)
 	{
 		return std::find(vector.begin(), vector.end(), value);
 	}
 
-	template<typename VectorItemType, typename ValueType>
-	bool Contains(std::vector<VectorItemType> const& vector, ValueType& value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	bool Contains(std::vector<VectorItemType,Alc> const& vector, ValueType& value)
 	{
 		auto itr = std::find(vector.begin(), vector.end(), value);
 		return itr != vector.end();
 	}
 
-	// Functions for searching an array of unique_ptrs when you have a normal pointer.
-
-	template<typename PointerType>
-	auto Find(std::vector<std::unique_ptr<PointerType>> const& vector, PointerType* pointer)
-	{
-		return std::find_if(vector.begin(), vector.end(),
-			[pointer](std::unique_ptr<PointerType>& entry)
-			{
-				return entry.get() == pointer;
-			}
-		);
-	}
-
-	template<typename PointerType>
-	bool Contains(std::vector<std::unique_ptr<PointerType>>& vector, PointerType* pointer)
-	{
-		auto itr = Find(vector, pointer);
-		return itr != vector.end();
-	}
-
 	// Utility functions for removing with simpler syntax
 
-	template<typename VectorItemType>
-	void RemoveAt(std::vector<VectorItemType>& vector, int indexToRemove)
+	template<typename VectorItemType, typename Alc>
+	void RemoveAt(std::vector<VectorItemType,Alc>& vector, int indexToRemove)
 	{
 		vector.erase(vector.begin() + indexToRemove);
 	}
 
-	template<typename VectorItemType, typename ValueType>
-	void RemoveFirstMatchingItem(std::vector<VectorItemType>& vector, ValueType& value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	void RemoveFirstMatchingItem(std::vector<VectorItemType,Alc>& vector, ValueType& value)
 	{
 		auto itr = Find(vector, value);
 		if (itr != vector.end())
@@ -86,8 +66,8 @@ namespace Util
 		}
 	}
 	
-	template<typename VectorItemType, typename ValueType>
-	void RemoveAllMatchingItems(std::vector<VectorItemType>& vector, ValueType& value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	void RemoveAllMatchingItems(std::vector<VectorItemType,Alc>& vector, ValueType& value)
 	{
 		for (int i = 0; i < vector.size(); ++i)
 		{
@@ -101,16 +81,16 @@ namespace Util
 
 	// Utility functions for removing items from std::vector without maintaining order.
 
-	template<typename VectorItemType>
-	void RemoveSwap(std::vector<VectorItemType>& vector, int indexToRemove)
+	template<typename VectorItemType, typename Alc>
+	void RemoveSwap(std::vector<VectorItemType,Alc>& vector, int indexToRemove)
 	{
 		assert(indexToRemove < vector.size());
 		vector[indexToRemove] = std::move(vector.back());
 		vector.pop_back();
 	}
 
-	template<typename VectorItemType>
-	void RemoveSwap(std::vector<VectorItemType>& vector, typename std::vector<VectorItemType>::iterator& itrToRemove)
+	template<typename VectorItemType, typename Alc>
+	void RemoveSwap(std::vector<VectorItemType,Alc>& vector, typename std::vector<VectorItemType,Alc>::iterator& itrToRemove)
 	{
 		assert(itrToRemove != vector.cend());
 		auto backItr = vector.end() - 1;
@@ -118,8 +98,8 @@ namespace Util
 		vector.pop_back();
 	}
 
-	template<typename VectorItemType, typename ValueType>
-	void RemoveSwapFirstMatchingItem(std::vector<VectorItemType>& vector, ValueType& value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	void RemoveSwapFirstMatchingItem(std::vector<VectorItemType,Alc>& vector, ValueType& value)
 	{
 		auto itr = Find(vector, value);
 		if (itr != vector.end())
@@ -128,8 +108,8 @@ namespace Util
 		}
 	}
 
-	template<typename VectorItemType, typename ValueType>
-	void RemoveSwapAllMatchingItems(std::vector<VectorItemType>& vector, ValueType& value)
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	void RemoveSwapAllMatchingItems(std::vector<VectorItemType,Alc>& vector, ValueType& value)
 	{
 		for (int i = 0; i < vector.size(); ++i)
 		{
@@ -141,8 +121,8 @@ namespace Util
 		}
 	}
 
-	template<typename VectorItemType>
-	void RemoveSwapAllNullItems(std::vector<VectorItemType>& vector)
+	template<typename VectorItemType, typename Alc>
+	void RemoveSwapAllNullItems(std::vector<VectorItemType,Alc>& vector)
 	{
 		for (int i = 0; i < vector.size(); ++i)
 		{
@@ -156,7 +136,7 @@ namespace Util
 	
 	// Usable only if an IsValid function has been defined for the item type.
 	//template<typename VectorItemType>
-	//void RemoveSwapAllInvalidItems(std::vector<VectorItemType>& vector)
+	//void RemoveSwapAllInvalidItems(std::vector<VectorItemType,Alc>& vector)
 	//{
 	//	for (int i = 0; i < vector.size(); ++i)
 	//	{
@@ -169,8 +149,8 @@ namespace Util
 	//	}
 	//}
 
-	template<typename VectorItemType>
-	void Fill(std::vector<VectorItemType>& vector, int num, VectorItemType value)
+	template<typename VectorItemType, typename Alc>
+	void Fill(std::vector<VectorItemType,Alc>& vector, int num, VectorItemType value)
 	{
 		vector.clear();
 		vector.reserve(num);
@@ -180,16 +160,16 @@ namespace Util
 		}
 	}
 
-	template<typename VectorItemType>
-	VectorItemType PopBack(std::vector<VectorItemType>& vector)
+	template<typename VectorItemType, typename Alc>
+	VectorItemType PopBack(std::vector<VectorItemType,Alc>& vector)
 	{
 		VectorItemType result = vector.back();
 		vector.pop_back();
 		return result;
 	}
 
-	template<typename VectorItemType>
-	void AddUnique(std::vector<VectorItemType>& vec, const VectorItemType& item)
+	template<typename VectorItemType, typename Alc>
+	void AddUnique(std::vector<VectorItemType,Alc>& vec, const VectorItemType& item)
 	{
 		if (!Contains(vec, item))
 		{
@@ -198,21 +178,21 @@ namespace Util
 	}
 
 	// Adds the second vector to the end of the first vector.  Second vector is unchanged.
-	template<typename VectorItemType>
-	void Append(std::vector<VectorItemType>& first, const std::vector<VectorItemType>& second)
+	template<typename VectorItemType, typename Alc>
+	void Append(std::vector<VectorItemType,Alc>& first, const std::vector<VectorItemType,Alc>& second)
 	{
 		first.insert(first.end(), second.begin(), second.end());
 	}
 
 	// Sorts the list with std::sort.
 	// Ascending requires operator< while descending requires operator>.
-	template<typename VectorItemType>
-	void SortAscending(std::vector<VectorItemType>& v)
+	template<typename VectorItemType, typename Alc>
+	void SortAscending(std::vector<VectorItemType,Alc>& v)
 	{
 		std::sort(v.begin(), v.end());
 	}
-	template<typename VectorItemType>
-	void SortDescending(std::vector<VectorItemType>& v)
+	template<typename VectorItemType, typename Alc>
+	void SortDescending(std::vector<VectorItemType,Alc>& v)
 	{
 		std::sort(v.begin(), v.end(), std::greater<VectorItemType>());
 	}

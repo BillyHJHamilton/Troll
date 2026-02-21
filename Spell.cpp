@@ -244,8 +244,11 @@ Spell::Instance & get_current_instance ()
 	return s_current_spell_instance;
 }
 
-void bitset_to_list(Spell::Bitset const& bitset, std::vector<Spell::Index>& out_list)
+Spell::TempList bitset_to_temp_list(Spell::Bitset const& bitset)
 {
+	Spell::TempList out_list;
+	out_list.reserve(bitset.count());
+
 	for (int i = 0; i < Spell::Index::Count; i++)
 	{
 		if (bitset.test(i))
@@ -253,6 +256,7 @@ void bitset_to_list(Spell::Bitset const& bitset, std::vector<Spell::Index>& out_
 			out_list.push_back(static_cast<Spell::Index>(i));
 		}
 	}
+	return out_list;
 }
 
 void execute_effect(Spell::Index spell_index, Spell::EffectParams params)

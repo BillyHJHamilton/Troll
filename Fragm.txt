@@ -1,0 +1,24 @@
+
+I don't like how much we return std::vector on the fly.
+Technically this could lead to memory fragmentation, though I expect it's not a real serious problem on PC.
+
+We could make a pool of reserved temp arrays in appropriate sizes and an allocator.
+That would take care of the (probably imaginary) problem.
+Assuming it is only used for temp arrays, it shouldn't need to be large.
+- Assuming it is only temp arrays, we could also just use a scratchpad allocator. :)
+
+Here's a list of places where we use dynamically sized arrays:
+ - Spell::bitset_to_list
+ - Pathfind::astar
+  - probably need our own priority queue / heap impl
+    that allows preallocating the vector; then just reuse it
+  - it also returns the path (via boomerang)
+    though this storage could be moved to the "brain".
+ - LineCache::add_line_to_cache
+  - possible_duplicates does dynamic allocation many times during init
+ - a bunch in map generator
+  - FindPossibleJoiningCorridors, etc
+ - Potion::random_by_level
+ - alohomora - list of 9 open pos
+
+Aside from that, we have std::string everywhere. :)

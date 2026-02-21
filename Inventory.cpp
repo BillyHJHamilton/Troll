@@ -15,6 +15,7 @@ Inventory s_inventory;
 
 Inventory::Inventory()
 {
+	// Enough for now, given the way they stack!
 	invent.reserve(200);
 }
 

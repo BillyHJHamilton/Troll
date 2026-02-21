@@ -54,7 +54,6 @@ public:
 
 	bool has_item(Vec2 global_pos) const;
 	Item::Handle const peek_item(Vec2 global_pos) const;
-	//std::vector<Item::Handle> get_items(Vec2 global_pos) const;
 	void add_item(Vec2 global_pos, Item::Handle item);
 	Item::Handle pop_item(Vec2 global_pos);
 

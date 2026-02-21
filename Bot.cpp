@@ -42,7 +42,7 @@ void move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
-	std::vector<Spell::Index> const & spell_list);
+	Spell::TempList const & spell_list);
 float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
 bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
 
@@ -52,6 +52,7 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 void clear()
 {
 	s_brains.clear();
+	s_brains.reserve(Creature::c_MaxCreatures);
 }
 
 void Brain::serialize(ISerializer& s)
@@ -112,7 +113,7 @@ void do_turn (Creature::Handle creature)
 		}
 		else
 		{
-			std::vector<Spell::Index> spell_list = creature.spells_known();
+			Spell::TempList spell_list = creature.spells_known();
 			if (spell_list.size() > 0)
 			{
 				Spell::Index spell = choose_spell(creature, Player::handle());
@@ -252,7 +253,7 @@ bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 {
 	Spell::Index spell_chosen = Spell::None;
-	std::vector<Spell::Index> spell_list = caster.spells_known();
+	Spell::TempList spell_list = caster.spells_known();
 
 	// 1/3 chance of doing attack with best predicted damage
 	if (Random::one_in(3))
@@ -314,7 +315,7 @@ Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
 }
 
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
-	std::vector<Spell::Index> const & spell_list)
+	Spell::TempList const & spell_list)
 {
 	Spell::Index best_spell = Spell::None;
 	float best_estimate = 0.0f;

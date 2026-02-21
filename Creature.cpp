@@ -34,9 +34,6 @@ namespace Creature
 // Just as with the gingerbread array, the first entry is reserved for the player.
 // This means the Creature::Player constant applies to *both* gingerbread *and* g_creatures.
 
-int constexpr c_MaxCreatures = 200;
-int constexpr c_RestTurnsPerHp = 5;
-
 Creature::Instance s_creatures [c_MaxCreatures];
 Grid<int> s_creature_status; // (creature, status)
 Creature::DerivedStats s_derived_stats [c_MaxCreatures];
@@ -98,7 +95,7 @@ void clear ()
 	s_visible_creatures.reserve(c_MaxCreatures);
 
 	s_fainting_creatures.clear();
-	s_fainting_creatures.reserve(10);
+	s_fainting_creatures.reserve(c_MaxCreatures);
 }
 
 void Creature::Instance::serialize(ISerializer& s)
@@ -242,8 +239,16 @@ int Handle::walk_failure () const
 	return std::min(90, read_derived_stats(index).walk_failure);
 }
 
+int Handle::num_spells () const
+{
+	assert(valid());
+	Spell::Bitset const & spell_bitset = s_spells_known[index];
+	return (int)spell_bitset.count();
+}
+
 bool Handle::knows_spell (Spell::Index spell) const
 {
+	assert(valid());
 	Spell::Bitset const & spell_bitset = s_spells_known[index];
 	return spell_bitset.test(spell);
 }
@@ -342,12 +347,10 @@ std::string Handle::status_string () const
 	return outs.str();
 }
 
-std::vector<Spell::Index> Handle::spells_known () const
+Spell::TempList Handle::spells_known () const
 {
 	Spell::Bitset const & spell_bitset = s_spells_known[index];
-	std::vector<Spell::Index> spell_list;
-	Spell::bitset_to_list(spell_bitset, spell_list);
-	return spell_list;
+	return Spell::bitset_to_temp_list(spell_bitset);
 }
 
 //-------------------------------------------------------------------------------------------------
