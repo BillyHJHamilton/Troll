@@ -51,11 +51,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="FSEX302.ttf">
-      <Filter>Resource Files</Filter>
-    </Font>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Action.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -405,5 +400,10 @@
     <Text Include="Docs\To Do List.txt">
       <Filter>Resource Files</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="FixedsysExcelsior302.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>

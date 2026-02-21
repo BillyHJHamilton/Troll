@@ -7,7 +7,7 @@
 
 void config_terminal()
 {
-	char const* FONT1 = "FSEX302.ttf";
+	char const* FONT1 = "FixedsysExcelsior302.ttf";
 	char const* FONT2 = FONT1;
 
 	terminal_set("window.size=120x31");

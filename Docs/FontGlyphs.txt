@@ -1,4 +1,4 @@
-﻿hex  ~  description of how it is in FSEX302 font
+﻿hex  ~  description of how it is in Fixedsys Excelsior font
 
 86   †  punctuation cross
 95   •  circular dot
