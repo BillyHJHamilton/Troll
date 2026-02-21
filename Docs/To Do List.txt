@@ -28,6 +28,15 @@ To Do:
  - Secret treasure rooms
  - (Advanced) Staircases that change
 
+- World layout revision
+ 1) Move code into new module -- DONE
+ 2) Move creating outgoing connections into a separate pass from map generation
+  - Make it aware of the map it's connecting to
+  - Make a function to "try to receive" a connection (making a landing)
+  - If the connection fails, don't create the connection
+ 3) Add the possibility of horizontal connections.
+ 4) Add stronger methods to enforce internal connectivity
+
 - Menu
  - Improve "help" document
 
@@ -51,6 +60,10 @@ To Do:
  - They need to have a purpose.  Healing?  Hunger/Sugar?
  - Chocolate frogs (with wizard cards)
  - Other types (cauldron cakes, etc)
+
+- Targeting
+ - Lock onto chests (at least if you have AL)
+ - Some way to see it when cursor is over a wall
 
 - Taunts
 

@@ -236,6 +236,7 @@
     <ClCompile Include="Beam.cpp" />
     <ClCompile Include="BertieBotts.cpp" />
     <ClCompile Include="Bot.cpp" />
+    <ClCompile Include="BuildWorld.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Colour.cpp" />
     <ClCompile Include="Debug.cpp" />
@@ -341,6 +342,7 @@
     <ClInclude Include="Types.h" />
     <ClInclude Include="VectorUtil.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="BuildWorld.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt" />

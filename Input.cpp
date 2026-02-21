@@ -210,16 +210,6 @@ void handle_next_input ()
 		//	Player::handle().move(Player::pos() + Vec3{0,0,1});
 		//	return;
 		//}
-		//if (key == TK_X)
-		//{
-		//	Draw::toggle_los_cheat();
-		//	//int const map_index = World::read().find_map(Player::pos());
-		//	//if (map_index != c_Invalid)
-		//	//{
-		//	//	World::edit().edit_map(map_index).set_all_explored();
-		//	//}
-		//	return;
-		//}
 
 		// unhandled
 		return;

@@ -23,6 +23,7 @@ void MenuDebug::init()
 		{"Cancel", DebugMenuOption::Cancel},
 		{"Learn All Spells", DebugMenuOption::LearnAllSpells},
 		{"Increase Stats", DebugMenuOption::IncreaseStats},
+		{"Toggle Reveal Map", DebugMenuOption::ToggleRevealMap},
 		{"Set Log Categories", DebugMenuOption::SetLogCategories},
 	});
 }
@@ -50,6 +51,10 @@ void MenuDebug::handle_input (int key)
 				Player::handle().heal_hp(100);
 				Menu::close();
 				Draw::add_message("You feel remarkably fit.");
+				break;
+			case DebugMenuOption::ToggleRevealMap:
+				Draw::toggle_los_cheat();
+				Menu::close();
 				break;
 			case DebugMenuOption::SetLogCategories:
 				Menu::push();
