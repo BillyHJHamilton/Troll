@@ -251,7 +251,7 @@ void MapGenerator::PlaceRooms()
 
 	if (c_ShowMapDebug)
 	{
-		std::cout << std::format("Placed {} rooms; attempted {}; intended {}.",
+		std::cout << std::format("Placed {} rooms; attempted {}; intended {}.\n",
 			numPlaced, attempts, numRooms);
 	}
 }

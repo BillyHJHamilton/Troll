@@ -4,6 +4,7 @@
 #include "Debug.h"
 #include "MapUtil.h"
 #include "PerfTimer.h"
+#include "Scratch.h"
 #include "Stairs.h"
 #include "World.h"
 
@@ -26,7 +27,7 @@ struct AStarPriorityQueue
 		bool operator()(PQElement lhs, PQElement rhs) { return lhs.first > rhs.first; }
 	};
 
-	std::priority_queue<PQElement, std::vector<PQElement>, Comparator> elements;
+	std::priority_queue<PQElement, std::vector<PQElement,Scratch<PQElement>>, Comparator> elements;
 
 	inline bool empty() const { return elements.empty(); }
 	inline void add(Vec3 item, PriorityType priority) { elements.emplace(priority, item); }
@@ -39,7 +40,7 @@ struct AStarPriorityQueue
 	}
 };
 
-void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle target)
+void find_open_neighbours(Vec3 pos, Vec3TempList& out, Creature::Handle target)
 {
 	PerfTimer perf0("find_open_neighbours");
 
@@ -85,9 +86,12 @@ void find_open_neighbours(Vec3 pos, std::vector<Vec3>& out, Creature::Handle tar
 // "License: all the sample code on this page is free to use in your projects.
 //	If you need a license for it, you can treat it as Apache v2 licensed by Red Blob Games."
 
-std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
+void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 {
 	PerfTimer perf0("astar");
+
+	path_out.clear();
+	path_out.reserve(max_cost);
 
 	World const& world = World::read();
 	Creature::Handle const target = Creature::creature_at_pos(goal);
@@ -99,7 +103,7 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 			std::cout << "Target is beyond max cost.  Pathfinding skipped.\n";
 		}
 
-		return std::vector<Vec3>();
+		return;
 	}
 
 	struct NodeInfo
@@ -109,7 +113,7 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 	};
 	std::unordered_map<Vec3, NodeInfo> discovered;
 
-	std::vector<Vec3> neighbours; // to avoid reallocating inside loop
+	Vec3TempList neighbours; // to avoid reallocating inside loop
 
 	discovered.insert_or_assign(start, NodeInfo 
 	{
@@ -166,21 +170,17 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 	{
 		PerfTimer perf1("astar - rebuild path");
 
-		std::vector<Vec3> path;
-		path.reserve(manhattan_distance(start, goal));
 		Vec3 boomerang = goal;
 		while (boomerang != start)
 		{
-			path.push_back(boomerang);
+			path_out.push_back(boomerang);
 			boomerang = discovered[boomerang].come_from;
 		}
 
 		if (c_ShowPathfindDebug)
 		{
-			std::cout << "Built path of " << path.size() << " steps.\n";
+			std::cout << "Built path of " << path_out.size() << " steps.\n";
 		}
-
-		return (path);
 	}
 	else
 	{
@@ -188,8 +188,6 @@ std::vector<Vec3> astar(Vec3 start, Vec3 goal, int max_cost)
 		{
 			std::cout << "Failed to find a path.\n";
 		}
-
-		return std::vector<Vec3>();
 	}
 }
 

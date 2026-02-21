@@ -200,7 +200,7 @@ void go_to_last_seen(Creature::Handle creature)
 		if (!moved)
 		{
 			// Try to formulate a new plan.
-			brain.move_stack = Pathfind::astar(pos, brain.last_seen, c_MaxPathCost);
+			Pathfind::astar(pos, brain.last_seen, c_MaxPathCost, brain.move_stack);
 
 			if (!brain.move_stack.empty())
 			{

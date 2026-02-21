@@ -147,7 +147,7 @@ void endround_dancing(Creature::Handle creature)
 	{
 		Vec3 const old_pos = creature.pos();
 
-		std::vector<Vec3> possible_moves;
+		Vec3TempList possible_moves;
 		Pathfind::find_open_neighbours(old_pos, possible_moves, Creature::None);
 		Vec3 const move_to = Random::from_vector(possible_moves);
 		Vec2 const step = move_to.xy() - old_pos.xy();

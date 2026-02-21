@@ -101,7 +101,7 @@ void alohomora(EffectParams params)
 		World::edit().set_terrain(pos, Terrain::Open);
 
 		// To Do: Variable treasure based on current map
-		std::vector<Vec3> open_pos;
+		Vec3TempList open_pos;
 		open_pos.reserve(9);
 		Pathfind::find_open_neighbours(pos, open_pos);
 		open_pos.push_back(pos);

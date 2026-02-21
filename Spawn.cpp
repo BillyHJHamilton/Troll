@@ -52,7 +52,7 @@ struct History
 	int items_spawned = 0;
 	int chests_spanwed = 0;
 
-	bool has_ever_spawned() const { return next_spawn_time > 0; }
+	bool has_ever_spawned() const { return next_spawn_time > -1; }
 	void serialize(ISerializer& s);
 };
 
@@ -301,9 +301,9 @@ bool is_map_ready(int map_id, int player_map, Parameters const& param)
 	const Spawn::History& history = s_spawn_history[map_id];
 
 	// Spawning doesn't start for a map until visited by player.
-	if (!history.has_ever_spawned() && map_id != player_map)
+	if (!history.has_ever_spawned())
 	{
-		return false;
+		return (map_id == player_map);
 	}
 
 	if (history.creatures_spawned >= param.max_creatures ||
@@ -318,7 +318,7 @@ bool is_map_ready(int map_id, int player_map, Parameters const& param)
 
 void spawn_for_map(Map& map, History& history, Parameters const& param)
 {
-	bool const is_first_spawn = (history.next_spawn_time == 0);
+	bool const is_first_spawn = !history.has_ever_spawned();
 
 	int creatures_to_spawn = 1;
 	int items_to_spawn = 0;
