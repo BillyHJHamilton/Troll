@@ -210,6 +210,10 @@
       <AdditionalLibraryDirectories>External\BearLib\;</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)Build\Win64" mkdir "$(SolutionDir)Build\Win64"
+copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>

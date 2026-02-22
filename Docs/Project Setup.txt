@@ -36,3 +36,7 @@ Release Build:
   Linker:
     System: Subsystem: Windows  // Don't make a console window
     Advanced: Entry Point: mainCRTStartup  // Still use main()
+  Build Events:
+    Post-Build Event: Command Line:
+      if not exist "$(SolutionDir)Build\Win64" mkdir "$(SolutionDir)Build\Win64"
+      copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"
