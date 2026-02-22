@@ -19,6 +19,7 @@ protected:
 		LearnAllSpells,
 		IncreaseStats,
 		ToggleRevealMap,
+		DefeatAllEnemies,
 		SetLogCategories,
 	};
 };

@@ -436,7 +436,12 @@ void Handle::cure_status (Status::Index status)
 void Handle::cure_all ()
 {
 	// blank all statuses (with no message)
-	s_creature_status.fill(0);
+	for (int i = 0; i < Status::Count; ++i)
+	{
+		s_creature_status.edit(index, i) = 0;
+	}
+	update_derived_stats();
+
 	edit_creature_instance(index).hp = max_hp();
 }
 

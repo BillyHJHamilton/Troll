@@ -171,6 +171,12 @@ Room::TempList Room::FindPossibleJoiningCorridorsToBox(Box2 other_box) const
 		return Room::TempList();
 	}
 
+	// Special case for stairs
+	if (m_RoomType == RoomType::Stairs)
+	{
+		return FindPossibleJoiningCorridorsAsStairs(other_box);
+	}
+
 	// See in what manner we might join the rooms
 	Axis overlapAxis;
 	if (m_Box.overlaps_on_axis(other_box, AXIS_X))
@@ -229,20 +235,20 @@ Room Room::FindPossibleJoiningCorridorCommon(Box2 other_box, Axis corridorAxis, 
 	}
 }
 
-Room::TempList Room::FindPossibleJoiningCorridorsAsStairs(Room const & other) const
+Room::TempList Room::FindPossibleJoiningCorridorsAsStairs(Box2 other_box) const
 {
 	Room::TempList output;
 
 	Axis corridorAxis = StairsAxis(m_StairsDirection);
 	Axis overlapAxis = get_other_axis(corridorAxis);
-	if (!m_Box.overlaps_on_axis(other.GetBox(), overlapAxis))
+	if (!m_Box.overlaps_on_axis(other_box, overlapAxis))
 	{
 		return output;
 	}
 
 	// They overlap, but is it on the correct side?
 	int requiredSign = Stairs::joining_vector(m_StairsDirection)[corridorAxis];
-	int roomDiff = other.GetBox().min[corridorAxis] - m_Box.min[corridorAxis];
+	int roomDiff = other_box.min[corridorAxis] - m_Box.min[corridorAxis];
 	if (!Math::SameSign(requiredSign, roomDiff))
 	{
 		return output;
@@ -250,7 +256,7 @@ Room::TempList Room::FindPossibleJoiningCorridorsAsStairs(Room const & other) co
 
 	// Find the one possible corridor and return it.
 	int pos = StairsLocalEnd()[overlapAxis];
-	output.push_back(FindPossibleJoiningCorridorCommon(other.GetBox(), corridorAxis, pos));
+	output.push_back(FindPossibleJoiningCorridorCommon(other_box, corridorAxis, pos));
 	return output;
 }
 

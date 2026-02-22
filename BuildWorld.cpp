@@ -33,15 +33,15 @@ void BuildWorld()
 	//world.edit_map(3).get_generator().Generate();
 	//world.edit_map(4).get_generator().Generate();
 
-	Box2 const map_box1 = Box2(0, 0, 30, 30);
-
 	// Create a stack of levels.
 	int constexpr c_MaxZ = 6;
 
 	// Pass 1 - allocate levels
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
-		int const map_id = world.add_map(z, (z * 0.5f), map_box1, Terrain::Wall);
+		Box2 const map_box{0, 0, 30, 30};
+		//Box2 const map_box{0 - z, 0 - z, 30 + 2*z, 30 + 2*z};
+		int const map_id = world.add_map(z, (z * 0.5f), map_box, Terrain::Wall);
 		assert(map_id == z);
 	}
 	//int const dungeon_id = world.add_map(-1, (4.0f), map_box1, Terrain::Wall);
@@ -52,6 +52,8 @@ void BuildWorld()
 		MapGenerator& generator = world.edit_map(z).get_generator();
 
 		MapGenerator::Parameters param{};
+		//param.MinNumRooms += z;
+		//param.MaxNumRooms += 2*z;
 		generator.SetParameters(param);
 
 		//if (z == 0)

@@ -200,16 +200,21 @@ void handle_next_input ()
 		}
 
 		// Map Debug
-		if (key == TK_P)
+#if _DEBUG
+		if (Draw::get_view().ignore_visibility)
 		{
-			Player::handle().move(Player::pos() + Vec3{0,0,1});
-			return;
+			if (key == TK_P)
+			{
+				Player::handle().move(Player::pos() + Vec3{0,0,1});
+				return;
+			}
+			if (key == TK_SEMICOLON)
+			{
+				Player::handle().move(Player::pos() + Vec3{0,0,-1});
+				return;
+			}
 		}
-		if (key == TK_SEMICOLON)
-		{
-			Player::handle().move(Player::pos() + Vec3{0,0,-1});
-			return;
-		}
+#endif //_DEBUG
 
 		// unhandled
 		return;

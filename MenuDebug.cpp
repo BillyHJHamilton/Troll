@@ -24,6 +24,7 @@ void MenuDebug::init()
 		{"Learn All Spells", DebugMenuOption::LearnAllSpells},
 		{"Increase Stats", DebugMenuOption::IncreaseStats},
 		{"Toggle Reveal Map", DebugMenuOption::ToggleRevealMap},
+		{"Defeat All Enemies", DebugMenuOption::DefeatAllEnemies},
 		{"Set Log Categories", DebugMenuOption::SetLogCategories},
 	});
 }
@@ -42,19 +43,26 @@ void MenuDebug::handle_input (int key)
 				{
 					Player::handle().learn_spell((Spell::Index)i);
 				}
-				Menu::close();
+				//Menu::close();
 				Draw::add_message("Your knowledge returns from future past.");
 				break;
 			case DebugMenuOption::IncreaseStats:
 				Gingerbread::edit_player_stats().max_hp += 100;
 				Gingerbread::edit_player_stats().skill_magic += 100;
 				Player::handle().heal_hp(100);
-				Menu::close();
+				//Menu::close();
 				Draw::add_message("You feel remarkably fit.");
 				break;
 			case DebugMenuOption::ToggleRevealMap:
 				Draw::toggle_los_cheat();
-				Menu::close();
+				//Menu::close();
+				break;
+			case DebugMenuOption::DefeatAllEnemies:
+				for (Creature::HandleItr itr(1); itr; ++itr)
+				{
+					itr->take_damage(1000, Creature::None);
+				}
+				//Menu::close();
 				break;
 			case DebugMenuOption::SetLogCategories:
 				Menu::push();

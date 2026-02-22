@@ -28,6 +28,8 @@ public:
 		int MinStairsProximity = 4;
 		int MinFacingStairsProximity = 6; // 3 + min room dimension
 
+		int MaxCorridorLength = 6;
+
 		void Serialize(ISerializer& s);
 	};
 

@@ -713,6 +713,7 @@ bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder)
 		m_Map.get_box();
 
 	return boundingBox.contains(room.GetBox())
+		&& (!room.IsCorridor() || room.CorridorLength() <= m_Param.MaxCorridorLength)
 		&& !room.AnyRoomVetoes(m_RoomVec);
 }
 

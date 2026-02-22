@@ -68,7 +68,7 @@ private:
 	bool JoinsToRoomAsStairs(Room const &room) const;
 	Room FindPossibleJoiningCorridorCommon(Box2 other_box, Axis corridorAxis, int posOnOtherAxis) const;
 	Vec2 SuggestRandAdjoiningPositionForRoomCommon(Vec2 roomSize, Vec2 joinEnd, Axis axis, int dir) const;
-	Room::TempList FindPossibleJoiningCorridorsAsStairs(Room const & other) const;
+	Room::TempList FindPossibleJoiningCorridorsAsStairs(Box2 other_box) const;
 
 	Box2 m_Box; // Space occupied by the room, in (2D) global space
 	RoomType m_RoomType;
