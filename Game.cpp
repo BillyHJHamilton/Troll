@@ -17,6 +17,7 @@
 #include "Player.h"
 #include "Potion.h"
 #include "Random.h"
+#include "Scratch.h"
 #include "Spawn.h"
 #include "Spell.h"
 #include "Stairs.h"
@@ -166,6 +167,9 @@ void setup()
 
 void update()
 {
+	// Confirm that temp memory from last frame was released.
+	assert(Scratchpad::is_empty());
+
 	if (s_game_mode == GameMode::Normal)
 	{
 		World::edit().update_visibility(Player::pos(), Player::vision_radius);

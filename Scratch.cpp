@@ -36,22 +36,22 @@ namespace Scratchpad
 		s_unfreed_memory += bytes;
 		++s_unfreed_allocations;
 
-		if (Debug::enabled(Debug::Memory))
-		{
-			std::cout << std::format(
-				"Scratch alloc {} bytes with alignment {}, padding {}.  Got: {:x}\n",
-				bytes, alignment, padding, (size_t)mem);
-		}
+		//if (Debug::enabled(Debug::Memory))
+		//{
+		//	std::cout << std::format(
+		//		"Scratch alloc {} bytes with alignment {}, padding {}.  Got: {:x}\n",
+		//		bytes, alignment, padding, (size_t)mem);
+		//}
 
 		return mem;
 	}
 
 	void free(void* p, int bytes)
 	{
-		if (Debug::enabled(Debug::Memory))
-		{
-			std::cout << std::format("Scratch free {} bytes.\n", bytes);
-		}
+		//if (Debug::enabled(Debug::Memory))
+		//{
+		//	std::cout << std::format("Scratch free {} bytes.\n", bytes);
+		//}
 
 		assert(p >= (void*)&s_scratchpad
 			&& p < (void*)(&s_scratchpad + c_ScratchpadSize));
@@ -63,11 +63,18 @@ namespace Scratchpad
 			assert(s_unfreed_memory == 0);
 			if (Debug::enabled(Debug::Memory))
 			{
-				std::cout << std::format("Scratch released with mark={}, highwater={}.\n",
-					s_mark, s_highwater);
+				float const used_pct = 100.0f * float(s_mark)/float(c_ScratchpadSize);
+				float const highwater_pct = 100.0f * float(s_highwater)/float(c_ScratchpadSize);
+				std::cout << std::format("Scratch released with mark={} ({:.2f}%), highwater={} ({:.2f}%).\n",
+					s_mark, used_pct, s_highwater, highwater_pct);
 			}
 			s_mark = 0;
 		}
+	}
+
+	bool is_empty()
+	{
+		return s_mark == 0;
 	}
 }
 

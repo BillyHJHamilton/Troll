@@ -131,65 +131,50 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	border_box = border_box.intersection(other_box);
 
 	// Now try to join with each room
+	IntTempList rooms_to_try = Util::GetIndices(m_RoomVec);
+	Random::shuffle_vector(rooms_to_try);
 	Room::TempList possible_tunnels;
 
-	for (Room& room : m_RoomVec)
+	int num_added = 0;
+	while (num_added < numToAdd && !rooms_to_try.empty())
 	{
+		Room& room = m_RoomVec[rooms_to_try.back()];
+		rooms_to_try.pop_back();
+
 		if (room.GetRoomType() == RoomType::Chamber)
 		{
-			Util::Append(possible_tunnels, room.FindPossibleJoiningCorridorsToBox(border_box));
+			possible_tunnels = room.FindPossibleJoiningCorridorsToBox(border_box);
+
+			bool added = false;
+			while (!added && !possible_tunnels.empty())
+			{
+				int const t = Random::index(possible_tunnels);
+				Room& tunnel = possible_tunnels[t];
+
+				if (IsValidRoom(tunnel, /*check_border*/ false))
+				{
+					// But will the other side take it?
+					Axis sliding_axis = get_other_axis(join_axis);
+					Vec2 entry_point;
+					entry_point[join_axis] = border_box.min[join_axis];
+					entry_point[sliding_axis] = tunnel.GetBox().min[sliding_axis];
+
+					bool const success = other.TryReceiveTunnel(entry_point, join_axis);
+
+					if (success)
+					{
+						m_RoomVec.push_back(tunnel);
+						added = true;
+						++num_added;
+					}
+				}
+
+				Util::RemoveSwap(possible_tunnels, t);
+			}
 		}
 	}
 	
-	if (possible_tunnels.empty())
-	{
-		if (Debug::enabled(Debug::Map))
-		{
-			std::cout << "Failed to place tunnels.\n";
-		}
-		return;
-	}
-
-	// We'd prefer a shorter tunnel.
-	int longest = 0;
-	for (Room& room : possible_tunnels)
-	{
-		longest = std::max(longest, room.CorridorLength());
-	}
-
-	std::vector<int,Scratch<int>> weights;
-	for (Room& room : possible_tunnels)
-	{
-		weights.push_back(1 + longest - room.CorridorLength());
-	}
-
-	int num_added = 0;
-	while (num_added < numToAdd && !possible_tunnels.empty())
-	{
-		int const r = Random::index(possible_tunnels);
-
-		Room& room = possible_tunnels[r];
-
-		if (IsValidRoom(room, /*check_border*/ false))
-		{
-			// But will the other side take it?
-			Axis sliding_axis = get_other_axis(join_axis);
-			Vec2 entry_point;
-			entry_point[join_axis] = border_box.min[join_axis];
-			entry_point[sliding_axis] = room.GetBox().min[sliding_axis];
-
-			bool const success = other.TryReceiveTunnel(entry_point, join_axis);
-
-			if (success)
-			{
-				m_RoomVec.push_back(room);
-				++num_added;
-			}
-		}
-
-		// Fail or succeed, remove this option.
-		Util::RemoveSwap(possible_tunnels, r);
-	}
+	// Todo: We'd prefer a shorter tunnel, but I'm not sure of an efficient way to do that.
 
 	if (Debug::enabled(Debug::Map))
 	{

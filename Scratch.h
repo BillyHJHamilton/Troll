@@ -7,6 +7,8 @@ namespace Scratchpad
 {
 	void* alloc(int bytes, int alignment);
 	void free(void* p, int bytes);
+	
+	bool is_empty();
 }
 
 // Scratchpad allocator
