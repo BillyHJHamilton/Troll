@@ -10,9 +10,6 @@ Build/Win64/Save/
 # Local notes
 Local/
 
-# Built game
-Build/
-
 # User-specific files
 *.rsuser
 *.suo
