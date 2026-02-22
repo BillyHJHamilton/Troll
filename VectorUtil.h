@@ -161,6 +161,20 @@ namespace Util
 	}
 
 	template<typename VectorItemType, typename Alc>
+	void FillAscending(std::vector<VectorItemType,Alc>& vector, int num, VectorItemType startAt)
+	{
+		VectorItemType counter = startAt;
+
+		vector.clear();
+		vector.reserve(num);
+		for (int i = 0; i < num; ++i)
+		{
+			vector.push_back(counter);
+			++counter;
+		}
+	}
+
+	template<typename VectorItemType, typename Alc>
 	VectorItemType PopBack(std::vector<VectorItemType,Alc>& vector)
 	{
 		VectorItemType result = vector.back();
@@ -195,5 +209,16 @@ namespace Util
 	void SortDescending(std::vector<VectorItemType,Alc>& v)
 	{
 		std::sort(v.begin(), v.end(), std::greater<VectorItemType>());
+	}
+
+	template<typename VectorItemType, typename Alc>
+	void StableSortAscending(std::vector<VectorItemType,Alc>& v)
+	{
+		std::stable_sort(v.begin(), v.end());
+	}
+	template<typename VectorItemType, typename Alc>
+	void StableSortDescending(std::vector<VectorItemType,Alc>& v)
+	{
+		std::stable_sort(v.begin(), v.end(), std::greater<VectorItemType>());
 	}
 }

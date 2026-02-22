@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Geometry.h"
+#include "Scratch.h"
 #include "Stairs.h"
 
 enum class RoomType : int
@@ -14,6 +15,9 @@ enum class RoomType : int
 
 class Room
 {
+public:
+	using TempList = std::vector<Room,Scratch<Room>>;
+
 protected:
 	// Constructors to produce different room types.  Use the named versions below.
 	Room(Box2 box, RoomType roomType);
@@ -35,13 +39,16 @@ public:
 	bool IsChamber() const { return m_RoomType == RoomType::Chamber; }
 	bool IsCorridor() const { return m_RoomType == RoomType::Corridor; }
 	bool IsStairs() const { return m_RoomType == RoomType::Stairs; }
+	Axis CorridorAxis() const;
 	int CorridorLength() const;
 
 	bool JoinsToRoom(Room const &room) const; // Stairs and corridors only
 	bool VetoesRoom(Room const &newRoom) const;
-	std::vector<Room> FindPossibleJoiningCorridors(Room const & other) const;
-	Vec2 SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const;
-	std::vector<Room> FindPossibleJoiningStairs(bool goingUp) const;
+	Room::TempList FindPossibleJoiningCorridors(Room const & other) const;
+	Room::TempList FindPossibleJoiningCorridorsToBox(Box2 other_box) const;
+	Vec2 AsStairsSuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const;
+	Vec2 AsCorridorSuggestRandAdjoiningPositionForRoom(Vec2 roomSize, Vec2 joinEnd) const;
+	Room::TempList FindPossibleJoiningStairs(bool goingUp) const;
 
 	bool AnyRoomVetoes(const std::vector<Room> &roomVec) const;
 
@@ -59,8 +66,9 @@ private:
 	// polymorphic stuff
 	bool JoinsToRoomAsCorridor(Room const &room) const;
 	bool JoinsToRoomAsStairs(Room const &room) const;
-	Room FindPossibleJoiningCorridorCommon(Room const &other, Axis corridorAxis, int posOnOtherAxis) const;
-	std::vector<Room> FindPossibleJoiningCorridorsAsStairs(Room const & other) const;
+	Room FindPossibleJoiningCorridorCommon(Box2 other_box, Axis corridorAxis, int posOnOtherAxis) const;
+	Vec2 SuggestRandAdjoiningPositionForRoomCommon(Vec2 roomSize, Vec2 joinEnd, Axis axis, int dir) const;
+	Room::TempList FindPossibleJoiningCorridorsAsStairs(Room const & other) const;
 
 	Box2 m_Box; // Space occupied by the room, in (2D) global space
 	RoomType m_RoomType;

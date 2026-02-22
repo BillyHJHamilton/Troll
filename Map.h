@@ -29,6 +29,7 @@ public:
 	MapGenerator& get_generator();
 
 	Box2 get_box() const { return map_box; }
+	Box2 get_box_minus_border(int border_size) const;
 	int get_z() const { return global_z; }
 	float get_difficulty() const { return difficulty; }
 

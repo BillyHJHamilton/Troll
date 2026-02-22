@@ -8,6 +8,7 @@
 #include "Serialize.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
+#include "World.h"
 
 MapGenerator::MapGenerator(Map& owner)
 	: m_Map(owner)
@@ -28,18 +29,11 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 	s.srz_int(MinStairsProximity);
 	s.srz_int(MinFacingStairsProximity);
-
-	s.srz_int(UpStairsToAdd);
-	s.srz_int(DownStairsToAdd);
 }
 
 void MapGenerator::Serialize(ISerializer& s)
 {
-	srz_vector_size(s, m_SeedRooms, "m_SeedRooms");
-	for (Room& r : m_SeedRooms)
-	{
-		r.Serialize(s);
-	}
+	srz_vector(s, m_RequestedConnections, "m_RequestedConnections");
 
 	srz_vector_size(s, m_RoomVec, "m_RoomVec");
 	for (Room& r : m_RoomVec)
@@ -50,8 +44,6 @@ void MapGenerator::Serialize(ISerializer& s)
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
 
-	srz_vector(s, m_FailedStairs, "m_FailedStairs");
-
 	// Can't serialize this.  Should be setup during construction.
 	//Map& m_Map;
 
@@ -61,48 +53,9 @@ void MapGenerator::Serialize(ISerializer& s)
 	s.srz_bool(m_HasGenerated);
 }
 
-void MapGenerator::AddConnectingStairsAsSeedRooms(Map const& other)
+void MapGenerator::RequestConnection(int targetMapId, int numToAdd)
 {
-	int my_z = m_Map.get_z();
-
-	bool add_up;
-	if (other.get_z() == my_z + 1)
-	{
-		// Other level is above this one.
-		// We will add up stairs corresponding to its down stairs;
-		add_up = true;
-	}
-	else if (other.get_z() == my_z - 1)
-	{
-		// Other level is below this one.
-		// We will add down stairs corresponding to its up stairs.
-		add_up = false;
-	}
-	else
-	{
-		// Level is not one z away.  We can do nothing.
-		DebugBreak("Trying to connect stairs with z out of range.");
-		return;
-	}
-
-	for (const Stairs::Pair& pair : other.get_stairs_map())
-	{
-		Vec2 const start_pos = pair.first;
-		Stairs::Direction const dir = pair.second;
-		if (add_up != Stairs::is_up(dir))
-		{
-			Vec2 this_end = start_pos + Stairs::relative_move(dir).xy();
-			if (m_Map.contains(this_end))
-			{
-				Stairs::Direction const reverse = Stairs::reverse(dir);
-				Room new_stairs = Room::MakeStairs(this_end, reverse);
-				if (IsValidRoom(new_stairs, /*check border*/ true))
-				{
-					m_SeedRooms.push_back(new_stairs);
-				}
-			}
-		}
-	}
+	m_RequestedConnections.push_back({targetMapId, numToAdd});
 }
 
 void MapGenerator::Generate()
@@ -114,7 +67,10 @@ void MapGenerator::Generate()
 
 	PerfTimer perf0("map generate");
 
-	PlaceSeedRooms();
+	PlaceFirstRoomIfNeeded();
+
+	// TODO We likely require a more sophisticated approach to inner connectivity in the future.
+	MarkExistingRoomsJoined();
 
 	PlaceRooms();
 	assert(Util::Size(m_RoomVec) > 0);
@@ -123,8 +79,20 @@ void MapGenerator::Generate()
 
 	RemoveDisconnectedRooms();
 
-	AddExtraStairs(/*goingUp*/ true, m_Param.UpStairsToAdd);
-	AddExtraStairs(/*goingUp*/ false, m_Param.DownStairsToAdd);
+	for (RequestedConnection req : m_RequestedConnections)
+	{
+		// sorry, didn't want to #include World here, but seems necessary
+		Map& other_map = World::edit().edit_map(req.target_level);
+
+		if (other_map.get_z() == m_Map.get_z())
+		{
+			AddTunnelTo(other_map.get_generator(), req.num_to_add);
+		}
+		else
+		{
+			AddStairsTo(other_map.get_generator(), req.num_to_add);
+		}
+	}
 
 	AddExtraCorridors();
 
@@ -136,10 +104,309 @@ void MapGenerator::Generate()
 	}
 }
 
-//void MapGenerator::Print()
-//{
-//	m_Map.PrintMap();
-//}
+void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
+{
+	if (other.m_Map.get_z() != m_Map.get_z())
+	{
+		DebugBreak("Cannot tunnel with different z.");
+		return;
+	}
+
+	// Figure out what direction we are on.
+	Box2 const my_box = m_Map.get_box();
+	Box2 const other_box = other.m_Map.get_box();
+
+	Box2 border_box;
+	Axis join_axis;
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format(
+			"This box min=({},{}), max=({},{}).\n"
+			"Other box min=({},{}), max=({},{}).\n",
+			my_box.min.x, my_box.min.y, my_box.max(AXIS_X), my_box.max(AXIS_Y),
+			other_box.min.x, other_box.min.y, other_box.max(AXIS_X), other_box.max(AXIS_Y));
+	}
+
+	if (other_box.max().x == my_box.min.x &&
+		my_box.overlaps_on_axis(other_box, AXIS_Y))
+	{
+		// other map is to the west
+		join_axis = AXIS_X;
+		border_box = Box2(my_box.min.x - 1, my_box.min.y, 1, my_box.size.y);
+	}
+	else if (other_box.min.x == my_box.max().x &&
+		my_box.overlaps_on_axis(other_box, AXIS_Y))
+	{
+		// other map is to the east
+		join_axis = AXIS_X;
+		border_box = Box2(my_box.max().x, my_box.min.y, 1, my_box.size.y);
+	}
+	else if (other_box.max().y == my_box.min.y &&
+		my_box.overlaps_on_axis(other_box, AXIS_X))
+	{
+		// other map is to the north
+		join_axis = AXIS_Y;
+		border_box = Box2(my_box.min.x, my_box.min.y - 1, my_box.size.x, 1);
+	}
+	else if (other_box.min.y == my_box.max().y &&
+		my_box.overlaps_on_axis(other_box, AXIS_X))
+	{
+		// other map is to the south
+		join_axis = AXIS_Y;
+		border_box = Box2(my_box.min.x, my_box.max().y, my_box.size.x, 1);
+	}
+	else
+	{
+		DebugBreak("No tunnel connection possible.");
+		return;
+	}
+
+	// This will establish the area we are trying to link to.
+	border_box = border_box.intersection(other_box);
+
+	// Now try to join with each room
+	Room::TempList possible_tunnels;
+
+	for (Room& room : m_RoomVec)
+	{
+		if (room.GetRoomType() == RoomType::Chamber)
+		{
+			Util::Append(possible_tunnels, room.FindPossibleJoiningCorridorsToBox(border_box));
+		}
+	}
+	
+	if (possible_tunnels.empty())
+	{
+		// TODO should we log out that we failed?
+		return;
+	}
+
+	// We'd prefer a shorter tunnel.
+	int longest = 0;
+	for (Room& room : possible_tunnels)
+	{
+		longest = std::max(longest, room.CorridorLength());
+	}
+
+	std::vector<int,Scratch<int>> weights;
+	for (Room& room : possible_tunnels)
+	{
+		weights.push_back(1 + longest - room.CorridorLength());
+	}
+
+	int num_added = 0;
+	while (num_added < numToAdd && !possible_tunnels.empty())
+	{
+		int const r = Random::index(possible_tunnels);
+
+		Room& room = possible_tunnels[r];
+
+		if (IsValidRoom(room, /*check_border*/ false))
+		{
+			// But will the other side take it?
+			Axis sliding_axis = get_other_axis(join_axis);
+			Vec2 entry_point;
+			entry_point[join_axis] = border_box.min[join_axis];
+			entry_point[sliding_axis] = room.GetBox().min[sliding_axis];
+
+			bool const success = other.TryReceiveTunnel(entry_point, join_axis);
+
+			if (success)
+			{
+				m_RoomVec.push_back(room);
+				++num_added;
+			}
+		}
+
+		// Fail or succeed, remove this option.
+		Util::RemoveSwap(possible_tunnels, r);
+	}
+}
+
+void MapGenerator::AddStairsTo(MapGenerator& other, int numToAdd)
+{
+	int const my_z = m_Map.get_z();
+	int const other_z = other.m_Map.get_z();
+
+	if (std::abs(my_z - other_z) != 1)
+	{
+		DebugBreak("Invalid staircase range.");
+		return;
+	}
+	bool const goingUp = other_z > my_z;
+
+	Box2 const my_box = m_Map.get_box();
+	Box2 const other_box = other.m_Map.get_box();
+
+	if (!my_box.intersects(other_box))
+	{
+		DebugBreak("Maps do not overlap.");
+		return;
+	}
+
+	int numAdded = 0;
+
+	std::vector<int,Scratch<int>> roomIndices;
+	Util::FillAscending(roomIndices, Util::Size(m_RoomVec), 0);
+	Random::shuffle_vector(roomIndices);
+
+	Room::TempList possibleStairs;
+
+	// Outer loop: Try every room until we place all our stairs.
+	while(numAdded < numToAdd && !roomIndices.empty())
+	{
+		bool success = false;
+		int const r = roomIndices.back();
+		possibleStairs = m_RoomVec[r].FindPossibleJoiningStairs(goingUp);
+
+		RemoveInvalidRoomsFromOptions(possibleStairs, /*check_border*/ true);
+		RemoveBadlyPlacedStairsFromOptions(possibleStairs, other_box);
+
+		if (Util::Size(possibleStairs) > 0)
+		{
+			// Inner loop: We've got some stairs that look OK from this side.
+			// Now try them in random order until one looks OK from the receiving side.
+			Random::shuffle_vector(possibleStairs);
+			for (Room& newStairs : possibleStairs)
+			{
+				Stairs::Pair stairs_pair{
+					newStairs.StairsLocalEnd(),
+					newStairs.GetStairsDirection()
+				};
+				bool received = other.TryReceiveStairs(my_z, stairs_pair);
+				if (received)
+				{
+					m_RoomVec.push_back(newStairs);
+					++numAdded;
+					success = true;
+					break; // We succeeded, so exit inner loop.
+				}
+			}
+		}
+
+		if (success)
+		{
+			// We could try this room again later.  Stick it somewhere in the list.
+			std::swap(roomIndices.back(), roomIndices[Random::index(roomIndices)]);
+		}
+		else
+		{
+			// This room is tapped out.
+			roomIndices.pop_back();
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {}/{} {} stairs.\n",
+			numAdded, numToAdd, (goingUp ? " up" : " down"));
+	}
+
+}
+
+bool MapGenerator::TryReceiveTunnel(Vec2 entry_point, Axis corridor_axis)
+{
+	int dir;
+	if (entry_point[corridor_axis] == m_Map.get_box().min[corridor_axis])
+	{
+		dir = 1;
+	}
+	else
+	{
+		assert(entry_point[corridor_axis] == m_Map.get_box().inner_max(corridor_axis));
+		dir = -1;
+	}
+
+	// corridor could be, say, 1-3 units long.
+	std::vector<int,Scratch<int>> lengths;
+	Util::FillAscending(lengths, 3, 1);
+
+	Random::shuffle_vector(lengths);
+	for (int length : lengths)
+	{
+		Vec2 other_end = entry_point;
+		other_end[corridor_axis] += dir*(length - 1);
+		Box2 box = Box2::spanning(entry_point, other_end);
+		Room corridor = Room::MakeCorridor(box, corridor_axis);
+
+		if (IsValidRoom(corridor, /*checkBorder*/ false))
+		{
+			m_RoomVec.push_back(corridor);
+
+			// So far so good, but can we fit a landing?
+			bool const placed_room =
+				TryAddAdjoiningRoomForCorridor(m_RoomVec.back(), other_end);
+
+			if (placed_room)
+			{
+				return true;
+			}
+			else
+			{
+				// Bad room, no twinkie.
+				// Can try again at the next length.
+				m_RoomVec.pop_back();
+			}
+		}
+	}
+
+	return false;
+}
+
+bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
+{
+	int my_z = m_Map.get_z();
+	bool const from_above = sender_z > my_z;
+
+	if (std::abs(sender_z - my_z) != 1)
+	{
+		DebugBreak("Trying to connect stairs with z out of range.");
+		return false;
+	}
+
+	Vec2 const start_pos = stairs_pair.first;
+	Stairs::Direction const start_dir = stairs_pair.second;
+
+	if (from_above == Stairs::is_up(start_dir))
+	{
+		DebugBreak("Trying to connect stairs in wrong direction.");
+		return false;
+	}
+
+	Vec2 this_end = start_pos + Stairs::relative_move(start_dir).xy();
+	if (!m_Map.contains(this_end))
+	{
+		DebugBreak("Trying to connect stairs outside of map.");
+		return false;
+	}
+
+	Stairs::Direction const local_dir = Stairs::reverse(start_dir);
+	Room new_stairs = Room::MakeStairs(this_end, local_dir);
+
+	if (IsValidRoom(new_stairs, /*check border*/ true))
+	{
+		m_RoomVec.push_back(new_stairs);
+
+		// So far so good, but can we fit a landing?
+		bool const placed_landing = TryAddLandingRoom(m_RoomVec.back());
+
+		if (placed_landing)
+		{
+			return true;
+		}
+		else
+		{
+			// Bad room, no twinkie
+			m_RoomVec.pop_back();
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
 
 int MapGenerator::FindRoomAtPos(Vec2 pos)
 {
@@ -155,76 +422,23 @@ int MapGenerator::FindRoomAtPos(Vec2 pos)
 
 // Map Gen Helpers
 
-void MapGenerator::PlaceSeedRooms()
+void MapGenerator::PlaceFirstRoomIfNeeded()
 {
-	m_FailedStairs.clear();
-
-	if (Util::Size(m_SeedRooms) == 0)
+	if (Util::Size(m_RoomVec) == 0)
 	{
 		// Add a random chamber as our seed room.
 		Room newRoom = MakeRandomChamber();
-		m_SeedRooms.push_back(newRoom);
+		m_RoomVec.push_back(newRoom);
 	}
+}
 
-	for (Room const& room : m_SeedRooms)
-	{
-		assert(IsValidRoom(room, /*check border*/ false));
-	}
+void MapGenerator::MarkExistingRoomsJoined()
+{
+	m_JoinedRooms.clear();
 
-	// Copy the seeds into the main room vector.
-	// We also keep the original seeds in case we want to regenerate later.
-	m_RoomVec = m_SeedRooms;
-	int const totalSeedRooms = Util::Size(m_RoomVec);
-
-	int seedStairs = 0;
-	int seedCorridors = 0;
-	int seedChambers = 0;
-	int failedStairs = 0;
-	int landingChambers = 0;
-	int landingCorridors = 0;
-
-	for (int r = totalSeedRooms - 1; r >= 0; --r)
-	{	
-		if (m_RoomVec[r].IsCorridor())
-		{
-			++seedCorridors;
-		}
-		else if (m_RoomVec[r].IsChamber())
-		{
-			++seedChambers;
-		}
-		else if (m_RoomVec[r].IsStairs())
-		{
-			// Give each seed staircase a landing room, if we can.
-			bool const success = TryAddLanding(m_RoomVec[r], landingChambers, landingCorridors);
-
-			// If we failed to place a landing room, the staircase will end up disconnected.
-			// Remove it and note it in the failed rooms list.
-			if (success)
-			{
-				++seedStairs;
-			}
-			else
-			{
-				Stairs::Pair data{
-					m_RoomVec[r].StairsLocalEnd(),
-					m_RoomVec[r].GetStairsDirection()
-				};
-				m_FailedStairs.push_back(data);
-				Util::RemoveSwap(m_RoomVec, r);
-				++failedStairs;
-			}
-		}
-	}
-
-	if (Debug::enabled(Debug::Map))
-	{
-		std::cout << std::format(
-			"Seed Rooms: {} stairs ({} failed), {} chambers, and {} corridors.\n"
-			"Landings: added {} chambers, {} corridors.\n",
-			seedStairs, failedStairs, seedChambers, seedCorridors,
-			landingChambers, landingCorridors);
-	}
+	// Just a guess.
+	m_JoinedRooms.reserve(Util::Size(m_RoomVec) + 30);
+	Util::FillAscending(m_JoinedRooms, Util::Size(m_RoomVec), 0);
 }
 
 void MapGenerator::PlaceRooms()
@@ -256,22 +470,9 @@ void MapGenerator::PlaceRooms()
 	}
 }
 
+// Joining rooms with corridors
 void MapGenerator::AddJoiningCorridors()
 {
-	// Joining rooms with corridors
-	m_JoinedRooms.clear();
-	m_JoinedRooms.reserve(Util::Size(m_RoomVec) * 2); // guess, not exact
-
-	// Seed rooms are assumed to be connected into the rest of the world.
-	// They basically represent known entrances to the level.
-	// If necessary, we could add required "exit" rooms that need to be joined in.
-	// We may need a more sophisticated approach to connectivity in the future.
-	for (int i = 0; i < Util::Size(m_SeedRooms); ++i)
-	{
-		// Seed room should still be at the start of the list.
-		m_JoinedRooms.push_back(i);
-	}
-
 	assert(Util::Size(m_JoinedRooms) > 0);
 
 	int constexpr maxPasses = 4;
@@ -304,17 +505,16 @@ void MapGenerator::AddJoiningCorridors()
 				}
 
 				// If it joins up by good fortune, mark it joined.
-				if (m_RoomVec[r0].JoinsToRoom(m_RoomVec[r1])
-					|| m_RoomVec[r0].JoinsToRoom(m_RoomVec[r1]))
+				if (m_RoomVec[r0].JoinsToRoom(m_RoomVec[r1]))
 				{
 					m_JoinedRooms.push_back(r1);
 					continue;
 				}
 
-				std::vector<Room> possibleCorridors =
+				Room::TempList possibleCorridors =
 					m_RoomVec[r0].FindPossibleJoiningCorridors(m_RoomVec[r1]);
 
-				RemoveInavlidRoomsFromOptions(possibleCorridors);
+				RemoveInvalidRoomsFromOptions(possibleCorridors, /*check_border*/ true);
 
 				if (Util::Size(possibleCorridors) > 0)
 				{
@@ -361,38 +561,6 @@ void MapGenerator::RemoveDisconnectedRooms()
 	{
 		std::cout << std::format("Deleted disconnected rooms.\n",
 			deletedRooms);
-	}
-}
-
-void MapGenerator::AddExtraStairs(bool goingUp, int stairsToAdd)
-{
-	int constexpr c_MaxAttempts = 1000;
-
-	int numAdded = 0;
-	int attempts = 0;
-
-	while(attempts < c_MaxAttempts && numAdded < stairsToAdd)
-	{
-		++attempts;
-
-		int const r = Random::index(m_RoomVec);
-		std::vector<Room> possibleStairs =
-			m_RoomVec[r].FindPossibleJoiningStairs(goingUp);
-
-		RemoveInavlidRoomsFromOptions(possibleStairs);
-		RemoveBadlyPlacedStairsFromOptions(possibleStairs);
-
-		if (Util::Size(possibleStairs) > 0)
-		{
-			m_RoomVec.push_back(Random::from_vector(possibleStairs));
-			++numAdded;
-		}
-	}
-
-	if (Debug::enabled(Debug::Map))
-	{
-		std::cout << std::format("Placed {}/{} {} stairs in {} attempts.\n",
-			numAdded, stairsToAdd, (goingUp ? " up" : " down"), attempts);
 	}
 }
 
@@ -446,7 +614,7 @@ void MapGenerator::AddExtraCorridors()
 				continue;
 			}
 
-			std::vector<Room> possibleCorridors =
+			Room::TempList possibleCorridors =
 				m_RoomVec[r0].FindPossibleJoiningCorridors(m_RoomVec[r1]);
 
 			// Reduce probability of awkawardly sized extra corridors.
@@ -460,7 +628,7 @@ void MapGenerator::AddExtraCorridors()
 				}
 			}
 
-			RemoveInavlidRoomsFromOptions(possibleCorridors);
+			RemoveInvalidRoomsFromOptions(possibleCorridors, /*check_border*/ true);
 
 			if (Util::Size(possibleCorridors) > 0)
 			{
@@ -583,53 +751,27 @@ Room MapGenerator::MakeRandomChamber()
 
 bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder)
 {
-	Box2 boundingBox = m_Map.get_box();
-	if (checkBorder)
-	{
-		boundingBox.min += Vec2{m_Param.MapBorder, m_Param.MapBorder};
-		boundingBox.size -= Vec2{2*m_Param.MapBorder, 2*m_Param.MapBorder};
-	}
+	Box2 boundingBox = checkBorder ?
+		m_Map.get_box_minus_border(m_Param.MapBorder) :
+		m_Map.get_box();
 
 	return boundingBox.contains(room.GetBox())
 		&& !room.AnyRoomVetoes(m_RoomVec);
 }
 
-bool MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded)
+bool MapGenerator::TryAddLandingRoom(Room const &stairsRoom)
 {
 	int constexpr c_MaxAttempts = 100;
 	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
 	{
 		Vec2 roomSize = RandRoomSize();
 		Vec2 roomPos =
-			stairsRoom.SuggestRandAdjoiningPositionForRoom(roomSize);
+			stairsRoom.AsStairsSuggestRandAdjoiningPositionForRoom(roomSize);
 		Room adjoiningRoom = Room::MakeChamber(
 			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
 		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
 		{
 			m_RoomVec.push_back(adjoiningRoom);
-			++chambersAdded;
-			return true;
-		}
-	}
-
-	// Failed to place a landing room.
-	// Maybe we can do a corridor?
-	for (int r1 = 0; r1 < Util::Size(m_RoomVec); ++r1)
-	{
-		if (m_RoomVec[r1].IsStairs())
-		{
-			continue;
-		}
-
-		std::vector<Room> options =
-			stairsRoom.FindPossibleJoiningCorridors(m_RoomVec[r1]);
-				
-		RemoveInavlidRoomsFromOptions(options);
-
-		if (options.size() > 0)
-		{
-			m_RoomVec.push_back(options[0]);
-			++ corridorsAdded;
 			return true;
 		}
 	}
@@ -637,35 +779,105 @@ bool MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int
 	return false;
 }
 
-void MapGenerator::RemoveInavlidRoomsFromOptions(std::vector<Room> &options)
+bool MapGenerator::TryAddAdjoiningRoomForCorridor(Room const &corridorRoom, Vec2 joinEnd)
+{
+	int constexpr c_MaxAttempts = 100;
+	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
+	{
+		Vec2 roomSize = RandRoomSize();
+		Vec2 roomPos =
+			corridorRoom.AsCorridorSuggestRandAdjoiningPositionForRoom(roomSize, joinEnd);
+		Room adjoiningRoom = Room::MakeChamber(
+			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
+		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
+		{
+			m_RoomVec.push_back(adjoiningRoom);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+//bool MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded)
+//{
+//	int constexpr c_MaxAttempts = 100;
+//	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
+//	{
+//		Vec2 roomSize = RandRoomSize();
+//		Vec2 roomPos =
+//			stairsRoom.AsStairsSuggestRandAdjoiningPositionForRoom(roomSize);
+//		Room adjoiningRoom = Room::MakeChamber(
+//			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
+//		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
+//		{
+//			m_RoomVec.push_back(adjoiningRoom);
+//			++chambersAdded;
+//			return true;
+//		}
+//	}
+//
+//	// Failed to place a landing room.
+//	// Maybe we can do a corridor?
+//	for (int r1 = 0; r1 < Util::Size(m_RoomVec); ++r1)
+//	{
+//		if (m_RoomVec[r1].IsStairs())
+//		{
+//			continue;
+//		}
+//	
+//		Room::TempList options =
+//			stairsRoom.FindPossibleJoiningCorridors(m_RoomVec[r1]);
+//				
+//		RemoveInvalidRoomsFromOptions(options, /*check_border*/ true);
+//	
+//		if (options.size() > 0)
+//		{
+//			m_RoomVec.push_back(options[0]);
+//			++ corridorsAdded;
+//			return true;
+//		}
+//	}
+//
+//	return false;
+//}
+
+void MapGenerator::RemoveInvalidRoomsFromOptions(Room::TempList& options, bool check_border)
 {
 	// Remove invalid corridors from the list
 	options.erase(std::remove_if(options.begin(), options.end(),
-			[this](const Room &corridor)
+			[this,check_border](const Room &corridor)
 			{
-				return !IsValidRoom(corridor, /*check border*/ true);
+				return !IsValidRoom(corridor, check_border);
 			}
 		), options.cend());
 }
 
-void MapGenerator::RemoveBadlyPlacedStairsFromOptions(std::vector<Room> &options)
+void MapGenerator::RemoveBadlyPlacedStairsFromOptions(Room::TempList& options, Box2 otherMapBox)
 {
 	options.erase(std::remove_if(options.begin(), options.end(),
-			[this](const Room &new_stairs)
+			[this, otherMapBox](const Room &new_stairs)
 			{
-				return IsBadlyPlacedStairs(new_stairs);
+				return IsBadlyPlacedStairs(new_stairs, otherMapBox);
 			}
 		), options.cend());
 }
 
-bool MapGenerator::IsBadlyPlacedStairs(Room const& new_stairs)
+bool MapGenerator::IsBadlyPlacedStairs(Room const& newStairs, Box2 otherMapBox)
 {
+	if (!m_Map.contains(newStairs.GetBox()) ||
+		!otherMapBox.contains(newStairs.GetBox()))
+	{
+		return true;
+	}
+
 	// It's not good if it's going to run into the edge of the map.
-	Stairs::Direction dir = new_stairs.GetStairsDirection();
-	Vec2 stairsStart = new_stairs.StairsLocalEnd();
+	Stairs::Direction dir = newStairs.GetStairsDirection();
+	Vec2 stairsStart = newStairs.StairsLocalEnd();
 	Vec2 stairsVec = Stairs::relative_move(dir).xy();
 	Vec2 stairsGoTowards = stairsStart + (m_Param.MaxRoomDimension + 2)*stairsVec;
-	if (!m_Map.contains(stairsGoTowards))
+	if (!otherMapBox.contains(stairsGoTowards))
 	{
 		return true;
 	}
@@ -675,7 +887,7 @@ bool MapGenerator::IsBadlyPlacedStairs(Room const& new_stairs)
 	{
 		if (room.IsStairs())
 		{
-			if (AreStairsProblematic(new_stairs, room))
+			if (AreStairsProblematic(newStairs, room))
 			{
 				return true;
 			}

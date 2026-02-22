@@ -172,7 +172,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 	int num_near_player = 0;
 	int num_creature = 0;
 
-	for (BoxItr itr(map.get_box()); itr; ++itr)
+	for (BoxItr itr(map.get_box_minus_border(1)); itr; ++itr)
 	{
 		Vec2 const pos2 = *itr;
 		Vec3 const pos3 = itr->xyz(map.get_z());

@@ -42,6 +42,11 @@ void Room::Serialize(ISerializer& s)
 	s.srz_int(m_CorridorAxis);
 }
 
+Axis Room::CorridorAxis() const
+{
+	return m_CorridorAxis;
+}
+
 int Room::CorridorLength() const
 {
 	if (m_CorridorAxis == AXIS_X)
@@ -149,65 +154,65 @@ bool Room::JoinsToRoomAsStairs(Room const &room) const
 		&& !room.GetBox().contains(StairsLocalEnd());
 }
 
-std::vector<Room> Room::FindPossibleJoiningCorridors(Room const & other) const
+Room::TempList Room::FindPossibleJoiningCorridors(Room const & other) const
 {
-	std::vector<Room> output;
-
-	if (m_Box.intersects_or_adjacent(other.GetBox()))
-	{
-		return output;
-	}
-	
 	if (other.m_RoomType == RoomType::Stairs)
 	{
-		return output;
+		return Room::TempList();
 	}
 
-	// Special case for stairs
-	if (m_RoomType == RoomType::Stairs)
+	return FindPossibleJoiningCorridorsToBox(other.GetBox());
+}
+
+Room::TempList Room::FindPossibleJoiningCorridorsToBox(Box2 other_box) const
+{
+	if (m_Box.intersects_or_adjacent(other_box))
 	{
-		return FindPossibleJoiningCorridorsAsStairs(other);
+		return Room::TempList();
 	}
 
 	// See in what manner we might join the rooms
 	Axis overlapAxis;
-	if (m_Box.overlaps_on_axis(other.GetBox(), AXIS_X))
+	if (m_Box.overlaps_on_axis(other_box, AXIS_X))
 	{
 		overlapAxis = AXIS_X;
 	}
-	else if (m_Box.overlaps_on_axis(other.GetBox(), AXIS_Y))
+	else if (m_Box.overlaps_on_axis(other_box, AXIS_Y))
 	{
 		overlapAxis = AXIS_Y;
 	}
 	else
 	{
-		return output;
+		return Room::TempList();
 	}
 
 	Axis corridorAxis = get_other_axis(overlapAxis);
 
-	int minPos = std::max(m_Box.min[overlapAxis], other.GetBox().min[overlapAxis]);
-	int maxPos = std::min(m_Box.max()[overlapAxis], other.GetBox().max()[overlapAxis]);
+	int minPos = std::max(m_Box.min[overlapAxis], other_box.min[overlapAxis]);
+	int maxPos = std::min(m_Box.max()[overlapAxis], other_box.max()[overlapAxis]);
+
+	Room::TempList output;
+	output.reserve(maxPos + 1 - minPos);
 
 	for (int pos = minPos; pos <= maxPos; pos++)
 	{
-		output.push_back(FindPossibleJoiningCorridorCommon(other, corridorAxis, pos));
+		output.push_back(FindPossibleJoiningCorridorCommon(other_box, corridorAxis, pos));
 	}
 
 	return output;
 }
 
-Room Room::FindPossibleJoiningCorridorCommon(Room const &other, Axis corridorAxis, int posOnOtherAxis) const
+Room Room::FindPossibleJoiningCorridorCommon(Box2 other_box, Axis corridorAxis, int posOnOtherAxis) const
 {
 	Axis overlapAxis = get_other_axis(corridorAxis);
 
 	// Make this a helper function
-	if (other.GetBox().min[corridorAxis] > m_Box.min[corridorAxis])
+	if (other_box.min[corridorAxis] > m_Box.min[corridorAxis])
 	{
 		// It's on the positive side
 		Box2 corridorBox;
 		corridorBox.min[corridorAxis] = m_Box.max()[corridorAxis];
-		corridorBox.size[corridorAxis] = other.GetBox().min[corridorAxis] - corridorBox.min[corridorAxis];
+		corridorBox.size[corridorAxis] = other_box.min[corridorAxis] - corridorBox.min[corridorAxis];
 		corridorBox.min[overlapAxis] = posOnOtherAxis;
 		corridorBox.size[overlapAxis] = 1;
 		return MakeCorridor(corridorBox, corridorAxis);
@@ -216,7 +221,7 @@ Room Room::FindPossibleJoiningCorridorCommon(Room const &other, Axis corridorAxi
 	{
 		// It's on the negative side
 		Box2 corridorBox;
-		corridorBox.min[corridorAxis] = other.GetBox().max()[corridorAxis];
+		corridorBox.min[corridorAxis] = other_box.max()[corridorAxis];
 		corridorBox.size[corridorAxis] = m_Box.min[corridorAxis] - corridorBox.min[corridorAxis];
 		corridorBox.min[overlapAxis] = posOnOtherAxis;
 		corridorBox.size[overlapAxis] = 1;
@@ -224,9 +229,9 @@ Room Room::FindPossibleJoiningCorridorCommon(Room const &other, Axis corridorAxi
 	}
 }
 
-std::vector<Room> Room::FindPossibleJoiningCorridorsAsStairs(Room const & other) const
+Room::TempList Room::FindPossibleJoiningCorridorsAsStairs(Room const & other) const
 {
-	std::vector<Room> output;
+	Room::TempList output;
 
 	Axis corridorAxis = StairsAxis(m_StairsDirection);
 	Axis overlapAxis = get_other_axis(corridorAxis);
@@ -245,11 +250,11 @@ std::vector<Room> Room::FindPossibleJoiningCorridorsAsStairs(Room const & other)
 
 	// Find the one possible corridor and return it.
 	int pos = StairsLocalEnd()[overlapAxis];
-	output.push_back(FindPossibleJoiningCorridorCommon(other, corridorAxis, pos));
+	output.push_back(FindPossibleJoiningCorridorCommon(other.GetBox(), corridorAxis, pos));
 	return output;
 }
 
-Vec2 Room::SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const
+Vec2 Room::AsStairsSuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const
 {
 	if (m_RoomType != RoomType::Stairs)
 	{
@@ -257,30 +262,65 @@ Vec2 Room::SuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const
 		return Vec2{0,0};
 	}
 
-	Vec2 joinPos = StairsLocalEnd() + Stairs::joining_vector(m_StairsDirection);
+	Axis axis = StairsAxis(m_StairsDirection);
+	int dir = Stairs::joining_vector(m_StairsDirection)[axis];
+
+	return SuggestRandAdjoiningPositionForRoomCommon(roomSize, StairsLocalEnd(), axis, dir);
+}
+
+Vec2 Room::AsCorridorSuggestRandAdjoiningPositionForRoom(Vec2 roomSize, Vec2 joinEnd) const
+{
+	if (m_RoomType != RoomType::Corridor)
+	{
+		DebugBreak("You are only supposed to use this for corridors.");
+		return Vec2{0,0};
+	}
+
+	Axis axis = CorridorAxis();
+
+	int dir;
+	if (joinEnd == m_Box.min)
+	{
+		dir = -1;
+	}
+	else if (joinEnd == m_Box.inner_max())
+	{
+		dir = 1;
+	}
+	else
+	{
+		DebugBreak("Join end does not correspond to either end of corridor.");
+		return Vec2{0,0};
+	}
+
+	return SuggestRandAdjoiningPositionForRoomCommon(roomSize, joinEnd, axis, dir);
+}
+
+Vec2 Room::SuggestRandAdjoiningPositionForRoomCommon(Vec2 roomSize, Vec2 joinEnd, Axis axis, int dir) const
+{
+	Vec2 joinPosInRoom = joinEnd;
+	joinPosInRoom[axis] += dir;
 
 	Vec2 output;
 
 	// Find the near side and far side of the room, and return the min of those
 	// since that is where the origin-corner will be.
-	Axis stairsAxis = StairsAxis(m_StairsDirection);
-	int nearSide = joinPos[stairsAxis];
-	int farSide = nearSide
-		+ (roomSize[stairsAxis]-1) * Stairs::joining_vector(m_StairsDirection)[stairsAxis];
-	output[stairsAxis] = std::min(nearSide, farSide);
+	int nearSide = joinPosInRoom[axis];
+	int farSide = nearSide + (roomSize[axis]-1) * dir;
+	output[axis] = std::min(nearSide, farSide);
 
 	// Pick a random place side to side
-	Axis slidingAxis = get_other_axis(stairsAxis);
-	int minPos = joinPos[slidingAxis] - roomSize[slidingAxis] + 1;
-	int maxPos = joinPos[slidingAxis];
+	Axis slidingAxis = get_other_axis(axis);
+	int minPos = joinPosInRoom[slidingAxis] - roomSize[slidingAxis] + 1;
+	int maxPos = joinPosInRoom[slidingAxis];
 	output[slidingAxis] = Random::in_range(minPos, maxPos);
 
 	return output;
 }
 
-std::vector<Room> Room::FindPossibleJoiningStairs(bool goingUp) const
+Room::TempList Room::FindPossibleJoiningStairs(bool goingUp) const
 {
-	std::vector<Room> output;
+	Room::TempList output;
 
 	// only put them on chambers for now
 	if (!IsChamber())

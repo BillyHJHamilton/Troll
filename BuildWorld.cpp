@@ -10,39 +10,62 @@ void BuildWorld()
 {
 	World& world = World::edit();
 
-	Box2 const map1_box = Box2(0, 0, 30, 30);
-	int const map1_id = world.add_map(0, 0.0f, map1_box, Terrain::Wall);
-	MapGenerator& gen1 = world.edit_map(0).get_generator();
-	gen1.Generate();
+	//Box2 const map_box_0 = Box2(0, 0, 30, 30);
+	//Box2 const map_box_e = Box2(30, 0, 50, 16);
+	//Box2 const map_box_w = Box2(-30, 0, 30, 30);
+	//Box2 const map_box_n = Box2(0, -30, 30, 30);
+	//Box2 const map_box_s = Box2(0, 30, 20, 60);
+	//
+	//world.add_map(0, 0, map_box_0, Terrain::Wall);
+	//world.add_map(0, 0, map_box_e, Terrain::Wall);
+	//world.add_map(0, 0, map_box_w, Terrain::Wall);
+	//world.add_map(0, 0, map_box_n, Terrain::Wall);
+	//world.add_map(0, 0, map_box_s, Terrain::Wall);
+	//
+	//world.edit_map(0).get_generator().RequestConnection(1, 1);
+	//world.edit_map(0).get_generator().RequestConnection(2, 2);
+	//world.edit_map(0).get_generator().RequestConnection(3, 3);
+	//world.edit_map(0).get_generator().RequestConnection(4, 2);
+	//
+	//world.edit_map(0).get_generator().Generate();
+	//world.edit_map(1).get_generator().Generate();
+	//world.edit_map(2).get_generator().Generate();
+	//world.edit_map(3).get_generator().Generate();
+	//world.edit_map(4).get_generator().Generate();
 
-	// Now let's create a number of additional levels on top!
-	int constexpr c_NumLevels = 6;
-	for (int z = 1; z <= c_NumLevels; ++z)
+	Box2 const map_box1 = Box2(0, 0, 30, 30);
+
+	// Create a stack of levels.
+	int constexpr c_MaxZ = 6;
+
+	// Pass 1 - allocate levels
+	for (int z = 0; z <= c_MaxZ; ++z)
 	{
-		int const map_id = world.add_map(z, (z * 0.5f), map1_box, Terrain::Wall);
+		int const map_id = world.add_map(z, (z * 0.5f), map_box1, Terrain::Wall);
+		assert(map_id == z);
+	}
+	//int const dungeon_id = world.add_map(-1, (4.0f), map_box1, Terrain::Wall);
+
+	// Pass 2 - run generator
+	for (int z = 0; z <= c_MaxZ; ++z)
+	{
+		MapGenerator& generator = world.edit_map(z).get_generator();
 
 		MapGenerator::Parameters param{};
-		if (z == c_NumLevels)
-		{
-			param.UpStairsToAdd = 0;
-		}
-		else
-		{
-			param.UpStairsToAdd = Random::in_range(2,3);
-		}
-
-		MapGenerator& generator = world.edit_map(map_id).get_generator();
 		generator.SetParameters(param);
-		generator.AddConnectingStairsAsSeedRooms(world.read_map(map_id - 1));
-		generator.Generate();
 
-		// Post-process to remove failed stairs from previous level.
-		// This is very inelegant (and leaves invalid rooms in the MapGenerator metadata)
-		// but a better solution would be more difficult to implement.
-		for (Stairs::Pair pair : generator.GetFailedStairs())
+		//if (z == 0)
+		//{
+		//	generator.RequestConnection(dungeon_id, 1);
+		//}
+
+		if (z < c_MaxZ)
 		{
-			Vec2 other_end = pair.first + Stairs::relative_move(pair.second).xy();
-			world.edit_map(map_id - 1).remove_stairs(other_end);
+			generator.RequestConnection(z + 1, Random::in_range(2,3));
 		}
+
+		generator.Generate();
 	}
+
+	//world.edit_map(dungeon_id).get_generator().Generate();
 }

@@ -200,16 +200,16 @@ void handle_next_input ()
 		}
 
 		// Map Debug
-		//if (key == TK_PERIOD)
-		//{
-		//	Player::handle().move(Player::pos() + Vec3{0,0,-1});
-		//	return;
-		//}
-		//if (key == TK_COMMA)
-		//{
-		//	Player::handle().move(Player::pos() + Vec3{0,0,1});
-		//	return;
-		//}
+		if (key == TK_P)
+		{
+			Player::handle().move(Player::pos() + Vec3{0,0,1});
+			return;
+		}
+		if (key == TK_SEMICOLON)
+		{
+			Player::handle().move(Player::pos() + Vec3{0,0,-1});
+			return;
+		}
 
 		// unhandled
 		return;
