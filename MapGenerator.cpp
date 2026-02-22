@@ -116,53 +116,18 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	Box2 const my_box = m_Map.get_box();
 	Box2 const other_box = other.m_Map.get_box();
 
-	Box2 border_box;
-	Axis join_axis;
-
-	if (Debug::enabled(Debug::Map))
+	CompassDirection const adjacent_edge = my_box.adjacent_edge(other_box);
+	if (adjacent_edge == c_CompassInvalid)
 	{
-		std::cout << std::format(
-			"This box min=({},{}), max=({},{}).\n"
-			"Other box min=({},{}), max=({},{}).\n",
-			my_box.min.x, my_box.min.y, my_box.max(AXIS_X), my_box.max(AXIS_Y),
-			other_box.min.x, other_box.min.y, other_box.max(AXIS_X), other_box.max(AXIS_Y));
+		DebugBreak("No tunnel connection possible as maps are not adjacent.");
+		return;		
 	}
 
-	if (other_box.max().x == my_box.min.x &&
-		my_box.overlaps_on_axis(other_box, AXIS_Y))
-	{
-		// other map is to the west
-		join_axis = AXIS_X;
-		border_box = Box2(my_box.min.x - 1, my_box.min.y, 1, my_box.size.y);
-	}
-	else if (other_box.min.x == my_box.max().x &&
-		my_box.overlaps_on_axis(other_box, AXIS_Y))
-	{
-		// other map is to the east
-		join_axis = AXIS_X;
-		border_box = Box2(my_box.max().x, my_box.min.y, 1, my_box.size.y);
-	}
-	else if (other_box.max().y == my_box.min.y &&
-		my_box.overlaps_on_axis(other_box, AXIS_X))
-	{
-		// other map is to the north
-		join_axis = AXIS_Y;
-		border_box = Box2(my_box.min.x, my_box.min.y - 1, my_box.size.x, 1);
-	}
-	else if (other_box.min.y == my_box.max().y &&
-		my_box.overlaps_on_axis(other_box, AXIS_X))
-	{
-		// other map is to the south
-		join_axis = AXIS_Y;
-		border_box = Box2(my_box.min.x, my_box.max().y, my_box.size.x, 1);
-	}
-	else
-	{
-		DebugBreak("No tunnel connection possible.");
-		return;
-	}
+	Axis const join_axis = (adjacent_edge == c_CompassEast || adjacent_edge == c_CompassWest) ?
+		AXIS_X : AXIS_Y;
 
-	// This will establish the area we are trying to link to.
+	// Establish the area we are trying to link to.
+	Box2 border_box = my_box.outer_border_box(adjacent_edge);
 	border_box = border_box.intersection(other_box);
 
 	// Now try to join with each room
@@ -178,7 +143,10 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	
 	if (possible_tunnels.empty())
 	{
-		// TODO should we log out that we failed?
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << "Failed to place tunnels.\n";
+		}
 		return;
 	}
 
@@ -222,6 +190,11 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 		// Fail or succeed, remove this option.
 		Util::RemoveSwap(possible_tunnels, r);
 	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {}/{} tunnels.\n", num_added, numToAdd);
+	}
 }
 
 void MapGenerator::AddStairsTo(MapGenerator& other, int numToAdd)
@@ -247,8 +220,7 @@ void MapGenerator::AddStairsTo(MapGenerator& other, int numToAdd)
 
 	int numAdded = 0;
 
-	std::vector<int,Scratch<int>> roomIndices;
-	Util::FillAscending(roomIndices, Util::Size(m_RoomVec), 0);
+	IntTempList roomIndices = Util::GetIndices(m_RoomVec);
 	Random::shuffle_vector(roomIndices);
 
 	Room::TempList possibleStairs;
@@ -319,7 +291,7 @@ bool MapGenerator::TryReceiveTunnel(Vec2 entry_point, Axis corridor_axis)
 	}
 
 	// corridor could be, say, 1-3 units long.
-	std::vector<int,Scratch<int>> lengths;
+	IntTempList lengths;
 	Util::FillAscending(lengths, 3, 1);
 
 	Random::shuffle_vector(lengths);

@@ -327,6 +327,23 @@ namespace std
 }
 
 //------------------------------------------------------------------------------
+// Interval class (1D box?)
+
+struct Interval
+{
+	int min = 0;
+	int max = 0;
+
+	int length() { return max - min; }
+	bool empty() { return length() <= 0; }
+
+	bool overlaps(Interval other) const;
+	Interval overlap(Interval other) const;
+
+	static Interval spanning(int a, int b);
+};
+
+//------------------------------------------------------------------------------
 // Integer Box 2D class
 
 struct Box2
@@ -334,6 +351,11 @@ struct Box2
 	Box2() = default;
 	Box2(Vec2 m, Vec2 s) : min(m), size(s) {}
 	Box2(int x, int y, int w, int h) : min{x,y}, size{w,h} {}
+
+	Box2(Interval xi, Interval yi) :
+		min{xi.min, yi.min},
+		size{xi.max - xi.min, yi.max - yi.min}
+	{}
 
 	static Box2 spanning(Vec2 p0, Vec2 p1)
 	{
@@ -354,14 +376,29 @@ struct Box2
 	Vec2 inner_max() const { return max() - Vec2{1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
 
-	bool contains (Vec2 const & v) const;
-	bool intersects (Box2 const & other) const;
-	bool intersects_or_adjacent (Box2 const & other) const;
-	bool contains (Box2 const & other) const;
-	bool overlaps_on_axis(Box2 const & other, Axis a) const;
 	int area () const { return size.x * size.y; }
 
+	bool contains (Vec2 const & v) const;
+	bool contains (Box2 const & other) const;
+
+	bool intersects (Box2 const & other) const;
+	bool intersects_or_adjacent (Box2 const & other) const;
 	Box2 intersection (Box2 const & other) const;
+
+	// Returns c_CompassNorth if other is adjacent to this box on the north side, etc.
+	// Return c_CompassInvalid if boxes are not touching.
+	CompassDirection adjacent_edge (Box2 const& other) const;
+
+	Interval interval_on_axis (Axis a) const;
+	bool overlaps_on_axis(Box2 const & other, Axis a) const;
+	Interval overlap_on_axis(Box2 other, Axis a) const;
+
+	Box2 minus_border(int border_size) const;
+	Box2 plus_border(int border_size) const;
+	Vec2 snap_to_inner_border(Vec2 v, CompassDirection edge) const;
+	Vec2 snap_to_outer_border(Vec2 v, CompassDirection edge) const;
+	Box2 inner_border_box(CompassDirection edge) const;
+	Box2 outer_border_box(CompassDirection edge) const;
 };
 
 //------------------------------------------------------------------------------

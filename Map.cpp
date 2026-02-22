@@ -65,14 +65,6 @@ MapGenerator& Map::get_generator()
 	return *generator;
 }
 
-Box2 Map::get_box_minus_border(int border_size) const
-{
-	Box2 box = get_box();
-	box.min += {border_size, border_size};
-	box.size -= {2*border_size, 2*border_size};
-	return box;
-}
-
 Terrain::Type Map::get_terrain(Vec2 global_pos) const
 {
 	Vec2 const local = global_to_local(global_pos);

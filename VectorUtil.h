@@ -1,8 +1,12 @@
 #pragma once
 
+#include "Scratch.h"
+
 #include <algorithm>
 #include <memory>
 #include <vector>
+
+using IntTempList = std::vector<int,Scratch<int>>;
 
 namespace Util
 {
@@ -220,5 +224,14 @@ namespace Util
 	void StableSortDescending(std::vector<VectorItemType,Alc>& v)
 	{
 		std::stable_sort(v.begin(), v.end(), std::greater<VectorItemType>());
+	}
+	
+	// Get a list of the indices in another vector.
+	template<typename VectorItemType, typename Alc>
+	IntTempList GetIndices(std::vector<VectorItemType,Alc>& v)
+	{
+		IntTempList t;
+		FillAscending(t, Size(v), 0);
+		return t;
 	}
 }

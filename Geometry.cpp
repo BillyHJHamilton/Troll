@@ -1,10 +1,10 @@
 #include "Geometry.h"
 
+#include "Debug.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-
-#include <iostream>
 
 //------------------------------------------------------------------------------
 // Vec2
@@ -111,6 +111,24 @@ int chessboard_distance(Vec3 p0, Vec3 p1)
 }
 
 //------------------------------------------------------------------------------
+// Intervals
+
+bool Interval::overlaps(Interval other) const
+{
+	return other.max > min && other.min < max;
+}
+
+Interval Interval::overlap(Interval other) const
+{
+	return {std::max(min, other.min), std::min(max, other.max)};
+}
+
+/*static*/ Interval Interval::spanning(int a, int b)
+{
+	return Interval{std::min(a,b), std::max(a,b)};
+}
+
+//------------------------------------------------------------------------------
 // Boxen
 
 bool Box2::contains (const Vec2 &v) const
@@ -119,6 +137,17 @@ bool Box2::contains (const Vec2 &v) const
 		&& v.y < max().y
 		&& v.x >= min.x
 		&& v.y >= min.y;
+}
+
+bool Box2::contains (const Box2 &other) const
+{
+	if (other.min.x < min.x
+		|| other.min.y < min.y
+		|| other.max().x > max().x
+		|| other.max().y > max().y)
+		return false;
+	else
+		return true;
 }
 
 // Use >= and <= because max is +1 past the last occupied cell.
@@ -140,29 +169,140 @@ bool Box2::intersects_or_adjacent (const Box2 &other) const
 	return temp.intersects(other);
 }
 
-bool Box2::contains (const Box2 &other) const
-{
-	if (other.min.x < min.x
-		|| other.min.y < min.y
-		|| other.max().x > max().x
-		|| other.max().y > max().y)
-		return false;
-	else
-		return true;
-}
-
-bool Box2::overlaps_on_axis(Box2 const & other, Axis axis) const
-{
-	return other.max()[axis] > min[axis]
-		&& other.min[axis] < max()[axis];
-}
-
 Box2 Box2::intersection (Box2 const & other) const
 {
 	assert(intersects(other));
 	Vec2 new_min = componentwise_max(min, other.min);
 	Vec2 new_max = componentwise_min(max(), other.max());
 	return {new_min, new_max - new_min};
+}
+
+CompassDirection Box2::adjacent_edge (Box2 const& other) const
+{
+	if (other.min.x == max(AXIS_X) && overlaps_on_axis(other, AXIS_Y))
+	{
+		return c_CompassEast;
+	}
+	else if (other.max(AXIS_X) == min.x && overlaps_on_axis(other, AXIS_Y))
+	{
+		return c_CompassWest;
+	}
+	else if (other.max(AXIS_Y) == min.y && overlaps_on_axis(other, AXIS_X))
+	{
+		return c_CompassNorth;
+	}
+	else if (other.min.y == max(AXIS_Y) && overlaps_on_axis(other, AXIS_X))
+	{
+		return c_CompassSouth;
+	}
+	else
+	{
+		return c_CompassInvalid;
+	}
+}
+
+Interval Box2::interval_on_axis (Axis a) const
+{
+	return {min[a], max(a)};
+}
+
+bool Box2::overlaps_on_axis(Box2 const & other, Axis a) const
+{
+	return interval_on_axis(a).overlaps(other.interval_on_axis(a));
+}
+
+Interval Box2::overlap_on_axis(Box2 other, Axis a) const
+{
+	return interval_on_axis(a).overlap(other.interval_on_axis(a));
+}
+
+Box2 Box2::minus_border(int border_size) const
+{
+	assert(border_size*2 < size.x && border_size*2 < size.y);
+	return Box2{
+		min + Vec2{border_size, border_size},
+		size - 2*Vec2{border_size, border_size}
+	};
+}
+
+Box2 Box2::plus_border(int border_size) const
+{
+	return Box2{
+		min - Vec2{border_size, border_size},
+		size + 2*Vec2{border_size, border_size}
+	};
+}
+
+Vec2 Box2::snap_to_inner_border(Vec2 v, CompassDirection edge) const
+{
+	switch(edge)
+	{
+		case c_CompassEast:
+			return Vec2{inner_max(AXIS_X), v.y};
+		case c_CompassNorth:
+			return Vec2{v.x, min.y};
+		case c_CompassWest:
+			return Vec2{min.x, v.y};
+		case c_CompassSouth:
+			return Vec2{v.x, inner_max(AXIS_Y)};
+		default:
+			DebugBreak();
+			return v;
+	}
+}
+
+Vec2 Box2::snap_to_outer_border(Vec2 v, CompassDirection edge) const
+{
+	switch(edge)
+	{
+		case c_CompassEast:
+			return Vec2{max(AXIS_X), v.y};
+		case c_CompassNorth:
+			return Vec2{v.x, min.y - 1};
+		case c_CompassWest:
+			return Vec2{min.x - 1, v.y};
+		case c_CompassSouth:
+			return Vec2{v.x, max(AXIS_Y)};
+		default:
+			DebugBreak();
+			return v;
+	}
+}
+
+Box2 Box2::inner_border_box(CompassDirection edge) const
+{
+	switch(edge)
+	{
+		case c_CompassEast:
+			return Box2{inner_max(AXIS_X), min.y, 0, size.y};
+		case c_CompassNorth:
+			return Box2{min.x, min.y, size.x, 1};
+		case c_CompassWest:
+			return Box2{min.x, min.y, 1, size.y};
+		case c_CompassSouth:
+			return Box2{min.x, inner_max(AXIS_Y), size.x, 1};
+		default:
+			DebugBreak();
+			return *this;
+	}
+}
+
+Box2 Box2::outer_border_box(CompassDirection edge) const
+{
+	switch(edge)
+	{
+		case c_CompassEast:
+			return Box2{max(AXIS_X), min.y, 0, size.y};
+		case c_CompassNorth:
+			return Box2{min.x, min.y - 1, size.x, 1};
+		case c_CompassWest:
+			return Box2{min.x - 1, min.y, 1, size.y};
+		case c_CompassSouth:
+			return Box2{min.x, max(AXIS_Y), size.x, 1};
+		default:
+			DebugBreak();
+			return *this;
+	}
 }
 
 //------------------------------------------------------------------------------
