@@ -108,8 +108,8 @@ public:
 	operator bool () const { return !finished(); }
 	CompassDirection operator* () const { return get(); }
 	CompassDirection operator++() { advance(); return dir; }
-	bool operator== (CompassItr const& rhs) const { return dir == rhs.dir; } 
-	bool operator!= (CompassItr const& rhs) const { return dir != rhs.dir; } 
+	bool operator== (CompassItr rhs) const { return dir == rhs.dir; } 
+	bool operator!= (CompassItr rhs) const { return dir != rhs.dir; } 
 	bool operator== (CompassDirection rhs) const { return dir == rhs; } 
 	bool operator!= (CompassDirection rhs) const { return dir != rhs; } 
 	// post-increment not provided to avoid accidental copy
@@ -119,44 +119,44 @@ private:
 	CompassDirection dir;
 };
 
-inline bool operator== (Vec2 const & lhs, Vec2 const & rhs)
+inline bool operator== (Vec2 lhs, Vec2 rhs)
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-inline bool operator!= (Vec2 const & lhs, Vec2 const & rhs)
+inline bool operator!= (Vec2 lhs, Vec2 rhs)
 {
 	return !(operator==(lhs, rhs));
 }
 
-inline Vec2 operator+ (Vec2 const & lhs, Vec2 const & rhs)
+inline Vec2 operator+ (Vec2 lhs, Vec2 rhs)
 {
 	return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 
-inline Vec2 operator- (Vec2 const & lhs, Vec2 const & rhs)
+inline Vec2 operator- (Vec2 lhs, Vec2 rhs)
 {
 	return {lhs.x - rhs.x, lhs.y - rhs.y};
 }
 
-inline Vec2 operator* (int lhs, Vec2 const & rhs)
+inline Vec2 operator* (int lhs, Vec2 rhs)
 {
 	return {lhs * rhs.x, lhs * rhs.y};
 }
 
-inline Vec2 operator* (Vec2 const & lhs, int rhs)
+inline Vec2 operator* (Vec2 lhs, int rhs)
 {
 	return {lhs.x * rhs, lhs.y * rhs};
 }
 
-inline Vec2 const & operator+= (Vec2 & lhs, Vec2 const & rhs)
+inline Vec2 const & operator+= (Vec2 & lhs, Vec2 rhs)
 {
 	lhs.x += rhs.x;
 	lhs.y += rhs.y;
 	return lhs;
 }
 
-inline Vec2 const & operator-= (Vec2 & lhs, Vec2 const & rhs)
+inline Vec2 const & operator-= (Vec2 & lhs, Vec2 rhs)
 {
 	lhs.x -= rhs.x;
 	lhs.y -= rhs.y;
@@ -185,7 +185,7 @@ namespace std
 	template <>
 	struct hash<Vec2>
 	{
-		size_t operator()(const Vec2& v) const
+		size_t operator()(Vec2 v) const
 		{
 			return static_cast<size_t>(v.x) & (static_cast<size_t>(v.y) << 32);
 		}
@@ -312,7 +312,7 @@ namespace std
 	template <>
 	struct hash<Vec3>
 	{
-		size_t operator()(const Vec3& v) const
+		size_t operator()(Vec3 v) const
 		{
 			// I doubt this is a really good hash function, but what I've done is
 			// chop the z in half and xor the halves with the upper halves of x and y.
@@ -378,19 +378,19 @@ struct Box2
 
 	int area () const { return size.x * size.y; }
 
-	bool contains (Vec2 const & v) const;
-	bool contains (Box2 const & other) const;
+	bool contains (Vec2 v) const;
+	bool contains (Box2 other) const;
 
-	bool intersects (Box2 const & other) const;
-	bool intersects_or_adjacent (Box2 const & other) const;
-	Box2 intersection (Box2 const & other) const;
+	bool intersects (Box2 other) const;
+	bool intersects_or_adjacent (Box2 other) const;
+	Box2 intersection (Box2 other) const;
 
 	// Returns c_CompassNorth if other is adjacent to this box on the north side, etc.
 	// Return c_CompassInvalid if boxes are not touching.
-	CompassDirection adjacent_edge (Box2 const& other) const;
+	CompassDirection adjacent_edge (Box2 other) const;
 
 	Interval interval_on_axis (Axis a) const;
-	bool overlaps_on_axis(Box2 const & other, Axis a) const;
+	bool overlaps_on_axis(Box2 other, Axis a) const;
 	Interval overlap_on_axis(Box2 other, Axis a) const;
 
 	Box2 minus_border(int border_size) const;
@@ -422,12 +422,12 @@ struct Box3
 	Vec3 inner_max() const { return max() - Vec3{1, 1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
 
-	bool contains(Vec3 const& v) const;
-	bool intersects(Box3 const& other) const;
-	bool contains(Box3 const& other) const;
+	bool contains(Vec3 v) const;
+	bool intersects(Box3 other) const;
+	bool contains(Box3 other) const;
 	int area() const { return size.x * size.y; }
 
-	Box3 intersection(Box3 const& other) const;
+	Box3 intersection(Box3 other) const;
 };
 
 //------------------------------------------------------------------------------
@@ -436,7 +436,7 @@ struct Box3
 class BoxItr
 {
 public:
-	BoxItr(Box2 const & b);
+	BoxItr(Box2 b);
 
 	Vec2 current;
 	void advance ();
@@ -446,14 +446,14 @@ public:
 	Vec2 const & operator*() const { return current; }
 	Vec2 const * operator->() const { return &current; }
 	Vec2 const & operator++() { advance(); return current; }
-	bool operator!= (BoxItr const & rhs) const { return current != rhs.current; } 
+	bool operator!= (BoxItr rhs) const { return current != rhs.current; } 
 	operator bool() const { return !finished(); }
 	// post-increment not provided to avoid accidental copy
 
 private:
-	Box2 const & box;
+	Box2 box;
 };
 
 // range-based for loop on box
-BoxItr begin(Box2 const & b);
-BoxItr end(Box2 const & b);
+BoxItr begin(Box2 b);
+BoxItr end(Box2 b);

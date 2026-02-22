@@ -131,7 +131,7 @@ Interval Interval::overlap(Interval other) const
 //------------------------------------------------------------------------------
 // Boxen
 
-bool Box2::contains (const Vec2 &v) const
+bool Box2::contains (Vec2 v) const
 {
 	return v.x < max().x
 		&& v.y < max().y
@@ -139,7 +139,7 @@ bool Box2::contains (const Vec2 &v) const
 		&& v.y >= min.y;
 }
 
-bool Box2::contains (const Box2 &other) const
+bool Box2::contains (Box2 other) const
 {
 	if (other.min.x < min.x
 		|| other.min.y < min.y
@@ -151,7 +151,7 @@ bool Box2::contains (const Box2 &other) const
 }
 
 // Use >= and <= because max is +1 past the last occupied cell.
-bool Box2::intersects (const Box2 &other) const
+bool Box2::intersects (Box2 other) const
 {
 	if (other.min.x >= max().x
 		|| other.min.y >= max().y
@@ -162,14 +162,14 @@ bool Box2::intersects (const Box2 &other) const
 		return true;
 }
 
-bool Box2::intersects_or_adjacent (const Box2 &other) const
+bool Box2::intersects_or_adjacent (Box2 other) const
 {
 	// To check for adjacency, check for intersection with a slightly larger box.
 	Box2 temp = Box2(min.x - 1, min.y - 1, size.x + 2, size.y + 2);
 	return temp.intersects(other);
 }
 
-Box2 Box2::intersection (Box2 const & other) const
+Box2 Box2::intersection (Box2 other) const
 {
 	assert(intersects(other));
 	Vec2 new_min = componentwise_max(min, other.min);
@@ -177,7 +177,7 @@ Box2 Box2::intersection (Box2 const & other) const
 	return {new_min, new_max - new_min};
 }
 
-CompassDirection Box2::adjacent_edge (Box2 const& other) const
+CompassDirection Box2::adjacent_edge (Box2 other) const
 {
 	if (other.min.x == max(AXIS_X) && overlaps_on_axis(other, AXIS_Y))
 	{
@@ -206,7 +206,7 @@ Interval Box2::interval_on_axis (Axis a) const
 	return {min[a], max(a)};
 }
 
-bool Box2::overlaps_on_axis(Box2 const & other, Axis a) const
+bool Box2::overlaps_on_axis(Box2 other, Axis a) const
 {
 	return interval_on_axis(a).overlaps(other.interval_on_axis(a));
 }
@@ -308,7 +308,7 @@ Box2 Box2::outer_border_box(CompassDirection edge) const
 //------------------------------------------------------------------------------
 // 3D Boxen
 
-bool Box3::contains(const Vec3& v) const
+bool Box3::contains(Vec3 v) const
 {
 	return v.x < max().x
 		&& v.y < max().y
@@ -319,7 +319,7 @@ bool Box3::contains(const Vec3& v) const
 }
 
 // Use >= and <= because max is +1 past the last occupied cell.
-bool Box3::intersects(const Box3& other) const
+bool Box3::intersects(Box3 other) const
 {
 	if (other.min.x >= max().x
 		|| other.min.y >= max().y
@@ -332,7 +332,7 @@ bool Box3::intersects(const Box3& other) const
 		return true;
 }
 
-bool Box3::contains(const Box3& other) const
+bool Box3::contains(Box3 other) const
 {
 	if (other.min.x < min.x
 		|| other.min.y < min.y
@@ -346,7 +346,7 @@ bool Box3::contains(const Box3& other) const
 
 }
 
-Box3 Box3::intersection(Box3 const& other) const
+Box3 Box3::intersection(Box3 other) const
 {
 	assert(intersects(other));
 	Vec3 new_min = componentwise_max(min, other.min);
@@ -357,7 +357,7 @@ Box3 Box3::intersection(Box3 const& other) const
 //-------------------------------------------------------------------------------------------------
 // Rectangle Traversal
 
-BoxItr::BoxItr (Box2 const & box)
+BoxItr::BoxItr (Box2 box)
 	: box(box)
 	, current(box.min)
 { }
@@ -377,12 +377,12 @@ bool BoxItr::finished () const
 	return current.y >= box.max(AXIS_Y);
 }
 
-BoxItr begin(Box2 const & b)
+BoxItr begin(Box2 b)
 {
 	return BoxItr(b);
 }
 
-BoxItr end(Box2 const & box)
+BoxItr end(Box2 box)
 {
 	BoxItr end_itr(box);
 	end_itr.current.y = box.max(AXIS_Y);
