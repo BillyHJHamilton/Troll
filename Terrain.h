@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include <string>
 
 namespace Terrain
 {
@@ -17,6 +18,8 @@ namespace Terrain
 
 	int get_character(Terrain::Type t);
 	char const* get_name(Terrain::Type t);
+	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
+	Terrain::Type swap_stairs(Terrain::Type t);
 }

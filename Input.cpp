@@ -185,11 +185,16 @@ void handle_next_input ()
 			return;
 		}
 
-		if (key == TK_I)
+		if (key == TK_I || key == TK_ENTER)
 		{
 			Player::stop_automove();
 			Menu::show_inventory();
 			return;
+		}
+
+		if (key == TK_X)
+		{
+			player_look_at();
 		}
 
 		if (key == TK_ESCAPE)

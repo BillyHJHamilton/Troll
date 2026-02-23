@@ -2,6 +2,8 @@
 
 #include "Types.h"
 
+void player_look_at();
+
 void player_rest_step();
 bool player_try_move(Vec2 relative_move);
 bool player_try_cast_spell(Spell::Index spell);

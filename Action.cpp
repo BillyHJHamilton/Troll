@@ -13,6 +13,7 @@
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Target.h"
+#include "Terrain.h"
 #include "World.h"
 
 #include <cassert>
@@ -28,6 +29,62 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 //-------------------------------------------------------------------------------------------------
 // Interface functions
+
+void player_look_at()
+{
+	if (!Target::is_valid())
+	{
+		Draw::add_message("Target a tile, then press 'x' to look.");
+		return;
+	}
+
+	Vec3 const pos = Target::get_pos().value();
+
+	if (!World::read().is_visible(pos))
+	{
+		Draw::add_message("You can't see that tile.");
+		return;
+	}
+
+	Draw::add_message("You see:");
+	bool printed = false;
+
+	if (Player::pos() != pos)
+	{
+		Creature::Handle creature = Creature::creature_at_pos(pos);
+		if (creature.valid())
+		{
+			Draw::add_message(std::format("- {}", creature.long_name()));
+			printed = true;
+		}
+	}
+
+	Item::Handle item = World::read().peek_item(pos);
+	while (item.valid())
+	{
+		Draw::add_message(std::format("- {}", item.name()));
+		item = item.next_in_stack();
+			printed = true;
+	}
+
+	Terrain::Type t = World::read().get_terrain(pos);
+	if (t != Terrain::Open)
+	{
+		// stairs trick when looking at a different map
+		if (pos.z != Player::pos().z)
+		{
+			t = Terrain::swap_stairs(t);
+		}
+
+		Draw::add_message(Terrain::look_describe(t));
+		printed = true;
+	}
+
+	if (!printed)
+	{
+		Draw::add_message("- nothing of interest");
+	}
+}
 
 void player_rest_step()
 {

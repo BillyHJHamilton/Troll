@@ -31,6 +31,18 @@ namespace Terrain
 		}
 	}
 
+	std::string look_describe(Terrain::Type t)
+	{
+		switch (t)
+		{
+			case Terrain::UpStairs: return "- stairs leading up";
+			case Terrain::DownStairs: return "- stairs leading down";
+			case Terrain::Chest: return "- a locked chest";
+			default:
+				return std::string("- the ") + get_name(t);
+		}
+	}
+
 	bool permits_sight(Terrain::Type t)
 	{
 		switch (t)
@@ -62,6 +74,16 @@ namespace Terrain
 				return true;
 
 			default: assert(false); return false;
+		}
+	}
+
+	Terrain::Type swap_stairs(Terrain::Type t)
+	{
+		switch(t)
+		{
+			case UpStairs: return DownStairs;
+			case DownStairs: return UpStairs;
+			default: return t;
 		}
 	}
 }
