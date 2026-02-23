@@ -1,6 +1,7 @@
 #include "MenuList.h"
 
 #include "Codepoint.h"
+#include "Config.h"
 #include "Debug.h"
 #include "VectorUtil.h"
 
@@ -11,6 +12,7 @@ void MenuList::draw_screen ()
 	terminal_font("");
 	terminal_print(0, 0, m_title.c_str());
 
+	calc_layout();
 	calc_scroll_bottom();
 
 	bool const goes_off_top = m_scroll_top > 0;
@@ -29,18 +31,11 @@ void MenuList::draw_screen ()
 
 	if (goes_off_bottom)
 	{
-		terminal_print(c_Indent, c_MaxLineY + 1, "...");
+		terminal_print(c_Indent, max_line_y() + 1, "...");
 	}
 
 	// Show a cursor
 	terminal_put(1, m_list_start + m_cursor - m_scroll_top, Codepoint::HandRight);
-		//'>');
-
-	/*if (s_list_details_func &&
-		Check(Util::IsValidIndex(s_options, s_selection)))
-	{
-		s_list_details_func(s_options[s_selection]);
-	}*/
 }
 
 void MenuList::handle_input (int key)
@@ -73,6 +68,10 @@ void MenuList::handle_input (int key)
 		case TK_ESCAPE:
 			Menu::back();
 			break;
+
+		case TK_RESIZED:
+			// uh oh
+			on_resize();
 	}
 }
 
@@ -175,6 +174,23 @@ void MenuList::scroll_to_end()
 	}
 }
 
+void MenuList::on_resize()
+{
+	calc_layout();
+	calc_scroll_bottom();
+
+	int const overflow = std::max(0, Util::Size(m_options) - m_max_lines);
+
+	if (m_scroll_top > overflow)
+	{
+		m_scroll_top = overflow;
+	}
+	else if (m_cursor >= m_scroll_bottom)
+	{
+		m_scroll_top = m_cursor - m_max_lines;
+	}
+}
+
 int MenuList::get_cursor() const
 {
 	return m_cursor;
@@ -194,6 +210,11 @@ void MenuList::remove_selected()
 	}
 }
 
+int MenuList::max_line_y()
+{
+	return Config::get_height() - 2;
+}
+
 void MenuList::calc_layout()
 {
 	dimensions_t const dim = terminal_measure(m_title.c_str());
@@ -203,7 +224,7 @@ void MenuList::calc_layout()
 	}
 
 	m_list_start = dim.height + 1;
-	m_max_lines = c_MaxLineY - m_list_start;
+	m_max_lines = max_line_y() - m_list_start;
 }
 
 void MenuList::calc_scroll_bottom()

@@ -37,11 +37,12 @@ public:
 	void remove_selected();
 
 protected:
+	int max_line_y();
 	void calc_layout();
 	void calc_scroll_bottom();
+	void on_resize();
 
 	static int constexpr c_Indent = 3;
-	static int constexpr c_MaxLineY = 29;
 
 	std::string m_title;
 	OptionList m_options;

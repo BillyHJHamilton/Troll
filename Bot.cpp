@@ -113,11 +113,9 @@ void do_turn (Creature::Handle creature)
 		}
 		else
 		{
-			Spell::TempList spell_list = creature.spells_known();
-			if (spell_list.size() > 0)
+			if (creature.num_spells() > 0)
 			{
 				Spell::Index spell = choose_spell(creature, Player::handle());
-				//Spell::Index spell = Random::from_vector(spell_list);
 				if (within_range(creature.pos(),
 					Player::pos(), Spell::get_range(spell)))
 				{

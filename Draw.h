@@ -45,7 +45,7 @@ namespace Draw
 	void init();
 	void clear();
 
-	void update_view();
+	void update_view(int width, int height);
 
 	// Gets the cached view, from the last time update_view was called.
 	View const& get_view();

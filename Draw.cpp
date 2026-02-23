@@ -1,6 +1,7 @@
 #include "Draw.h"
 
 #include "Colour.h"
+#include "Config.h"
 #include "Creature.h"
 #include "Game.h"
 #include "Input.h"
@@ -19,15 +20,16 @@
 namespace Draw
 {
 
-// Circular array.
+// Circular array for game messages.
 std::vector<GameMessage> s_game_messages;
 int constexpr c_MaxGameMessages = 400;
 int s_next_message_id = 0;
 
-//static std::list<GameMessage> s_game_messages;
-
 static int constexpr c_AnimationStepMs = 25;
 static int constexpr c_TileWidthFactor = 2;
+
+static int constexpr c_StatAreaWidth = 57;
+static int constexpr c_SpellAreaWidth = 27;
 
 bool s_los_cheat = false;
 
@@ -91,14 +93,12 @@ int View::get_z(Vec2 pos2) const
 	return z;
 }
 
-void update_view ()
+void update_view (int width, int height)
 {
-	int constexpr view_size = 31;
-	s_view.viewport = Box2(0,0,view_size, view_size);
+	s_view.viewport = Box2(0, 0, width, height);
 
 	// Centre the view on the player
-	int constexpr half_size = view_size / 2;
-	Vec2 constexpr half_vec {half_size, half_size};
+	Vec2 const half_vec{width/2, height/2};
 	Vec3 const viewer = Player::pos();
 	s_view.start = viewer.xy() - half_vec;
 	s_view.z = viewer.z;
@@ -278,7 +278,13 @@ void toggle_los_cheat()
 
 void update_screen()
 {
-	update_view();
+	int const c_StatAreaLeft = Config::get_width() - c_StatAreaWidth;
+	int const c_SpellAreaLeft = Config::get_width() - c_SpellAreaWidth;
+
+	int const c_ViewWidth = (c_StatAreaLeft - 1) / c_TileWidthFactor; // View uses wide tiles
+	int const c_ViewHeight = Config::get_height();
+
+	update_view(c_ViewWidth, c_ViewHeight);
 	Draw::View const& view = get_view();
 
 	terminal_font("tile");
@@ -287,38 +293,28 @@ void update_screen()
 	Creature::draw_visible_creatures(view);
 	Target::draw(view);
 
-	// LINE DEBUG
-	//std::optional<Vec2> target = Target::get_pos();
-	//if (target.has_value())
-	//{
-	//	for (LineItr itr = LineItr(Player::pos(), *target); itr; ++itr)
-	//	{
-	//		draw_tile('X', *itr, view, "yellow");
-	//	}
-	//}
-
 	// restore default font for printing text
 	terminal_font("");
 	terminal_color(cstr_White);
 
 	// player stat areas
-	Box2 player_stat_area = Box2(63, 1, 60, 6);
+	Box2 const player_stat_area = Box2(c_StatAreaLeft, 1, c_StatAreaWidth, 6);
 	print_player_stats(player_stat_area);
 
 	// creature stat areas
-	int creature_lines = num_lines_for_visible_creature_stats();
-	Box2 creature_stat_area = Box2(63, 8, 60, creature_lines);
+	int const creature_lines = num_lines_for_visible_creature_stats();
+	Box2 const creature_stat_area = Box2(c_StatAreaLeft, 8, c_StatAreaWidth, creature_lines);
 	print_visible_creature_stats(creature_stat_area);
 
 	// game message area
-	int message_top = 8 + creature_lines;
-	int message_lines = 22 - creature_lines;
-	Box2 message_area = Box2(63, message_top, 60, message_lines);
+	int const message_top = 8 + creature_lines;
+	int const message_lines = Config::get_height() - message_top;
+	Box2 message_area = Box2(c_StatAreaLeft, message_top, c_StatAreaWidth, message_lines);
 	print_messages(message_area);
 
 	// spells area
-	Box2 spell_area = Box2(93, 1, 27, 30);
-	std::string spell_preview = Input::get_spell_preview_string();
+	Box2 const spell_area = Box2(c_SpellAreaLeft, 1, c_SpellAreaWidth, 30);
+	std::string const spell_preview = Input::get_spell_preview_string();
 	print_in_box(spell_area, spell_preview.c_str());
 }
 

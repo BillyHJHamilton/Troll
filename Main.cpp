@@ -11,6 +11,10 @@ void config_terminal()
 	terminal_set("window.size=120x31");
 	terminal_set("window.title='TROLL'");
 
+	// TODO Allow resizing, and adjust view layout appropriately.
+	// This will require going through all scenes in the game and updating them--so better sooner than later.
+	terminal_set("window: resizeable=true, minimum-size=120x31");
+
 	// TODO Load config file, apply config.
 
 	Config::load_fonts(false);

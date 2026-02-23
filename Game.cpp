@@ -160,6 +160,7 @@ void setup()
 	Spawn::check_spawning();
 
 	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
+
 	++s_turn_number; // Advance to turn 0
 
 	create_savefile();
