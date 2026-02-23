@@ -5,12 +5,6 @@
 
 #include <optional>
 
-enum class TargetMode : byte
-{
-	Automatic,
-	Manual
-};
-
 namespace Target
 {
 	void init();

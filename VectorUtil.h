@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scratch.h"
+#include "Types.h"
 
 #include <algorithm>
 #include <memory>
@@ -35,7 +36,7 @@ namespace Util
 	template<typename VectorItemType, typename Alc, typename ValueType>
 	std::vector<VectorItemType,Alc>::const_iterator Find(std::vector<VectorItemType,Alc> const& vector, ValueType value)
 	{
-		return std::find(vector.begin(), vector.end(), value);
+		return std::find(vector.cbegin(), vector.cend(), value);
 	}
 
 	// Non-const version which is needed for RemoveSwapFirstMatchingItem
@@ -43,6 +44,20 @@ namespace Util
 	std::vector<VectorItemType,Alc>::iterator Find(std::vector<VectorItemType,Alc>& vector, ValueType value)
 	{
 		return std::find(vector.begin(), vector.end(), value);
+	}
+
+	template<typename VectorItemType, typename Alc, typename ValueType>
+	int FindIndex(std::vector<VectorItemType,Alc> const& vector, ValueType value)
+	{
+		auto itr = std::find(vector.cbegin(), vector.cend(), value);
+		if (itr == vector.cend())
+		{
+			return c_Invalid; // invalid
+		}
+		else
+		{
+			return static_cast<int>(itr - vector.cbegin());
+		}
 	}
 
 	template<typename VectorItemType, typename Alc, typename ValueType>

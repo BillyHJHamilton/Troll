@@ -70,6 +70,9 @@ namespace Item
 		operator int () { return index; }
 		operator int const () const { return index; }
 
+		// invalidate handle without destroying item it points to
+		void invalidate() { index = c_Invalid; }
+
 		// Simple accessors
 		bool valid () const;
 		Item::Type type () const;
@@ -96,8 +99,8 @@ namespace Item
 		// Mutators
 		UseResult use ();
 		void stack_onto (Item::Handle other);
-		void invalidate();
-		void invalidate_stack();
+		void destroy();
+		void destroy_stack();
 
 	protected:
 		// Polymorphic stuff

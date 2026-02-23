@@ -262,19 +262,19 @@ void Handle::stack_onto (Item::Handle other)
 		1;
 }
 
-void Handle::invalidate()
+void Handle::destroy()
 {
 	edit_inst(index) = {};
 }
 
-void Handle::invalidate_stack()
+void Handle::destroy_stack()
 {
 	Item::Handle next = *this;
 	while (next.valid())
 	{
 		Item::Handle target = next;
 		next = next.next_in_stack();
-		target.invalidate();
+		target.destroy();
 	}
 }
 

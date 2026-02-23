@@ -470,7 +470,7 @@ void Handle::clear_rest_steps ()
 	edit_creature_instance(index).rest_turns = 0;
 }
 
-void Handle::invalidate ()
+void Handle::destroy ()
 {
 	if (identity() != c_IdentityGeneric)
 	{
@@ -691,7 +691,7 @@ void remove_defeated_creatures ()
 
 			creature.drop_all_items();
 
-			creature.invalidate();
+			creature.destroy();
 		}
 	}
 	s_fainting_creatures.clear();

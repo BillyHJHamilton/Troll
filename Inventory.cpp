@@ -138,7 +138,7 @@ void Inventory::use_item (int slot)
 		{
 			Item::Handle used = invent[slot];
 			invent[slot] = used.next_in_stack();
-			used.invalidate();
+			used.destroy();
 		}
 		else
 		{
@@ -158,7 +158,7 @@ void Inventory::remove_item (int slot)
 	// TODO: Better deallocate it!!
 	// TODO: Better confirm it's not a lot of items deep in a stack!
 
-	invent[slot].invalidate_stack();
+	invent[slot].destroy_stack();
 	Util::RemoveAt(invent, slot);
 }
 

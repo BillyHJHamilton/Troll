@@ -481,7 +481,7 @@ void claim_identity(Creature::Handle creature)
 			// Force unspawn the old instance, and spawn the new one.
 			std::cout << std::format("Unspawning old instance of {} to spawn new instance.\n",
 				read(type).short_name);
-			metadata.current_handle.invalidate();
+			metadata.current_handle.destroy();
 		}
 
 		if (read(type).difficulty <= metadata.spawned_difficulty)

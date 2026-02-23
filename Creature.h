@@ -118,6 +118,9 @@ namespace Creature
 		operator int const () const { return index; }
 		Creature::Handle & operator++ () { ++ index; return *this; }
 
+		// invalidate handle without destroying creature it points to
+		void invalidate() { index = c_Invalid; }
+
 		// Simple accessors
 		bool valid () const;
 		Creature::Type type () const;
@@ -162,7 +165,7 @@ namespace Creature
 		void cure_all (); // heals status and hp
 		void rest_step ();
 		void clear_rest_steps ();
-		void invalidate ();
+		void destroy ();
 		void reset_spells ();
 		void learn_spell (Spell::Index spell);
 		void push_item (Item::Handle item);
