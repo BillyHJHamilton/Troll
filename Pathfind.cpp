@@ -15,6 +15,11 @@
 namespace Pathfind
 {
 
+// Count each vertical step as this many horizontal in heuristic function,
+// since usually it will be necessary to get onto the right vertical level
+// before it's possible to reach the target.
+int constexpr c_HeightFactor = 10;
+
 // I hate the std::priority_queue, but I guess it's okay for this case.
 // Wrapper based on the redblob link below.
 struct AStarPriorityQueue
@@ -159,7 +164,9 @@ void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 				{
 					discovered[neighbour] = {here, new_cost};
 
-					int const heuristic = squared_distance(neighbour, goal);
+					int const vertical_distance = std::abs(neighbour.z - goal.z);
+					int const heuristic = manhattan_distance(neighbour.xy(), goal.xy())
+						+ c_HeightFactor*vertical_distance;
 					frontier.add(neighbour, heuristic);
 				}
 			}

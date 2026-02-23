@@ -167,7 +167,10 @@ inline Vec2 const & operator-= (Vec2 & lhs, Vec2 rhs)
 inline Vec2 componentwise_min(Vec2 a, Vec2 b);
 inline Vec2 componentwise_max(Vec2 a, Vec2 b);
 
-// Returns true if euclidean distance <= range.
+// Pythagoras
+int squared_distance(Vec2 p0, Vec2 p1);
+
+// Returns true if euclidean distance <= range (by checking squared_distance).
 bool within_range(Vec2 p0, Vec2 p1, int max_range);
 
 // Don't use this if you could use squared_distance or within_range, of course.
@@ -292,9 +295,10 @@ inline Vec3 Vec2::xyz(int z) const
 inline Vec3 componentwise_min(Vec3 a, Vec3 b);
 inline Vec3 componentwise_max(Vec3 a, Vec3 b);
 
+// Pythagoras
 int squared_distance(Vec3 p0, Vec3 p1);
 
-// Returns true if euclidean distance <= range.
+// Returns true if euclidean distance <= range (by checking squared_distance).
 bool within_range(Vec3 p0, Vec3 p1, int max_range);
 
 // Don't use this if you could use the above, of course.

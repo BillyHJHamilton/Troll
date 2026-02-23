@@ -20,7 +20,7 @@ namespace Target
 
 enum class TargetMode : byte
 {
-	Automatic_Creature,
+	Automatic_Creature, // or no target, if s_target_creature is invalid
 	Automatic_Position,
 	Manual
 };
@@ -147,7 +147,7 @@ void cycle ()
 		}
 
 		// wrap around
-		if (target_index > visible_creatures.size())
+		if (target_index > Util::LastIndex(targets))
 		{
 			target_index = 0;
 		}
