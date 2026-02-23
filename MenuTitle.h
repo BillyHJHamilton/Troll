@@ -14,6 +14,7 @@ protected:
 	{
 		NewGame = 0,
 		LoadGame,
+		Settings,
 #if _DEBUG
 		SetLogging,
 #endif

@@ -14,6 +14,10 @@ To Do:
  - They should really be placed as part of Map Generation, not creature spawning
  - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
 
+- Config
+ - Save settings file and try to load it at startup.
+ - Create a general purpose "Config Menu" (descendant or relative of MenuList) with on/off toggles built in.
+
 - Creatures
  - Melee attacks
  - Creature special abilities (distinct from spells?  yes, I suppose so)
@@ -67,7 +71,8 @@ To Do:
 
 - UI
  - Support mouse input (left to target, right to move?)
- - Implying: add player pathfinding for automove.
+  - Thus, add player pathfinding for automove.
+ - Support resizing window.
 
 -------------------------------------------------------------------------------
 To consider:

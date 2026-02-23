@@ -15,8 +15,7 @@ MenuPause::MenuPause()
 		{"Inventory", PauseMenuOption::Inventory},
 		{"Help", PauseMenuOption::Help},
 		{"Message History", PauseMenuOption::MessageHistory},
-		//{"Save", PauseMenuOption::Save},
-		//{"Load", PauseMenuOption::Load},
+		{"Settings", PauseMenuOption::Settings},
 		{"Save and Quit", PauseMenuOption::SaveAndQuit},
 	};
 }
@@ -46,14 +45,10 @@ void MenuPause::handle_input (int key)
 				Menu::push();
 				Menu::show_message_history();
 				break;
-			//case PauseMenuOption::Save:
-			//	Game::save();
-			//	Menu::close();
-			//	break;
-			//case PauseMenuOption::Load:
-			//	Menu::push();
-			//	Menu::show_load();
-			//	break;
+			case PauseMenuOption::Settings:
+				Menu::push();
+				Menu::show_settings();
+				break;
 			case PauseMenuOption::SaveAndQuit:
 				Game::save();
 				Game::reset();

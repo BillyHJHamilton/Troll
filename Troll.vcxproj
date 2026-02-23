@@ -243,6 +243,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="BuildWorld.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Colour.cpp" />
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
@@ -268,6 +269,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuList.cpp" />
     <ClCompile Include="MenuPause.cpp" />
+    <ClCompile Include="MenuSettings.cpp" />
     <ClCompile Include="MenuSpells.cpp" />
     <ClCompile Include="MenuTitle.cpp" />
     <ClCompile Include="NameHash.cpp" />
@@ -297,6 +299,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="Codepoint.h" />
     <ClInclude Include="Colour.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
@@ -323,6 +326,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Math.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuPause.h" />
+    <ClInclude Include="MenuSettings.h" />
     <ClInclude Include="MenuSpells.h" />
     <ClInclude Include="MenuList.h" />
     <ClInclude Include="MenuTitle.h" />

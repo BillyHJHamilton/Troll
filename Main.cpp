@@ -1,5 +1,6 @@
 #include "BearLibTerminal.h"
 
+#include "Config.h"
 #include "Geometry.h"
 #include "Game.h"
 #include "Input.h"
@@ -7,20 +8,12 @@
 
 void config_terminal()
 {
-	char const* FONT1 = "FixedsysExcelsior302.ttf";
-	char const* FONT2 = FONT1;
-
 	terminal_set("window.size=120x31");
 	terminal_set("window.title='TROLL'");
-	terminal_setf("font: %s, size=8x16", FONT1);
-	terminal_setf("tile font: %s, size=16x16, spacing=2x1", FONT2);
 
-	// Great size for fullscreen on 1920x1080:
-	// terminal_setf("font: %s, size=16x32", FONT1);
-	// terminal_setf("tile font: %s, size=32x32, spacing=2x1", FONT2);
+	// TODO Load config file, apply config.
 
-	// load custom glyphs
-	terminal_set("tile 0x3031: Tiles.png, size=16x16, spacing=2x1");
+	Config::load_fonts(false);
 
 	// register for input
 	terminal_set

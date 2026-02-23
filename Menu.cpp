@@ -14,6 +14,7 @@
 #include "MenuName.h"
 #include "MenuPause.h"
 #include "MenuSelectHouse.h"
+#include "MenuSettings.h"
 #include "MenuSpells.h"
 #include "MenuTitle.h"
 #include "Player.h"
@@ -38,6 +39,7 @@ MenuLoad s_menu_load;
 MenuMessages s_menu_messages;
 MenuName s_menu_name;
 MenuSelectHouse s_menu_select_house;
+MenuSettings s_menu_settings;
 MenuSpells s_menu_spells;
 MenuTitle s_menu_title;
 MenuPause s_menu_pause;
@@ -98,6 +100,7 @@ void init()
 {
 	s_menu_select_house.init();
 	s_menu_title.init();
+	s_menu_settings.init();
 
 #if _DEBUG
 	s_menu_debug.init();
@@ -239,6 +242,12 @@ void show_message_history()
 	set_menu(s_menu_messages);
 	s_menu_messages.init();
 	s_menu_messages.scroll_to_end();
+}
+
+void show_settings()
+{
+	set_menu(s_menu_settings);
+	s_menu_settings.reset_cursor();
 }
 
 #if _DEBUG

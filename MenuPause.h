@@ -18,8 +18,7 @@ protected:
 		Inventory,
 		Help,
 		MessageHistory,
-		//Save,
-		//Load,
+		Settings,
 		SaveAndQuit
 	};
 };

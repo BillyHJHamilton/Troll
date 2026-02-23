@@ -47,6 +47,7 @@ void MenuTitle::init()
 	{
 		{"New Game", TitleMenuOption::NewGame},
 		{"Load Game", TitleMenuOption::LoadGame},
+		{"Settings", TitleMenuOption::Settings},
 #if _DEBUG
 		{"Set Logging", TitleMenuOption::SetLogging},
 #endif
@@ -66,6 +67,10 @@ void MenuTitle::handle_input (int key)
 			case TitleMenuOption::LoadGame:
 				Menu::push();
 				Menu::show_load();
+				break;
+			case TitleMenuOption::Settings:
+				Menu::push();
+				Menu::show_settings();
 				break;
 #if _DEBUG
 			case TitleMenuOption::SetLogging:
