@@ -20,4 +20,9 @@ namespace Codepoint
 
 	int constexpr ShortBlock = 0x2583;
 	int constexpr SolidBlock = 0x2588;
+
+	// Custom glyphs.
+	// These ones are in decimal for simplicity.
+	int constexpr OpenCursor = 12337; // 0x3031
+	int constexpr Chest = 12338;
 }

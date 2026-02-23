@@ -3,6 +3,7 @@
 // Colours matching those defined by BearLibTerminal
 
 extern char const* const cstr_White;
+extern char const* const cstr_DarkWhite;
 
 extern char const* const cstr_LightestGrey;
 extern char const* const  cstr_LighterGrey;

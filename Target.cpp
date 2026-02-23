@@ -1,9 +1,12 @@
 #include "Target.h"
 
+#include "Codepoint.h"
 #include "Colour.h"
 #include "Creature.h"
 #include "Draw.h"
 #include "Player.h"
+#include "Terrain.h"
+#include "Visibility.h"
 #include "World.h"
 
 #include <algorithm>
@@ -21,6 +24,7 @@ Vec3 s_target_pos;
 void init ()
 {
 	g_TargetColour = cstr_DarkestGrey;
+	//g_TargetColour = cstr_DarkerViolet;
 }
 
 void clear ()
@@ -55,8 +59,7 @@ void update ()
 	}
 	else if (s_target_mode == TargetMode::Manual)
 	{
-		if (s_target_pos.z != Player::pos().z &&
-			!World::read().is_visible(s_target_pos))
+		if (!Draw::get_view().contains_global_pos(s_target_pos))
 		{
 			cycle();
 		}
@@ -118,18 +121,34 @@ void move (Vec2 dir)
 		}
 		s_target_mode = TargetMode::Manual;
 	}
-	s_target_pos += dir.xy0();
+
+	Draw::View const& view = Draw::get_view();
+
+	Vec3 new_pos = s_target_pos + dir.xy0();
 
 	// see if we've slipped onto another level
-	Draw::View const& view = Draw::get_view();
-	s_target_pos.z = view.z;
-	for (Vec3 peek : view.peek_tiles)
+	new_pos.z = view.get_z(new_pos.xy());
+
+	if (view.contains_global_pos(new_pos))
 	{
-		if (peek.xy() == s_target_pos.xy())
-		{
-			s_target_pos.z = peek.z;
-			break;
-		}
+		s_target_pos = new_pos;
+	}
+}
+
+bool is_valid()
+{
+	if (s_target_mode == TargetMode::Automatic)
+	{
+		return s_target_creature.valid();
+	}
+	else if (s_target_mode == TargetMode::Manual)
+	{
+		return true;
+	}
+	else
+	{
+		assert(false); // unhandled case
+		return false;
 	}
 }
 
@@ -193,4 +212,55 @@ std::optional<Vec3> get_pos ()
 	}
 }
 
+char const* colour()
+{
+	return colour(Visibility::Visible, false);
 }
+
+char const* colour(Visibility visibility, bool is_wall)
+{
+	if (is_wall)
+	{
+		if (visibility == Visibility::Visible)
+		{
+			return cstr_DarkWhite;
+		}
+		else if (visibility == Visibility::Explored)
+		{
+			return cstr_DarkerGrey;
+		}
+	}
+
+	return cstr_DarkestGrey;
+}
+
+void draw (Draw::View view)
+{
+	if (Target::is_valid())
+	{
+		Vec3 const pos = get_pos().value();
+		if (view.contains_global_pos(pos))
+		{
+			Visibility const vis = World::read().get_visibility(pos);
+			bool const is_wall = World::read().get_terrain(pos) == Terrain::Wall;
+
+			bool draw = true;
+			char const* draw_colour = Target::colour(vis, is_wall);
+			int codepoint = Codepoint::OpenCursor;
+
+			if (vis == Visibility::Visible)
+			{
+				draw = is_wall;
+				codepoint = Codepoint::SolidBlock;
+			}
+
+			if (draw)
+			{
+				Draw::TerminalLayer layer(Draw::TerminalLayer::Cursor);
+				Draw::draw_tile(codepoint, pos.xy(), view, draw_colour);
+			}
+		}
+	}
+}
+
+} // namespace Target

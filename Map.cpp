@@ -8,6 +8,7 @@
 #include "Random.h"
 #include "Target.h"
 #include "Terrain.h"
+#include "Visibility.h"
 
 #include <cassert>
 #include <iostream>

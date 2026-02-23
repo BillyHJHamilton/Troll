@@ -319,12 +319,8 @@ void finite_incantatem (EffectParams params)
 
 void accio (EffectParams params)
 {
-	// TODO Add "Smite targeting" for spells like this
-
 	// TODO It would be great to show the item fly through the air.
 	// And in theory, it could hit someone and stop, dealing damage based on its heft.
-
-	// TODO Need to get an item from player's inventory if player is targeted.
 
 	// TODO The grammar for items is more complex.  Problem cases:
 	//  Harry hangs onto his Harry's notes  ->  Harry hangs onto his notes

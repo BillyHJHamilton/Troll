@@ -15,6 +15,13 @@ void config_terminal()
 	terminal_setf("font: %s, size=8x16", FONT1);
 	terminal_setf("tile font: %s, size=16x16, spacing=2x1", FONT2);
 
+	// Great size for fullscreen on 1920x1080:
+	// terminal_setf("font: %s, size=16x32", FONT1);
+	// terminal_setf("tile font: %s, size=32x32, spacing=2x1", FONT2);
+
+	// load custom glyphs
+	terminal_set("tile 0x3031: Tiles.png, size=16x16, spacing=2x1");
+
 	// register for input
 	terminal_set
 	(

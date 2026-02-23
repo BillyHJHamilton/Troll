@@ -36,21 +36,6 @@ View s_view = View{};
 // ------------------------------------------------------------------------------------------------
 // TerminalLayer helper class
 
-class TerminalLayer
-{
-public:
-	enum Layer : byte
-	{
-		Base = 0,
-		Animation
-	};
-
-	TerminalLayer (Layer layer);
-	~TerminalLayer ();
-private:
-	int old_layer;
-};
-
 TerminalLayer::TerminalLayer (Layer layer)
 {
 	old_layer = terminal_state(TK_LAYER);
@@ -91,6 +76,19 @@ bool View::contains_global_pos(Vec3 const& global_pos) const
 {
 	return view_area().contains(global_pos.xy())
 		&& (global_pos.z == z || Util::Contains(peek_tiles, global_pos));
+}
+
+int View::get_z(Vec2 pos2) const
+{
+	for (Vec3 peek : peek_tiles)
+	{
+		if (peek.xy() == pos2)
+		{
+			return peek.z;
+		}
+	}
+
+	return z;
 }
 
 void update_view ()
@@ -287,6 +285,7 @@ void update_screen()
 	World::read().draw(view);
 	draw_creature(Creature::Player, view);
 	Creature::draw_visible_creatures(view);
+	Target::draw(view);
 
 	// LINE DEBUG
 	//std::optional<Vec2> target = Target::get_pos();
@@ -356,7 +355,7 @@ void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 {
 	if (Target::is_target(creature))
 	{
-		ss << "[bkcolor=" << g_TargetColour << "]";
+		ss << "[bkcolor=" << Target::colour() << "]";
 	}
 	ss << std::left << std::setw(16) << creature.short_name();
 	if (Target::is_target(creature))

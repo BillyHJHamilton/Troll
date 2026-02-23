@@ -12,13 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-enum class Visibility : byte
-{
-	Hidden = 0,
-	Explored,
-	Visible
-};
-
 class Map
 {
 	// functions

@@ -4,6 +4,12 @@ The Revenge Of Luna Lovegood
 
 A goofy roguelike game set in the world of Harry Potter fanfiction.  Personal project.
 
+Current status (2026/02/22): Unfinished / work in progress.
+
+## Playing the Game
+
+See the [Releases](https://github.com/BillyHJHamilton/Troll/releases) to download a build for Win64.  Other platforms not currently supported.
+
 ## Disclaimer
 
 This game is a work of fan fiction.  Given its irreverent tone it may also be considered a work of parody.

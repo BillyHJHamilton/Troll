@@ -17,6 +17,23 @@ namespace Draw
 
 		Box2 view_area() const { return { start, viewport.size }; }
 		bool contains_global_pos(Vec3 const& global_pos) const;
+		int get_z(Vec2 pos2) const;
+	};
+
+	class TerminalLayer
+	{
+	public:
+		enum Layer : byte
+		{
+			Base = 0,
+			Cursor,
+			Animation
+		};
+
+		TerminalLayer (Layer layer);
+		~TerminalLayer ();
+	private:
+		int old_layer;
 	};
 
 	struct GameMessage

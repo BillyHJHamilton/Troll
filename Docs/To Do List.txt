@@ -29,13 +29,7 @@ To Do:
  - (Advanced) Staircases that change
 
 - World layout revision
- 1) Move code into new module -- DONE
- 2) Move creating outgoing connections into a separate pass from map generation
-  - Make it aware of the map it's connecting to
-  - Make a function to "try to receive" a connection (making a landing)
-  - If the connection fails, don't create the connection
- 3) Add the possibility of horizontal connections.
- 4) Add stronger methods to enforce internal connectivity
+ - Add stronger methods to enforce internal connectivity
 
 - Menu
  - Improve "help" document
@@ -49,12 +43,12 @@ To Do:
 - Spells
  - More spells from HPADS
  - Accio!
-  - Still several issues, see the spell effect for details
-  - Drag character closer, perhaps.
+  - Should show the item fly through the air.
+  - Should it drag character closer at higher power?
  - Lumos?
   - We could have darkness maps in the dungeons
  - Finite Incantatem
-  - In principle it could be targeted, once we have spells on squares
+  - In principle it could be targeted, if we have lingering spell effects.
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?
@@ -70,6 +64,10 @@ To Do:
 - Terrain
  - Furniture for cover/obstacles?
  - Breakable terrain?
+
+- UI
+ - Support mouse input (left to target, right to move?)
+ - Implying: add player pathfinding for automove.
 
 -------------------------------------------------------------------------------
 To consider:

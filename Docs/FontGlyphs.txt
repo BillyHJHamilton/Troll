@@ -165,3 +165,13 @@ chess pieces, playing cards
 ♥ 2665
 ♦ 2666
 ♧ 2667
+
+Note: Fixedsys ex 302 only defines 6024 characters.
+So there are lots of open spaces for custom glyphs.
+For example, the space from
+
+ 0x3031 = 12337
+to
+ 0x4dbf = 19903
+
+So that's 7566 open spots for you to use.

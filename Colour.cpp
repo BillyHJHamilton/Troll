@@ -1,6 +1,7 @@
 #include "Colour.h"
 
 char const* const cstr_White = "white";
+char const* const cstr_DarkWhite = "dark white";
 
 char const* const cstr_LightestGrey = "lightest grey";
 char const* const  cstr_LighterGrey =  "lighter grey";
