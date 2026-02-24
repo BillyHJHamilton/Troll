@@ -79,6 +79,8 @@ inline CompassDirection get_counterclockwise_90(CompassDirection dir)
 		c_CompassInvalid;
 }
 
+CompassDirection to_compass(Vec2 vec);
+
 // Directions from east, counterclockwise, plus {0,0} at the end.
 // Inspired by similar approach in Linley's Dungeon Crawl.
 Vec2 constexpr c_Compass [c_CompassCount] =

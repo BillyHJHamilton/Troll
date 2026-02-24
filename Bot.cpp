@@ -5,6 +5,7 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Geometry.h"
 #include "Grammar.h"
 #include "Math.h"
@@ -23,22 +24,42 @@
 namespace Bot
 {
 
-static bool constexpr TERMINATOR_MODE = false;
+static bool constexpr c_TerminatorMode = false;
+
+// Constant for now.  Can add variable/function later if desired.
+constexpr int c_CreatureVision = 8;
 
 // Number of turns a bot will remain "aware" after losing sight of player.
-static int constexpr c_MaxAwareness = 10;
+static int constexpr c_MaxAwareness = 15;
 
 // Maximum path length to consider when using a-star pathfinding.
 static int constexpr c_MaxPathCost = 25;
 
+// After using the pathfinder, AI isn't allowed to use it again for this many turns.
+// For performance reasons, and so they don't change directions wildly.
+static int constexpr c_PathfindCooldown = 5;
+
 static std::vector<Brain> s_brains;
+
+// Data used by bot during a single turn.
+struct Thoughts
+{
+	bool target_visible = false;
+	int target_line = c_Invalid;
+};
 
 // ------------------------------------------------------------------------------------------------
 // Helper function declarations
 
+void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+
+void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+
 bool is_aware(Creature::Handle const creature);
-void go_to_last_seen(Creature::Handle creature);
-void move_towards(Creature::Handle creature, Vec3 dest);
+bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
@@ -57,10 +78,12 @@ void clear()
 
 void Brain::serialize(ISerializer& s)
 {
-	s.srz_int(awareness);
-	s.srz_vec3(last_seen);
-
 	srz_vector(s, move_stack, "brain.move_stack");
+	s.srz_vec3(target_pos);
+	srz_value(s, target);
+	s.srz_int(awareness);
+	s.srz_int(patience);
+	srz_value(s, state);
 }
 
 void serialize(ISerializer& s)
@@ -93,129 +116,261 @@ void init_brain(Creature::Handle handle)
 
 void do_turn (Creature::Handle creature)
 {
-	constexpr int creature_vision = 8; // Add variable/function later if desired.
 	Brain& brain = s_brains[creature];
-	Vec3 const pos = creature.pos();
+	Thoughts thoughts {};
 
-	World const& world = World::read();
-	int line_id = world.get_los(pos, Player::pos(), creature_vision);
-	bool const player_is_visible = (line_id != c_Invalid);
+	check_for_target(creature, brain, thoughts);
 
-	if (player_is_visible)
+	check_transitions(creature, brain, thoughts);
+
+	switch(brain.state)
 	{
-		if (!is_aware(creature))
-		{
-			// Spend a turn noticing the player.
-			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
-
-			// And break automove since player probably wants to respond to this.
-			Player::stop_automove();
-		}
-		else
-		{
-			if (creature.num_spells() > 0)
-			{
-				Spell::Index spell = choose_spell(creature, Player::handle());
-				if (within_range(creature.pos(),
-					Player::pos(), Spell::get_range(spell)))
-				{
-					try_cast_spell(spell, creature, Player::pos(), line_id);
-				}
-				else
-				{
-					move_towards(creature, Player::pos());
-				}
-			}
-		}
-
-		brain.awareness = c_MaxAwareness;
-		brain.last_seen = Player::pos();
-	}
-	else
-	{
-		if (TERMINATOR_MODE) // hunt down player (for testing)
-		{
-			brain.awareness = 10;
-			brain.last_seen = Player::pos();
-		}
-
-		if (is_aware(creature))
-		{
-			--brain.awareness;
-			go_to_last_seen(creature);
-		}
-		else
-		{
+		case Bot::Rest: 
 			creature.rest_step();
-		}
+			break;
+
+		case Bot::Blunder:
+			bot_blunder(creature, brain, thoughts);
+			break;
+
+		case Bot::Chase:
+			bot_chase(creature, brain, thoughts);
+			break;
+
+		case Bot::Fight:
+			bot_fight(creature, brain, thoughts);
+			break;
 	}
 }
 
 // ------------------------------------------------------------------------------------------------
-// Helper function implementations
+// Main state functions
+
+void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	// Todo: Could support other targets in future.
+	brain.target = Creature::Player;
+
+	World const& world = World::read();
+	thoughts.target_line = world.get_los(creature.pos(), brain.target.pos(), c_CreatureVision);
+	thoughts.target_visible = (thoughts.target_line != c_Invalid);
+
+	if (thoughts.target_visible)
+	{
+		brain.target_pos = brain.target.pos();
+	}
+}
+
+void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (thoughts.target_visible)
+	{
+		if (brain.state != State::Fight)
+		{
+			brain.state = State::Fight;
+		}
+	}
+	else // target not visible
+	{
+		if (c_TerminatorMode) // hunt down player (for testing)
+		{
+			brain.state = State::Chase;
+			brain.target_pos = Player::pos();
+			return;
+		}
+
+		if (brain.state == State::Fight)
+		{
+			brain.state = State::Chase;
+		}
+
+		else if (brain.state == State::Chase)
+		{
+			if (brain.awareness <= 0)
+			{
+				if (Debug::enabled(Debug::Bot))
+				{
+					std::cout << std::format("{} - Awareness reached 0, stopping chase.\n",
+						creature.short_name());
+				}
+
+				brain.state = State::Blunder;
+				brain.patience = 0;
+				brain.move_stack.clear();
+			}
+		}
+
+		else if (brain.state == State::Blunder)
+		{
+			if (brain.patience <= 0 &&
+				Random::one_in(creature.is_hurt() ? 2 : 4))
+			{
+				brain.state = State::Rest;
+			}
+		}
+
+		else if (brain.state == State::Rest)
+		{
+			if (Random::one_in(40))
+			{
+				brain.state = State::Blunder;
+			}
+		}
+	}
+}
+
+void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (brain.patience <= 0)
+	{
+		// Pick a new target pos at random.
+		int constexpr max_distance = 10;
+		Box2 const box = Box2{creature.pos().xy(), Vec2{1,1}}.plus_border(max_distance);
+		brain.target_pos = Random::in_box(box).xyz(creature.pos().z);
+
+		brain.patience = manhattan_distance(creature.pos().xy(), brain.target_pos.xy());
+	}
+
+	bool moved = try_move_towards(creature, brain.target_pos);
+	--brain.patience;
+
+	if (!moved)
+	{
+		// Something's in the way.  Lose more patience.
+		brain.patience -= 5;
+
+		// And just rest for this turn.
+		creature.rest_step();
+	}
+
+	if (creature.pos() == brain.target_pos)
+	{
+		// We made it!
+		brain.patience = 0;
+	}
+}
+
+void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	Vec3 const pos = creature.pos();
+	bool moved = false;
+
+	--brain.awareness;
+
+	if (pos == brain.target_pos)
+	{
+		brain.move_stack.clear();
+
+		if (brain.target.valid())
+		{
+			// Find the target by, er... intuition.
+			brain.target_pos = brain.target.pos();
+		}
+		else
+		{
+			brain.awareness = 0;
+			return;
+		}
+	}
+	else if (pos.z == brain.target_pos.z
+		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) == 1)
+	{
+		// Only one square away, you can do it!
+		moved = try_move_towards(creature, brain.target_pos);
+	}
+
+	if (!moved && !brain.move_stack.empty())
+	{
+		// We have a plan.  See if we can still follow it.
+		moved = try_follow_path(creature, brain.move_stack);
+	}
+
+	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
+	{
+		// Try to formulate a new plan.
+		Pathfind::astar(pos, brain.target_pos, c_MaxPathCost, brain.move_stack);
+
+		// Cooldown before pathfinding again.
+		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;
+
+		if (!brain.move_stack.empty())
+		{
+			if (Debug::enabled(Debug::Bot))
+			{
+				std::cout << std::format("{} - Found path with length {}.\n",
+					creature.short_name(), brain.move_stack.size());
+			}
+
+			moved = try_follow_path(creature, brain.move_stack);
+		}
+		else
+		{
+			if (Debug::enabled(Debug::Bot))
+			{
+				std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
+			}
+		}
+	}
+
+	if (!moved)
+	{
+		moved = try_move_towards(creature, brain.target_pos);
+	}
+
+	if (!moved)
+	{
+		creature.rest_step();
+	}
+}
+
+void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (!is_aware(creature))
+	{
+		// Spend a turn noticing the player.
+		brain.awareness = c_MaxAwareness;
+		Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
+
+		// And break automove since player probably wants to respond to this.
+		Player::stop_automove();
+
+		return;
+	}
+
+	if (creature.num_spells() > 0)
+	{
+		Spell::Index spell = choose_spell(creature, Player::handle());
+		if (within_range(creature.pos(), Player::pos(), Spell::get_range(spell)))
+		{
+			try_cast_spell(spell, creature, Player::pos(), thoughts.target_line);
+		}
+		else
+		{
+			bool moved = try_move_towards(creature, Player::pos());
+			if (!moved)
+			{
+				creature.rest_step();
+			}
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// Other helpers
 
 bool is_aware(Creature::Handle const creature)
 {
 	return s_brains[creature].awareness > 0;
 }
 
-// Tries to use pathfinding, or falls back to the basic move towards.
-void go_to_last_seen(Creature::Handle creature)
-{
-	Brain& brain = s_brains[creature];
-	Vec3 const pos = creature.pos();
-
-	if (pos == brain.last_seen)
-	{
-		Stairs::Direction dir = World::read().get_stairs(creature.pos());
-		if (dir != Stairs::None)
-		{
-			// Hm, where could she possibly have gone?
-			try_move(creature, Stairs::relative_move(dir).xy(), MoveMode::Walk);
-		}
-		else
-		{
-			// TODO: Explore a little.  Try to find the player.
-			creature.rest_step();
-		}
-	}
-	else if (pos.z == brain.last_seen.z
-		&& chessboard_distance(pos.xy(), brain.last_seen.xy()) == 1)
-	{
-		// Only one square away, you can do it!
-		move_towards(creature, brain.last_seen);
-	}
-	else
-	{
-		bool moved = false;
-
-		if (!brain.move_stack.empty())
-		{
-			// We have a plan.  See if we can still follow it.
-			moved = try_follow_path(creature, brain.move_stack);
-		}
-
-		if (!moved)
-		{
-			// Try to formulate a new plan.
-			Pathfind::astar(pos, brain.last_seen, c_MaxPathCost, brain.move_stack);
-
-			if (!brain.move_stack.empty())
-			{
-				moved = try_follow_path(creature, brain.move_stack);
-			}
-		}
-				
-		if (!moved)
-		{
-			move_towards(creature, brain.last_seen);
-		}
-	}
-}
-
 // A naïve move straight towards the destination.
-void move_towards(Creature::Handle creature, Vec3 dest)
+bool try_move_towards(Creature::Handle creature, Vec3 dest)
 {
+	if (creature.pos() == dest)
+	{
+		return false;
+	}
+
 	Vec3 const to_dest = dest - creature.pos();
 	Vec2 const move_dir = {
 		Math::Sign(to_dest.x),
@@ -226,13 +381,24 @@ void move_towards(Creature::Handle creature, Vec3 dest)
 
 	if (!moved)
 	{
-		moved = try_move(creature, { move_dir.x, 0 }, MoveMode::Walk);
+		// Try alternate routes.
+		CompassDirection dir = to_compass(move_dir);
+		Vec2 alt0 = c_Compass[get_clockwise(dir)];
+		Vec2 alt1 = c_Compass[get_counterclockwise(dir)];
+
+		if (Random::coinflip())
+		{
+			std::swap(alt0,alt1);
+		}
+
+		moved = try_move(creature, alt0, MoveMode::Walk);
+		if (!moved)
+		{
+			moved = try_move(creature, alt1, MoveMode::Walk);
+		}
 	}
 
-	if (!moved)
-	{
-		moved = try_move(creature, { 0, move_dir.y }, MoveMode::Walk);
-	}
+	return moved;
 }
 
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)

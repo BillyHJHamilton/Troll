@@ -82,12 +82,16 @@ void flipendo (EffectParams params)
 			Grammar::You_are(target)));
 		target.move(knock_pos);
 		target.take_damage(4, caster);
+		Draw::draw_screen();
+		Draw::anim_delay();
 	}
 	else
 	{
 		Draw::creature_message(target, std::format(" {0} knocked back!",
 			Grammar::You_are(target)));
 		target.move(knock_pos);
+		Draw::draw_screen();
+		Draw::anim_delay();
 	}
 }
 

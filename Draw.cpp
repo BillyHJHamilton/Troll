@@ -152,6 +152,11 @@ void draw_tile_temp (int code, Vec2 const & global_pos, Draw::View const & view,
 	draw_tile(' ', global_pos, view, cstr_White);
 }
 
+void anim_delay()
+{
+	terminal_delay(c_AnimationStepMs);
+}
+
 void print_in_box (Box2 const & box, char const * const str, int align)
 {
 	terminal_print_ext(box.min.x, box.min.y, box.size.x, box.size.y, align, str);
@@ -271,6 +276,11 @@ void draw_screen ()
 void toggle_los_cheat()
 {
 	s_los_cheat = 1 - s_los_cheat;
+}
+
+bool los_cheat_enabled()
+{
+	return s_los_cheat;
 }
 
 // ------------------------------------------------------------------------------------------------

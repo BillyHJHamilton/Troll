@@ -14,7 +14,6 @@ namespace Debug
 		Line,
 		Map,
 		Memory,
-		Pathfind,
 		Serialize,
 		Spell,
 		Count

@@ -103,7 +103,7 @@ void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 
 	if (chessboard_distance(start, goal) > max_cost)
 	{
-		if (Debug::enabled(Debug::Pathfind))
+		if (Debug::enabled(Debug::Bot))
 		{
 			std::cout << "Target is beyond max cost.  Pathfinding skipped.\n";
 		}
@@ -183,18 +183,6 @@ void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 		{
 			path_out.push_back(boomerang);
 			boomerang = discovered[boomerang].come_from;
-		}
-
-		if (Debug::enabled(Debug::Pathfind))
-		{
-			std::cout << "Built path of " << path_out.size() << " steps.\n";
-		}
-	}
-	else
-	{
-		if (Debug::enabled(Debug::Pathfind))
-		{
-			std::cout << "Failed to find a path.\n";
 		}
 	}
 }

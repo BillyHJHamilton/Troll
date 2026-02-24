@@ -11,9 +11,8 @@ namespace Debug
 		s_enabled[Bot] = false;
 		s_enabled[Item] = false;
 		s_enabled[Line] = false;
-		s_enabled[Map] = false;
+		s_enabled[Map] = true;
 		s_enabled[Memory] = false;
-		s_enabled[Pathfind] = false;
 		s_enabled[Serialize] = false;
 		s_enabled[Spell] = false;
 	}
@@ -46,7 +45,6 @@ namespace Debug
 			case Line: return "Line";
 			case Map: return "Map";
 			case Memory: return "Memory";
-			case Pathfind: return "Pathfind";
 			case Serialize: return "Serialize";
 			case Spell: return "Spell";
 		}

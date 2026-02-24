@@ -8,12 +8,24 @@
 
 namespace Bot
 {
+	enum State : byte
+	{
+		Rest,
+		Blunder,
+		Chase,
+		Fight,
+	};
+
 	// Data for an AI creature.
 	struct Brain
 	{
-		int awareness = 0;
-		Vec3 last_seen {0,0,0};
 		std::vector<Vec3> move_stack;
+		Vec3 target_pos {};
+		Creature::Handle target = c_Invalid;
+		int awareness = 0;
+		int patience = 0;
+		int pathfind_ready = 0;
+		Bot::State state = Rest;
 
 		void serialize(ISerializer& s);
 	};

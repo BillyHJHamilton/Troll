@@ -59,25 +59,34 @@ void player_look_at()
 		}
 	}
 
-	Item::Handle item = World::read().peek_item(pos);
-	while (item.valid())
+	Cloud::Type cloud = World::read().get_cloud(pos);
+	if (cloud != Cloud::None)
 	{
-		Draw::add_message(std::format("- {}", item.name()));
-		item = item.next_in_stack();
-			printed = true;
+		Draw::add_message(Cloud::look_describe(cloud));
+		printed = true;
 	}
-
-	Terrain::Type t = World::read().get_terrain(pos);
-	if (t != Terrain::Open)
+	else // cloud blocks terrain and items
 	{
-		// stairs trick when looking at a different map
-		if (pos.z != Player::pos().z)
+		Item::Handle item = World::read().peek_item(pos);
+		while (item.valid())
 		{
-			t = Terrain::swap_stairs(t);
+			Draw::add_message(std::format("- {}", item.name()));
+			item = item.next_in_stack();
+				printed = true;
 		}
 
-		Draw::add_message(Terrain::look_describe(t));
-		printed = true;
+		Terrain::Type t = World::read().get_terrain(pos);
+		if (t != Terrain::Open)
+		{
+			// stairs trick when looking at a different map
+			if (pos.z != Player::pos().z)
+			{
+				t = Terrain::swap_stairs(t);
+			}
+
+			Draw::add_message(Terrain::look_describe(t));
+			printed = true;
+		}
 	}
 
 	if (!printed)
@@ -218,10 +227,8 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 
 			if (roll < failure)
 			{
-				if (creature.is_player())
-				{
-					Draw::add_message("You fail to walk.");
-				}
+				Draw::creature_message(creature, std::format("{} {} to walk.",
+					Grammar::You(creature), Grammar::verbs("fail", creature)));
 				return true;
 			}
 		}

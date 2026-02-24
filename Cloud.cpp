@@ -24,6 +24,15 @@ namespace Cloud
 		}
 	}
 
+	char const * look_describe(Cloud::Type c)
+	{
+		switch (c)
+		{
+			case Cloud::Smoke:		return "- a cloud of smoke";
+			default: DebugBreak();	return "- error: unknown cloud type";
+		}
+	}
+
 	int accuracy_loss (Cloud::Type c)
 	{
 		switch (c)

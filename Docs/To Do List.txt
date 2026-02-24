@@ -76,3 +76,21 @@ To consider:
 
 - How do we handle initiative to support the "ping pong" shield gameplay
  - But without making it too hard to aim at moving characters.
+
+-------------------------------------------------------------------------------
+UX Notes from Richard
+-------------------------------------------------------------------------------
+
+- Fumos - Unclear that you should target it.
+- Want to press '.' to skip turn.
+- Want to see spells already selected on the spell selection menu.
+  (implying non-selectable menu options...)
+- Would like a warning or indication when low on health.
+ - Could show the hp colour on the player @ icon.
+- White beans are too hard to see (true)
+
+-------------------------------------------------------------------------------
+Bugs from Richard
+-------------------------------------------------------------------------------
+
+- Fire(1) doesn't do damage

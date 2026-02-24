@@ -351,6 +351,12 @@ void spawn_for_map(Map& map, History& history, Parameters const& param)
 	// Set next cooldown time.
 	int const cooldown = Random::in_range(param.cooldown_min, param.cooldown_max);
 	history.next_spawn_time = Game::get_turn_number() + cooldown;
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Have spawned {}/{} total.  Next spawn in {}.",
+			history.creatures_spawned, param.lifetime_max_creatures, cooldown);
+	}
 }
 
 // Note: Must call find_spawn_positions first.

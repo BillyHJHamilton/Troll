@@ -9,6 +9,47 @@
 //------------------------------------------------------------------------------
 // Vec2
 
+CompassDirection to_compass(Vec2 vec)
+{
+	switch(vec.x)
+	{
+		case -1:
+		{
+			switch(vec.y)
+			{
+				case -1: return c_CompassNorthwest;
+				case  0: return c_CompassWest;
+				case  1: return c_CompassSouthwest;
+			}
+			break;
+		}
+
+		case 0:
+		{
+			switch(vec.y)
+			{
+				case -1: return c_CompassNorth;
+				case  0: return c_CompassNoMove;
+				case  1: return c_CompassSouth;
+			}
+			break;
+		}
+
+		case 1:
+		{
+			switch(vec.y)
+			{
+				case -1: return c_CompassNortheast;
+				case  0: return c_CompassEast;
+				case  1: return c_CompassSoutheast;
+			}
+			break;
+		}
+	}
+
+	return c_CompassInvalid;
+}
+
 inline Vec2 componentwise_min(Vec2 a, Vec2 b)
 {
 	return {std::min(a.x,b.x), std::min(a.y, b.y)};

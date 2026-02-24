@@ -743,6 +743,16 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 
 void draw_visible_creatures (Draw::View const & view)
 {
+	// Cheat mode: draw ALL the creatures.
+	if (Draw::los_cheat_enabled())
+	{
+		for (Creature::HandleItr itr(1); itr; ++itr)
+		{
+			draw_creature(*itr, view);
+		}
+		return;
+	}
+
 	for (int i : s_visible_creatures)
 	{
 		draw_creature(i, view);

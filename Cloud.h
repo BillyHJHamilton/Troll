@@ -14,6 +14,7 @@ namespace Cloud
 	inline bool is_cloud (Cloud::Type c) { return c >= Cloud::Type(0) && c < Count; }
 	int get_character (Cloud::Type c);
 	char const * get_colour (Cloud::Type c);
+	char const * look_describe(Cloud::Type c);
 	int accuracy_loss (Cloud::Type c);
 	int vision_loss (Cloud::Type c);
 }
