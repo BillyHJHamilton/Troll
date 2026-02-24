@@ -364,7 +364,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		if (target.valid())
 		{
 			int const damage = Spell::get_damage(spell, caster);
-			caster.take_damage(damage, caster);
+			target.take_damage(damage, caster);
 		}
 
 		Spell::EffectParams params

@@ -78,8 +78,9 @@ void MenuInventory::draw_selected_item()
 	}
 	if (item.can_discard())
 	{
-		ss << "[[Delete]] Discard";
+		ss << "[[Delete]] Discard\n";
 	}
+	ss << "[[Esc]]    Cancel\n";
 
 	terminal_print_ext(50, 2, 60, 20, 1, ss.str().c_str());
 }
