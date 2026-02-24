@@ -29,6 +29,37 @@ TargetMode s_target_mode;
 Creature::Handle s_target_creature;
 Vec3 s_target_pos;
 
+//-------------------------------------------------------------------------------------------------
+// Helper functions
+
+bool is_feature_target(Vec3 pos)
+{
+	return World::read().get_terrain(pos) == Terrain::Chest;
+}
+
+void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
+{
+	Vec2 p = Player::pos().xy();
+	int z = Player::pos().z;
+	int r = Player::vision_radius;
+
+	// todo We could create a "LOS iterator" to encapsulate this
+	Box2 vis_area(p - Vec2{r,r}, {1+2*r, 1+2*r});
+	for (BoxItr itr(vis_area); itr; ++itr)
+	{
+		Vec3 p3 = itr->xyz(z);
+		if (World::read().is_visible(p3) &&
+			!Creature::creature_at_pos(p3).valid() &&
+			is_feature_target(p3))
+		{
+			out_targets.push_back(p3);
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// Interface functions
+
 void init ()
 {
 }
@@ -66,7 +97,8 @@ void update ()
 
 	else if (s_target_mode == TargetMode::Automatic_Position)
 	{
-		if (!World::read().is_visible(s_target_pos))
+		if (!World::read().is_visible(s_target_pos) ||
+			!is_feature_target(s_target_pos))
 		{
 			cycle();
 		}
@@ -77,30 +109,6 @@ void update ()
 		if (!Draw::get_view().contains_global_pos(s_target_pos))
 		{
 			cycle();
-		}
-	}
-}
-
-// Helper function
-void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
-{
-	Vec2 p = Player::pos().xy();
-	int z = Player::pos().z;
-	int r = Player::vision_radius;
-
-	// todo We could create a "LOS iterator" to encapsulate this
-	Box2 vis_area(p - Vec2{r,r}, {1+2*r, 1+2*r});
-	for (BoxItr itr(vis_area); itr; ++itr)
-	{
-		Vec3 p3 = itr->xyz(z);
-		if (World::read().is_visible(p3) &&
-			!Creature::creature_at_pos(p3).valid())
-		{
-			Terrain::Type t = World::read().get_terrain(p3);
-			if (t == Terrain::Chest)
-			{
-				out_targets.push_back(p3);
-			}
 		}
 	}
 }
