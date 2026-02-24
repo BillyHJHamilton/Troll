@@ -12,7 +12,7 @@ namespace Spell
 
 int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 
-// Note: Spell accuracy is generally 10-20 pts higher than in HPADS.
+// Note: Spell accuracy is generally 10-20 pts higher than in HPADS, but falls off with range.
 
 // Note: I'd like to use the colour constants from Colour.h, but this is static init'd right now,
 // so it's undefined whether the colours are initialized yet.  If only cstrings could be constexpr!
@@ -21,7 +21,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 {	//			Spell name				Abbrv	Colour				Dif Drk Dmg			Acc Rng	Effect function			Target type				Miscast type
 	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,			85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
 #if d_EnableMegadrill
-	Spell::Data {"Megadrill",			"MG",	"light amber",		5,	0,	20,			999,8,	nullptr,				TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Megadrill",			"MG",	"light amber",		0,	0,	20,			999,8,	nullptr,				TargetType::Sight,		Miscast::Beam },
 #endif
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			50, 8,	&alohomora,				TargetType::Tile,		Miscast::Charm },
@@ -50,7 +50,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* TARANTALLEGRA */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
 	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
-	/* FUMOS */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.",
+	/* FUMOS */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.  Try aiming at a point between you and your enemy before casting.",
 	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
 	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
 	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",

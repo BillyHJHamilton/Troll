@@ -244,12 +244,12 @@ void calc_burning(Creature::Handle creature, Creature::DerivedStats& ds, int sev
 
 void endround_burning(Creature::Handle creature)
 {
+	creature.take_damage(1, Creature::None);
+	Draw::creature_message(creature, Grammar::You_are(creature) + " burned!");
 	creature.reduce_status(Burning, 1);
-	if (creature.has_status(Burning))
-	{
-		Draw::creature_message(creature, Grammar::You_are(creature) + " burned!");
-		creature.take_damage(1, Creature::None);
-	}
+	//if (creature.has_status(Burning))
+	//{  // In a previous version, you didn't take damage on the last turn.
+	//}  // But this was a bit too counterintuitive.
 }
 
 void cure_burning(Creature::Handle const creature)

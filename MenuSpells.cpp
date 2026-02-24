@@ -111,7 +111,7 @@ void MenuSpells::draw_selected_spell ()
 	ss << Spell::get_name(s) << "\n\n";
 	ss << std::setw(13) << std::left << "Difficulty:"
 		<< std::setw(3) << std::left << Spell::get_difficulty(s)
-		<< " (" << std::fixed << std::setprecision(0) << base_success << "%)\n";
+		<< " (" << std::fixed << std::setprecision(0) << base_success << "% successful)\n";
 
 	if (target_type == Spell::TargetType::Creature)
 	{
