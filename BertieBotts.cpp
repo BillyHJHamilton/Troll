@@ -50,16 +50,16 @@ void init()
 	int constexpr c_Rare = 5;
 	int constexpr c_VeryRare = 1;
 
-	add_flavour(cstr_White, "coconut", c_Common, Tastiness::Good);
-	add_flavour(cstr_White, "milk", c_Uncommon, Tastiness::Questionable);
-	add_flavour(cstr_White, "yoghurt", c_Rare, Tastiness::Good);
-	add_flavour(cstr_White, "salt", c_Rare, Tastiness::Questionable);
-	add_flavour(cstr_White, "sugar", c_Rare, Tastiness::Good);
-	add_flavour(cstr_White, "cauliflower", c_Rare, Tastiness::Questionable);
-	add_flavour(cstr_White, "lychee", c_VeryRare, Tastiness::Good);
-	add_flavour(cstr_White, "white blackberry", c_VeryRare, Tastiness::Questionable);
-	add_flavour(cstr_White, "marizpan", c_VeryRare, Tastiness::Wonderful);
-	add_flavour(cstr_White, "snow", c_VeryRare, Tastiness::Questionable);
+	add_flavour(cstr_DarkWhite, "coconut", c_Common, Tastiness::Good);
+	add_flavour(cstr_DarkWhite, "milk", c_Uncommon, Tastiness::Questionable);
+	add_flavour(cstr_DarkWhite, "yoghurt", c_Rare, Tastiness::Good);
+	add_flavour(cstr_DarkWhite, "salt", c_Rare, Tastiness::Questionable);
+	add_flavour(cstr_DarkWhite, "sugar", c_Rare, Tastiness::Good);
+	add_flavour(cstr_DarkWhite, "cauliflower", c_Rare, Tastiness::Questionable);
+	add_flavour(cstr_DarkWhite, "lychee", c_VeryRare, Tastiness::Good);
+	add_flavour(cstr_DarkWhite, "white blackberry", c_VeryRare, Tastiness::Questionable);
+	add_flavour(cstr_DarkWhite, "marizpan", c_VeryRare, Tastiness::Wonderful);
+	add_flavour(cstr_DarkWhite, "snow", c_VeryRare, Tastiness::Questionable);
 
 	add_flavour(cstr_LighterGrey, "vanilla", c_Common, Tastiness::Wonderful);
 	add_flavour(cstr_LighterGrey, "potato", c_Uncommon, Tastiness::Questionable);
