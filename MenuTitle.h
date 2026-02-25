@@ -7,6 +7,7 @@ class MenuTitle : public MenuList
 {
 public:
 	void init();
+	virtual void draw_screen();
 	virtual void handle_input (int key);
 
 protected:
@@ -22,4 +23,6 @@ protected:
 	};
 
 	static char const* cstr_TitleText;
+	static char const* cstr_FigureText;
+	static char const* cstr_CastleText;
 };

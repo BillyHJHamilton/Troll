@@ -41,41 +41,41 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
 {
-	/* VERMILLIOUS */ "Shoots a shower of hot sparks, dealing minor damage.",
+	/* Vermillious */ "Shoots a shower of hot sparks, dealing minor damage.",
 #if d_EnableMegadrill
-	/* MEGADRILL */ "For Emergency Use Only.  Terms And Conditions Apply.  Use At Your Own Risk.",
+	/* Megadrill */ "For Emergency Use Only.  Terms And Conditions Apply.  Use At Your Own Risk.",
 #endif
-	/* FLIPENDO */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals extra damage if the target hits something.",
-	/* ALOHOMORA */ "The Unlocking Charm.  Opens locks on doors and chests.",
-	/* TARANTALLEGRA */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
-	/* LOCOMOTOR_MORTIS */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
-	/* RICTUSEMPRA */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
-	/* FUMOS */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.  Try aiming at a point between you and your enemy before casting.",
-	/* MIMBLEWIMBLE */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
-	/* LACARNUM_INF */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
-	/* FURNUNCULUS */ "Causes the target to burst out in painful boils.",
-	/* ACCIO */ "The Summoning Charm.  Causes an object to fly through the air to the caster.",
-	/* STUPEFY */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
-	/* IMPEDEMENTA */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
-	/* FINITE_INC */ "This valuable counter-spell completely ends one enchantment afflicting the caster.",
-	// /* PROTEGO */ "The Shield Charm.  Provides protection against hostile spells, and may deflect a spell back at its caster.  More powerful spells may penetrate the shield."
-	/* BAT_BOGEY */ "Causes a swarm of black winged things to descend on the target.  This is highly distracting, but also makes the victim somewhat harder to hit.",
-	// /* AVIS */ "Conjures one or more birds with shark beaks and claws.  The Oppugno spell is required to make the birds attack."
-	// /* OPPUGNO */ "If you have previously summoned birds, this causes them to attack."
-	// /* EPISKY */ "A simple healing spell.  The target regains one or two hitpoints."
-	// /* CONFUNDO */ "The Confundus Charm.  The target becomes confused, rendering him less able to aim, dodge, and cast spells."
-	// /* DISILLUSIONMENT */ "The Disillusionment Charm.  Makes the caster hard to see.  This spell is more effective in the hands of a more skilled caster."
-	// /* APPARITION */ "Apparition allows one to disappear and instantly reappear elsewhere. This may mean a great bonus to accuracy and evasion for the caster while his opponent figures out where he is now."
-	// /* INCARCEROUS */ "Binds the target with thick ropes, which greatly lower his ability to dodge and cast spells, and may also deal damage by constriction."
-	// /* SALVIO_HEXIA */ "Sustains defensive spells (such as Protego), preventing them from collapsing on their own while the spell is in effect."
-	// /* EXTRASENSORY */ "Sharpens the caster's senses far beyond their natural level, alloweing his spells to be much more accurate."
-	// /* OBLIVIATE */ "The memory charm.  May cause the target to forget a spell."
-	// /* WAND_ARROWS */ "Fires a shower of arrows towards the opponent.  Each arrow that hits deals 2 damage."
-	// /* DISINTEGRATION */ "The user is protected by a powerful magical barrier, which reduces any physical object passing through to dust.  Spells, however, can pass through the barrier unimpeded."
-	// /* WATERTRAP */ "The target is trapped in a crushing sphere of water."
-	// /* CRUCIO */ "The Cruciatus Curse.  Causes the victim extreme pain.  Using this curse is punishable by a lifetime in Azkaban."
-	// /* SECTUMSEMPRA */ "The victim of this evil spell is slashed open, as if by a sword.  This wound will cause some damage each turn."
-	// /* AVADA_KEDAVRA */ "The Killing Curse.  Causes a green flash of light, followed by death.  No magical protection can block this spell.  Using this curse is punishable by a lifetime in Azkaban."
+	/* Flipendo */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals extra damage if the target hits something.",
+	/* Alohomora */ "The Unlocking Charm.  Opens locks on doors and chests.",
+	/* Tarantallegra */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
+	/* Locomotor Mortis */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
+	/* Rictusempra */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
+	/* Fumos */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.  Try aiming at a point between you and your enemy before casting.",
+	/* Mimblewimble */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
+	/* Lacarnum Inflamare */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
+	/* Furnunculus */ "Causes the target to burst out in painful boils.",
+	/* Finite Incantatem */ "This valuable counter-spell completely ends one enchantment afflicting the caster.",
+	/* Accio */ "The Summoning Charm.  Causes an object to fly through the air to the caster.",
+	/* Stupefy */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
+	/* Impedementa */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
+	// /* Protego */ "The Shield Charm.  Provides protection against hostile spells, and may deflect a spell back at its caster.  More powerful spells may penetrate the shield."
+	/* Bat-Bogey Hex */ "Causes a swarm of black winged things to descend on the target.  This is highly distracting, but also makes the victim somewhat harder to hit.",
+	// /* Avis */ "Conjures one or more birds with shark beaks and claws.  The Oppugno spell is required to make the birds attack."
+	// /* Oppogno */ "If you have previously summoned birds, this causes them to attack."
+	// /* Episky */ "A simple healing spell.  The target regains one or two hitpoints."
+	// /* Confundo */ "The Confundus Charm.  The target becomes confused, rendering him less able to aim, dodge, and cast spells."
+	// /* Disillusionment */ "The Disillusionment Charm.  Makes the caster hard to see.  This spell is more effective in the hands of a more skilled caster."
+	// /* Apparition */ "Apparition allows one to disappear and instantly reappear elsewhere. This may mean a great bonus to accuracy and evasion for the caster while his opponent figures out where he is now."
+	// /* Incarcerous */ "Binds the target with thick ropes, which greatly lower his ability to dodge and cast spells, and may also deal damage by constriction."
+	// /* Salvio Hexia */ "Sustains defensive spells (such as Protego), preventing them from collapsing on their own while the spell is in effect."
+	// /* Extrasensory */ "Sharpens the caster's senses far beyond their natural level, alloweing his spells to be much more accurate."
+	// /* Obliviate */ "The memory charm.  May cause the target to forget a spell."
+	// /* Wand Arrows */ "Fires a shower of arrows towards the opponent.  Each arrow that hits deals 2 damage."
+	// /* Disintegration */ "The user is protected by a powerful magical barrier, which reduces any physical object passing through to dust.  Spells, however, can pass through the barrier unimpeded."
+	// /* Watertrap */ "The target is trapped in a crushing sphere of water."
+	// /* Crucio */ "The Cruciatus Curse.  Causes the victim extreme pain.  Using this curse is punishable by a lifetime in Azkaban."
+	// /* Sectumsempra */ "The victim of this evil spell is slashed open, as if by a sword.  This wound will cause some damage each turn."
+	// /* Avada Kedavra */ "The Killing Curse.  Causes a green flash of light, followed by death.  No magical protection can block this spell.  Using this curse is punishable by a lifetime in Azkaban."
 };
 
 void init()

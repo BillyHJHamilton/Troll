@@ -44,13 +44,17 @@ To Do:
  - Show file preview
  - High score table
 
-- Spells
+- Spells (New)
+ - Lumos?  We could have darkness in the dungeons.  That would be fun.
+ - Slugulus Eructo
  - More spells from HPADS
- - Accio!
+
+- Spells (Expanded)
+ - Accio
   - Should show the item fly through the air.
   - Should it drag character closer at higher power?
- - Lumos?
-  - We could have darkness maps in the dungeons
+ - Flipendo
+  - Should push around crates/features
  - Finite Incantatem
   - In principle it could be targeted, if we have lingering spell effects.
 
@@ -88,9 +92,16 @@ UX Notes from Richard
 - Would like a warning or indication when low on health.
  - Could show the hp colour on the player @ icon.
 - White beans are too hard to see (true)
+- Didn't know how to save (not mentioned in help)
+- HP versus "Stamina" is inconsistent terminology
+- Would be nice to see spell durations (for TA, RS, etc)
+
+-------------------------------------------------------------------------------
+Design Notes from Richard
+-------------------------------------------------------------------------------
+
+- It's boring that spells do exactly a predictable amount of damage
 
 -------------------------------------------------------------------------------
 Bugs from Richard
 -------------------------------------------------------------------------------
-
-- Fire(1) doesn't do damage

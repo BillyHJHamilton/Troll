@@ -4,27 +4,6 @@
 #include "Game.h"
 
 #include "BearLibTerminal.h"
-
-// d888888b d8888b.  .d88b.  db      db      
-// `~~88~~` 88  `8D .8P  Y8. 88      88      
-//    88    88oobY` 88    88 88      88      
-//    88    88`8b   88    88 88      88      
-//    88    88 `88. `8b  d8` 88booo. 88booo. 
-//    YP    88   YD  `Y88P'  Y88888P Y88888P 
-
-//char const* MenuTitle::cstr_TitleText =
-//	"\n"
-//	"  ------------------------------------\n\n"
-//	"  TTTTTTT RRRR    OOO    L      L     \n"
-//	"     T    R   R  O   O   L      L     \n"
-//	"     T    R  R  O     O  L      L     \n"
-//	"     T    RRR   O     O  L      L     \n"
-//	"     T    R  R   O   O   L      L     \n"
-//	"     T    R   R   OOO    LLLLLL LLLLLL\n\n"
-//	"  ------------------------------------\n"
-//	"      The Revenge Of Luna Lovegood    \n"
-//	"  ------------------------------------\n"
-//	"\n";
        
 char const* MenuTitle::cstr_TitleText = "\n"
 "  ==============================================\n"
@@ -40,6 +19,34 @@ char const* MenuTitle::cstr_TitleText = "\n"
 "       THE   REVENGE   OF   LUNA   LOVEGOOD     \n"
 "  ==============================================\n\n";
 
+char const* MenuTitle::cstr_FigureText =
+"       ,m.       \n"
+"      6@S63      \n"
+"      s36S29     \n"
+"       aS&S6l    \n"
+"      T q9S~ b   \n"
+"     B 7L    4b  \n"
+"    d p Y     q  \n"
+"   d p  1-  -lyD \n"
+"  eg e ;      g' \n"
+"  /'   a      a  \n"
+" /     e       a \n"
+"*     d        a \n"
+"      R         b\n"
+"      L         E\n";
+
+char const* MenuTitle::cstr_CastleText =
+"                                      \n"
+"              /\\                      \n"
+"         +   /..\\            A        \n"
+"        / \\  l 'l    /\\     / \\       \n"
+"        l l  l' l A  ll  /\\^^^^\\      \n"
+"    /^\\\\l l\\ l 'l+++ ll /<>\\,,,,\\     \n"
+"   /   \\ '+++l  l   \\ll l  l    l /\\  \n"
+"   l O l v v l 'l ' l+++p  q  l+++l l \n"
+"/''l   l v v l  l'  l   l  l  l   l \\ \n"
+"1  l   l.v.v.l  l   l # l  l  lnnnl  l\n";
+
 void MenuTitle::init()
 {
 	set_title(cstr_TitleText);
@@ -53,6 +60,14 @@ void MenuTitle::init()
 #endif
 		{"Quit", TitleMenuOption::Quit}
 	};
+}
+
+void MenuTitle::draw_screen ()
+{
+	MenuList::draw_screen();
+
+	terminal_print(80, 17, cstr_FigureText);
+	terminal_print(25, 21, cstr_CastleText);
 }
 
 void MenuTitle::handle_input (int key)
