@@ -1,11 +1,13 @@
 #include "MenuList.h"
 
 #include "Codepoint.h"
+#include "Colour.h"
 #include "Config.h"
 #include "Debug.h"
 #include "VectorUtil.h"
 
 #include "BearLibTerminal.h"
+#include <format>
 
 void MenuList::draw_screen ()
 {
@@ -26,7 +28,15 @@ void MenuList::draw_screen ()
 	for (int i = m_scroll_top; i <= m_scroll_bottom; ++i)
 	{
 		int const line_y = m_list_start + (i - m_scroll_top);
-		terminal_print(c_Indent, line_y, m_options[i].label.c_str());
+		if (m_options[i].colour != nullptr)
+		{
+			terminal_print(c_Indent, line_y, std::format("[color={}]{}[/color]",
+				m_options[i].colour, m_options[i].label).c_str());
+		}
+		else
+		{
+			terminal_print(c_Indent, line_y, m_options[i].label.c_str());
+		}
 	}
 
 	if (goes_off_bottom)
@@ -100,9 +110,9 @@ void MenuList::set_options(std::vector<Option>&& options)
 	calc_layout();
 }
 
-void MenuList::add_option(std::string text, int value)
+void MenuList::add_option(std::string text, int value, char const* colour)
 {
-	m_options.push_back({text,value});
+	m_options.push_back({text,value,colour});
 	calc_layout();
 }
 

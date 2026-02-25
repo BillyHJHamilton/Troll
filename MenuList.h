@@ -12,6 +12,7 @@ public:
 	{
 		std::string label;
 		int value = 0;
+		const char* colour = nullptr;
 	};
 	using OptionList = std::vector<Option>;
 
@@ -23,7 +24,7 @@ public:
 	void set_title(std::string title);
 	void reserve(int n);
 	void set_options(std::vector<Option>&& options);
-	void add_option(std::string label, int value);
+	void add_option(std::string label, int value, char const* colour = nullptr);
 
 	void reset_cursor();
 	void cursor_up();

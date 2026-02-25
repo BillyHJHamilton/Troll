@@ -2,6 +2,7 @@
 
 #include "Action.h"
 #include "Creature.h"
+#include "Colour.h"
 #include "Draw.h"
 #include "Game.h"
 #include "Player.h"
@@ -91,6 +92,8 @@ void MenuSpells::show_starting_spells ()
 			add_option(label, value);
 		}
 	}
+
+	m_num_selected = 0;
 }
 
 void MenuSpells::draw_selected_spell ()
@@ -100,7 +103,6 @@ void MenuSpells::draw_selected_spell ()
 	{
 		return;
 	}
-
 
 	float const base_success = 100.0f - Spell::get_miscast_rate(s, Player::handle().skill_magic());
 	int const damage = Spell::get_damage(s, Player::handle());
@@ -134,17 +136,30 @@ void MenuSpells::draw_selected_spell ()
 
 void MenuSpells::select_starting_spell ()
 {
-	Spell::Index spell = (Spell::Index)get_selected().value;
-	Player::handle().learn_spell(spell);
-
-	if (Player::handle().num_spells() >= 3)
+	if (m_options[m_cursor].colour == nullptr)
 	{
-		// That's it!  Start the game!
-		Menu::close();
-		Game::setup();
+		++m_num_selected;
+		m_options[m_cursor].colour = cstr_LightYellow;
 	}
 	else
 	{
-		remove_selected();
+		--m_num_selected;
+		m_options[m_cursor].colour = nullptr;
+	}
+
+	if (m_num_selected == 3)
+	{
+		// That's it!  Start the game!
+		for (int i = 0; i < Util::Size(m_options); ++i)
+		{
+			if (m_options[i].colour != nullptr)
+			{
+				Spell::Index spell = (Spell::Index)m_options[i].value;
+				Player::handle().learn_spell(spell);
+			}
+		}
+
+		Menu::close();
+		Game::setup();
 	}
 }

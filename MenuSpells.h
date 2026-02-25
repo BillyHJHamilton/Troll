@@ -26,4 +26,6 @@ protected:
 		StartingSpells
 	};
 	Mode m_mode = Mode::KnownSpells;
+
+	int m_num_selected = 0;
 };

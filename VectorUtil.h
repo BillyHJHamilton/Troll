@@ -171,11 +171,10 @@ namespace Util
 	template<typename VectorItemType, typename Alc>
 	void Fill(std::vector<VectorItemType,Alc>& vector, int num, VectorItemType value)
 	{
-		vector.clear();
-		vector.reserve(num);
+		vector.resize(num);
 		for (int i = 0; i < num; ++i)
 		{
-			vector.push_back(value);
+			vector[i] = value;
 		}
 	}
 
