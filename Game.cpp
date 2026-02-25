@@ -33,6 +33,7 @@ namespace Game
 {
 
 int constexpr c_VersionNumber = 0;
+int constexpr c_AutosaveFrequency = 25;
 
 int s_turn_number;
 GameMode s_game_mode;
@@ -170,6 +171,11 @@ void update()
 {
 	// Confirm that temp memory from last frame was released.
 	assert(Scratchpad::is_empty());
+
+	if (s_turn_number % c_AutosaveFrequency == 0)
+	{
+		Game::save();
+	}
 
 	if (s_game_mode == GameMode::Normal)
 	{
