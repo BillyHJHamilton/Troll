@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "Creature.h"
 #include "Game.h"
+#include "Gingerbread.h"
 #include "Input.h"
 #include "Menu.h"
 #include "Player.h"
@@ -299,7 +300,10 @@ void update_screen()
 
 	terminal_font("tile");
 	World::read().draw(view);
+
+	Gingerbread::edit_player_stats().colour = get_hp_colour(Player::handle()); // try this?
 	draw_creature(Creature::Player, view);
+
 	Creature::draw_visible_creatures(view);
 	Target::draw(view);
 
@@ -341,19 +345,19 @@ const char* get_hp_colour(Creature::Handle creature)
 
 	if (hp_percent > 0.99f)
 	{
-		return "[color=white]";
+		return cstr_White;
 	}
 	else if (hp_percent >= 0.499f)
 	{
-		return "[color=light yellow]";
+		return cstr_LightYellow;
 	}
 	else if (hp_percent >= 0.249f)
 	{
-		return "[color=light orange]";
+		return cstr_LightOrange;
 	}
 	else
 	{
-		return "[color=light red]";
+		return cstr_LightRed;
 	}
 }
 
@@ -369,7 +373,7 @@ void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 		ss << "[/bkcolor]";
 	}
 
-	ss << get_hp_colour(creature);
+	ss << "[color=" << get_hp_colour(creature) << "]";
 	ss << std::right << std::setw(3) << creature.hp();
 	ss << " / ";
 	ss << std::left << std::setw(3) << creature.max_hp();
