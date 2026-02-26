@@ -31,24 +31,16 @@ void Map::serialize(ISerializer& s)
 	s.srz_int(global_z);
 	s.srz_float(difficulty);
 
-	srz_grid(s, terrain, "map.terrain");
-	srz_grid(s, visibility, "map.visibility");
-	srz_grid(s, clouds, "map.clouds");
-	srz_grid(s, items, "map.items");
+	s.srz_grid(terrain, "map.terrain");
+	s.srz_grid(visibility, "map.visibility");
+	s.srz_grid(clouds, "map.clouds");
+	s.srz_grid(items, "map.items");
 
-	srz_hashmap(s, cloud_lifetimes, "map.cloud_lifetimes");
-	srz_hashmap(s, stairs, "map.stairs");
+	s.srz_hashmap(cloud_lifetimes, "map.cloud_lifetimes");
+	s.srz_hashmap(stairs, "map.stairs");
 
-	bool has_generator;
-	if (s.is_load())
-	{
-		s.srz_bool(has_generator);
-	}
-	else
-	{
-		has_generator = (generator != nullptr);
-		s.srz_bool(has_generator);
-	}
+	bool has_generator = (generator != nullptr);
+	s.srz_bool(has_generator);
 
 	if (has_generator)
 	{

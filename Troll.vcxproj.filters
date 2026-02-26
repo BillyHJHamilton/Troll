@@ -356,9 +356,6 @@
     <ClInclude Include="Spawn.h">
       <Filter>Header Files\World</Filter>
     </ClInclude>
-    <ClInclude Include="Serialize.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MenuName.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
@@ -394,6 +391,12 @@
     </ClInclude>
     <ClInclude Include="Config.h">
       <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialize.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializeSaveLoad.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

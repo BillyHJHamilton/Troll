@@ -114,7 +114,7 @@ void History::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	srz_vector_size(s, s_spawn_history, "s_spawn_history");
+	s.srz_vector_size(s_spawn_history, "s_spawn_history");
 	for (History& history : s_spawn_history)
 	{
 		history.serialize(s);

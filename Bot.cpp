@@ -78,17 +78,17 @@ void clear()
 
 void Brain::serialize(ISerializer& s)
 {
-	srz_vector(s, move_stack, "brain.move_stack");
+	s.srz_vector(move_stack, "brain.move_stack");
 	s.srz_vec3(target_pos);
-	srz_value(s, target);
+	s.srz_value(target);
 	s.srz_int(awareness);
 	s.srz_int(patience);
-	srz_value(s, state);
+	s.srz_value(state);
 }
 
 void serialize(ISerializer& s)
 {
-	srz_vector_size(s, s_brains, "brains");
+	s.srz_vector_size(s_brains, "brains");
 	for (Brain& b : s_brains)
 	{
 		b.serialize(s);

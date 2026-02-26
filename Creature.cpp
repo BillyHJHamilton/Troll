@@ -100,7 +100,7 @@ void clear ()
 
 void Creature::Instance::serialize(ISerializer& s)
 {
-	srz_value(s, type);
+	s.srz_value(type);
 	s.srz_int(hp);
 	s.srz_vec3(pos);
 	s.srz_int(rest_turns);
@@ -108,7 +108,7 @@ void Creature::Instance::serialize(ISerializer& s)
 
 void serialize (ISerializer& s)
 {
-	srz_grid(s, s_creature_status, "s_creature_status");
+	s.srz_grid(s_creature_status, "s_creature_status");
 
 	s.srz_int(s_max_creature_index);
 	for (int i = 0; i < s_max_creature_index; ++i)
@@ -127,7 +127,7 @@ void serialize (ISerializer& s)
 		}
 	}
 
-	srz_vector(s, s_visible_creatures, "s_visible_creatures");
+	s.srz_vector(s_visible_creatures, "s_visible_creatures");
 
 	// Shouldn't need to serialize because it will be empty by end of turn:
 	assert(s_fainting_creatures.empty());

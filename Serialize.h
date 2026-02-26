@@ -20,48 +20,84 @@ class ISerializer
 public:
 	virtual ~ISerializer() {}
 
+	// This is a leaky abstraction, but really useful for writing template functions
+	// to handle saving/loading for templated types like maps/vectors.
 	virtual bool is_load() const = 0;
 
 	virtual void srz_raw(char* c, int size) = 0;
 
-	virtual void srz_bool(bool& b) = 0;
-	virtual void srz_int(int& x) = 0;
-	virtual void srz_float(float& f) = 0;
-	virtual void srz_byte(byte& b) = 0;
-	virtual void srz_char(char& c) = 0;
+	// Generic function to serialize raw data.  Good for stable structs, enums and the like.
+	// Obviously NOT safe for things with pointers or dynamic data.
+	template<typename ValueType>
+	void srz_value(ValueType& x)
+	{
+		srz_raw((char*)&x, sizeof(x));
+	}
 
-	virtual void srz_vec2(Vec2& v) = 0;
-	virtual void srz_vec3(Vec3& v) = 0;
-	virtual void srz_box2(Box2& b) = 0;
+	// Wrappers for basic value types.
+	void srz_bool(bool& b) { srz_value(b); }
+	void srz_int(int& x) { srz_value(x); }
+	void srz_float(float& f) { srz_value(f); }
+	void srz_byte(byte& b) { srz_value(b); }
+	void srz_char(char& c) { srz_value(c); }
 
-	virtual void srz_name_hash(NameHash& h) = 0;
-	virtual void srz_creature_handle(Creature::Handle& h) = 0;
-	virtual void srz_item_handle(Item::Handle& h) = 0;
+	void srz_vec2(Vec2& v) { srz_value(v); }
+	void srz_vec3(Vec3& v) { srz_value(v); }
+	void srz_box2(Box2& b) { srz_value(b); }
+
+	void srz_name_hash(NameHash& h) { srz_value(h); }
+	void srz_creature_handle(Creature::Handle& h) { srz_value(h); }
+	void srz_item_handle(Item::Handle& h) { srz_value(h); }
+
+	// Types that require special handling.
 
 	virtual void srz_string(std::string& str) = 0;
+
+	// Serializes a vector (of value types) by first serializing the size, then the data.
+	// It simply calls srz_vector_size followed by srz_array_data.
+	template<typename ValueType>
+	void srz_vector(std::vector<ValueType>& v, char const* debug_name);
+
+	// Serializes the size of a vector, but not the contents.
+	// If you have a vector of a complex type (shared_ptr for instance),
+	// you can call this first, then loop through and handle the values.
+	// HINT: Make sure to include & if using a for-each loop!  Otherwise it won't work.
+	template<typename ValueType>
+	void srz_vector_size(std::vector<ValueType>& v, char const* debug_name);
+
+	// Serializes an array with a known type and size.
+	template<typename ValueType>
+	void srz_array_data(ValueType* raw_data, int num);
+
+	// Serializes a Grid (of value type) by calling srz_grid_size, then srz_array_data.
+	template<typename ValueType>
+	void srz_grid(Grid<ValueType>& g, char const* debug_name);
+
+	template<typename ValueType>
+	void srz_grid_size(Grid<ValueType>& g, char const* debug_name);
+
+	// Serialize a hash map (if both KeyType and ValueType are simple value types).
+	template<typename KeyType, typename ValueType>
+	void srz_hashmap(std::unordered_map<KeyType, ValueType>& m, char const* debug_name);
 };
 
-// Generic function to serialize raw data.  Good for stable structs, enums and the like.
-// Obviously NOT safe for things with pointers or dynamic data.
+//-------------------------------------------------------------------------------------------------
+// Template function implementations
+
 template<typename ValueType>
-void srz_value(ISerializer& s, ValueType& x)
+void ISerializer::srz_vector(std::vector<ValueType>& v, char const* debug_name)
 {
-	s.srz_raw((char*)&x, sizeof(x));
+	srz_vector_size(v, debug_name);
+	srz_array_data(v.data(), (int)v.size());
 }
 
-// For serializing a vector of raw data, call srz_vector.
-
-// If your vector is complex, you call srz_vector_size,
-// then iterate over the vector and serialize each element with custom logic.
-// Make sure not to serialize a COPY of the elements, or nothing will load!
-
 template<typename ValueType>
-void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debug_name)
+void ISerializer::srz_vector_size(std::vector<ValueType>& v, char const* debug_name)
 {
 	int vec_size;
-	if (s.is_load())
+	if (is_load())
 	{
-		s.srz_int(vec_size);
+		srz_int(vec_size);
 		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << "Load " << debug_name << ", size " << vec_size << "\n";
@@ -74,7 +110,7 @@ void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debu
 	else
 	{
 		vec_size = (int)v.size();
-		s.srz_int(vec_size);
+		srz_int(vec_size);
 		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << "Save " << debug_name << ", size " << vec_size << "\n";
@@ -83,26 +119,19 @@ void srz_vector_size(ISerializer& s, std::vector<ValueType>& v, char const* debu
 }
 
 template<typename ValueType>
-void srz_array_data(ISerializer& s, ValueType* raw_data, int num)
+void ISerializer::srz_array_data(ValueType* raw_data, int num)
 {
-	s.srz_raw((char*)raw_data, num * sizeof(ValueType));
+	srz_raw((char*)raw_data, num * sizeof(ValueType));
 }
 
 template<typename ValueType>
-void srz_vector(ISerializer& s, std::vector<ValueType>& v, char const* debug_name)
+void ISerializer::srz_grid_size(Grid<ValueType>& g, char const* debug_name)
 {
-	srz_vector_size(s, v, debug_name);
-	srz_array_data(s, v.data(), (int)v.size());
-}
-
-template<typename ValueType>
-void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
-{
-	if (s.is_load())
+	if (is_load())
 	{
 		int w, h;
-		s.srz_int(w);
-		s.srz_int(h);
+		srz_int(w);
+		srz_int(h);
 		bool resized = false;
 		if (g.get_width() != w || g.get_height() != h)
 		{
@@ -120,8 +149,8 @@ void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 	{
 		int w = g.get_width();
 		int h = g.get_height();
-		s.srz_int(w);
-		s.srz_int(h);
+		srz_int(w);
+		srz_int(h);
 		int const length = w * h;
 		if (Debug::enabled(Debug::Serialize))
 		{
@@ -132,27 +161,20 @@ void srz_grid_size(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
 }
 
 template<typename ValueType>
-void srz_grid_data(ISerializer& s, Grid<ValueType>& g)
+void ISerializer::srz_grid(Grid<ValueType>& g, char const* debug_name)
 {
-	s.srz_raw((char*)g.edit_data().data(), g.num() * sizeof(ValueType));
-}
-
-template<typename ValueType>
-void srz_grid(ISerializer& s, Grid<ValueType>& g, char const* debug_name)
-{
-	srz_grid_size(s, g, debug_name);
-	srz_grid_data(s, g);
+	srz_grid_size(g, debug_name);
+	srz_array_data(g.edit_data().data(), g.num());
 }
 
 // Serialize a map with value types.
 template<typename KeyType, typename ValueType>
-void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType>& m,
-	char const* debug_name)
+void ISerializer::srz_hashmap(std::unordered_map<KeyType,ValueType>& m, char const* debug_name)
 {
-	if (s.is_load())
+	if (is_load())
 	{
 		int map_size;
-		s.srz_int(map_size);
+		srz_int(map_size);
 		m.clear();
 		m.reserve(map_size);
 		if (Debug::enabled(Debug::Serialize))
@@ -163,23 +185,23 @@ void srz_hashmap(ISerializer& s, std::unordered_map<KeyType,ValueType>& m,
 		{
 			KeyType a;
 			ValueType b;
-			srz_value(s, a);
-			srz_value(s, b);
+			srz_value(a);
+			srz_value(b);
 			m.emplace(a,b);
 		}
 	}
 	else
 	{
 		int map_size = (int)m.size();
-		s.srz_int(map_size);
+		srz_int(map_size);
 		if (Debug::enabled(Debug::Serialize))
 		{
 			std::cout << std::format("Save {}, size={}\n", debug_name, map_size);
 		}
 		for (auto& pair : m)
 		{
-			srz_value(s, pair.first);
-			srz_value(s, pair.second);
+			srz_value(pair.first);
+			srz_value(pair.second);
 		}
 	}
 }

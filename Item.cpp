@@ -341,7 +341,7 @@ void clear()
 
 void Instance::serialize(ISerializer& s)
 {
-	srz_value(s, type);
+	s.srz_value(type);
 	s.srz_int(subtype);
 	s.srz_int(flavour);
 	s.srz_int(next);
@@ -350,7 +350,7 @@ void Instance::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	srz_vector_size(s, s_items, "s_items");
+	s.srz_vector_size(s_items, "s_items");
 	for (Item::Instance& inst : s_items)
 	{
 		inst.serialize(s);

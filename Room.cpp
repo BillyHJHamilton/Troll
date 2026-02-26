@@ -37,8 +37,8 @@ Room::Room(Vec2 localEnd, Stairs::Direction StairsDirection)
 void Room::Serialize(ISerializer& s)
 {
 	s.srz_box2(m_Box);
-	srz_value(s, m_RoomType);
-	srz_value(s, m_StairsDirection);
+	s.srz_value(m_RoomType);
+	s.srz_value(m_StairsDirection);
 	s.srz_int(m_CorridorAxis);
 }
 

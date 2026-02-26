@@ -33,9 +33,9 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 void MapGenerator::Serialize(ISerializer& s)
 {
-	srz_vector(s, m_RequestedConnections, "m_RequestedConnections");
+	s.srz_vector(m_RequestedConnections, "m_RequestedConnections");
 
-	srz_vector_size(s, m_RoomVec, "m_RoomVec");
+	s.srz_vector_size(m_RoomVec, "m_RoomVec");
 	for (Room& r : m_RoomVec)
 	{
 		r.Serialize(s);

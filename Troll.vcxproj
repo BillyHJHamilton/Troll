@@ -340,6 +340,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Room.h" />
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
+    <ClInclude Include="SerializeSaveLoad.h" />
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />

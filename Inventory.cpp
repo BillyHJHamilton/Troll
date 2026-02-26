@@ -36,7 +36,7 @@ Inventory const& Inventory::read()
 
 void Inventory::serialize(ISerializer& s)
 {
-	srz_vector(s, s_inventory.invent, "s_inventory");
+	s.srz_vector(s_inventory.invent, "s_inventory");
 }
 
 bool Inventory::has_item () const
