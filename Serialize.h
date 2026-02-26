@@ -10,9 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-void SaveGame(const std::string& filename);
-void LoadGame(const std::string& filename);
-
 // Using virtual is the lesser evil here.
 // I want to keep this header light because it'll be needed everywhere.
 class ISerializer
@@ -41,13 +38,13 @@ public:
 	void srz_byte(byte& b) { srz_value(b); }
 	void srz_char(char& c) { srz_value(c); }
 
-	void srz_vec2(Vec2& v) { srz_value(v); }
-	void srz_vec3(Vec3& v) { srz_value(v); }
-	void srz_box2(Box2& b) { srz_value(b); }
+	void srz_vec2(Vec2& v);
+	void srz_vec3(Vec3& v);
+	void srz_box2(Box2& b);
 
-	void srz_name_hash(NameHash& h) { srz_value(h); }
-	void srz_creature_handle(Creature::Handle& h) { srz_value(h); }
-	void srz_item_handle(Item::Handle& h) { srz_value(h); }
+	void srz_name_hash(NameHash& h);
+	void srz_creature_handle(Creature::Handle& h);
+	void srz_item_handle(Item::Handle& h);
 
 	// Types that require special handling.
 

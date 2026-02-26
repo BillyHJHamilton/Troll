@@ -18,6 +18,7 @@
 #include "Potion.h"
 #include "Random.h"
 #include "Scratch.h"
+#include "SerializeSaveLoad.h"
 #include "Spawn.h"
 #include "Spell.h"
 #include "Stairs.h"
@@ -211,7 +212,8 @@ void save()
 {
 	if (!s_filename.empty())
 	{
-		SaveGame(s_filename);
+		SaveSerializer s(s_filename);
+		serialize_all(s);
 	}
 }
 
@@ -220,7 +222,8 @@ void load(std::string filename)
 	s_filename = filename;
 	if (!s_filename.empty())
 	{
-		LoadGame(s_filename);
+		LoadSerializer s(s_filename);
+		serialize_all(s);
 	}
 }
 
