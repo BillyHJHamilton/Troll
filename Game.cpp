@@ -270,6 +270,7 @@ void end_turn()
 		++itr)
 	{
 		Bot::do_turn(*itr);
+		Creature::remove_defeated_creatures(); // Check often so message order feels right...
 		Status::do_endround(*itr);
 		Creature::remove_defeated_creatures();
 	}
