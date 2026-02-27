@@ -40,6 +40,7 @@ namespace Menu
 	void show_starting_spells();
 
 	// Other Documents
+	void show_document(char const* message);
 	void show_help();
 	void show_game_over();
 

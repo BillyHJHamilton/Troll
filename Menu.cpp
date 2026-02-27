@@ -177,6 +177,16 @@ void show_name_entry()
 	s_menu_name.init();
 }
 
+void show_document(char const* message)
+{
+	if (s_current_menu != nullptr)
+	{
+		push();
+	}
+	set_menu(s_menu_document);
+	s_menu_document.init(message);
+}
+
 void show_help()
 {
 	set_menu(s_menu_document);

@@ -34,7 +34,7 @@
 namespace Game
 {
 
-int constexpr c_VersionNumber = 0;
+int constexpr c_VersionNumber = 1;
 int constexpr c_AutosaveFrequency = 25;
 
 int s_turn_number;
@@ -99,15 +99,14 @@ void clear()
 	s_filename.clear();
 }
 
-void serialize_all(ISerializer& s)
+bool try_serialize_all(ISerializer& s)
 {
 	int version = c_VersionNumber;
 	s.srz_int(version);
-	if (s.is_load() && version != c_VersionNumber)
+	if (version != c_VersionNumber)
 	{
-		// TODO some better in-game handling.
-		std::cerr << "Version mismatch.  Cannot load.";
-		return;
+		Menu::show_document("File version does not match.  Cannot load.\n\n(Press enter)");
+		return false;
 	}
 
 	s.srz_int(s_turn_number);
@@ -132,6 +131,8 @@ void serialize_all(ISerializer& s)
 		s_game_mode = GameMode::Normal;
 		Draw::add_message("Welcome back.");
 	}
+
+	return true;
 }
 
 // Setup runs at the start of each game, after character creation.
@@ -216,17 +217,20 @@ void save()
 	if (!s_filename.empty())
 	{
 		SaveSerializer s(s_filename);
-		serialize_all(s);
+		try_serialize_all(s);
 	}
 }
 
 void load(std::string filename)
 {
-	s_filename = filename;
-	if (!s_filename.empty())
+	if (!filename.empty())
 	{
-		LoadSerializer s(s_filename);
-		serialize_all(s);
+		LoadSerializer s(filename);
+		bool loaded = try_serialize_all(s);
+		if (loaded)
+		{
+			s_filename = filename;
+		}
 	}
 }
 
