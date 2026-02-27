@@ -1,12 +1,32 @@
 #include "Config.h"
+
+#include "SerializeSaveLoad.h"
+
 #include "BearLibTerminal.h"
+#include <filesystem>
 
 namespace Config
 {
 //-------------------------------------------------------------------------------------------------
 // Data
 
+int constexpr c_ConfigVersionNumber = 0;
+
 bool s_large_font = false;
+
+//-------------------------------------------------------------------------------------------------
+// Serialization
+
+void serialize(ISerializer& s)
+{
+	int version_number = c_ConfigVersionNumber;
+	s.srz_int(version_number);
+
+	s.srz_bool(s_large_font);
+
+	// TODO: When adding new config properties, could check min version number for each.
+	// if (version_number >= 1) { ... }
+}
 
 //-------------------------------------------------------------------------------------------------
 // Interface
@@ -49,6 +69,32 @@ int get_width()
 int get_height()
 {
 	return terminal_state(TK_HEIGHT);
+}
+
+//-----------------------------------------------------------------------------
+// Serialization
+
+void save()
+{
+	if (!std::filesystem::exists("Save/"))
+	{
+		std::filesystem::create_directory("Save/");
+	}
+
+	SaveSerializer s("Save/Config.dat");
+	Config::serialize(s);
+}
+
+void load()
+{
+	if (std::filesystem::exists("Save/Config.dat"))
+	{
+		LoadSerializer s("Save/Config.dat");
+		Config::serialize(s);
+
+		// And now apply the loaded settings.
+		load_fonts(s_large_font);
+	}
 }
 
 } // namespace Config

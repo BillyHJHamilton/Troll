@@ -3,6 +3,7 @@
 #include "BertieBotts.h"
 #include "Bot.h"
 #include "BuildWorld.h"
+#include "Config.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Gingerbread.h"
@@ -72,6 +73,8 @@ void init()
 	Spell::init();
 	Status::init();
 	Target::init();
+
+	Config::load();
 }
 
 // Clear runs before the start of each game.

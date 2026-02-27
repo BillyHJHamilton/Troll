@@ -8,4 +8,8 @@ namespace Config
 
 	int get_width();
 	int get_height();
+
+	// File handling
+	void save();
+	void load();
 }

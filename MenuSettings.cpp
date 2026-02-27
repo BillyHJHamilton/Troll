@@ -26,6 +26,7 @@ void MenuSettings::handle_input (int key)
 		switch(get_selected().value)
 		{
 			case SettingsOption::Back:
+				Config::save();
 				Menu::back();
 				break;
 			case SettingsOption::ToggleFontSize:
