@@ -350,11 +350,7 @@ void Instance::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	s.srz_vector_size(s_items, "s_items");
-	for (Item::Instance& inst : s_items)
-	{
-		inst.serialize(s);
-	}
+	s.srz_vector_advanced(s_items, "s_items");
 }
 
 Item::Handle make_item (Instance instance)

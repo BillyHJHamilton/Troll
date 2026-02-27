@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-// Using virtual is the lesser evil here.
-// I want to keep this header light because it'll be needed everywhere.
+// Using virtual seems like the lesser evil here.
 class ISerializer
 {
 public:
@@ -55,9 +54,13 @@ public:
 	template<typename ValueType>
 	void srz_vector(std::vector<ValueType>& v, char const* debug_name);
 
+	// Serializes vector of a type that implements a .serialize(ISerializer&) function.
+	template<typename ValueType>
+	void srz_vector_advanced(std::vector<ValueType>& v, char const* debug_name);
+
 	// Serializes the size of a vector, but not the contents.
 	// If you have a vector of a complex type (shared_ptr for instance),
-	// you can call this first, then loop through and handle the values.
+	// you can call this first, then loop through and handle the values appropriately.
 	// HINT: Make sure to include & if using a for-each loop!  Otherwise it won't work.
 	template<typename ValueType>
 	void srz_vector_size(std::vector<ValueType>& v, char const* debug_name);
@@ -86,6 +89,16 @@ void ISerializer::srz_vector(std::vector<ValueType>& v, char const* debug_name)
 {
 	srz_vector_size(v, debug_name);
 	srz_array_data(v.data(), (int)v.size());
+}
+
+template<typename ValueType>
+void ISerializer::srz_vector_advanced(std::vector<ValueType>& v, char const* debug_name)
+{
+	srz_vector_size(v, debug_name);
+	for (ValueType& item : v)
+	{
+		item.serialize(*this);
+	}
 }
 
 template<typename ValueType>

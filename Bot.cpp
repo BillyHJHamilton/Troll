@@ -88,11 +88,7 @@ void Brain::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	s.srz_vector_size(s_brains, "brains");
-	for (Brain& b : s_brains)
-	{
-		b.serialize(s);
-	}
+	s.srz_vector_advanced(s_brains, "brains");
 }
 
 void init_brain(Creature::Handle handle)

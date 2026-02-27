@@ -34,7 +34,7 @@ Room::Room(Vec2 localEnd, Stairs::Direction StairsDirection)
 {
 }
 
-void Room::Serialize(ISerializer& s)
+void Room::serialize(ISerializer& s)
 {
 	s.srz_box2(m_Box);
 	s.srz_value(m_RoomType);

@@ -35,11 +35,7 @@ void MapGenerator::Serialize(ISerializer& s)
 {
 	s.srz_vector(m_RequestedConnections, "m_RequestedConnections");
 
-	s.srz_vector_size(m_RoomVec, "m_RoomVec");
-	for (Room& r : m_RoomVec)
-	{
-		r.Serialize(s);
-	}
+	s.srz_vector_advanced(m_RoomVec, "m_RoomVec");
 
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());

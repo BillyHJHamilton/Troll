@@ -32,7 +32,7 @@ public:
 	inline static Room MakeCorridor(Box2 box, Axis corridorAxis) { return Room(box, corridorAxis); }
 	inline static Room MakeStairs(Vec2 localEnd, Stairs::Direction direction) { return Room(localEnd, direction); }
 
-	void Serialize(ISerializer& s);
+	void serialize(ISerializer& s);
 
 	const Box2 &GetBox() const { return m_Box; }
 	RoomType GetRoomType() const { return m_RoomType; }

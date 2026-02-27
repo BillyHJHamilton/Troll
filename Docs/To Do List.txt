@@ -38,6 +38,9 @@ To Do:
 - Menu
  - Improve "help" document
 
+- Potions
+ - Could randomize the colours - though for some (Felix Felicis) this feels wrong
+
 - Miscast effects
 
 - Serialization
@@ -95,13 +98,26 @@ UX Notes from Richard
 - HP versus "Stamina" is inconsistent terminology  [Feels like HP is too gamey.  Maybe "healthier"?]
 - Would be nice to see spell durations (for TA, RS, etc)
 - Confusing that alohomora doesn't fly past enemy to hit chest
+- Can't see cursor if playing on a dark screen
+- Need an in-game message when save incompatible
+- The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened.
+- If I do this with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
 
 -------------------------------------------------------------------------------
 Design Notes from Richard
 -------------------------------------------------------------------------------
 
 - It's boring that spells do exactly a predictable amount of damage
+- If the only way to gain spells is through random (?) drops, that could cause trouble later.
+  I remember that there were certain spells that dominated the game at different magic levels.
+  The progression I remember was ??? -> Stupify -> Protego -> Salvia Hexia.
+  I worry what will happen to a character who misses one.
+- Putting a smoke cloud in the hallway and running away behind it didn't work as well as I hoped.
+  I went around 2 corners with Malfoy out of sight, but he followed me (see picture).
 
 -------------------------------------------------------------------------------
 Bugs from Richard
 -------------------------------------------------------------------------------
+
+- You can get a "The spell misses XXX." message even if you can't see XXX
+- 

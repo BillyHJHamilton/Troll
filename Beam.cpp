@@ -253,8 +253,8 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		}
 		else
 		{
-			Draw::add_message(" The " + beam_description(beam) + " misses "
-				+ Grammar::you(creature_in_path) + ".");
+			Draw::creature_message(creature_in_path, std::format(" The {} misses {}.",
+				beam_description(beam), Grammar::you(creature_in_path)));
 		}
 	}
 }

@@ -114,11 +114,7 @@ void History::serialize(ISerializer& s)
 
 void serialize(ISerializer& s)
 {
-	s.srz_vector_size(s_spawn_history, "s_spawn_history");
-	for (History& history : s_spawn_history)
-	{
-		history.serialize(s);
-	}
+	s.srz_vector_advanced(s_spawn_history, "s_spawn_history");
 }
 
 void post_world_setup()
