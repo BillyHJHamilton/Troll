@@ -116,6 +116,32 @@ void start_pathfind (Vec3 target)
 	}
 }
 
+void auto_collect ()
+{
+	bool success = Bot::try_player_collect();
+	if (success)
+	{
+		edit_data().automove_type = AutomoveType::Path;
+	}
+	else
+	{
+		Draw::add_message("No items found.");
+	}
+}
+
+void auto_explore ()
+{
+	bool success = Bot::try_player_explore();
+	if (success)
+	{
+		edit_data().automove_type = AutomoveType::Path;
+	}
+	else
+	{
+		Draw::add_message("This area seems fully explored.");
+	}
+}
+
 void stop_automove()
 {
 	edit_data().automove_type = AutomoveType::None;

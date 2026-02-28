@@ -51,6 +51,8 @@ namespace Player
 	void set_name (std::string str);
 	void start_automove (CompassDirection dir);
 	void start_pathfind (Vec3 target);
+	void auto_collect ();
+	void auto_explore ();
 	void stop_automove ();
 	void dispatch_automove ();
 	void set_acted (bool acted);

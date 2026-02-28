@@ -199,6 +199,22 @@ void handle_next_input ()
 			return;
 		}
 
+		// Auto-collect items
+		if (key == TK_C && terminal_check(TK_CONTROL))
+		{
+			Player::stop_automove();
+			Player::auto_collect();
+			return;
+		}
+
+		// Auto-explore
+		if (key == TK_D && terminal_check(TK_CONTROL))
+		{
+			Player::stop_automove();
+			Player::auto_explore();
+			return;
+		}
+
 		// Bean test
 		//if (key == TK_B)
 		//{

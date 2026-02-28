@@ -140,6 +140,37 @@ bool try_player_pathfind(Vec3 goal)
 	return !brain.move_stack.empty();
 }
 
+bool try_player_collect()
+{
+	Brain& brain = get_brain(0);
+
+	Pathfind::ExploreParameters param
+	{
+		.max_cost = Player::vision_radius,
+		.allow_stairs = false,
+		.goal = Pathfind::GoalType::Item,
+	};
+	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
+
+	return !brain.move_stack.empty();
+}
+
+bool try_player_explore()
+{
+	Brain& brain = get_brain(0);
+
+	Pathfind::ExploreParameters param
+	{
+		.max_cost = 100,
+		.allow_stairs = false,
+		.goal = Pathfind::GoalType::Darkness,
+	};
+	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
+
+	return !brain.move_stack.empty();
+}
+
+
 Vec2 try_get_next_player_move()
 {
 	Brain& brain = get_brain(0);

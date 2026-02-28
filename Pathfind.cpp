@@ -21,7 +21,7 @@ namespace Pathfind
 // before it's possible to reach the target.
 int constexpr c_HeightFactor = 10;
 
-// I hate the std::priority_queue, but I guess it's okay for this case.
+// I don't love the std::priority_queue, but I guess it's okay for this case.
 // Wrapper based on the redblob link below.
 struct AStarPriorityQueue
 {
@@ -191,6 +191,112 @@ void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out)
 		PerfTimer perf1("astar - rebuild path");
 
 		Vec3 boomerang = goal;
+		while (boomerang != start)
+		{
+			path_out.push_back(boomerang);
+			boomerang = discovered[boomerang].come_from;
+		}
+	}
+}
+
+// helper function
+bool is_goal(Vec3 pos, GoalType goal_type)
+{
+	switch (goal_type)
+	{
+		case GoalType::Item:
+			return World::read().has_item(pos) && World::read().is_visible(pos);
+		case GoalType::Darkness:
+			return World::read().get_visibility(pos) == Visibility::Hidden;
+	}
+	DebugBreak();
+	return false;
+}
+
+void into_darkness(Vec3 start, ExploreParameters param, std::vector<Vec3>& path_out)
+{
+	PerfTimer perf0("into_darkness");
+
+	path_out.clear();
+	path_out.reserve(param.max_cost);
+
+	World const& world = World::read();
+
+	struct NodeInfo
+	{
+		Vec3 come_from;
+		int total_cost;
+	};
+	std::unordered_map<Vec3, NodeInfo, std::hash<Vec3>, std::equal_to<Vec3>,
+		Scratch<std::pair<const Vec3,NodeInfo>>> discovered;
+
+	Vec3TempList neighbours; // to avoid reallocating inside loop
+	Vec3 destination = start; // set if goal is found
+
+	discovered.insert_or_assign(start, NodeInfo 
+	{
+		start,  // comes from itself, sure.
+		0       // by definition.
+	});
+
+	AStarPriorityQueue frontier;
+	frontier.add(start, 0);
+
+	while (!frontier.empty())
+	{
+		PerfTimer perf2("into_darkness - per iteration");
+
+		Vec3 const here = frontier.pop();
+		NodeInfo& here_node = discovered.at(here);
+
+		if (is_goal(here, param.goal))
+		{
+			destination = here;
+			break;
+		}
+
+		find_open_neighbours(here, /*ignore_creatures*/ true, Creature::None, neighbours);
+		for (Vec3 neighbour : neighbours)
+		{
+			int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
+
+			if (new_cost > param.max_cost)
+			{
+				continue;
+			}
+
+			// Prevent pathing through unknown tiles unless that's the goal.
+			if (param.goal != GoalType::Darkness &&
+				world.get_visibility(neighbour) == Visibility::Hidden)
+			{
+				continue;
+			}
+
+			// Prevent using stairs unless allowed by parameters.
+			if (!param.allow_stairs && neighbour.z != start.z)
+			{
+				continue;
+			}
+
+			NodeInfo* const old_node = Util::Find(discovered, neighbour);
+			if (old_node) // it's BFS, so no need to revisit
+			{
+				continue;
+			}
+			else
+			{
+				discovered[neighbour] = {here, new_cost};
+				frontier.add(neighbour, new_cost);
+			}
+		}
+	}
+
+	if (destination != start)
+	{
+		assert(discovered.contains(destination));
+		PerfTimer perf1("into_darkness - rebuild path");
+
+		Vec3 boomerang = destination;
 		while (boomerang != start)
 		{
 			path_out.push_back(boomerang);

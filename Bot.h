@@ -38,6 +38,8 @@ namespace Bot
 
 	// Player pathfinding bot
 	bool try_player_pathfind(Vec3 goal);
+	bool try_player_collect();
+	bool try_player_explore();
 	Vec2 try_get_next_player_move(); // returns {0,0} on failure
 	void clear_player_path();
 

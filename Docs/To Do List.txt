@@ -10,16 +10,16 @@ To Do:
  - Do something more clever about tracking through rooms and getting sidetracked
  - Sidestep to find good attack position if shooting through friends
 
-- Chests
- - They should really be placed as part of Map Generation, not creature spawning
- - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
-
 - Config
  - Create a general purpose "Config Menu" (descendant or relative of MenuList) with on/off toggles built in.
 
 - Creatures
  - Melee attacks
  - Creature special abilities (distinct from spells?  yes, I suppose so)
+
+- Features
+ - Chests should really be placed as part of Map Generation, not creature spawning
+ - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
 
 - Identity
  - Support "playable" characters (play as Luna, etc)
@@ -113,7 +113,7 @@ UX Notes from Richard
  - and treat the input as a single move, in those cases
 
 -------------------------------------------------------------------------------
-Design Notes from Richard
+Design Thoughts from Richard
 -------------------------------------------------------------------------------
 
 - It's boring that spells do exactly a predictable amount of damage
@@ -123,6 +123,10 @@ Design Notes from Richard
   I worry what will happen to a character who misses one.
 - Putting a smoke cloud in the hallway and running away behind it didn't work as well as I hoped.
   I went around 2 corners with Malfoy out of sight, but he followed me (see picture).
+- [Debilitating spells are too strong] I think the problem here is that the penalties get
+  too large as the effect number gets higher.  It might help to make the power vary with
+  sqrt(N) instead of N.  You would probably want to increase the basse power by ~50% so
+  the single-cast effect power is about the same.
 
 -------------------------------------------------------------------------------
 Bugs
@@ -130,4 +134,4 @@ Bugs
 
 - Player Pathfind: Doesn't work on the (fake) other end of stairs.
  - For view, we should peek all stairs, not only if you're standing on it.
-
+- Wall LOS funny on narrow (3 wide) rooms near edge of vision

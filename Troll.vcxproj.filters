@@ -49,6 +49,12 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{575ade87-6317-45c0-b843-1ccc5e1bf3fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI\Menus">
+      <UniqueIdentifier>{7f70a101-bba9-40bd-9780-cfaf5cfcd4af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Menus">
+      <UniqueIdentifier>{d8bdeaa5-85dc-4f75-8636-b013922be61b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp">
@@ -150,44 +156,11 @@
     <ClCompile Include="Inventory.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
-    <ClCompile Include="MenuDocument.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuList.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuSpells.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuPause.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuSelectHouse.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuInventory.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuMessages.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Potion.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
     <ClCompile Include="Spawn.cpp">
       <Filter>Source Files\World</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuName.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuLoad.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuTitle.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuDebug.cpp">
-      <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="Scratch.cpp">
       <Filter>Source Files\Core</Filter>
@@ -201,14 +174,47 @@
     <ClCompile Include="Colour.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="MenuSettings.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Config.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="Serialize.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuDebug.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuDocument.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuInventory.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuList.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuLoad.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuMessages.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuName.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuPause.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuSelectHouse.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuSettings.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuSpells.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuTitle.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -326,27 +332,6 @@
     <ClInclude Include="Gingerbread.h">
       <Filter>Header Files\Creature</Filter>
     </ClInclude>
-    <ClInclude Include="MenuDocument.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuList.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuSpells.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuPause.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuSelectHouse.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuInventory.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuMessages.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
     <ClInclude Include="Potion.h">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
@@ -356,23 +341,11 @@
     <ClInclude Include="Spawn.h">
       <Filter>Header Files\World</Filter>
     </ClInclude>
-    <ClInclude Include="MenuName.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
     <ClInclude Include="Codepoint.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuLoad.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuTitle.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="BitFlag.h">
       <Filter>Header Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuDebug.h">
-      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="Scratch.h">
       <Filter>Header Files\Core</Filter>
@@ -386,9 +359,6 @@
     <ClInclude Include="Visibility.h">
       <Filter>Header Files\World</Filter>
     </ClInclude>
-    <ClInclude Include="MenuSettings.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
@@ -397,6 +367,42 @@
     </ClInclude>
     <ClInclude Include="SerializeSaveLoad.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuDebug.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuDocument.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuInventory.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuList.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuLoad.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuMessages.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuName.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuPause.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuSelectHouse.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuSettings.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuSpells.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuTitle.h">
+      <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
