@@ -6,11 +6,13 @@
 #include "Game.h"
 #include "Gingerbread.h"
 #include "Input.h"
+#include "Map.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Stairs.h"
 #include "Target.h"
 #include "VectorUtil.h"
+#include "Visibility.h"
 #include "World.h"
 
 #include <algorithm>
@@ -120,12 +122,25 @@ void update_view (int width, int height)
 
 	// Add stairs exception
 	s_view.peek_tiles.clear();
+	Box2 const view_area = s_view.view_area();
 	World const& world = World::read();
-	Stairs::Direction dir = world.get_stairs(viewer);
-	if (dir != Stairs::None)
+
+	for (int i = 0; i < world.num_maps(); ++i)
 	{
-		Vec3 const stairs_pos = viewer + Stairs::relative_move(dir);
-		s_view.peek_tiles.push_back(stairs_pos);
+		Map const& map = world.read_map(i);
+		if (map.get_z() == s_view.z &&
+			map.get_box().intersects(s_view.view_area()))
+		{
+			for (Stairs::Pair pair : map.get_stairs_map())
+			{
+				Vec3 other_end = pair.first.xyz(s_view.z) + Stairs::relative_move(pair.second);
+				if (view_area.contains(other_end.xy()) &&
+					world.get_visibility(other_end) != Visibility::Hidden)
+				{
+					s_view.peek_tiles.push_back(other_end);
+				}
+			}
+		}
 	}
 }
 

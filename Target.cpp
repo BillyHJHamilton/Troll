@@ -43,8 +43,8 @@ void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
 	int z = Player::pos().z;
 	int r = Player::vision_radius;
 
-	// todo We could create a "LOS iterator" to encapsulate this
-	Box2 vis_area(p - Vec2{r,r}, {1+2*r, 1+2*r});
+	// todo We could create a "LOS iterator" to encapsulate this.
+	Box2 vis_area = Box2::around_tile(p, r);
 	for (BoxItr itr(vis_area); itr; ++itr)
 	{
 		Vec3 p3 = itr->xyz(z);
