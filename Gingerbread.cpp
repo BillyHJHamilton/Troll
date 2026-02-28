@@ -74,13 +74,11 @@ void mix_gingerbread (
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
-	std::vector<Item::Type>&& item_drops,
-	std::vector<int>&& item_weights);
+	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
 void mix_from_identity(
 	Creature::Type type, NameHash identity, float difficulty, float probability,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
-	std::vector<Item::Type>&& item_drops,
-	std::vector<int>&& item_weights);
+	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
 
 //------------------------------------------------------------------------------
 // Global interface
@@ -150,12 +148,12 @@ void init()
 	mix_from_identity(Creature::Crabbe_3, "Crabbe",
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
 		/*Magic*/ 15, /*HP*/ 20, "FN RS", "",
-		{}, {});
+		{Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	mix_from_identity(Creature::Goyle_3, "Goyle",
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
 		/*Magic*/ 15, /*HP*/ 20, "VM FP TA", "",
-		{}, {});
+		{Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	mix_from_identity(Creature::Harry_4, "Harry",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
@@ -170,7 +168,7 @@ void init()
 	mix_from_identity(Creature::Fleur_4, "Fleur",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
 		/*Magic*/ 70, /*HP*/ 16, "MW LM FP FI", "", // PT, Sleepiness?
-		{Item::Notes, Item::PotionItem, Item::None}, {30,30,40});
+		{Item::Notes, Item::PotionItem}, {60,40});
 
 	mix_from_identity(Creature::Krum_5, "Krum",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
@@ -214,15 +212,14 @@ void init()
 
 	// Alternate universe characters!
 
-	// Currently has same spells/stats as normal Harry.  Think about how to make it unique.
+	// Currently same as normal Harry, but 2 more hp.  Think about how to make it unique.
 	// Technically his notes shouldn't be in his own handwriting, should they?
 	// Possible items: monogrammed socks, magic robes, self-stirring cauldron stick, magic jar...
 	mix_gingerbread(Creature::HarryTheHufflepuff_1, "Harry",
-		/*Difficulty*/ 1.0f, /*Probability*/ 0.1f,
+		/*Difficulty*/ 1.2f, /*Probability*/ 0.1f,
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
-		/*Magic*/ 10, /*HP*/ 12, "VM FP TA", "",
-		{Item::Notes, Item::PotionItem}, {60, 40});
-
+		/*Magic*/ 10, /*HP*/ 14, "VM FP TA", "",
+		{Item::Notes, Item::PotionItem}, {70, 30});
 }
 
 void clear()

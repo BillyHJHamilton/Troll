@@ -7,15 +7,14 @@ To Do:
  - Figure out a model for storing beast stats/abilities without bloating creature stats too much.
 
 - Bot
- - Wander a little more searching for player.  Maybe travel to random points nearby, or something.
- - EQS / find good attack position
+ - Do something more clever about tracking through rooms and getting sidetracked
+ - Sidestep to find good attack position if shooting through friends
 
 - Chests
  - They should really be placed as part of Map Generation, not creature spawning
  - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
 
 - Config
- - Save settings file and try to load it at startup.
  - Create a general purpose "Config Menu" (descendant or relative of MenuList) with on/off toggles built in.
 
 - Creatures
@@ -28,12 +27,10 @@ To Do:
 - Map generation
  - Named regions, more layout
  - Special rooms
- - Locked doors, treasure chests
+ - Locked doors
  - Secret treasure rooms
  - (Advanced) Staircases that change
-
-- World layout revision
- - Add stronger methods to enforce internal connectivity
+ - Add stronger methods to enforce internal connectivity (for "crossroads" levels)
 
 - Menu
  - Improve "help" document
@@ -49,6 +46,7 @@ To Do:
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
+  - Would act a lot like fog, but be penetrated by light and fire
  - Slugulus Eructo
  - More spells from HPADS
 
@@ -58,6 +56,7 @@ To Do:
   - Should it drag character closer at higher power?
  - Flipendo
   - Should push around crates/features
+  - Push characters further at higher power?
  - Finite Incantatem
   - In principle it could be targeted, if we have lingering spell effects.
 
@@ -73,9 +72,16 @@ To Do:
  - Breakable terrain?
 
 - UI
- - Support mouse input (left to target, right to move?)
-  - Thus, add player pathfinding for automove.
- - Support resizing window.
+ - Show spell durations (and thus, read them as part of the spell effects)
+ - Can we redrawing the screen for pointless non-actions?
+  - Except in menus, perhaps, where I can't tell if the input did something.
+ - Support mouse input in menus?
+  - Mouse move could highlight, mouse click would move cursor,
+    scrolling could move scroll_top and drag the cursor along if needed.
+  - Alternatively, mouse move could move cursor, and click act as enter.
+    That might be more what you'd expect.
+ - (Advanced) Show mouse-friendly inventory pane when playing with a large
+   window size (like in Crawl Tiles)
 
 -------------------------------------------------------------------------------
 To consider:
@@ -91,7 +97,7 @@ UX Notes from Richard
 + Fumos - Unclear that you should target it.
 - Want to press '.' to skip turn.  [Won't do, I think.  I like space]
 + Want to see spells already selected on the spell selection menu.
-- Would like a warning or indication when low on health.
++ Would like a warning or indication when low on health.
  + Could show the hp colour on the player @ icon.
 - White beans are too hard to see (true)  [Tried changing them to light grey, though it's subtle]
 - Didn't know how to save (not mentioned in help)
@@ -99,9 +105,12 @@ UX Notes from Richard
 - Would be nice to see spell durations (for TA, RS, etc)
 - Confusing that alohomora doesn't fly past enemy to hit chest
 - Can't see cursor if playing on a dark screen
-- Need an in-game message when save incompatible
-- The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened.
-- If I do this with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
+ - Add "bright cursor" mode
++ Need an in-game message when save incompatible
++ The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened.
+- If I rest with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
+ - Could break automove any time enemy is visible
+ - and treat the input as a single move, in those cases
 
 -------------------------------------------------------------------------------
 Design Notes from Richard
@@ -119,5 +128,6 @@ Design Notes from Richard
 Bugs
 -------------------------------------------------------------------------------
 
-- Player Pathfind: Doesn't work on the (fake) other end of stairs
-- 
+- Player Pathfind: Doesn't work on the (fake) other end of stairs.
+ - For view, we should peek all stairs, not only if you're standing on it.
+
