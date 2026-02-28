@@ -116,8 +116,8 @@ Design Notes from Richard
   I went around 2 corners with Malfoy out of sight, but he followed me (see picture).
 
 -------------------------------------------------------------------------------
-Bugs from Richard
+Bugs
 -------------------------------------------------------------------------------
 
-- You can get a "The spell misses XXX." message even if you can't see XXX
+- Player Pathfind: Doesn't work on the (fake) other end of stairs
 - 

@@ -99,6 +99,11 @@ void start_pathfind (Vec3 target)
 		Draw::add_message("Can't travel to unexplored area.");
 		return;
 	}
+	else if (World::read().is_solid(target))
+	{
+		Draw::add_message("Can't travel to that square.");
+		return;
+	}
 
 	bool success = Bot::try_player_pathfind(target);
 	if (success)
@@ -242,14 +247,6 @@ void gain_xp_for (Creature::Type creature_type)
 		Gingerbread::edit_player_stats().max_hp += 2;
 		Gingerbread::edit_player_stats().skill_magic += 5;
 		handle().heal_hp(2);
-
-		// Hack!  Automatically learn spells when levelling up...
-		// TODO: Implement a better way to learn spells.
-		Spell::Index new_spell = (Spell::Index)read_data().level;
-		if (Spell::is_valid_index(new_spell))
-		{
-			handle().learn_spell(new_spell);
-		}
 
 		Draw::add_message("Welcome to level " + std::to_string(current_level()) + ".");
 	}

@@ -132,7 +132,7 @@ bool try_player_pathfind(Vec3 goal)
 	Pathfind::Parameters param
 	{
 		.max_cost = 100, // we'll see if this is enough
-		.ignore_creatures = false,
+		.ignore_creatures = true,
 		.allow_unexplored = false,
 	};
 	Pathfind::astar(Player::pos(), goal, param, brain.move_stack);
