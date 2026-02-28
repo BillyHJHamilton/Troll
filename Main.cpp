@@ -22,7 +22,7 @@ void config_terminal()
 	// register for input
 	terminal_set
 	(
-		"input.filter=[keyboard+]"
+		"input.filter=[keyboard+, mouse]"
 	);
 
 	//terminal_set("window.cellsize=8x16");

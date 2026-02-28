@@ -91,7 +91,7 @@ void update ()
 		if (!s_target_creature.valid())
 		{
 			// acquire target
-			cycle();
+			cycle(1);
 		}
 	}
 
@@ -100,7 +100,7 @@ void update ()
 		if (!World::read().is_visible(s_target_pos) ||
 			!is_feature_target(s_target_pos))
 		{
-			cycle();
+			cycle(1);
 		}
 	}
 
@@ -108,12 +108,12 @@ void update ()
 	{
 		if (!Draw::get_view().contains_global_pos(s_target_pos))
 		{
-			cycle();
+			cycle(1);
 		}
 	}
 }
 
-void cycle ()
+void cycle (int step)
 {
 	if (s_target_mode == TargetMode::Manual)
 	{
@@ -139,6 +139,7 @@ void cycle ()
 	}
 	find_visible_features(targets);
 
+	int const num_targets = Util::Size(targets);
 	if (targets.size() > 0)
 	{
 		// see if the current target is in the list
@@ -151,14 +152,11 @@ void cycle ()
 		else
 		{
 			// cycle to next target
-			++ target_index;
+			target_index += step;
 		}
 
 		// wrap around
-		if (target_index > Util::LastIndex(targets))
-		{
-			target_index = 0;
-		}
+		target_index = (num_targets + target_index) % num_targets;
 
 		if (target_index <= Util::LastIndex(visible_creatures))
 		{
@@ -205,6 +203,36 @@ void move (Vec2 dir)
 	}
 }
 
+void set_to(Vec3 new_pos)
+{
+	if (Draw::get_view().contains_global_pos(new_pos))
+	{
+		Creature::Handle creature = Creature::creature_at_pos(new_pos);
+		if (creature.valid())
+		{
+			s_target_mode = TargetMode::Automatic_Creature;
+			s_target_creature = creature;
+		}
+		else if (is_feature_target(new_pos))
+		{
+			s_target_mode = TargetMode::Automatic_Position;
+		}
+		else
+		{
+			s_target_mode = TargetMode::Manual;
+		}
+
+		s_target_pos = new_pos;
+	}
+}
+
+void snap_to_player()
+{
+	s_target_mode = TargetMode::Automatic_Creature;
+	s_target_creature = Player::handle();
+	s_target_pos = Player::pos();
+}
+
 bool is_valid()
 {
 	if (s_target_mode == TargetMode::Automatic_Creature)
@@ -236,7 +264,7 @@ bool is_target (Creature::Handle creature)
 	}
 }
 
-bool is_target (Vec3 const & global_pos)
+bool is_target (Vec3 global_pos)
 {
 	if (s_target_mode == TargetMode::Manual ||
 		s_target_mode == TargetMode::Automatic_Position)

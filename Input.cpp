@@ -72,6 +72,14 @@ void handle_next_input ()
 	int key = terminal_read();
 
 	//-----------------------------------------------------------
+	// Skip inputs we don't care about
+	
+	while (key == TK_MOUSE_MOVE || key == TK_MOUSE_SCROLL)
+	{
+		key = terminal_read();
+	}
+
+	//-----------------------------------------------------------
 	// Global input - All Game modes
 
 	if (key == TK_CLOSE || // X button in the corner
@@ -114,6 +122,20 @@ void handle_next_input ()
 		return;
 	}
 
+	// And mouse-based targeting
+	// for test
+	if (key == TK_MOUSE_LEFT)
+	{
+		Draw::View const& view = Draw::get_view();
+		Vec3 const mouse_pos = view.mouse_to_global_pos();
+		if (view.contains_global_pos(mouse_pos))
+		{
+			Target::set_to(mouse_pos);
+		}
+		Player::stop_automove();
+		return;
+	}
+
 	//-----------------------------------------------------------
 	// Game input - In normal mode
 
@@ -150,10 +172,18 @@ void handle_next_input ()
 			return;
 		}
 
-		if (key == TK_TAB)
+		// For some reason when ctrl is pressed, BearLib only issues the
+		// released event for TK_TAB, not the pressed event.  :/
+		if (key == (TK_TAB | TK_KEY_RELEASED) &&
+			terminal_check(TK_CONTROL))
+		{
+			Target::snap_to_player();
+			Player::stop_automove();
+		}
+		else if (key == TK_TAB && !terminal_check(TK_CONTROL))
 		{
 			Player::stop_automove();
-			Target::cycle();
+			Target::cycle(1);
 			return;
 		}
 
@@ -230,6 +260,12 @@ void handle_next_input ()
 
 	if (s_input_mode == InputMode::Spellcasting)
 	{
+		if (key == TK_TAB)
+		{
+			Target::cycle(-1);
+			return;
+		}
+
 		if (is_letter(key))
 		{
 			char letter = 'A' + (key - TK_A);

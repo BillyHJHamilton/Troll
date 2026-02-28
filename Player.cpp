@@ -38,9 +38,9 @@ void Player::clear()
 void Player::Data::serialize(ISerializer& s)
 {
 	s.srz_string(name);
+	s.srz_value(automove); // Could be autosaving during a long rest.
 
 	// Don't need to serialize these since we won't save in the middle of a turn.
-	assert(automove == c_Invalid);
 	assert(!acted);
 	assert(!game_over);
 	assert(defeated_by == Creature::None);

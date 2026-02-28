@@ -94,6 +94,18 @@ int View::get_z(Vec2 pos2) const
 	return z;
 }
 
+Vec3 View::mouse_to_global_pos() const
+{
+	Vec2 const mouse_pos {
+		terminal_state(TK_MOUSE_X) / c_TileWidthFactor,	// integer division
+		terminal_state(TK_MOUSE_Y)
+	};
+
+	Vec2 const pos2 = start + mouse_pos;
+
+	return pos2.xyz(get_z(pos2));
+}
+
 void update_view (int width, int height)
 {
 	s_view.viewport = Box2(0, 0, width, height);

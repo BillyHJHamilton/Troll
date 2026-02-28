@@ -18,6 +18,9 @@ namespace Draw
 		Box2 view_area() const { return { start, viewport.size }; }
 		bool contains_global_pos(Vec3 const& global_pos) const;
 		int get_z(Vec2 pos2) const;
+
+		// May return a point outside the viewport, so check that.
+		Vec3 mouse_to_global_pos() const;
 	};
 
 	class TerminalLayer
