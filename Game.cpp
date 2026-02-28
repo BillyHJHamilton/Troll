@@ -192,13 +192,28 @@ void update()
 
 	Draw::draw_screen();
 
-	if (Player::is_automoving() && !terminal_has_input())
+	bool did_something = false;
+	while (!did_something)
 	{
-		Player::dispatch_automove();
-	}
-	else
-	{
-		Input::handle_next_input();
+		if (terminal_has_input())
+		{
+			Input::Result result = Input::handle_next_input();
+			if (result == Input::Result::Skipped)
+			{
+				continue;
+			}
+			else if (result == Input::Result::Handled)
+			{
+				did_something = true;
+				Player::stop_automove();
+			}
+		}
+
+		if (!did_something)
+		{
+			Player::dispatch_automove();
+			did_something = true;
+		}
 	}
 
 	if (Player::has_acted())

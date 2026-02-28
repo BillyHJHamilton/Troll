@@ -96,31 +96,6 @@ Vec2 constexpr c_Compass [c_CompassCount] =
 	{ 0, 0}
 };
 
-class CompassItr
-{
-public:
-	CompassItr(bool include_no_move) : include(include_no_move), dir(c_CompassEast) {}
-
-	void advance () { dir = (CompassDirection)(dir + 1); }
-	bool finished () const { return dir >= (include ? c_CompassCount : c_CompassNoMove); }
-	CompassDirection get () const { return dir; }
-	Vec2 get_vec2 () const { return c_Compass[dir]; }
-
-	// iterator style functions
-	operator bool () const { return !finished(); }
-	CompassDirection operator* () const { return get(); }
-	CompassDirection operator++() { advance(); return dir; }
-	bool operator== (CompassItr rhs) const { return dir == rhs.dir; } 
-	bool operator!= (CompassItr rhs) const { return dir != rhs.dir; } 
-	bool operator== (CompassDirection rhs) const { return dir == rhs; } 
-	bool operator!= (CompassDirection rhs) const { return dir != rhs; } 
-	// post-increment not provided to avoid accidental copy
-
-private:
-	bool include;
-	CompassDirection dir;
-};
-
 inline bool operator== (Vec2 lhs, Vec2 rhs)
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y;
@@ -434,6 +409,35 @@ struct Box3
 	int area() const { return size.x * size.y; }
 
 	Box3 intersection(Box3 other) const;
+};
+
+//------------------------------------------------------------------------------
+
+// Class to iterate over compass directions.
+class CompassItr
+{
+public:
+	CompassItr(bool include_no_move) : include(include_no_move), dir(c_CompassEast) {}
+
+	void advance () { dir = (CompassDirection)(dir + 1); }
+	bool finished () const { return dir >= (include ? c_CompassCount : c_CompassNoMove); }
+	CompassDirection get () const { return dir; }
+	Vec2 get_vec2 () const { return c_Compass[dir]; }
+	Vec3 get_vec3 () const { return c_Compass[dir].xy0(); }
+
+	// iterator style functions
+	operator bool () const { return !finished(); }
+	CompassDirection operator* () const { return get(); }
+	CompassDirection operator++() { advance(); return dir; }
+	bool operator== (CompassItr rhs) const { return dir == rhs.dir; } 
+	bool operator!= (CompassItr rhs) const { return dir != rhs.dir; } 
+	bool operator== (CompassDirection rhs) const { return dir == rhs; } 
+	bool operator!= (CompassDirection rhs) const { return dir != rhs; } 
+	// post-increment not provided to avoid accidental copy
+
+private:
+	bool include;
+	CompassDirection dir;
 };
 
 //------------------------------------------------------------------------------

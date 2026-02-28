@@ -9,37 +9,56 @@ using Vec3TempList = std::vector<Vec3,Scratch<Vec3>>;
 
 namespace Pathfind
 {
-	enum class GoalType : byte
+	struct NeighbourParam
 	{
-		Item,
-		Darkness
+		// Whether to allow moving over creatures.
+		bool ignore_creatures = false;
+
+		// Whether to allow moving through stairs.
+		bool allow_stairs = true;
+
+		// If set, this creature will be treated as a valid move position.
+		// Used when trying to pathfind onto another creature for combat.
+		Creature::Handle target_creature = Creature::None;
+
+		// How to handle unexplored tiles.
+		enum class UnexploredMode : byte
+		{
+			Default = 0,	// Treat it as its actual terrain, ignoring LOS
+			Block,			// Don't allow pathing through unexplored
+			Open,			// Treat all unexplored spaces as open
+		};
+		UnexploredMode unexplored_mode = UnexploredMode::Default;
 	};
 
-	struct Parameters
+	struct AstarParam
 	{
 		int max_cost = 25;
 		bool ignore_creatures = false;
 		bool allow_unexplored = true;
 	};
 
-	struct ExploreParameters
+	struct ExploreParam
 	{
 		int max_cost = 100;
 		bool allow_stairs = false;
+
+		enum class GoalType : byte
+		{
+			Item,
+			Darkness
+		};
 		GoalType goal = GoalType::Darkness;
 	};
 
 	// Finds spaces that are valid to move to.  Considers stairs.
-	// Creatures are treated as impassible unless ignore_creatures is true.
-	// However, the target creature is treated as passible, if one is provided.
-	void find_open_neighbours(Vec3 pos, bool ignore_creatures, Creature::Handle target,
-		Vec3TempList& out);
+	void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out);
 
 	// Pathfinds on the global World.  Avoids creatures, except target creature.
 	// Returns a backwards path (so pop back to get your next move).
 	// Returns empty vector if it doesn't find a path.
-	void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out);
+	void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out);
 
 	// Breadth first search for uncollected item or darkness.
-	void into_darkness(Vec3 start, ExploreParameters param, std::vector<Vec3>& path_out);
+	void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out);
 }

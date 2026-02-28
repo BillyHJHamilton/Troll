@@ -6,6 +6,7 @@
 #include "PerfTimer.h"
 #include "Scratch.h"
 #include "Stairs.h"
+#include "Terrain.h"
 #include "Visibility.h"
 #include "World.h"
 
@@ -46,8 +47,21 @@ struct AStarPriorityQueue
 	}
 };
 
-void find_open_neighbours(Vec3 pos, bool ignore_creatures, Creature::Handle target,
-	Vec3TempList& out)
+//struct NeighbourParameters
+//{
+//	bool allow_creatures = false;
+//	bool allow_stairs = true;
+//	Creature::Handle target_creature = Creature::None;
+//	enum UnexploredMode : byte
+//	{
+//		Default = 0,	// Treat it as its actual terrain, ignoring LOS
+//		Block,			// Don't allow pathing through unexplored
+//		Open,			// Treat all unexplored spaces as open
+//	};
+//	UnexploredMode unexplored_mode = UnexploredMode::Default;
+//};
+
+void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 {
 	PerfTimer perf0("find_open_neighbours");
 
@@ -59,35 +73,52 @@ void find_open_neighbours(Vec3 pos, bool ignore_creatures, Creature::Handle targ
 	CompassDirection stairs_compass = c_CompassInvalid;
 
 	Stairs::Direction const stairs_dir = world.get_stairs(pos);
-
 	if (stairs_dir != Stairs::None)
 	{
 		stairs_compass = Stairs::compass_dir(stairs_dir);
-		Vec3 const other_end = pos + Stairs::relative_move(stairs_dir);
-		Creature::Handle const creature = Creature::creature_at_pos(other_end);
-		if (creature == Creature::None || creature == target)
-		{
-			out.push_back(other_end);
-		}
 	}
 
 	{
 		PerfTimer perf1("find_open_neighbours - compass loop");
 		for (CompassItr itr(true); itr; ++itr)
 		{
-			Vec3 const next_pos = pos + itr.get_vec2().xy0();
-			if (itr != stairs_compass &&
-				!world.is_solid(next_pos))
-			{
-				Creature::Handle creature = ignore_creatures ?
-					Creature::None :
-					Creature::creature_at_pos(next_pos);
+			Vec3 const next_pos = (itr == stairs_compass) ?
+				pos + Stairs::relative_move(stairs_dir) :
+				pos + itr.get_vec3();
 
-				if (creature == Creature::None || creature == target)
+			Visibility const vis = world.get_visibility(next_pos);
+
+			if (vis == Visibility::Hidden &&
+				param.unexplored_mode == NeighbourParam::UnexploredMode::Block)
+			{
+				continue;
+			}
+
+			Terrain::Type const t = world.get_terrain(next_pos);
+
+			if (!param.allow_stairs &&
+				(t == Terrain::UpStairs || t == Terrain::DownStairs))
+			{
+				continue;
+			}
+
+			if (Terrain::is_solid(t) &&
+				(vis != Visibility::Hidden ||
+				 param.unexplored_mode != NeighbourParam::UnexploredMode::Open))
+			{
+				continue;
+			}
+
+			if (!param.ignore_creatures)
+			{
+				Creature::Handle creature = Creature::creature_at_pos(next_pos);
+				if (creature.valid() && creature != param.target_creature)
 				{
-					out.push_back(next_pos);
+					continue;
 				}
 			}
+
+			out.push_back(next_pos);
 		}
 	}
 }
@@ -96,7 +127,7 @@ void find_open_neighbours(Vec3 pos, bool ignore_creatures, Creature::Handle targ
 // "License: all the sample code on this page is free to use in your projects.
 //	If you need a license for it, you can treat it as Apache v2 licensed by Red Blob Games."
 
-void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out)
+void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 {
 	PerfTimer perf0("astar");
 
@@ -150,7 +181,15 @@ void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out)
 				break;
 			}
 
-			find_open_neighbours(here, param.ignore_creatures, target, neighbours);
+			NeighbourParam neighbour_param
+			{
+				.ignore_creatures = false,
+				.allow_stairs = true,
+				.target_creature = target,
+				.unexplored_mode = NeighbourParam::UnexploredMode::Default
+			};
+
+			find_open_neighbours(here, neighbour_param, neighbours);
 			for (Vec3 neighbour : neighbours)
 			{
 				int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
@@ -200,20 +239,20 @@ void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out)
 }
 
 // helper function
-bool is_goal(Vec3 pos, GoalType goal_type)
+bool is_goal(Vec3 pos, ExploreParam::GoalType goal_type)
 {
 	switch (goal_type)
 	{
-		case GoalType::Item:
+		case ExploreParam::GoalType::Item:
 			return World::read().has_item(pos) && World::read().is_visible(pos);
-		case GoalType::Darkness:
+		case ExploreParam::GoalType::Darkness:
 			return World::read().get_visibility(pos) == Visibility::Hidden;
 	}
 	DebugBreak();
 	return false;
 }
 
-void into_darkness(Vec3 start, ExploreParameters param, std::vector<Vec3>& path_out)
+void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 {
 	PerfTimer perf0("into_darkness");
 
@@ -255,7 +294,15 @@ void into_darkness(Vec3 start, ExploreParameters param, std::vector<Vec3>& path_
 			break;
 		}
 
-		find_open_neighbours(here, /*ignore_creatures*/ true, Creature::None, neighbours);
+		NeighbourParam neighbour_param
+		{
+			.ignore_creatures = true,
+			.allow_stairs = param.allow_stairs,
+			.unexplored_mode = (param.goal == ExploreParam::GoalType::Darkness) ?
+				NeighbourParam::UnexploredMode::Open :
+				NeighbourParam::UnexploredMode::Block
+		};
+		find_open_neighbours(here, neighbour_param, neighbours);
 		for (Vec3 neighbour : neighbours)
 		{
 			int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
@@ -266,7 +313,7 @@ void into_darkness(Vec3 start, ExploreParameters param, std::vector<Vec3>& path_
 			}
 
 			// Prevent pathing through unknown tiles unless that's the goal.
-			if (param.goal != GoalType::Darkness &&
+			if (param.goal != ExploreParam::GoalType::Darkness &&
 				world.get_visibility(neighbour) == Visibility::Hidden)
 			{
 				continue;

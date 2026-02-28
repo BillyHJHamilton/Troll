@@ -91,6 +91,14 @@ To consider:
  - But without making it too hard to aim at moving characters.
 
 -------------------------------------------------------------------------------
+Bugs
+-------------------------------------------------------------------------------
+
+- Right-Click Travel: Doesn't work on the (fake) other end of stairs.
+ - For view, we should peek all (explored) stairs, not only if you're standing on it.
+- Wall LOS funny on narrow (3 wide) rooms near edge of vision
+
+-------------------------------------------------------------------------------
 UX Notes from Richard
 -------------------------------------------------------------------------------
 
@@ -127,11 +135,3 @@ Design Thoughts from Richard
   too large as the effect number gets higher.  It might help to make the power vary with
   sqrt(N) instead of N.  You would probably want to increase the basse power by ~50% so
   the single-cast effect power is about the same.
-
--------------------------------------------------------------------------------
-Bugs
--------------------------------------------------------------------------------
-
-- Player Pathfind: Doesn't work on the (fake) other end of stairs.
- - For view, we should peek all stairs, not only if you're standing on it.
-- Wall LOS funny on narrow (3 wide) rooms near edge of vision

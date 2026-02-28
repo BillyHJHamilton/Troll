@@ -129,7 +129,7 @@ bool try_player_pathfind(Vec3 goal)
 {
 	Brain& brain = get_brain(0);
 
-	Pathfind::Parameters param
+	Pathfind::AstarParam param
 	{
 		.max_cost = 100, // we'll see if this is enough
 		.ignore_creatures = true,
@@ -144,11 +144,11 @@ bool try_player_collect()
 {
 	Brain& brain = get_brain(0);
 
-	Pathfind::ExploreParameters param
+	Pathfind::ExploreParam param
 	{
 		.max_cost = Player::vision_radius,
 		.allow_stairs = false,
-		.goal = Pathfind::GoalType::Item,
+		.goal = Pathfind::ExploreParam::GoalType::Item,
 	};
 	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
 
@@ -159,11 +159,11 @@ bool try_player_explore()
 {
 	Brain& brain = get_brain(0);
 
-	Pathfind::ExploreParameters param
+	Pathfind::ExploreParam param
 	{
 		.max_cost = 100,
 		.allow_stairs = false,
-		.goal = Pathfind::GoalType::Darkness,
+		.goal = Pathfind::ExploreParam::GoalType::Darkness,
 	};
 	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
 
@@ -369,7 +369,7 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
 	{
 		// Try to formulate a new plan.
-		Pathfind::Parameters param
+		Pathfind::AstarParam param
 		{
 			.max_cost = c_MaxPathCost,
 			.ignore_creatures = false

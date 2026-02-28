@@ -65,7 +65,7 @@ void clear ()
 	s_selected_spell = Spell::None;
 }
 
-void handle_next_input ()
+Input::Result handle_next_input ()
 {
 	// block until input is received
 	// note: "key" may also include mouse events, etc.
@@ -76,7 +76,7 @@ void handle_next_input ()
 	
 	if (key == TK_MOUSE_MOVE || key == TK_MOUSE_SCROLL)
 	{
-		return;
+		return Result::Skipped;
 	}
 
 	//-----------------------------------------------------------
@@ -86,7 +86,12 @@ void handle_next_input ()
 	   (key == TK_F4 && terminal_check(TK_ALT))) // Vulcan nerve pinch
 	{
 		request_quit();
-		return;	
+		return Result::Handled;	
+	}
+
+	if (key == TK_RESIZED)
+	{
+		return Result::Handled; // Redraw screen after resize
 	}
 
 	//-----------------------------------------------------------
@@ -95,7 +100,7 @@ void handle_next_input ()
 	if (Game::get_mode() == GameMode::Menu)
 	{
 		Menu::handle_input(key);
-		return;
+		return Result::Handled;
 	}
 
 	//-----------------------------------------------------------
@@ -104,22 +109,20 @@ void handle_next_input ()
 	// enter spellcasting mode when shift is pressed down
 	if (key == TK_SHIFT)
 	{
-		Player::stop_automove();
 		s_input_mode = InputMode::Spellcasting;
 		blank_spell_input();
-		return;
+		return Result::Handled;
 	}
 
 	// return to normal mode when shift is released
 	if (key == (TK_SHIFT | TK_KEY_RELEASED))
 	{
-		Player::stop_automove();
 		s_input_mode = InputMode::Normal;
 		if (check_spell_input_state() == SpellInputState::InProgress)
 		{
 			blank_spell_input();
 		}
-		return;
+		return Result::Handled;
 	}
 
 	// And, mouse-based targeting
@@ -131,8 +134,7 @@ void handle_next_input ()
 		{
 			Target::set_to(mouse_pos);
 		}
-		Player::stop_automove();
-		return;
+		return Result::Handled;
 	}
 
 	//-----------------------------------------------------------
@@ -147,13 +149,13 @@ void handle_next_input ()
 			if (terminal_check(TK_CONTROL))
 			{
 				Player::start_automove(dir);
+				return Result::StartAutomate;
 			}
 			else
 			{
-				Player::stop_automove();
 				Vec2 const vec = c_Compass[dir];
 				player_try_move(vec);
-				return;
+				return Result::Handled;
 			}
 		}
 
@@ -162,13 +164,13 @@ void handle_next_input ()
 			if (terminal_check(TK_CONTROL))
 			{
 				Player::start_automove(c_CompassNoMove);
+				return Result::StartAutomate;
 			}
 			else
 			{
-				Player::stop_automove();
 				player_rest_step();
+				return Result::Handled;
 			}
-			return;
 		}
 
 		// For some reason when ctrl is pressed, BearLib only issues the
@@ -178,13 +180,12 @@ void handle_next_input ()
 			terminal_check(TK_CONTROL))
 		{
 			Target::snap_to_player();
-			Player::stop_automove();
+			return Result::Handled;
 		}
 		else if (key == TK_TAB && !terminal_check(TK_CONTROL))
 		{
-			Player::stop_automove();
 			Target::cycle(1);
-			return;
+			return Result::Handled;
 		}
 
 		// Right-click automove
@@ -195,24 +196,22 @@ void handle_next_input ()
 			if (view.contains_global_pos(mouse_pos))
 			{
 				Player::start_pathfind(mouse_pos);
+				return Result::StartAutomate;
 			}
-			return;
 		}
 
 		// Auto-collect items
 		if (key == TK_C && terminal_check(TK_CONTROL))
 		{
-			Player::stop_automove();
 			Player::auto_collect();
-			return;
+			return Result::StartAutomate;
 		}
 
 		// Auto-explore
 		if (key == TK_D && terminal_check(TK_CONTROL))
 		{
-			Player::stop_automove();
 			Player::auto_explore();
-			return;
+			return Result::StartAutomate;
 		}
 
 		// Bean test
@@ -230,36 +229,33 @@ void handle_next_input ()
 #if _DEBUG
 		if (key == TK_D)
 		{
-			Player::stop_automove();
 			Menu::show_debug_menu();
-			return;
+			return Result::Handled;
 		}
 #endif
 
 		if (key == TK_H)
 		{
-			Player::stop_automove();
 			Menu::show_help();
-			return;
+			return Result::Handled;
 		}
 
 		if (key == TK_I || key == TK_ENTER)
 		{
-			Player::stop_automove();
 			Menu::show_inventory();
-			return;
+			return Result::Handled;
 		}
 
 		if (key == TK_X)
 		{
 			player_look_at();
+			return Result::Handled;
 		}
 
 		if (key == TK_ESCAPE)
 		{
-			Player::stop_automove();
 			Menu::show_pause_menu();
-			return;
+			return Result::Handled;
 		}
 
 		// Map Debug
@@ -269,18 +265,15 @@ void handle_next_input ()
 			if (key == TK_P)
 			{
 				Player::handle().move(Player::pos() + Vec3{0,0,1});
-				return;
+				return Result::Handled;
 			}
 			if (key == TK_SEMICOLON)
 			{
 				Player::handle().move(Player::pos() + Vec3{0,0,-1});
-				return;
+				return Result::Handled;
 			}
 		}
 #endif //_DEBUG
-
-		// unhandled
-		return;
 	}
 
 	//-----------------------------------------------------------
@@ -291,32 +284,32 @@ void handle_next_input ()
 		if (key == TK_TAB)
 		{
 			Target::cycle(-1);
-			return;
+			return Result::Handled;
 		}
 
 		if (is_letter(key))
 		{
 			char letter = 'A' + (key - TK_A);
 			handle_input_spell_keys(letter);
-			return;
+			return Result::Handled;
 		}
 
 		if (is_directional(key))
 		{
 			Vec2 const vec = c_Compass[parse_directional(key)];
 			Target::move(vec);
-			return;
+			return Result::Handled;
 		}
 
 		if (key == TK_SLASH)
 		{
 			Menu::show_spells_known();
-			return;
+			return Result::Handled;
 		}
-
-		// unhandled
-		return;
 	}
+
+	// unhandled
+	return Result::Skipped;
 }
 
 std::string get_spell_preview_string ()

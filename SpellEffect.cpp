@@ -107,7 +107,7 @@ void alohomora(EffectParams params)
 		// To Do: Variable treasure based on current map
 		Vec3TempList open_pos;
 		open_pos.reserve(9);
-		Pathfind::find_open_neighbours(pos, false, Creature::None, open_pos);
+		Pathfind::find_open_neighbours(pos, {}, open_pos);
 		open_pos.push_back(pos);
 
 		int const num_beans = Random::in_range(3,6);
