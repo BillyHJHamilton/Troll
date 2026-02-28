@@ -17,6 +17,10 @@ public:
 	int random_slot () const;
 	Item::Handle const peek_item (int slot) const;
 
+	// Finds the current slot of the most recently used item type.
+	// Returns c_Invalid if we have no more of that item.
+	int find_most_recently_used() const;
+
 	void add_item (Item::Handle item);
 	void use_item (int slot);
 	void remove_item (int slot); // removes entire slot
@@ -26,4 +30,8 @@ protected:
 	void invent_sort ();
 
 	std::vector<Item::Handle> invent;
+
+	// Tracking most recently used item
+	Item::Type recent_type = Item::None;
+	int recent_flavour = c_Invalid;
 };

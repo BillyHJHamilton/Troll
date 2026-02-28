@@ -55,7 +55,7 @@ namespace Item
 	{
 		None = 0,	// Item does not stack in inventory.
 		ByType,		// Item will stack with others of same type.
-		ByFlavour	// Item will stack with others of same type and subtype.
+		ByFlavour	// Item will stack with others of same type and flavour.
 	};
 
 	// Represents an item instance, as an integer index to the global array.

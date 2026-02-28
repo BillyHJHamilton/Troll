@@ -8,6 +8,7 @@
 #include "Input.h"
 #include "Inventory.h"
 #include "MenuDocument.h"
+#include "MenuHelp.h"
 #include "MenuInventory.h"
 #include "MenuLoad.h"
 #include "MenuMessages.h"
@@ -34,6 +35,7 @@ namespace Menu
 
 // Menus in alphabetic order
 MenuDocument s_menu_document;
+MenuHelp s_menu_help;
 MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
 MenuMessages s_menu_messages;
@@ -54,37 +56,6 @@ IMenu* s_current_menu = nullptr;
 std::vector<IMenu*> s_back_stack;
 
 //-------------------------------------------------------------------------------------------------
-// Static Data
-
-const char* const cstr_DocHelp =
-	"How To Play\n"
-	"\n"
-	"Movement:\n"
-	"  To move, use the arrow keys or numpad.\n"
-	"  If you have no numpad, use Home/End/PgUp/PgDn for diagonals.\n"
-	"  For a long move, hold Ctrl and press the move key.\n"
-	"\n"
-	"Resting:\n"
-	"  To skip a turn, press Space (or numpad 5).\n"
-	"  To rest until fully healed, hold Ctrl and press Space (or numpad 5).\n"
-	"\n"
-	"Spellcasting:\n"
-	"  To cast a spell, hold Shift and type the spell's two-letter abbreviation.\n"
-	"  To see your spells, press ? (shift /).\n"
-	"\n"
-	"Spell Targeting:\n"
-	"  Your current target is highlighted on the map.\n"
-	"  To cycle between targets, press Tab.\n"
-	"  To target a square manually, hold shift and use the move controls.\n"
-	"\n"
-	"Items:\n"
-	"  To collect items, simply walk onto them.\n"
-	"  To view your inventory, press 'i'.\n"
-	"  To use an item, select it in the inventory and press Enter.\n"
-	"\n"
-	"To show these instructions again, press 'h'.\n";
-
-//-------------------------------------------------------------------------------------------------
 // Helper function
 
 void set_menu(IMenu& menu)
@@ -98,6 +69,7 @@ void set_menu(IMenu& menu)
 
 void init()
 {
+	s_menu_help.init();
 	s_menu_select_house.init();
 	s_menu_title.init();
 	s_menu_settings.init();
@@ -137,7 +109,10 @@ void back()
 
 void push()
 {
-	s_back_stack.push_back(s_current_menu);
+	if (s_current_menu != nullptr)
+	{
+		s_back_stack.push_back(s_current_menu);
+	}
 }
 
 void update_screen()
@@ -179,18 +154,15 @@ void show_name_entry()
 
 void show_document(char const* message)
 {
-	if (s_current_menu != nullptr)
-	{
-		push();
-	}
+	push(); // TODO Maybe this should be automatic for other menus too?
 	set_menu(s_menu_document);
 	s_menu_document.init(message);
 }
 
 void show_help()
 {
-	set_menu(s_menu_document);
-	s_menu_document.init(cstr_DocHelp);
+	set_menu(s_menu_help);
+	//s_menu_help.reset_cursor();
 }
 
 void show_game_over()

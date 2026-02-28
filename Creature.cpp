@@ -363,11 +363,6 @@ void Handle::take_damage (int damage, Creature::Handle instigator)
 
 	clear_rest_steps();
 
-	if (is_player())
-	{
-		Player::stop_automove();
-	}
-
 	if (c.hp <= 0)
 	{
 		c.hp = 0;
@@ -762,6 +757,11 @@ void draw_visible_creatures (Draw::View const & view)
 std::vector<Creature::Handle> const & get_visible_creatures ()
 {
 	return s_visible_creatures;
+}
+
+bool has_visible_enemy ()
+{
+	return !s_visible_creatures.empty();
 }
 
 } // namespace Creature

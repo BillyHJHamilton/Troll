@@ -314,8 +314,7 @@ UseResult Handle::use_notes()
 
 UseResult Handle::use_bbbean()
 {
-	Draw::add_message("You eat a bean.");
-	Draw::add_message(BertieBotts::eat_message(flavour()));
+	Draw::add_message("You eat a bean.  " + BertieBotts::eat_message(flavour()));
 	return UseResult::Consumed;
 }
 

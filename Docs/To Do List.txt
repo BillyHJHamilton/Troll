@@ -94,8 +94,6 @@ To consider:
 Bugs
 -------------------------------------------------------------------------------
 
-- Right-Click Travel: Doesn't work on the (fake) other end of stairs.
- - For view, we should peek all (explored) stairs, not only if you're standing on it.
 - Wall LOS funny on narrow (3 wide) rooms near edge of vision
 
 -------------------------------------------------------------------------------

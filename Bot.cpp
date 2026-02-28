@@ -417,9 +417,6 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		brain.awareness = c_MaxAwareness;
 		Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
 
-		// And break automove since player probably wants to respond to this.
-		Player::stop_automove();
-
 		return;
 	}
 

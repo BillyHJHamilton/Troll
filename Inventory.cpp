@@ -71,6 +71,34 @@ Item::Handle const Inventory::peek_item (int slot) const
 	return c_Invalid;
 }
 
+int Inventory::find_most_recently_used() const
+{
+	if (recent_type == Item::None)
+	{
+		return c_Invalid;
+	}
+
+	for (int i = 0; i < Util::Size(invent); ++i)
+	{
+		Item::Handle const& item = invent[i];
+		if (item.type() == recent_type)
+		{
+			if (item.bag_stack_mode() == Item::BagStack::ByType)
+			{
+				return i;
+			}
+
+			if (item.bag_stack_mode() == Item::BagStack::ByFlavour &&
+				item.flavour() == recent_flavour)
+			{
+				return i;
+			}
+		}
+	}
+
+	return c_Invalid;
+}
+
 void Inventory::add_item (Item::Handle new_item)
 {
 	// Item must be removed from world stack before being added to bag.
@@ -130,6 +158,9 @@ void Inventory::use_item (int slot)
 		DebugBreak();
 		return;
 	}
+
+	recent_type = invent[slot].type();
+	recent_flavour = invent[slot].flavour();
 
 	Item::UseResult result = invent[slot].use();
 	if (result == Item::UseResult::Consumed)

@@ -216,6 +216,9 @@
     <ClCompile Include="MenuTitle.cpp">
       <Filter>Source Files\UI\Menus</Filter>
     </ClCompile>
+    <ClCompile Include="MenuHelp.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -402,6 +405,9 @@
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
     <ClInclude Include="MenuTitle.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuHelp.h">
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
   </ItemGroup>

@@ -215,6 +215,11 @@ void dispatch_automove()
 			}
 		}
 	}
+
+	if (Creature::has_visible_enemy())
+	{
+		Player::stop_automove();
+	}
 }
 
 bool has_acted ()

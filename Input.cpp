@@ -217,13 +217,11 @@ Input::Result handle_next_input ()
 		// Bean test
 		//if (key == TK_B)
 		//{
-		//	Player::stop_automove();
-		//
 		//	int const flavour = BertieBotts::random_flavour();
 		//	Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
 		//		+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
 		//
-		//	return;
+		//	return Result::Handled;
 		//}
 
 #if _DEBUG
@@ -242,6 +240,16 @@ Input::Result handle_next_input ()
 
 		if (key == TK_I || key == TK_ENTER)
 		{
+			if (terminal_check(TK_CONTROL))
+			{
+				int const slot = Inventory::read().find_most_recently_used();
+				if (slot != c_Invalid)
+				{
+					player_use_item(slot);
+					return Result::Handled;
+				}
+			}
+
 			Menu::show_inventory();
 			return Result::Handled;
 		}

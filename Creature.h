@@ -209,4 +209,5 @@ namespace Creature
 	void draw_creature (Creature::Handle creature_index, Draw::View const & view);
 	void draw_visible_creatures (Draw::View const & view);
 	std::vector<Creature::Handle> const & get_visible_creatures ();
+	bool has_visible_enemy ();
 };
