@@ -345,6 +345,13 @@ struct Box2
 		b.size = componentwise_max(p0, p1) - b.min + Vec2{1,1};
 		return b;
 	}
+	static Box2 around_tile(Vec2 centre, int border)
+	{
+		return Box2{
+			centre - Vec2{border,border},
+			{2*border+1,2*border+1}
+		};
+	}
 
 	Vec2 min = {0,0};
 	Vec2 size = {0,0};

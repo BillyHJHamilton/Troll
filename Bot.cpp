@@ -306,7 +306,7 @@ void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	{
 		// Pick a new target pos at random.
 		int constexpr max_distance = 10;
-		Box2 const box = Box2{creature.pos().xy(), Vec2{1,1}}.plus_border(max_distance);
+		Box2 const box = Box2::around_tile(creature.pos().xy(), max_distance);
 		brain.target_pos = Random::in_box(box).xyz(creature.pos().z);
 
 		brain.patience = manhattan_distance(creature.pos().xy(), brain.target_pos.xy());
