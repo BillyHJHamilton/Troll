@@ -6,6 +6,7 @@
 #include "PerfTimer.h"
 #include "Scratch.h"
 #include "Stairs.h"
+#include "Visibility.h"
 #include "World.h"
 
 #include <functional> // std::greater
@@ -45,7 +46,8 @@ struct AStarPriorityQueue
 	}
 };
 
-void find_open_neighbours(Vec3 pos, Vec3TempList& out, Creature::Handle target)
+void find_open_neighbours(Vec3 pos, bool ignore_creatures, Creature::Handle target,
+	Vec3TempList& out)
 {
 	PerfTimer perf0("find_open_neighbours");
 
@@ -77,7 +79,10 @@ void find_open_neighbours(Vec3 pos, Vec3TempList& out, Creature::Handle target)
 			if (itr != stairs_compass &&
 				!world.is_solid(next_pos))
 			{
-				Creature::Handle const creature = Creature::creature_at_pos(next_pos);
+				Creature::Handle creature = ignore_creatures ?
+					Creature::None :
+					Creature::creature_at_pos(next_pos);
+
 				if (creature == Creature::None || creature == target)
 				{
 					out.push_back(next_pos);
@@ -91,17 +96,17 @@ void find_open_neighbours(Vec3 pos, Vec3TempList& out, Creature::Handle target)
 // "License: all the sample code on this page is free to use in your projects.
 //	If you need a license for it, you can treat it as Apache v2 licensed by Red Blob Games."
 
-void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
+void astar(Vec3 start, Vec3 goal, Parameters param, std::vector<Vec3>& path_out)
 {
 	PerfTimer perf0("astar");
 
 	path_out.clear();
-	path_out.reserve(max_cost);
+	path_out.reserve(param.max_cost);
 
 	World const& world = World::read();
 	Creature::Handle const target = Creature::creature_at_pos(goal);
 
-	if (chessboard_distance(start, goal) > max_cost)
+	if (chessboard_distance(start, goal) > param.max_cost)
 	{
 		if (Debug::enabled(Debug::Bot))
 		{
@@ -145,12 +150,19 @@ void astar(Vec3 start, Vec3 goal, int max_cost, std::vector<Vec3>& path_out)
 				break;
 			}
 
-			find_open_neighbours(here, neighbours, target);
+			find_open_neighbours(here, param.ignore_creatures, target, neighbours);
 			for (Vec3 neighbour : neighbours)
 			{
 				int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
 
-				if (new_cost > max_cost)
+				if (new_cost > param.max_cost)
+				{
+					continue;
+				}
+
+				// Option to prevent pathing through unknown tiles.
+				if (!param.allow_unexplored && neighbour != goal &&
+					world.get_visibility(neighbour) == Visibility::Hidden)
 				{
 					continue;
 				}

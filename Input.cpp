@@ -74,9 +74,9 @@ void handle_next_input ()
 	//-----------------------------------------------------------
 	// Skip inputs we don't care about
 	
-	while (key == TK_MOUSE_MOVE || key == TK_MOUSE_SCROLL)
+	if (key == TK_MOUSE_MOVE || key == TK_MOUSE_SCROLL)
 	{
-		key = terminal_read();
+		return;
 	}
 
 	//-----------------------------------------------------------
@@ -122,8 +122,7 @@ void handle_next_input ()
 		return;
 	}
 
-	// And mouse-based targeting
-	// for test
+	// And, mouse-based targeting
 	if (key == TK_MOUSE_LEFT)
 	{
 		Draw::View const& view = Draw::get_view();
@@ -174,6 +173,7 @@ void handle_next_input ()
 
 		// For some reason when ctrl is pressed, BearLib only issues the
 		// released event for TK_TAB, not the pressed event.  :/
+		// Possibly a Windows-specific issue.
 		if (key == (TK_TAB | TK_KEY_RELEASED) &&
 			terminal_check(TK_CONTROL))
 		{
@@ -184,6 +184,18 @@ void handle_next_input ()
 		{
 			Player::stop_automove();
 			Target::cycle(1);
+			return;
+		}
+
+		// Right-click automove
+		if (key == TK_MOUSE_RIGHT)
+		{
+			Draw::View const& view = Draw::get_view();
+			Vec3 const mouse_pos = view.mouse_to_global_pos();
+			if (view.contains_global_pos(mouse_pos))
+			{
+				Player::start_pathfind(mouse_pos);
+			}
 			return;
 		}
 
@@ -288,53 +300,6 @@ void handle_next_input ()
 
 		// unhandled
 		return;
-	}
-}
-
-void dispatch_automove()
-{
-	CompassDirection const dir = Player::get_automove();
-	if (dir == c_CompassNoMove)
-	{
-		player_rest_step();
-
-		if (!Player::handle().is_hurt())
-		{
-			Player::stop_automove();
-		}
-	}
-	else
-	{
-		// Automove behaviour, inspired by run system in Linley's Dungeon Crawl.
-		CompassDirection const clockwise = get_clockwise(dir);
-		CompassDirection const counterclockwise = get_counterclockwise(dir);
-		Vec3 const p0 = Player::pos();
-		Vec3 const p1 = p0 + c_Compass[clockwise].xy0();
-		Vec3 const p2 = p0 + c_Compass[counterclockwise].xy0();
-		Terrain::Type t0 = World::read().get_terrain(p0);
-		Terrain::Type t1 = World::read().get_terrain(p1);
-		Terrain::Type t2 = World::read().get_terrain(p2);
-
-		bool const moved = player_try_move(c_Compass[dir]);
-
-		if (!moved)
-		{
-			Player::stop_automove();
-		}
-		else
-		{
-			Vec3 const new_p0 = Player::pos();
-			Vec3 const new_p1 = new_p0 + c_Compass[clockwise].xy0();
-			Vec3 const new_p2 = new_p0 + c_Compass[counterclockwise].xy0();
-			Terrain::Type new_t0 = World::read().get_terrain(new_p0);
-			Terrain::Type new_t1 = World::read().get_terrain(new_p1);
-			Terrain::Type new_t2 = World::read().get_terrain(new_p2);
-
-			if (t0 != new_t0 || t1 != new_t1 || t2 != new_t2)
-			{
-				Player::stop_automove();
-			}
-		}
 	}
 }
 

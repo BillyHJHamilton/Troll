@@ -70,10 +70,14 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
+void init()
+{
+	s_brains.reserve(Creature::c_MaxCreatures);
+}
+
 void clear()
 {
 	s_brains.clear();
-	s_brains.reserve(Creature::c_MaxCreatures);
 }
 
 void Brain::serialize(ISerializer& s)
@@ -98,17 +102,67 @@ void init_brain(Creature::Handle handle)
 
 	if (Util::IsValidIndex(s_brains, handle))
 	{
-		s_brains[handle] = Brain{};
+		s_brains[handle] = Brain{}; // TODO I fear this reallocates the move_stack vector
 	}
 	else
 	{
-		s_brains.reserve(handle + 1);
 		while (s_brains.size() < handle + 1)
 		{
 			s_brains.emplace_back();
 		}
 	}
 }
+
+Brain& get_brain(Creature::Handle handle)
+{
+	if (!Util::IsValidIndex(s_brains, handle))
+	{
+		init_brain(handle);
+	}
+	return s_brains[handle];
+}
+
+//-------------------------------------------------------------------------------------------------
+// Player pathfinding bot
+
+bool try_player_pathfind(Vec3 goal)
+{
+	Brain& brain = get_brain(0);
+
+	Pathfind::Parameters param
+	{
+		.max_cost = 100, // we'll see if this is enough
+		.ignore_creatures = false,
+		.allow_unexplored = false,
+	};
+	Pathfind::astar(Player::pos(), goal, param, brain.move_stack);
+
+	return !brain.move_stack.empty();
+}
+
+Vec2 try_get_next_player_move()
+{
+	Brain& brain = get_brain(0);
+	if (!brain.move_stack.empty())
+	{
+		Vec3 const next_pos = Util::PopBack(brain.move_stack);
+		Vec2 const next_move = next_pos.xy() - Player::pos().xy();
+		if (next_move.x >= -1 && next_move.x <= 1 && next_move.y >= -1 && next_move.y <= 1)
+		{
+			return next_move;
+		}
+	}
+	return {0,0};
+}
+
+void clear_player_path()
+{
+	Brain& brain = get_brain(0);
+	brain.move_stack.clear();
+}
+
+//-------------------------------------------------------------------------------------------------
+// Enemy creature bot
 
 void do_turn (Creature::Handle creature)
 {
@@ -284,7 +338,12 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
 	{
 		// Try to formulate a new plan.
-		Pathfind::astar(pos, brain.target_pos, c_MaxPathCost, brain.move_stack);
+		Pathfind::Parameters param
+		{
+			.max_cost = c_MaxPathCost,
+			.ignore_creatures = false
+		};
+		Pathfind::astar(pos, brain.target_pos, param, brain.move_stack);
 
 		// Cooldown before pathfinding again.
 		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;

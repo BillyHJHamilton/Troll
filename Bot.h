@@ -30,10 +30,17 @@ namespace Bot
 		void serialize(ISerializer& s);
 	};
 
+	void init();
 	void clear();
 	void serialize(ISerializer& s);
 
 	void init_brain(Creature::Handle creature);
 
-	void do_turn (Creature::Handle creature_index);
+	// Player pathfinding bot
+	bool try_player_pathfind(Vec3 goal);
+	Vec2 try_get_next_player_move(); // returns {0,0} on failure
+	void clear_player_path();
+
+	// Enemy creature bot
+	void do_turn(Creature::Handle creature_index);
 }

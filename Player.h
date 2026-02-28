@@ -7,11 +7,19 @@ namespace Player
 {
 	static int constexpr vision_radius = 8;
 
+	enum class AutomoveType
+	{
+		None,
+		Compass,
+		Path
+	};
+
 	struct Data
 	{
 		std::string name;
 
-		CompassDirection automove = c_CompassInvalid;
+		AutomoveType automove_type = AutomoveType::None;
+		CompassDirection automove_dir = c_CompassInvalid;
 		bool acted = false;
 
 		bool game_over = false;
@@ -32,7 +40,6 @@ namespace Player
 	Creature::Handle handle ();
 	const std::string& name ();
 	bool is_automoving ();
-	CompassDirection get_automove ();
 	bool has_acted ();
 	bool is_game_over ();
 	Creature::Type get_defeated_by ();
@@ -43,7 +50,9 @@ namespace Player
 	// Mutators
 	void set_name (std::string str);
 	void start_automove (CompassDirection dir);
+	void start_pathfind (Vec3 target);
 	void stop_automove ();
+	void dispatch_automove ();
 	void set_acted (bool acted);
 	void set_game_over (Creature::Type instigator);
 	void gain_xp_for (Creature::Type creature);

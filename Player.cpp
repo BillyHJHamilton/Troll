@@ -1,13 +1,18 @@
 #include "BearLibTerminal.h"
 #include "Player.h"
 
+#include "Action.h"
+#include "Bot.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Gingerbread.h"
 #include "Math.h"
+#include "Pathfind.h"
 #include "Serialize.h"
 #include "Spell.h"
+#include "Visibility.h"
+#include "World.h"
 
 namespace Player
 {
@@ -38,7 +43,9 @@ void Player::clear()
 void Player::Data::serialize(ISerializer& s)
 {
 	s.srz_string(name);
-	s.srz_value(automove); // Could be autosaving during a long rest.
+
+	// Could be autosaving during a long move, but we don't want to automove on reload.
+	// s.srz_value(automove);
 
 	// Don't need to serialize these since we won't save in the middle of a turn.
 	assert(!acted);
@@ -71,12 +78,7 @@ const std::string& name()
 
 bool is_automoving()
 {
-	return read_data().automove != c_CompassInvalid;
-}
-
-CompassDirection get_automove ()
-{
-	return read_data().automove;
+	return read_data().automove_type != AutomoveType::None;
 }
 
 void set_name (std::string str)
@@ -86,12 +88,102 @@ void set_name (std::string str)
 
 void start_automove(CompassDirection dir)
 {
-	edit_data().automove = dir;
+	edit_data().automove_type = AutomoveType::Compass;
+	edit_data().automove_dir = dir;
+}
+
+void start_pathfind (Vec3 target)
+{
+	if (World::read().get_visibility(target) == Visibility::Hidden)
+	{
+		Draw::add_message("Can't travel to unexplored area.");
+		return;
+	}
+
+	bool success = Bot::try_player_pathfind(target);
+	if (success)
+	{
+		edit_data().automove_type = AutomoveType::Path;
+	}
+	else
+	{
+		Draw::add_message("No path found.");
+	}
 }
 
 void stop_automove()
 {
-	edit_data().automove = c_CompassInvalid;
+	edit_data().automove_type = AutomoveType::None;
+	edit_data().automove_dir = c_CompassInvalid;
+	Bot::clear_player_path();
+}
+
+void dispatch_automove()
+{
+	AutomoveType const type = read_data().automove_type;
+	if (type == AutomoveType::Compass)
+	{
+		CompassDirection const dir = read_data().automove_dir;
+		if (dir == c_CompassNoMove)
+		{
+			player_rest_step();
+
+			if (!Player::handle().is_hurt())
+			{
+				Player::stop_automove();
+			}
+		}
+		else
+		{
+			// Automove behaviour, inspired by run system in Linley's Dungeon Crawl.
+			CompassDirection const clockwise = get_clockwise(dir);
+			CompassDirection const counterclockwise = get_counterclockwise(dir);
+			Vec3 const p0 = Player::pos();
+			Vec3 const p1 = p0 + c_Compass[clockwise].xy0();
+			Vec3 const p2 = p0 + c_Compass[counterclockwise].xy0();
+			Terrain::Type t0 = World::read().get_terrain(p0);
+			Terrain::Type t1 = World::read().get_terrain(p1);
+			Terrain::Type t2 = World::read().get_terrain(p2);
+
+			bool const moved = player_try_move(c_Compass[dir]);
+
+			if (!moved)
+			{
+				Player::stop_automove();
+			}
+			else
+			{
+				Vec3 const new_p0 = Player::pos();
+				Vec3 const new_p1 = new_p0 + c_Compass[clockwise].xy0();
+				Vec3 const new_p2 = new_p0 + c_Compass[counterclockwise].xy0();
+				Terrain::Type new_t0 = World::read().get_terrain(new_p0);
+				Terrain::Type new_t1 = World::read().get_terrain(new_p1);
+				Terrain::Type new_t2 = World::read().get_terrain(new_p2);
+
+				if (t0 != new_t0 || t1 != new_t1 || t2 != new_t2)
+				{
+					Player::stop_automove();
+				}
+			}
+		}
+	}
+
+	else if (type == AutomoveType::Path)
+	{
+		Vec2 move = Bot::try_get_next_player_move();
+		if (move == c_Compass[c_CompassNoMove])
+		{
+			Player::stop_automove();
+		}
+		else
+		{
+			bool moved = player_try_move(move);
+			if (!moved)
+			{
+				Player::stop_automove();	
+			}
+		}
+	}
 }
 
 bool has_acted ()

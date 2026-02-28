@@ -62,6 +62,7 @@ void init()
 	PerfTimer perf0("game init");
 
 	BertieBotts::init();
+	Bot::init();
 	Creature::init();
 	Debug::init();
 	Draw::init();
@@ -193,7 +194,7 @@ void update()
 
 	if (Player::is_automoving() && !terminal_has_input())
 	{
-		Input::dispatch_automove();
+		Player::dispatch_automove();
 	}
 	else
 	{
