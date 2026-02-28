@@ -129,7 +129,7 @@ void auto_collect ()
 	}
 }
 
-void auto_explore ()
+void auto_darkness ()
 {
 	bool success = Bot::try_player_explore();
 	if (success)
@@ -142,6 +142,11 @@ void auto_explore ()
 	}
 }
 
+void auto_explore ()
+{
+	edit_data().automove_type = AutomoveType::Explore;
+}
+
 void stop_automove()
 {
 	edit_data().automove_type = AutomoveType::None;
@@ -152,6 +157,25 @@ void stop_automove()
 void dispatch_automove()
 {
 	AutomoveType const type = read_data().automove_type;
+
+	if (type == AutomoveType::Explore &&
+		!Bot::has_player_path())
+	{
+		bool success = Bot::try_player_collect();
+
+		if (!success)
+		{
+			success = Bot::try_player_explore();
+		}
+
+		if (!success)
+		{
+			Draw::add_message("Done exploring.");
+			stop_automove();
+			return;
+		}
+	}
+
 	if (type == AutomoveType::Compass)
 	{
 		CompassDirection const dir = read_data().automove_dir;
@@ -162,6 +186,7 @@ void dispatch_automove()
 			if (!Player::handle().is_hurt())
 			{
 				Player::stop_automove();
+				return;
 			}
 		}
 		else
@@ -181,6 +206,7 @@ void dispatch_automove()
 			if (!moved)
 			{
 				Player::stop_automove();
+				return;
 			}
 			else
 			{
@@ -194,24 +220,27 @@ void dispatch_automove()
 				if (t0 != new_t0 || t1 != new_t1 || t2 != new_t2)
 				{
 					Player::stop_automove();
+					return;
 				}
 			}
 		}
 	}
 
-	else if (type == AutomoveType::Path)
+	else if (type == AutomoveType::Path || type == AutomoveType::Explore)
 	{
-		Vec2 move = Bot::try_get_next_player_move();
+		Vec2 move = Bot::pop_player_path();
 		if (move == c_Compass[c_CompassNoMove])
 		{
 			Player::stop_automove();
+			return;
 		}
 		else
 		{
 			bool moved = player_try_move(move);
 			if (!moved)
 			{
-				Player::stop_automove();	
+				Player::stop_automove();
+				return;
 			}
 		}
 	}
@@ -219,6 +248,7 @@ void dispatch_automove()
 	if (Creature::has_visible_enemy())
 	{
 		Player::stop_automove();
+		return;
 	}
 }
 

@@ -32,9 +32,6 @@ To Do:
  - (Advanced) Staircases that change
  - Add stronger methods to enforce internal connectivity (for "crossroads" levels)
 
-- Menu
- - Improve "help" document
-
 - Potions
  - Could randomize the colours - though for some (Felix Felicis) this feels wrong
 
@@ -73,8 +70,6 @@ To Do:
 
 - UI
  - Show spell durations (and thus, read them as part of the spell effects)
- - Can we redrawing the screen for pointless non-actions?
-  - Except in menus, perhaps, where I can't tell if the input did something.
  - Support mouse input in menus?
   - Mouse move could highlight, mouse click would move cursor,
     scrolling could move scroll_top and drag the cursor along if needed.

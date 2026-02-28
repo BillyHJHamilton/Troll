@@ -171,7 +171,7 @@ bool try_player_explore()
 }
 
 
-Vec2 try_get_next_player_move()
+Vec2 pop_player_path()
 {
 	Brain& brain = get_brain(0);
 	if (!brain.move_stack.empty())
@@ -184,6 +184,12 @@ Vec2 try_get_next_player_move()
 		}
 	}
 	return {0,0};
+}
+
+bool has_player_path()
+{
+	Brain& brain = get_brain(0);
+	return !brain.move_stack.empty();
 }
 
 void clear_player_path()

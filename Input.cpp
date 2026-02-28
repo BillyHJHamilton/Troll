@@ -207,10 +207,28 @@ Input::Result handle_next_input ()
 			return Result::StartAutomate;
 		}
 
-		// Auto-explore
+		// Auto-explore (to nearest darkness)
 		if (key == TK_D && terminal_check(TK_CONTROL))
 		{
-			Player::auto_explore();
+			Player::auto_darkness();
+			return Result::StartAutomate;
+		}
+
+		//// Auto-explore (until further notice)
+		// Disabled for now because I feel like the C/D version is more fun
+		//if (key == TK_E && terminal_check(TK_CONTROL))
+		//{
+		//	Player::auto_explore();
+		//	return Result::StartAutomate;
+		//}
+
+		// Go to (target location)
+		if (key == TK_G && terminal_check(TK_CONTROL))
+		{
+			if (Target::is_valid())
+			{
+				Player::start_pathfind(Target::get_pos().value());
+			}
 			return Result::StartAutomate;
 		}
 

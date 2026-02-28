@@ -344,6 +344,13 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 		PerfTimer perf1("into_darkness - rebuild path");
 
 		Vec3 boomerang = destination;
+
+		// Don't actually try to walk onto a wall
+		if (world.is_solid(destination))
+		{
+			boomerang = discovered[boomerang].come_from;
+		}
+
 		while (boomerang != start)
 		{
 			path_out.push_back(boomerang);

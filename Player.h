@@ -11,7 +11,8 @@ namespace Player
 	{
 		None,
 		Compass,
-		Path
+		Path,
+		Explore,
 	};
 
 	struct Data
@@ -52,6 +53,7 @@ namespace Player
 	void start_automove (CompassDirection dir);
 	void start_pathfind (Vec3 target);
 	void auto_collect ();
+	void auto_darkness ();
 	void auto_explore ();
 	void stop_automove ();
 	void dispatch_automove ();

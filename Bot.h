@@ -40,7 +40,8 @@ namespace Bot
 	bool try_player_pathfind(Vec3 goal);
 	bool try_player_collect();
 	bool try_player_explore();
-	Vec2 try_get_next_player_move(); // returns {0,0} on failure
+	bool has_player_path();
+	Vec2 pop_player_path(); // returns {0,0} on failure
 	void clear_player_path();
 
 	// Enemy creature bot

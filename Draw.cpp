@@ -133,9 +133,10 @@ void update_view (int width, int height)
 		{
 			for (Stairs::Pair pair : map.get_stairs_map())
 			{
-				Vec3 other_end = pair.first.xyz(s_view.z) + Stairs::relative_move(pair.second);
+				Vec3 this_end = pair.first.xyz(s_view.z);
+				Vec3 other_end = this_end + Stairs::relative_move(pair.second);
 				if (view_area.contains(other_end.xy()) &&
-					world.get_visibility(other_end) != Visibility::Hidden)
+					world.get_visibility(this_end) != Visibility::Hidden)
 				{
 					s_view.peek_tiles.push_back(other_end);
 				}

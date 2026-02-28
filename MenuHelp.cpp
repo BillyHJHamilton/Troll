@@ -59,7 +59,8 @@ const char* const MenuHelp::cstr_OtherCommands =
 	"  Ctrl (Move)   Move in a line until terrain changes or enemy appears\n"
 	"  Ctrl C        Collect - move to nearest item\n"
 	"  Ctrl D        Darkness - move to nearest unexplored square\n"
-	"  Ctrl E        (TODO) Explore - until enemy appears or level is clear\n";
+//	"  Ctrl E        Explore - until enemy appears or level is clear\n"
+	"  Ctrl G        Go to target location (similar to right click)\n";
 
 void MenuHelp::draw_screen ()
 {
