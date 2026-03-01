@@ -7,7 +7,7 @@
 
 MenuPause::MenuPause()
 {
-	m_title = "Pause Menu:";
+	m_title = "In-Game Menu:";
 	m_options = 
 	{
 		{"Resume", PauseMenuOption::Resume},

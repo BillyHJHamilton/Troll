@@ -14,6 +14,7 @@ public:
 protected:
 	enum Page : byte
 	{
+		Overview,
 		Movement,
 		CastingSpells,
 		Items,
@@ -22,6 +23,7 @@ protected:
 
 	static int constexpr c_MenuWidth = 30;
 
+	static const char* const cstr_Overview;
 	static const char* const cstr_Movement;
 	static const char* const cstr_CastingSpells;
 	static const char* const cstr_Items;
