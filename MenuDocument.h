@@ -10,8 +10,8 @@ class MenuDocument : public IMenu
 public:
 	using VoidFunction = std::function<void()>;
 
-	void init(std::string content);
-	void init(std::string content, VoidFunction on_complete);
+	void init(std::string&& content);
+	void init(std::string&& content, VoidFunction on_complete);
 
 	virtual void draw_screen ();
 	virtual void handle_input (int key);

@@ -152,11 +152,11 @@ void show_name_entry()
 	s_menu_name.init();
 }
 
-void show_document(char const* message)
+void show_document(std::string&& message)
 {
 	push(); // TODO Maybe this should be automatic for other menus too?
 	set_menu(s_menu_document);
-	s_menu_document.init(message);
+	s_menu_document.init(std::move(message));
 }
 
 void show_help()
@@ -174,7 +174,7 @@ void show_game_over()
 		"You were defeated by {}.",
 		Gingerbread::long_name(Player::get_defeated_by()));
 
-	s_menu_document.init(content, &Game::reset);
+	s_menu_document.init(std::move(content), &Game::reset);
 }
 
 void show_house_selection()

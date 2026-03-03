@@ -2,13 +2,13 @@
 
 #include "BearLibTerminal.h"
 
-void MenuDocument::init(std::string content)
+void MenuDocument::init(std::string&& content)
 {
 	m_text = content;
 	m_on_complete = nullptr;
 }
 
-void MenuDocument::init(std::string content, VoidFunction on_complete)
+void MenuDocument::init(std::string&& content, VoidFunction on_complete)
 {
 	m_text = content;
 	m_on_complete = on_complete;

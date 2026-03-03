@@ -34,7 +34,10 @@
 namespace Game
 {
 
-int constexpr c_VersionNumber = 1;
+int constexpr c_MajorVersion = 0; // Significant milestone for promotional purposes.
+int constexpr c_MinorVersion = 1; // Larger change which may break save compatibility.
+int constexpr c_PatchVersion = 0; // Minor change which should preserve save compatibility.
+
 int constexpr c_AutosaveFrequency = 25;
 
 int s_turn_number;
@@ -52,10 +55,8 @@ void delete_savefile();
 // Interface function implementations
 
 // Initialization is in several layers (init, clear, setup).
-// Alphabetize the init's in each layer.
-// Avoid any order dependency within a layer.
 
-// Init runs once when the program starts, after the terminal starts.
+// Init runs once when the program starts, after the terminal opens.
 // All init functions must be independent, and run in alphabetic order.
 void init()
 {
@@ -102,11 +103,29 @@ void clear()
 
 bool try_serialize_all(ISerializer& s)
 {
-	int version = c_VersionNumber;
-	s.srz_int(version);
-	if (version != c_VersionNumber)
+	char label [10] = "TROLLGAME";
+	std::string const c_Label(label);
+	int major = c_MajorVersion;
+	int minor = c_MinorVersion;
+	int patch = c_PatchVersion;
+
+	s.srz_array_data(label, 9); // don't serialize the null terminator
+	s.srz_int(major);
+	s.srz_int(minor);
+	s.srz_int(patch);
+
+	if (c_Label != label)
 	{
-		Menu::show_document("File version does not match.  Cannot load.\n\n(Press enter)");
+		Menu::show_document("File format is not valid.  Cannot load.\n\n(Press enter)");
+		return false;
+	}
+
+	if (major != c_MajorVersion || minor != c_MinorVersion || patch > c_PatchVersion)
+	{
+		Menu::show_document(std::format("Save version does not match.  "
+			"You are running version {}.{}.{}, but file was saved with version {}.{}.{}.  "
+			"Cannot load.\n\n(Press enter)",
+			c_MajorVersion, c_MinorVersion, c_PatchVersion, major, minor, patch));
 		return false;
 	}
 
