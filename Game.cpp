@@ -34,10 +34,6 @@
 namespace Game
 {
 
-int constexpr c_MajorVersion = 0; // Significant milestone for promotional purposes.
-int constexpr c_MinorVersion = 1; // Larger change which may break save compatibility.
-int constexpr c_PatchVersion = 0; // Minor change which should preserve save compatibility.
-
 int constexpr c_AutosaveFrequency = 25;
 
 int s_turn_number;
@@ -101,42 +97,59 @@ void clear()
 	s_filename.clear();
 }
 
-bool try_serialize_all(ISerializer& s)
-{
-	char label [10] = "TROLLGAME";
-	std::string const c_Label(label);
-	int major = c_MajorVersion;
-	int minor = c_MinorVersion;
-	int patch = c_PatchVersion;
+//-----------------------------------------------------------------------------
+// Serialization
 
-	s.srz_array_data(label, 9); // don't serialize the null terminator
+void VersionNumber::serialize(ISerializer& s)
+{
 	s.srz_int(major);
 	s.srz_int(minor);
 	s.srz_int(patch);
+}
 
-	if (c_Label != label)
+bool VersionNumber::can_load() const
+{
+	return major == c_MajorVersion
+		&& minor == c_MinorVersion
+		&& patch <= c_PatchVersion;
+}
+
+bool serialize_file_type_label(ISerializer& s)
+{
+	char label [10] = "TROLLGAME";
+	static std::string const c_Label(label);
+
+	s.srz_array_data(label, 9); // don't serialize the null terminator
+	return (c_Label == label);
+}
+
+bool try_serialize_all(ISerializer& s)
+{
+	bool file_valid = serialize_file_type_label(s);
+	if (!file_valid)
 	{
-		Menu::show_document("File format is not valid.  Cannot load.\n\n(Press enter)");
+		Menu::show_document("Loading failed - invalid file format.\n\n(Press enter)");
 		return false;
 	}
 
-	if (major != c_MajorVersion || minor != c_MinorVersion || patch > c_PatchVersion)
+	VersionNumber version;
+	version.serialize(s);
+	if (!version.can_load())
 	{
-		Menu::show_document(std::format("Save version does not match.  "
-			"You are running version {}.{}.{}, but file was saved with version {}.{}.{}.  "
-			"Cannot load.\n\n(Press enter)",
-			c_MajorVersion, c_MinorVersion, c_PatchVersion, major, minor, patch));
+		Menu::show_document("Loading failed - invalid version number.\n\n(Press enter)");
 		return false;
 	}
 
+	// Serialize the player and the turn number first, to display when loading.
+	Player::serialize(s);
 	s.srz_int(s_turn_number);
 
+	// Then serialize everything else in alphabetical order.
 	Bot::serialize(s);
 	Creature::serialize(s);
 	Gingerbread::serialize(s);
 	Inventory::serialize(s);
 	Item::serialize(s);
-	Player::serialize(s);
 	Spawn::serialize(s);
 	World::edit().serialize(s);
 

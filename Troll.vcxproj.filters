@@ -410,6 +410,9 @@
     <ClInclude Include="MenuHelp.h">
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
+    <ClInclude Include="SaveMetadata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
