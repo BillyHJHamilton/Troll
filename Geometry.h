@@ -141,14 +141,15 @@ inline Vec2 const & operator-= (Vec2 & lhs, Vec2 rhs)
 }
 
 // Component-wise vector min and max
-inline Vec2 componentwise_min(Vec2 a, Vec2 b);
-inline Vec2 componentwise_max(Vec2 a, Vec2 b);
+Vec2 componentwise_min(Vec2 a, Vec2 b);
+Vec2 componentwise_max(Vec2 a, Vec2 b);
 
 // Pythagoras
 int squared_distance(Vec2 p0, Vec2 p1);
 
 // Returns true if euclidean distance <= range (by checking squared_distance).
 bool within_range(Vec2 p0, Vec2 p1, int max_range);
+bool within_range(Vec2 p0, Vec2 p1, float max_range);
 
 // Don't use this if you could use squared_distance or within_range, of course.
 float euclidean_distance(Vec2 p0, Vec2 p1);
@@ -158,6 +159,11 @@ int manhattan_distance(Vec2 p0, Vec2 p1);
 
 // Distance in shortest dimension (i.e., distance if diagonals cost only 1).
 int chessboard_distance(Vec2 p0, Vec2 p1);
+
+inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
+{
+	return chessboard_distance(p0,p1) == 1;
+}
 
 // Support for unordered_map<Vec2>
 namespace std
@@ -277,6 +283,7 @@ int squared_distance(Vec3 p0, Vec3 p1);
 
 // Returns true if euclidean distance <= range (by checking squared_distance).
 bool within_range(Vec3 p0, Vec3 p1, int max_range);
+bool within_range(Vec3 p0, Vec3 p1, float max_range);
 
 // Don't use this if you could use the above, of course.
 float euclidean_distance(Vec3 p0, Vec3 p1);

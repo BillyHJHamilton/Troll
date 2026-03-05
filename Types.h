@@ -30,6 +30,13 @@ enum class RoomType : int;
 enum class TargetMode : byte;
 enum class Visibility : byte;
 
+namespace Ability
+{
+	enum Index : int;
+	enum class TargetType : byte;
+	struct Data;
+}
+
 namespace Cloud
 {
 	enum Type : int;

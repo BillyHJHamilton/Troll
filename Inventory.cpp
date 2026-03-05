@@ -71,6 +71,25 @@ Item::Handle const Inventory::peek_item (int slot) const
 	return c_Invalid;
 }
 
+int Inventory::find_first_item(Item::Type type) const
+{
+	if (type == c_Invalid || type >= Item::Count)
+	{
+		return c_Invalid;
+	}
+
+	for (int i = 0; i < Util::Size(invent); ++i)
+	{
+		Item::Handle const& item = invent[i];
+		if (item.type() == type)
+		{
+			return i;
+		}
+	}
+
+	return c_Invalid;
+}
+
 int Inventory::find_most_recently_used() const
 {
 	if (recent_type == Item::None)

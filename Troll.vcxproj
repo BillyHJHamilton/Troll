@@ -236,6 +236,8 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ability.cpp" />
+    <ClCompile Include="AbilityEffect.cpp" />
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="Beam.cpp" />
     <ClCompile Include="BertieBotts.cpp" />
@@ -292,6 +294,8 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ability.h" />
+    <ClInclude Include="AbilityEffect.h" />
     <ClInclude Include="Action.h" />
     <ClInclude Include="Beam.h" />
     <ClInclude Include="BertieBotts.h" />
@@ -340,7 +344,6 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
-    <ClInclude Include="SaveMetadata.h" />
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="SerializeSaveLoad.h" />

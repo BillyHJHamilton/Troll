@@ -219,6 +219,12 @@
     <ClCompile Include="MenuHelp.cpp">
       <Filter>Source Files\UI\Menus</Filter>
     </ClCompile>
+    <ClCompile Include="Ability.cpp">
+      <Filter>Source Files\Magic</Filter>
+    </ClCompile>
+    <ClCompile Include="AbilityEffect.cpp">
+      <Filter>Source Files\Magic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -410,8 +416,11 @@
     <ClInclude Include="MenuHelp.h">
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
-    <ClInclude Include="SaveMetadata.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Ability.h">
+      <Filter>Header Files\Magic</Filter>
+    </ClInclude>
+    <ClInclude Include="AbilityEffect.h">
+      <Filter>Header Files\Magic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

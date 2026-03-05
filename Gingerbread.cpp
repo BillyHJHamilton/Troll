@@ -1,5 +1,6 @@
 #include "Gingerbread.h"
 
+#include "Ability.h"
 #include "Colour.h"
 #include "Creature.h"
 #include "Debug.h"
@@ -29,6 +30,7 @@ using TagSet = std::unordered_set<NameHash>;
 Gingerbread::Stats s_gingerbread [Creature::Count];
 Spell::Bitset s_gingerbread_spells [Creature::Count];
 TagSet s_gingerbread_tags [Creature::Count];
+Ragged<Ability::Index> s_gingerbread_abilities;
 
 // List of items the creature will drop, and probability of each.
 // Conventionally the weights should sum to 100, including an entry for Item::None.
@@ -74,10 +76,12 @@ void mix_gingerbread (
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
+	std::vector<Ability::Index>&& abilities,
 	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
 void mix_from_identity(
 	Creature::Type type, NameHash identity, float difficulty, float probability,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
+	std::vector<Ability::Index>&& abilities,
 	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
 
 //------------------------------------------------------------------------------
@@ -85,6 +89,9 @@ void mix_from_identity(
 
 void init()
 {
+	// Allocate memory.
+	s_gingerbread_abilities.resize(Creature::Count);
+
 	// Identities, alphabetic by short name:
 
 	register_identity("Cedric", "Cedric Diggory", House::colour(House::Hufflepuff), Gender::Male);
@@ -107,87 +114,87 @@ void init()
 	mix_gingerbread(Creature::Player, c_IdentityGeneric,
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f,
 		"You", "You", '@', cstr_White, Gender::Female,
-		/*Magic*/ 70, /*HP*/ 90, "", "",
+		/*Magic*/ 70, /*HP*/ 90, "", "", {},
 		{}, {});
 
 	mix_from_identity(Creature::Neville_0, "Neville",
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,
-		/*Magic*/ 0, /*HP*/ 7, "VM FP", "",
+		/*Magic*/ 0, /*HP*/ 7, "VM FP", "", {},
 		{Item::None, Item::Notes}, {50, 50});
 
 	mix_from_identity(Creature::ColinCreevy_0, "Colin",
 		/*Difficulty*/ 0.3f, /*Probability*/ 1.0f,
-		/*Magic*/ 8, /*HP*/ 5, "VM MW", "",
+		/*Magic*/ 8, /*HP*/ 5, "VM MW", "", {},
 		{Item::BBBean}, {100});
 	
 	mix_from_identity(Creature::SallyAnne_0, "Sally-Anne",
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.2f,
-		/*Magic*/ 0, /*HP*/ 3, "VM", "Faint.Disappear",
+		/*Magic*/ 0, /*HP*/ 3, "VM", "Faint.Disappear", {},
 		{}, {});
 
 	mix_from_identity(Creature::Harry_1, "Harry",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 10, /*HP*/ 12, "VM FP TA", "",
+		/*Magic*/ 10, /*HP*/ 12, "VM FP TA", "", {},
 		{Item::Notes, Item::PotionItem}, {60, 40});
 	
 	mix_from_identity(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 15, /*HP*/ 10, "VM FP LM", "",
+		/*Magic*/ 15, /*HP*/ 10, "VM FP LM", "", {},
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Ron_2, "Ron",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 5, /*HP*/ 16, "FP VM FM", "",
+		/*Magic*/ 5, /*HP*/ 16, "FP VM FM", "", {},
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 35, /*HP*/ 12, "VM MW LC AL FI", "",
+		/*Magic*/ 35, /*HP*/ 12, "VM MW LC AL FI", "", {},
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Crabbe_3, "Crabbe",
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 15, /*HP*/ 20, "FN RS", "",
+		/*Magic*/ 15, /*HP*/ 20, "FN RS", "", {},
 		{Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	mix_from_identity(Creature::Goyle_3, "Goyle",
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 15, /*HP*/ 20, "VM FP TA", "",
+		/*Magic*/ 15, /*HP*/ 20, "VM FP TA", "", {},
 		{Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	mix_from_identity(Creature::Harry_4, "Harry",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 45, /*HP*/ 18, "FP TA SP IP AC", "",
+		/*Magic*/ 45, /*HP*/ 18, "FP TA SP IP AC", "", {},
 		{Item::Notes, Item::PotionItem}, {60, 40});
 
 	mix_from_identity(Creature::Cedric_4, "Cedric",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 50, /*HP*/ 18, "SP RS", "", // PT, Lapifors?
+		/*Magic*/ 50, /*HP*/ 18, "SP RS", "", {}, // PT, Lapifors?
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Fleur_4, "Fleur",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 70, /*HP*/ 16, "MW LM FP FI", "", // PT, Sleepiness?
+		/*Magic*/ 70, /*HP*/ 16, "MW LM FP FI", "", {}, // PT, Sleepiness?
 		{Item::Notes, Item::PotionItem}, {60,40});
 
 	mix_from_identity(Creature::Krum_5, "Krum",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 50, /*HP*/ 20, "SP FN", "",
+		/*Magic*/ 50, /*HP*/ 20, "SP FN", "", {},
 		{Item::PotionItem, Item::None}, {50,50});
 
 	mix_from_identity(Creature::Neville_5, "Neville",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 50, /*HP*/ 20, "SP IP LM", "", // PT
+		/*Magic*/ 50, /*HP*/ 20, "SP IP LM", "", {}, // PT
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Ginny_5, "Ginny",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 60, /*HP*/ 18, "SP BT", "", // PT
+		/*Magic*/ 60, /*HP*/ 18, "SP BT", "", {}, // PT
 		{Item::Notes}, {100});
 
 	mix_from_identity(Creature::Luna_5, "Luna",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f,
-		/*Magic*/ 50, /*HP*/ 17, "SP MW FM TA", "", // PT
+		/*Magic*/ 50, /*HP*/ 17, "SP MW FM TA", "", {}, // PT
 		{Item::Notes}, {100});
 
 	// Generic students:
@@ -195,20 +202,26 @@ void init()
 	mix_gingerbread(Creature::Hufflepuff_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Hufflepuff", "First-Year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
-		/*Magic*/ 6, /*HP*/ 4, "TA VM LM", "",
+		/*Magic*/ 6, /*HP*/ 4, "TA VM LM", "", {},
 		{}, {});
 
 	mix_gingerbread(Creature::Ravenclaw_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Ravenclaw", "First-Year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female,
-		/*Magic*/ 8, /*HP*/ 3, "MW VM RS", "",
+		/*Magic*/ 8, /*HP*/ 3, "MW VM RS", "", {},
 		{}, {});
 
 	mix_gingerbread(Creature::Slytherin_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f,
 		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female,
-		/*Magic*/ 6, /*HP*/ 4, "FN FM LM", "",
+		/*Magic*/ 6, /*HP*/ 4, "FN FM LM", "", {},
 		{}, {});
+
+	mix_gingerbread(Creature::Gnome, c_IdentityGeneric,
+		/*Difficulty*/ 0.5f, /*Probability*/ 1110.8f,
+		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter,
+		/*Magic*/ 0, /*HP*/ 2, "", "", {Ability::StealBean}, // TODO: EatBean!  But needs bot improvement to use it properly
+		{Item::BBBean, Item::None}, {50, 50});
 
 	// Alternate universe characters!
 
@@ -218,7 +231,7 @@ void init()
 	mix_gingerbread(Creature::HarryTheHufflepuff_1, "Harry",
 		/*Difficulty*/ 1.2f, /*Probability*/ 0.1f,
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male,
-		/*Magic*/ 10, /*HP*/ 14, "VM FP TA", "",
+		/*Magic*/ 10, /*HP*/ 14, "VM FP TA", "", {},
 		{Item::Notes, Item::PotionItem}, {70, 30});
 }
 
@@ -303,6 +316,17 @@ Spell::Bitset const& read_spells(Creature::Type type)
 
 	DebugBreak();
 	return s_gingerbread_spells[0];
+}
+
+std::vector<Ability::Index> const& Gingerbread::read_abilities(Creature::Type type)
+{
+	if (is_valid_type(type))
+	{
+		return s_gingerbread_abilities[type];
+	}
+
+	DebugBreak();
+	return s_gingerbread_abilities[0];
 }
 
 std::string short_name (Creature::Type type)
@@ -529,12 +553,14 @@ void mix_gingerbread (
 	char const * short_name, char const * long_name,
 	int codepoint, char const * colour, Gender gender,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
+	std::vector<Ability::Index>&& abilities,
 	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights)
 {
 	s_gingerbread[type] = { identity, difficulty, probability,
 		short_name, long_name, colour, codepoint, magic_skill, max_hp, gender };
 	parse_spell_string(s_gingerbread_spells[type], spell_string);
 	parse_tag_string(s_gingerbread_tags[type], tag_string);
+	s_gingerbread_abilities[type] = abilities;
 	s_item_drops[type] = std::move(item_drops);
 	s_item_weights[type] = std::move(item_weights);
 	assert(Util::Size(s_item_drops[type]) == Util::Size(s_item_weights[type]));
@@ -543,12 +569,14 @@ void mix_gingerbread (
 void mix_from_identity(
 	Creature::Type type, NameHash identity, float difficulty, float probability,
 	int magic_skill, int max_hp, std::string spell_string, std::string tag_string,
+	std::vector<Ability::Index>&& abilities,
 	std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights)
 {
 	IdentityData const& data = s_identities.at(identity);
 	mix_gingerbread(type, identity, difficulty, probability,
 		data.short_name, data.long_name, data.codepoint, data.colour, data.gender,
-		magic_skill, max_hp, spell_string, tag_string, std::move(item_drops), std::move(item_weights));
+		magic_skill, max_hp, spell_string, tag_string, std::move(abilities),
+		std::move(item_drops), std::move(item_weights));
 }
 
 void parse_spell_string (Spell::Bitset & out_spell_bitset, std::string const & spell_string)

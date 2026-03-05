@@ -78,6 +78,13 @@ bool within_range(Vec2 p0, Vec2 p1, int max_range)
 	return squared_distance(p0,p1) <= squared_max_range;
 }
 
+bool within_range(Vec2 p0, Vec2 p1, float max_range)
+{
+	assert(max_range < sqrt(FLT_MAX));
+	float const squared_max_range = max_range * max_range;
+	return (float)squared_distance(p0,p1) <= squared_max_range;
+}
+
 float euclidean_distance(Vec2 p0, Vec2 p1)
 {
 	return (float)(sqrt(squared_distance(p0,p1)));
@@ -128,6 +135,13 @@ bool within_range(Vec3 p0, Vec3 p1, int max_range)
 	assert(max_range < sqrt(INT_MAX));
 	int const squared_max_range = max_range * max_range;
 	return squared_distance(p0,p1) <= squared_max_range;
+}
+
+bool within_range(Vec3 p0, Vec3 p1, float max_range)
+{
+	assert(max_range < sqrt(FLT_MAX));
+	float const squared_max_range = max_range * max_range;
+	return (float)squared_distance(p0,p1) <= squared_max_range;
 }
 
 float euclidean_distance(Vec3 p0, Vec3 p1)

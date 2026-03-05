@@ -17,6 +17,9 @@ public:
 	int random_slot () const;
 	Item::Handle const peek_item (int slot) const;
 
+	// Find first slot with item of the given type.
+	int find_first_item(Item::Type type) const;
+
 	// Finds the current slot of the most recently used item type.
 	// Returns c_Invalid if we have no more of that item.
 	int find_most_recently_used() const;

@@ -1,5 +1,6 @@
 #include "Bot.h"
 
+#include "Ability.h"
 #include "Action.h"
 #include "Beam.h"
 #include "Creature.h"
@@ -61,11 +62,15 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 bool is_aware(Creature::Handle const creature);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
+bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
 Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
 	Spell::TempList const & spell_list);
 float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
 bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
+Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
+	int line_id, int spell_range);
 
 // ------------------------------------------------------------------------------------------------
 // Interface functions
@@ -426,21 +431,39 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		return;
 	}
 
-	if (creature.num_spells() > 0)
+	bool tried_spell = false;
+	bool tried_ability = false;
+
+	int const num_spells = creature.num_spells();
+	int const num_abilities = creature.num_abilities();
+
+	bool done = false;
+
+	// Chance to try ability before spell.  If not, we'll try again after.
+	if (num_abilities > 0 &&
+		Random::in_range(1,num_spells + num_abilities) > num_spells)
 	{
-		Spell::Index spell = choose_spell(creature, Player::handle());
-		if (within_range(creature.pos(), Player::pos(), Spell::get_range(spell)))
-		{
-			try_cast_spell(spell, creature, Player::pos(), thoughts.target_line);
-		}
-		else
-		{
-			bool moved = try_move_towards(creature, Player::pos());
-			if (!moved)
-			{
-				creature.rest_step();
-			}
-		}
+		done = try_use_ability(creature, brain, thoughts);
+	}
+
+	if (!done && num_spells > 0)
+	{
+		done = try_use_spell(creature, brain, thoughts);
+	}
+
+	if (!done && num_abilities > 0)
+	{
+		done = try_use_ability(creature, brain, thoughts);
+	}
+
+	if (!done)
+	{
+		done = try_move_towards(creature, Player::pos());
+	}
+
+	if (!done)
+	{
+		creature.rest_step();
 	}
 }
 
@@ -488,6 +511,53 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 	}
 
 	return moved;
+}
+
+bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	assert(brain.target.valid());
+	if (creature.num_spells() > 0)
+	{
+		Spell::Index spell = choose_spell(creature, brain.target);
+		if (Spell::get_target_type(spell) == Spell::TargetType::Self)
+		{
+			try_cast_spell(spell, creature, creature.pos(), c_Invalid);
+			return true;
+		}
+		else if (spell == Spell::Fumos)
+		{
+			Vec3 aim_pos = aim_halfway_between(creature, brain.target, thoughts.target_line,
+				Spell::get_range(spell));
+			int const aim_line = (aim_pos == creature.pos()) ? c_Invalid : thoughts.target_line;
+			try_cast_spell(spell, creature, aim_pos, aim_line);
+			return true;
+		}
+		else if (within_range(creature.pos(), brain.target_pos, Spell::get_range(spell)))
+		{
+			try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	assert(brain.target.valid());
+	if (creature.num_abilities() > 0)
+	{
+		std::vector<Ability::Index> const& abilities = creature.ability_list();
+		Ability::Index ability = Random::from_vector(abilities);
+
+		// TODO other types, such as self-target
+
+		if (Ability::in_range(ability, creature.pos(), Player::pos()))
+		{
+			try_use_ability(ability, creature, Player::pos(), thoughts.target_line);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
@@ -659,6 +729,33 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 
 	// otherwise the spell could conceivably work in some circumstance.
 	return false;
+}
+
+Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
+	int line_id, int spell_range)
+{
+	// Aim halfway between us
+	float const current_range = euclidean_distance(caster.pos(), target.pos());
+	float const half_range = current_range/2.0f;
+	Vec3 aim_pos = caster.pos();
+	if (line_id != LineCache::c_StairsLine)
+	{
+		LineCache::Itr3D itr(aim_pos, line_id);
+		while (itr)
+		{
+			++itr;
+			if (within_range(caster.pos(), *itr, half_range) &&
+				within_range(caster.pos(), *itr, spell_range))
+			{
+				aim_pos = *itr;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	return aim_pos;
 }
 
 } // namespace Bot

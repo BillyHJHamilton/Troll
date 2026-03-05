@@ -32,7 +32,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  0,			-1, 8,  &finite_incantatem,		TargetType::Self,		Miscast::Charm },
+	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  0,			-1, 0,  &finite_incantatem,		TargetType::Self,		Miscast::Charm },
 	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			-1, 8,  &accio,					TargetType::Sight,		Miscast::Conjuring },
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
@@ -113,7 +113,7 @@ std::string get_abbrev (Spell::Index spell_index)
 	return s_spell_list[spell_index].abbrev;
 }
 
-std::string get_colour (Spell::Index spell_index)
+char const* get_colour (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].colour;
 }
@@ -135,9 +135,14 @@ int get_damage (Spell::Index spell_index, Creature::Handle caster)
 		return 0;
 }
 
-int is_damaging (Spell::Index spell_index)
+bool is_damaging (Spell::Index spell_index)
 {
 	return s_spell_list[spell_index].damage != 0;
+}
+
+int get_power (Spell::Index spell_index, Creature::Handle caster)
+{
+	return caster.skill_magic() * Spell::get_difficulty(spell_index);
 }
 
 TargetType get_target_type (Spell::Index spell_index)
@@ -221,28 +226,28 @@ float get_miscast_rate (Spell::Index spell, int skill_magic)
 	return mr;
 }
 
-static Spell::Instance s_current_spell_instance;
-
-void create_and_bind_instance (Spell::Index spell, Creature::Handle caster)
-{
-	s_current_spell_instance =
-	{
-		Spell::get_colour(spell),
-		Spell::get_name(spell).at(0),
-		Spell::get_damage(spell, caster),
-		caster.skill_magic() * Spell::get_difficulty(spell),
-		Spell::get_accuracy(spell),
-		Spell::get_effect_func(spell)
-	};
-}
-
-// todo - later we may have a way to create and bind a fake spell
-//        for miscasts that create an "unknown spell" effect
-
-Spell::Instance & get_current_instance ()
-{
-	return s_current_spell_instance;
-}
+//static Spell::Instance s_current_spell_instance;
+//
+//void create_and_bind_instance (Spell::Index spell, Creature::Handle caster)
+//{
+//	s_current_spell_instance =
+//	{
+//		Spell::get_colour(spell),
+//		Spell::get_name(spell).at(0),
+//		Spell::get_damage(spell, caster),
+//		caster.skill_magic() * Spell::get_difficulty(spell),
+//		Spell::get_accuracy(spell),
+//		Spell::get_effect_func(spell)
+//	};
+//}
+//
+//// todo - later we may have a way to create and bind a fake spell
+////        for miscasts that create an "unknown spell" effect
+//
+//Spell::Instance & get_current_instance ()
+//{
+//	return s_current_spell_instance;
+//}
 
 Spell::TempList bitset_to_temp_list(Spell::Bitset const& bitset)
 {

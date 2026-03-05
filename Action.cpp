@@ -1,5 +1,6 @@
 #include "Action.h"
 
+#include "Ability.h"
 #include "Beam.h"
 #include "Creature.h"
 #include "Debug.h"
@@ -272,6 +273,31 @@ void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_po
 
 	// 4. Success!
 	do_successful_cast(caster, spell, target_pos, line_id);
+}
+
+void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target_pos, int line_id)
+{
+	user.clear_rest_steps();
+
+	// Update the screen in case we'll do animation for the ability
+	Draw::draw_screen();
+
+	//if (Debug::enabled(Debug::Spell))
+	//{
+	//	std::cout << user.short_name() << " using ability " << Ability::get_name(ability) << "\n";
+	//}
+
+	// TODO Describe the ability activation?
+	//Draw::creature_message(caster, Grammar::You(caster) + " "
+	//	+ Grammar::verbs("cast", caster) + " "
+	//	+ Spell::get_name(spell) + "!");
+
+	if (Ability::target_type(ability) == Ability::TargetType::Melee)
+	{
+		Beam::shoot_ability(ability, user, target_pos, line_id);
+	}
+
+	// Other target types: To Do.
 }
 
 //-------------------------------------------------------------------------------------------------

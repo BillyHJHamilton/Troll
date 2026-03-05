@@ -76,6 +76,9 @@ namespace Creature
 		Ravenclaw_1,
 		Slytherin_1,
 
+		// Fantastic Beasts and Where to Find Them
+		Gnome,
+
 		// AU's!
 		HarryTheHufflepuff_1,
 
@@ -144,6 +147,9 @@ namespace Creature
 		int walk_failure () const;
 		int num_spells () const;
 		bool knows_spell (Spell::Index spell) const;
+		int num_abilities () const;
+		bool has_ability (Ability::Index ability) const;
+		std::vector<Ability::Index> const& ability_list () const;
 		bool has_tag (NameHash tag) const;
 		bool has_item () const;
 		Item::Handle peek_item () const;

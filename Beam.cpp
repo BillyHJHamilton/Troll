@@ -1,3 +1,4 @@
+#include "Ability.h"
 #include "Beam.h"
 #include "BitFlag.h"
 #include "Colour.h"
@@ -27,11 +28,13 @@ int constexpr c_MinRangedAccuracy = 40; // before character stats are applied
 
 static Beam::Data make_spell_beam (Spell::Index, Creature::Handle caster, Vec3 target_pos,
 	bool caster_aimed, int line_id);
+static Beam::Data make_ability_beam (Ability::Index, Creature::Handle caster, Vec3 target_pos,
+	int line_id);
 static void shoot_beam (Beam::Data & beam);
 static void shoot_beam_on_line (Beam::Data & beam);
 static void shoot_beam_on_stairs (Beam::Data & beam);
 static void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint,
-	std::string& colour, LineCache::Itr3D const& line_itr);
+	char const* colour, LineCache::Itr3D const& line_itr);
 static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line_itr);
 static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
@@ -39,19 +42,20 @@ static void hit_creature (Beam::Data const & beam, Creature::Handle target,
 	LineCache::Itr3D const & line);
 static void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line);
 
-static std::string get_colour (Beam::Data const & beam);
-static int get_codepoint (Beam::Data const & beam);
-static int get_damage (Beam::Data const & beam);
-static Spell::EffectFunc get_effect_func (Beam::Data const & beam);
-
 // ------------------------------------------------------------------------------------------------
 // interface function implementations
 
 void shoot_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos,
 	bool caster_aimed, int line_id)
 {
-	Spell::create_and_bind_instance(spell, caster);
 	Beam::Data beam = make_spell_beam(spell, caster, target_pos, caster_aimed, line_id);
+	shoot_beam(beam);
+}
+
+void shoot_ability (Ability::Index ability, Creature::Handle user, Vec3 target_pos,
+	int line_id)
+{
+	Beam::Data beam = make_ability_beam(ability, user, target_pos, line_id);
 	shoot_beam(beam);
 }
 
@@ -96,11 +100,59 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		.target_pos = target_pos,
 		.pos = caster.pos(),
 		.type = Beam::Type::Spell,
+		.effect_func = Spell::get_effect_func(spell),
+		.colour = Spell::get_colour(spell),
 		.caster = caster,
 		.intended_target = intended_target,
+		.codepoint = Spell::get_name(spell).at(0),
 		.trajectory = line_id,
 		.max_range = spell_range,
+		.base_accuracy = Spell::get_accuracy(spell),
 		.cloud_accuracy_loss = 0,
+		.damage = Spell::get_damage(spell, caster),
+		.spell_power = Spell::get_power(spell, caster),
+		.flags = flags,
+		.done = false
+	};
+}
+
+Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, Vec3 target_pos,
+	int line_id)
+{
+	assert(caster.pos() != target_pos); // Should not be shooting beam with zero trajectory.
+	assert(line_id != c_Invalid);
+
+	Creature::Handle intended_target = Creature::creature_at_pos(target_pos);
+
+	int ability_range = Ability::get_range(ability);
+	const World& world = World::read();
+
+	uint flags = f_None;
+	if (Ability::target_type(ability) == Ability::TargetType::Melee)
+	{
+		Util::SetFlag(flags, f_StopOnTarget);
+		ability_range = 2;
+	}
+
+	Util::SetFlag(flags, f_CasterAimed);
+
+	return Beam::Data
+	{
+		.start_pos = caster.pos(),
+		.target_pos = target_pos,
+		.pos = caster.pos(),
+		.type = Beam::Type::Projectile, // TODO?
+		.effect_func = Ability::get_effect_func(ability),
+		.colour = cstr_White, // TODO?
+		.caster = caster,
+		.intended_target = intended_target,
+		.codepoint = '*', // TODO?
+		.trajectory = line_id,
+		.max_range = ability_range,
+		.base_accuracy = Ability::get_accuracy(ability),
+		.cloud_accuracy_loss = 0,
+		.damage = Ability::get_damage(ability),
+		.spell_power = 0, // not a spell
 		.flags = flags,
 		.done = false
 	};
@@ -124,8 +176,6 @@ void shoot_beam_on_line (Beam::Data & beam)
 
 	// init for animation
 	Draw::View view = Draw::get_view();
-	int codepoint = get_codepoint(beam);
-	std::string colour = get_colour(beam);
 
 	while (!beam.done)
 	{
@@ -135,7 +185,7 @@ void shoot_beam_on_line (Beam::Data & beam)
 		// update position
 		beam.pos = *line_itr;
 
-		sweep_beam_on_current_pos(beam, view, codepoint, colour, line_itr);
+		sweep_beam_on_current_pos(beam, view, beam.codepoint, beam.colour, line_itr);
 	}
 }
 
@@ -143,8 +193,6 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 {
 	// init for animation
 	Draw::View view = Draw::get_view();
-	int codepoint = get_codepoint(beam);
-	std::string colour = get_colour(beam);
 
 	World const& world = World::read();
 	Stairs::Direction dir = world.get_stairs(beam.pos);
@@ -159,7 +207,7 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	int const fake_line_id = LineCache::get_lines(move2d).at(0);
 	LineCache::Itr3D fake_line(beam.pos, fake_line_id);
 
-	sweep_beam_on_current_pos(beam, view, codepoint, colour, fake_line);
+	sweep_beam_on_current_pos(beam, view, beam.codepoint, beam.colour, fake_line);
 
 	// If it didn't hit anything, hit the ceiling/floor.
 	if (!beam.done)
@@ -176,7 +224,7 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	}
 }
 
-void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, std::string& colour, LineCache::Itr3D const& line_itr)
+void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, char const* colour, LineCache::Itr3D const& line_itr)
 {
 	bool const out_of_range = !within_range(beam.start_pos, beam.pos, beam.max_range);
 	if (out_of_range)
@@ -189,7 +237,7 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 		World const& world = World::read();
 		if (world.is_visible(beam.pos))
 		{
-			Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour.c_str());
+			Draw::draw_tile_temp(codepoint, beam.pos.xy(), view, colour);
 		}
 
 		// see if we hit anything; this may also change done to true
@@ -273,24 +321,11 @@ static std::string beam_description(Beam::Data const & beam)
 
 static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 {
-	int base_accuracy;
 	int caster_accuracy_factor;
 	int target_evasion_divisor;
-
-	if (beam.type == Beam::Type::Spell)
-	{
-		// if it's a spell, the data is in the bound spell instance
-		Spell::Instance const & spell_instance = Spell::get_current_instance();
-		base_accuracy = spell_instance.accuracy;
-	}
-	else
-	{
-		// todo - projectiles
-		base_accuracy = 50;
-	}
-
+	
 	// Range falloff
-	int const range_accuracy = accuracy_at_range(base_accuracy, beam.start_pos, beam.pos);
+	int const range_accuracy = accuracy_at_range(beam.base_accuracy, beam.start_pos, beam.pos);
 
 	if (beam.caster == Creature::None || !Util::IsFlagSet(beam.flags, f_CasterAimed))
 	{
@@ -334,7 +369,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	if (Debug::enabled(Debug::Spell))
 	{
 		std::cout << std::format(" Base Accuracy {}, Ranged Accuracy {}, Caster Factor {}",
-			base_accuracy, range_accuracy, caster_accuracy_factor);
+			beam.base_accuracy, range_accuracy, caster_accuracy_factor);
 		if (beam.cloud_accuracy_loss > 0)
 		{
 			std::cout << std::format(" (with -{} from clouds)", beam.cloud_accuracy_loss);
@@ -366,12 +401,9 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 
 	// todo - exception for protego: block or reflect spell
 
-	int damage = get_damage(beam);
-	Spell::EffectFunc effect_func = get_effect_func(beam);
-
 	// deal damage and then apply effect
-	target.take_damage(damage, beam.caster);
-	if (effect_func != nullptr)
+	target.take_damage(beam.damage, beam.caster);
+	if (beam.effect_func != nullptr)
 	{
 		Spell::EffectParams params
 		{
@@ -381,14 +413,13 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 			.impact_line = &line
 		};
 
-		effect_func(params);
+		beam.effect_func(params);
 	}
 }
 
 void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
 {
-	Spell::EffectFunc effect_func = get_effect_func(beam);
-	if (effect_func != nullptr)
+	if (beam.effect_func != nullptr)
 	{
 		Spell::EffectParams params
 		{
@@ -398,61 +429,8 @@ void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
 			&line
 		};
 
-		effect_func(params);
-	}
-}
-
-std::string get_colour (Beam::Data const & beam)
-{
-	if (beam.type == Beam::Type::Spell)
-	{
-		Spell::Instance inst = Spell::get_current_instance();
-		return inst.colour;
-	}
-	else
-	{
-		return cstr_White;
-	}
-}
-
-int get_codepoint (Beam::Data const & beam)
-{
-	if (beam.type == Beam::Type::Spell)
-	{
-		Spell::Instance inst = Spell::get_current_instance();
-		return inst.codepoint;
-	}
-	else
-	{
-		return '*'; // todo - projectiles
-	}
-}
-
-int get_damage (Beam::Data const & beam)
-{
-	if (beam.type == Beam::Type::Spell)
-	{
-		Spell::Instance inst = Spell::get_current_instance();
-		return inst.damage;
-	}
-	else
-	{
-		return 1; // todo - projectiles
-	}
-}
-
-static Spell::EffectFunc get_effect_func (Beam::Data const & beam)
-{
-	if (beam.type == Beam::Type::Spell)
-	{
-		Spell::Instance inst = Spell::get_current_instance();
-		return inst.effect_func;
-	}
-	else
-	{
-		return nullptr; // todo - projectiles
+		beam.effect_func(params);
 	}
 }
 
 } // namespace Beam
-

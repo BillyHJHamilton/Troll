@@ -39,8 +39,8 @@ namespace Spell
 		// Protego,
 		BatBogey,
 		// Avis,
-		// Opugno,
-		// Episky,
+		// Oppugno,
+		// Episkey,
 		// Confundo,
 		// Disillusionment,
 		// Apparition,
@@ -52,14 +52,14 @@ namespace Spell
 		// WaterTrap,
 		// Crucio,
 		// Sectumsempra,
-		// VadaKedavra,
+		// AvadaKedavra,
 
 		Count
 	};
 
 	using TempList = std::vector<Spell::Index,Scratch<Spell::Index>>;
 
-	enum class TargetType
+	enum class TargetType : byte
 	{
 		Creature, // Beam that continues until it hits a creature
 		Tile,     // Beam that stops at the target tile
@@ -108,11 +108,12 @@ namespace Spell
 	bool is_valid_index(Spell::Index index);
 	std::string get_name (Spell::Index spell_index);
 	std::string get_abbrev (Spell::Index spell_index);
-	std::string get_colour (Spell::Index spell_index);
+	char const* get_colour (Spell::Index spell_index);
 	int get_difficulty (Spell::Index spell_index);
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
-	int is_damaging (Spell::Index spell_index);
+	bool is_damaging (Spell::Index spell_index);
+	int get_power (Spell::Index spell_index, Creature::Handle caster);
 	TargetType get_target_type (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);
 	int get_range (Spell::Index spell_index);
@@ -124,8 +125,8 @@ namespace Spell
 
 	float get_miscast_rate (Spell::Index spell, int skill_magic);
 
-	void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
-	Spell::Instance & get_current_instance ();
+	//void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
+	//Spell::Instance & get_current_instance ();
 
 	TempList bitset_to_temp_list(Spell::Bitset const& bitset);
 

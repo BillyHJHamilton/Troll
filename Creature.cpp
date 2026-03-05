@@ -253,6 +253,24 @@ bool Handle::knows_spell (Spell::Index spell) const
 	return spell_bitset.test(spell);
 }
 
+int Handle::num_abilities () const
+{
+	assert(valid());
+	return Util::Size(Gingerbread::read_abilities(type()));
+}
+
+bool Handle::has_ability (Ability::Index ability) const
+{
+	assert(valid());
+	return Util::Contains(Gingerbread::read_abilities(type()), ability);
+}
+
+std::vector<Ability::Index> const& Handle::ability_list () const
+{
+	assert(valid());
+	return Gingerbread::read_abilities(type());
+}
+
 bool Handle::has_tag (NameHash tag) const
 {
 	assert(valid());
