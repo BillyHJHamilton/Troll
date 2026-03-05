@@ -47,6 +47,9 @@ struct Thoughts
 {
 	bool target_visible = false;
 	int target_line = c_Invalid;
+
+	// Set to true if we try to use an ability from out of range.
+	bool want_to_approach = false;
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -446,12 +449,12 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		done = try_use_ability(creature, brain, thoughts);
 	}
 
-	if (!done && num_spells > 0)
+	if (!done && num_spells > 0 && !thoughts.want_to_approach)
 	{
 		done = try_use_spell(creature, brain, thoughts);
 	}
 
-	if (!done && num_abilities > 0)
+	if (!done && num_abilities > 0 && !thoughts.want_to_approach)
 	{
 		done = try_use_ability(creature, brain, thoughts);
 	}
@@ -537,6 +540,11 @@ bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 			try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
 			return true;
 		}
+		else
+		{
+			thoughts.want_to_approach = true;
+			return false;
+		}
 	}
 	return false;
 }
@@ -546,6 +554,8 @@ bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts
 	assert(brain.target.valid());
 	if (creature.num_abilities() > 0)
 	{
+		// TODO Better ability selection.  E.g. can't eat bean unless has a bean.
+
 		std::vector<Ability::Index> const& abilities = creature.ability_list();
 		Ability::Index ability = Random::from_vector(abilities);
 
