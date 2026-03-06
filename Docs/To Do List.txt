@@ -17,6 +17,9 @@ To Do:
  - Melee attacks
  - Creature special abilities (distinct from spells?  yes, I suppose so)
 
+- Draw
+ - Make message indentation programmatic.
+
 - Features
  - Chests should really be placed as part of Map Generation, not creature spawning
  - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
@@ -63,6 +66,10 @@ To Do:
  - Other types (cauldron cakes, etc)
 
 - Taunts
+ - Random taunts
+ - Player miscast taunts
+ - Pre-attack taunts
+ - "You'll pay for that" taunts
 
 - Terrain
  - Furniture for cover/obstacles?

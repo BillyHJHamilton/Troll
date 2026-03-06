@@ -141,7 +141,7 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.start_pos = caster.pos(),
 		.target_pos = target_pos,
 		.pos = caster.pos(),
-		.type = Beam::Type::Projectile, // TODO?
+		.type = Beam::Type::Ability,
 		.effect_func = Ability::get_effect_func(ability),
 		.colour = cstr_White, // TODO?
 		.caster = caster,
@@ -312,6 +312,19 @@ static std::string beam_description(Beam::Data const & beam)
 	if (beam.type == Beam::Type::Spell)
 	{
 		return "spell";
+	}
+	else if (beam.type == Beam::Type::Ability)
+	{
+		// TODO: We'll need something more sophisticated to cover the
+		// different ways that abilities may want to describe themselves.
+		if (beam.caster.valid())
+		{
+			return beam.caster.short_name();
+		}
+		else
+		{
+			return "attack";
+		}
 	}
 	else
 	{

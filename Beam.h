@@ -17,7 +17,8 @@ namespace Beam
 	enum Type : int
 	{
 		Spell,
-		Projectile
+		Ability,
+		Projectile,
 	};
 
 	// Beam flags
