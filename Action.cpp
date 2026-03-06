@@ -282,18 +282,20 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 {
 	user.clear_rest_steps();
 
+	// Distractedness check.
+	// TODO: Should it be lower for abilities/items than for spells?
+	bool is_distracted = check_distraction(user);
+	if (is_distracted)
+	{
+		Draw::add_message(Grammar::You_are(user) + " too distracted to attack!");
+		return;
+	}
+
 	// Update the screen in case we'll do animation for the ability
 	Draw::draw_screen();
 
-	//if (Debug::enabled(Debug::Spell))
-	//{
-	//	std::cout << user.short_name() << " using ability " << Ability::get_name(ability) << "\n";
-	//}
-
-	// TODO Describe the ability activation?
-	//Draw::creature_message(caster, Grammar::You(caster) + " "
-	//	+ Grammar::verbs("cast", caster) + " "
-	//	+ Spell::get_name(spell) + "!");
+	// TODO Describe ability activation?
+	// More relevant to some abilities than others.
 
 	Ability::TargetType target_type = Ability::target_type(ability);
 
