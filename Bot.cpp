@@ -75,6 +75,9 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 	int line_id, int spell_range);
 
+Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target);
+float rate_ability (Creature::Handle creature, Creature::Handle target, Ability::Index ability);
+
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
@@ -492,7 +495,7 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 		Math::Sign(to_dest.y)
 	};
 
-	bool moved = try_move(creature, move_dir, MoveMode::Walk);
+	bool moved = Action::try_move(creature, move_dir, MoveMode::Walk);
 
 	if (!moved)
 	{
@@ -506,10 +509,10 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 			std::swap(alt0,alt1);
 		}
 
-		moved = try_move(creature, alt0, MoveMode::Walk);
+		moved = Action::try_move(creature, alt0, MoveMode::Walk);
 		if (!moved)
 		{
-			moved = try_move(creature, alt1, MoveMode::Walk);
+			moved = Action::try_move(creature, alt1, MoveMode::Walk);
 		}
 	}
 
@@ -524,7 +527,7 @@ bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		Spell::Index spell = choose_spell(creature, brain.target);
 		if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 		{
-			try_cast_spell(spell, creature, creature.pos(), c_Invalid);
+			Action::try_cast_spell(spell, creature, creature.pos(), c_Invalid);
 			return true;
 		}
 		else if (spell == Spell::Fumos)
@@ -532,12 +535,12 @@ bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 			Vec3 aim_pos = aim_halfway_between(creature, brain.target, thoughts.target_line,
 				Spell::get_range(spell));
 			int const aim_line = (aim_pos == creature.pos()) ? c_Invalid : thoughts.target_line;
-			try_cast_spell(spell, creature, aim_pos, aim_line);
+			Action::try_cast_spell(spell, creature, aim_pos, aim_line);
 			return true;
 		}
 		else if (within_range(creature.pos(), brain.target_pos, Spell::get_range(spell)))
 		{
-			try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
+			Action::try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
 			return true;
 		}
 		else
@@ -554,16 +557,11 @@ bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts
 	assert(brain.target.valid());
 	if (creature.num_abilities() > 0)
 	{
-		// TODO Better ability selection.  E.g. can't eat bean unless has a bean.
-
-		std::vector<Ability::Index> const& abilities = creature.ability_list();
-		Ability::Index ability = Random::from_vector(abilities);
-
-		// TODO other types, such as self-target
-
-		if (Ability::in_range(ability, creature.pos(), Player::pos()))
+		Ability::Index ability = choose_ability(creature, brain.target);
+		if (ability != Ability::None &&
+			Ability::in_range(ability, creature.pos(), Player::pos()))
 		{
-			try_use_ability(ability, creature, Player::pos(), thoughts.target_line);
+			Action::try_use_ability(ability, creature, Player::pos(), thoughts.target_line);
 			return true;
 		}
 	}
@@ -577,7 +575,7 @@ bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 	Vec2 const next_move = next_pos.xy() - creature.pos().xy();
 	if (next_move.x >= -1 && next_move.x <= 1 && next_move.y >= -1 && next_move.y <= 1)
 	{
-		return try_move(creature, next_move, MoveMode::Walk);
+		return Action::try_move(creature, next_move, MoveMode::Walk);
 	}
 
 	return false;
@@ -766,6 +764,51 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 		}
 	}
 	return aim_pos;
+}
+
+Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target)
+{
+	assert(creature.num_abilities() > 0);
+
+	// TODO Right now Random doesn't support temp list.  We could template it, I guess.
+	static std::vector<float> weights;
+	weights.clear();
+	weights.reserve(creature.num_abilities());
+
+	float total_weight = 0.0f;
+	for (Ability::Index ability : creature.ability_list())
+	{
+		float const value = rate_ability(creature, target, ability);
+		total_weight += value;
+		weights.push_back(value);
+	}
+
+	if (total_weight > 0)
+	{
+		int const choice = Random::weighted_index(weights);
+		return creature.ability_list().at(choice);
+	}
+	else
+	{
+		return Ability::None;
+	}
+}
+
+float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::Index ability)
+{
+	// Could add a check here to exclude anything on "cooldown", if we add "cooldown"
+
+	switch (ability)
+	{
+		case Ability::EatBean:
+			return (creature.has_item() && creature.peek_item().type() == Item::BBBean) ?
+				5.0f : // Greatsome joy and felicitation!  Gurgi love eat bean!
+				0.0f;
+			break;
+	}
+
+	// Who knows, really?
+	return 1.0f;
 }
 
 } // namespace Bot

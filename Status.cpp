@@ -152,7 +152,7 @@ void endround_dancing(Creature::Handle creature)
 		Vec3 const move_to = Random::from_vector(possible_moves);
 		Vec2 const step = move_to.xy() - old_pos.xy();
 
-		bool const moved = try_move(creature, step, MoveMode::Forced);
+		bool const moved = Action::try_move(creature, step, MoveMode::Forced);
 		Vec3 const new_pos = creature.pos();
 
 		// Check for falling down stairs

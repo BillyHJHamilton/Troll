@@ -93,7 +93,7 @@ void MenuInventory::try_use_item()
 	if (item.can_use())
 	{
 		Menu::close();
-		player_use_item(slot);
+		Action::player_use_item(slot);
 	}
 }
 

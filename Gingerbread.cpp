@@ -218,9 +218,9 @@ void init()
 		{}, {});
 
 	mix_gingerbread(Creature::Gnome, c_IdentityGeneric,
-		/*Difficulty*/ 0.5f, /*Probability*/ 0.8f,
+		/*Difficulty*/ 0.5f, /*Probability*/ 11110.8f,
 		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter,
-		/*Magic*/ 0, /*HP*/ 2, "", "", {Ability::StealBean}, // TODO: EatBean!  But needs bot improvement to use it properly
+		/*Magic*/ 0, /*HP*/ 2, "", "", {Ability::StealBean, Ability::EatBean},
 		{Item::BBBean, Item::None}, {50, 50});
 
 	// Alternate universe characters!

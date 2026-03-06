@@ -9,8 +9,9 @@ namespace Ability
 {
 
 static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
-{	//					Dmg	Acc	Rng	TargetType			EffectFunc
-	/* StealBean */	  {	0,	50,	1,	TargetType::Melee,	&steal_bean }
+{	//								Dmg	Acc	Rng	TargetType			EffectFunc
+	/* StealBean */	Ability::Data{	0,	50,	1,	TargetType::Melee,	&steal_bean },
+	/* EatBean */	Ability::Data{	0,	-1,	0,	TargetType::Self,	&eat_bean },
 };
 
 void init()
@@ -54,19 +55,35 @@ int get_range (Ability::Index index)
 
 bool in_range (Ability::Index index, Vec3 origin, Vec3 target)
 {
-	if (target_type(index) == TargetType::Melee)
-	{
-		return chessboard_adjacent(origin.xy(), target.xy());
-	}
+	assert(is_valid(index));
 
-	DebugBreak();
-	return false;
+	switch (target_type(index))
+	{
+		case TargetType::Self:
+			return true;
+
+		case TargetType::Melee:
+			return chessboard_adjacent(origin.xy(), target.xy());
+
+		default:
+			DebugBreak();
+			return false;
+	}
 }
 
 Spell::EffectFunc get_effect_func (Ability::Index index)
 {
 	assert(is_valid(index));
 	return s_ability_list.at(index).effect_func;
+}
+
+void execute_effect(Ability::Index index, Spell::EffectParams params)
+{
+	Spell::EffectFunc func = s_ability_list[index].effect_func;
+	if (func != nullptr)
+	{
+		func(params);
+	}
 }
 
 } // namespace Ability

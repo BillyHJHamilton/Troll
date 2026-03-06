@@ -20,6 +20,9 @@
 #include <cassert>
 #include <format>
 
+namespace Action
+{
+
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
@@ -292,12 +295,31 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	//	+ Grammar::verbs("cast", caster) + " "
 	//	+ Spell::get_name(spell) + "!");
 
-	if (Ability::target_type(ability) == Ability::TargetType::Melee)
+	Ability::TargetType target_type = Ability::target_type(ability);
+
+	if (target_type == Ability::TargetType::Melee)
 	{
 		Beam::shoot_ability(ability, user, target_pos, line_id);
+		return;
 	}
 
-	// Other target types: To Do.
+	if (target_type == Ability::TargetType::Self)
+	{
+		if (Ability::is_damaging(ability))
+		{
+			int const dmg = Ability::get_damage(ability);
+			user.take_damage(dmg, user);
+		}
+
+		Spell::EffectParams params
+		{
+			.caster = user,
+			.target = Creature::None,
+			.target_pos = user.pos(),
+			.impact_line = nullptr
+		};
+		Ability::execute_effect(ability, params);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -409,3 +431,5 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		Beam::shoot_spell (spell, caster, target_pos, caster_aimed, line_id);
 	}
 }
+
+} // namespace Action

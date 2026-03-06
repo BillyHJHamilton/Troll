@@ -181,7 +181,7 @@ void dispatch_automove()
 		CompassDirection const dir = read_data().automove_dir;
 		if (dir == c_CompassNoMove)
 		{
-			player_rest_step();
+			Action::player_rest_step();
 
 			if (!Player::handle().is_hurt())
 			{
@@ -201,7 +201,7 @@ void dispatch_automove()
 			Terrain::Type t1 = World::read().get_terrain(p1);
 			Terrain::Type t2 = World::read().get_terrain(p2);
 
-			bool const moved = player_try_move(c_Compass[dir]);
+			bool const moved = Action::player_try_move(c_Compass[dir]);
 
 			if (!moved)
 			{
@@ -236,7 +236,7 @@ void dispatch_automove()
 		}
 		else
 		{
-			bool moved = player_try_move(move);
+			bool moved = Action::player_try_move(move);
 			if (!moved)
 			{
 				Player::stop_automove();

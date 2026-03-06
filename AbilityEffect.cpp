@@ -26,12 +26,12 @@ void steal_bean(EffectParams params)
 				Item::Handle item = Inventory::edit().pop_item(bean_slot);
 				user.push_item(item);
 
-				Draw::creature_message(user, std::format(" {} {} one of {} beans!",
+				Draw::creature_message(user, std::format("{} {} one of {} beans!",
 					Grammar::You(user), Grammar::verbs("grab", user), Grammar::your(target)));
 			}
 			else
 			{
-				Draw::creature_message(user, std::format(" {} {} {}, searching for beans.",
+				Draw::creature_message(user, std::format("{} {} {}, searching for beans.",
 					Grammar::You(user), Grammar::verbs("sniff", user), Grammar::you(target)));
 			}
 		}
@@ -39,6 +39,27 @@ void steal_bean(EffectParams params)
 		{
 			// Todo
 			DebugBreak();
+		}
+	}
+}
+
+void eat_bean(EffectParams params)
+{
+	Creature::Handle user = params.caster;
+	if (Check(user.valid()))
+	{
+		if (user.peek_item().type() == Item::BBBean)
+		{
+			Draw::creature_message(user, std::format("{} {} a bean!",
+				Grammar::You(user), Grammar::verbs("eat", user)));
+
+			Item::Handle item = user.pop_item();
+			item.destroy();
+		}
+		else
+		{
+			Draw::creature_message(user, std::format("{} {} hungry.",
+				Grammar::You(user), Grammar::feel(user)));
 		}
 	}
 }

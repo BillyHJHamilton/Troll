@@ -154,7 +154,7 @@ Input::Result handle_next_input ()
 			else
 			{
 				Vec2 const vec = c_Compass[dir];
-				player_try_move(vec);
+				Action::player_try_move(vec);
 				return Result::Handled;
 			}
 		}
@@ -168,7 +168,7 @@ Input::Result handle_next_input ()
 			}
 			else
 			{
-				player_rest_step();
+				Action::player_rest_step();
 				return Result::Handled;
 			}
 		}
@@ -263,7 +263,7 @@ Input::Result handle_next_input ()
 				int const slot = Inventory::read().find_most_recently_used();
 				if (slot != c_Invalid)
 				{
-					player_use_item(slot);
+					Action::player_use_item(slot);
 					return Result::Handled;
 				}
 			}
@@ -274,7 +274,7 @@ Input::Result handle_next_input ()
 
 		if (key == TK_X)
 		{
-			player_look_at();
+			Action::player_look_at();
 			return Result::Handled;
 		}
 
@@ -507,7 +507,7 @@ void handle_spellcode_complete ()
 	else
 	{
 		s_selected_spell = spell_index;
-		player_try_cast_spell(s_selected_spell);
+		Action::player_try_cast_spell(s_selected_spell);
 	}
 }
 

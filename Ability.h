@@ -10,6 +10,7 @@ namespace Ability
 	{
 		None = c_Invalid,
 		StealBean,
+		EatBean,
 		Count,
 	};
 
@@ -18,6 +19,7 @@ namespace Ability
 	enum class TargetType : byte
 	{
 		Melee,		// Ability that hits a creature in an adjacent tile
+		Self,		// Ability that affects the user
 
 		//Creature, // Beam that continues until it hits a creature
 		//Tile,     // Beam that stops at the target tile
@@ -52,5 +54,7 @@ namespace Ability
 	int get_range (Ability::Index index);
 	bool in_range (Ability::Index index, Vec3 origin, Vec3 target);
 	Spell::EffectFunc get_effect_func (Ability::Index index);
+
+	void execute_effect(Ability::Index index, Spell::EffectParams params);
 
 } // namespace Ability

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include <string>
 
 // Interface for a UI menu type.
 class IMenu
