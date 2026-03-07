@@ -27,6 +27,7 @@ namespace Draw
 std::vector<GameMessage> s_game_messages;
 int constexpr c_MaxGameMessages = 400;
 int s_next_message_id = 0;
+int s_message_indent = 0;
 
 static int constexpr c_AnimationStepMs = 25;
 static int constexpr c_TileWidthFactor = 2;
@@ -75,6 +76,7 @@ void clear ()
 {
 	s_game_messages.clear();
 	s_next_message_id = 0;
+	s_message_indent = 0;
 }
 
 bool View::contains_global_pos(Vec3 const& global_pos) const
@@ -191,8 +193,52 @@ void print_in_box (Box2 const & box, char const * const str, int align)
 	terminal_print_ext(box.min.x, box.min.y, box.size.x, box.size.y, align, str);
 }
 
+void draw_screen ()
+{
+	terminal_clear();
+
+	if (Game::get_mode() == GameMode::Menu)
+	{
+		Menu::update_screen();
+	}
+	else
+	{
+		update_screen();
+	}
+
+	terminal_refresh();
+}
+
+void toggle_los_cheat()
+{
+	s_los_cheat = 1 - s_los_cheat;
+}
+
+bool los_cheat_enabled()
+{
+	return s_los_cheat;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Game message system
+
+void add_message_indent()
+{
+	++s_message_indent;
+}
+
+void clear_message_indent()
+{
+	s_message_indent = 0;
+}
+
 void add_message(std::string && message)
 {
+	if (s_message_indent > 0)
+	{
+		message = message.insert(0, s_message_indent, ' ');
+	}
+
 	if (Util::Size(s_game_messages) < c_MaxGameMessages)
 	{
 		s_game_messages.push_back({Game::get_turn_number(), message});
@@ -284,32 +330,6 @@ GameMessage& get_recent_message(int num_back)
 			% c_MaxGameMessages;
 		return s_game_messages.at(index);
 	}
-}
-
-void draw_screen ()
-{
-	terminal_clear();
-
-	if (Game::get_mode() == GameMode::Menu)
-	{
-		Menu::update_screen();
-	}
-	else
-	{
-		update_screen();
-	}
-
-	terminal_refresh();
-}
-
-void toggle_los_cheat()
-{
-	s_los_cheat = 1 - s_los_cheat;
-}
-
-bool los_cheat_enabled()
-{
-	return s_los_cheat;
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -63,6 +63,18 @@ namespace Draw
 	void anim_delay();
 
 	void print_in_box(Box2 const& box, char const* const str, int align = TK_ALIGN_LEFT);
+
+	void draw_screen();
+
+	void toggle_los_cheat();
+	bool los_cheat_enabled();
+
+	//---------------------------------------------------------------------------------------------
+	// Game message system
+
+	void add_message_indent();
+	void clear_message_indent();
+
 	void add_message(std::string&& message);
 
 	// Adds a message only if the creature provided is visible.
@@ -76,8 +88,5 @@ namespace Draw
 	int get_num_recent_messages();
 	GameMessage& get_recent_message(int num_back); // 0 is most recent, 1 is older, etc.
 
-	void draw_screen();
-
-	void toggle_los_cheat();
-	bool los_cheat_enabled();
+	//---------------------------------------------------------------------------------------------
 }

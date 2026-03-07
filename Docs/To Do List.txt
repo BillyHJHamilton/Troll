@@ -3,8 +3,7 @@ To Do:
 -------------------------------------------------------------------------------
 
 - Actions
- - Distraction should apply to abilities
-  - And to other actions like using items
+ - Distraction should apply to other actions like using items
 
 - Beasts
  - Gnomes, for instance
@@ -31,6 +30,9 @@ To Do:
 
 - Identity
  - Support "playable" characters (play as Luna, etc)
+
+- Items
+ - Support some grammar functions for items (like for creatures)
 
 - Map generation
  - Named regions, more layout
