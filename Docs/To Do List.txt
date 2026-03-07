@@ -103,7 +103,7 @@ To consider:
 Bugs
 -------------------------------------------------------------------------------
 
-- Wall LOS funny on narrow (3 wide) rooms near edge of vision
+- Wall LOS funny on narrow (3-wide) rooms near edge of vision
 
 -------------------------------------------------------------------------------
 UX Notes from Richard

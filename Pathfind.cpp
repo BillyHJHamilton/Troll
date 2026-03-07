@@ -183,7 +183,7 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 
 			NeighbourParam neighbour_param
 			{
-				.ignore_creatures = false,
+				.ignore_creatures = param.ignore_creatures,
 				.allow_stairs = true,
 				.target_creature = target,
 				.unexplored_mode = NeighbourParam::UnexploredMode::Default
