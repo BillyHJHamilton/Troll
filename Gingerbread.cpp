@@ -228,7 +228,7 @@ void init()
 	mix_gingerbread(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 1.0f,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter,
-		/*Magic*/ 0, /*HP*/ 5, "", "", {Ability::ShootFire},
+		/*Magic*/ 0, /*HP*/ 5, "", "Move.Sidestep", {Ability::ShootFire},
 		{Item::BBBean, Item::None}, {50, 50});
 
 	// Alternate universe characters!

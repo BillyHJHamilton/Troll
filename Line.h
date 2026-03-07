@@ -19,6 +19,7 @@ namespace LineCache
 	std::vector<int> const& get_lines(Vec2 relative_pos);
 	std::vector<int> const& get_lines(Vec2 start, Vec2 end);
 	int get_num();
+	Vec2 read_line(int line_id, int step);
 
 	// Iterator using a cached line.
 	class Itr

@@ -65,6 +65,7 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 bool is_aware(Creature::Handle const creature);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
+bool try_sidestep(Creature::Handle creature, int target_line);
 bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
@@ -462,6 +463,11 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		done = try_use_ability(creature, brain, thoughts);
 	}
 
+	if (!done && creature.has_tag("Move.Sidestep") && !thoughts.want_to_approach)
+	{
+		done = try_sidestep(creature, thoughts.target_line);
+	}
+
 	if (!done)
 	{
 		done = try_move_towards(creature, Player::pos());
@@ -579,6 +585,30 @@ bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 	}
 
 	return false;
+}
+
+bool try_sidestep(Creature::Handle creature, int target_line)
+{
+	Vec2 const v0 = LineCache::read_line(target_line, 1);
+	CompassDirection const forwards = to_compass(v0);
+	CompassDirection const left = get_counterclockwise_90(forwards);
+	CompassDirection const right = get_clockwise_90(forwards);
+	Vec2 v1 = c_Compass[left];
+	Vec2 v2 = c_Compass[right];
+
+	if (Random::coinflip())
+	{
+		std::swap(v1,v2);
+	}
+
+	bool moved = Action::try_move(creature, v1, MoveMode::Walk);
+
+	if (!moved)
+	{
+		moved = Action::try_move(creature, v2, MoveMode::Walk);
+	}
+
+	return moved;
 }
 
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
@@ -783,7 +813,7 @@ Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target
 		weights.push_back(value);
 	}
 
-	if (total_weight > 0)
+	if (total_weight > 0.0f)
 	{
 		int const choice = Random::weighted_index(weights);
 		return creature.ability_list().at(choice);
@@ -796,7 +826,10 @@ Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target
 
 float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::Index ability)
 {
-	// Could add a check here to exclude anything on "cooldown", if we add "cooldown"
+	if (Ability::is_in_cooldown(creature, ability))
+	{
+		return 0.0f;
+	}
 
 	switch (ability)
 	{

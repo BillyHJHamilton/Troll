@@ -83,6 +83,7 @@ void clear()
 {
 	PerfTimer perf0("game clear");
 
+	Ability::clear();
 	Bot::clear();
 	Creature::clear();
 	Draw::clear();
@@ -328,6 +329,8 @@ void end_turn()
 	// Update clouds
 	World::edit().step_clouds();
 	Creature::remove_defeated_creatures();
+
+	Ability::tick_cooldowns();
 
 	if (Player::is_game_over())
 	{

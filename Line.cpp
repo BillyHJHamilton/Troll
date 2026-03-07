@@ -140,6 +140,26 @@ int get_num()
 	return (int)s_line_cache.size();
 }
 
+Vec2 read_line(int line_id, int step)
+{
+	if (step == 0)
+	{
+		return {0,0};
+	}
+
+	if (Check(Util::IsValidIndex(s_line_cache, line_id)))
+	{
+		std::vector<Vec2>& data = s_line_cache.at(line_id);
+		int const index = step - 1; // we don't store pos 0
+		if (Check(Util::IsValidIndex(data, index)))
+		{
+			return data[index];
+		}
+	}
+
+	return {0,0};
+}
+
 //------------------------------------------------------------------------------
 // Helper function implementations
 

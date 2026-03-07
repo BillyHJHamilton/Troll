@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Ability.h"
 #include "Bot.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -489,6 +490,8 @@ void Handle::destroy ()
 	{
 		Gingerbread::release_identity(*this);
 	}
+
+	Ability::clear_cooldowns(*this);
 
 	s_creatures[index].type = Creature::None;
 }

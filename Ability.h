@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Creature.h"
 #include "Geometry.h"
 
 // Abilities are similar to spells, but with no miscasts or magic skill involved.
@@ -35,6 +36,9 @@ namespace Ability
 		int accuracy = -1; // out of 100.
 		int range = 0;
 
+		int cooldown_min = 0;
+		int cooldown_max = 0;
+
 		Ability::TargetType target_type = TargetType::Self;
 
 		// I guess for now I'll just use the spell effect code, though.
@@ -53,6 +57,7 @@ namespace Ability
 	// Global interface
 
 	void init();
+	void clear();
 
 	bool is_valid(Ability::Index index);
 
@@ -69,5 +74,13 @@ namespace Ability
 	ProjectileData get_projectile(Ability::Index index);
 
 	void execute_effect(Ability::Index index, Spell::EffectParams params);
+
+	//-------------------------------------------------------------------------
+	// Cooldown interface
+
+	bool is_in_cooldown(Creature::Handle creature, Ability::Index ability);
+	void start_cooldown(Creature::Handle creature, Ability::Index ability);
+	void clear_cooldowns(Creature::Handle creature);
+	void tick_cooldowns();
 
 } // namespace Ability

@@ -294,11 +294,7 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	// Update the screen in case we'll do animation for the ability
 	Draw::draw_screen();
 
-	// TODO Describe ability activation?
-	// More relevant to some abilities than others.
-
 	Ability::TargetType target_type = Ability::target_type(ability);
-
 	if (target_type == Ability::TargetType::Melee)
 	{
 		Beam::shoot_ability(ability, user, target_pos, line_id);
@@ -328,6 +324,8 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 		Draw::IndentScope indent;
 		Beam::shoot_ability(ability, user, target_pos, line_id);
 	}
+
+	Ability::start_cooldown(user, ability);
 }
 
 //-------------------------------------------------------------------------------------------------
