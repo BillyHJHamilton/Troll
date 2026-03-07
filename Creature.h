@@ -78,6 +78,7 @@ namespace Creature
 
 		// Fantastic Beasts and Where to Find Them
 		Gnome,
+		FireCrab,
 
 		// AU's!
 		HarryTheHufflepuff_1,
@@ -129,8 +130,8 @@ namespace Creature
 		Creature::Type type () const;
 		NameHash identity () const;
 		bool is_generic () const;
-		std::string short_name () const;
-		std::string long_name () const;
+		char const* short_name () const;
+		char const* long_name () const;
 		Gender gender () const;
 		int skill_magic () const;
 		int max_hp () const;

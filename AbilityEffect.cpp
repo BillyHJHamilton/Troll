@@ -64,4 +64,14 @@ void eat_bean(EffectParams params)
 	}
 }
 
+void fire_gob_hit(EffectParams params)
+{
+	Creature::Handle const target = params.target;
+	if (Check(target.valid()))
+	{
+		Draw::creature_message(target, std::format("{} burned!",
+			Grammar::You_are(target)));
+	}
+}
+
 }

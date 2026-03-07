@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include "Ability.h"
 #include "BertieBotts.h"
 #include "Bot.h"
 #include "BuildWorld.h"
@@ -58,6 +59,7 @@ void init()
 {
 	PerfTimer perf0("game init");
 
+	Ability::init();
 	BertieBotts::init();
 	Bot::init();
 	Creature::init();

@@ -2,6 +2,8 @@
 
 #include "Creature.h"
 
+#include <format>
+
 namespace Grammar
 {
 
@@ -13,7 +15,7 @@ std::string You (Creature::Handle creature)
 	}
 	else if (creature.is_generic())
 	{
-		return "The " + creature.short_name();
+		return std::format("The {}", creature.short_name());
 	}
 	else
 	{
@@ -29,7 +31,7 @@ std::string you (Creature::Handle creature)
 	}
 	else if (creature.is_generic())
 	{
-		return "the " + creature.short_name();
+		return std::format("the {}", creature.short_name());
 	}
 	else
 	{
@@ -63,11 +65,11 @@ std::string You_are (Creature::Handle creature)
 	}
 	else if (creature.is_generic())
 	{
-		return "The " + creature.short_name() + " is";
+		return std::format("The {} is", creature.short_name());
 	}
 	else
 	{
-		return creature.short_name() + " is";
+		return std::format("{} is", creature.short_name());
 	}
 }
 
@@ -103,11 +105,11 @@ std::string Your(Creature::Handle creature)
 	}
 	else if (creature.is_generic())
 	{
-		return "The " + creature.short_name() + "\'s";
+		return std::format("The {}\'s", creature.short_name());
 	}
 	else
 	{
-		return creature.short_name() + "\'s";
+		return std::format("{}\'s", creature.short_name());
 	}
 }
 
@@ -119,11 +121,11 @@ std::string your(Creature::Handle creature)
 	}
 	else if (creature.is_generic())
 	{
-		return "the " + creature.short_name() + "\'s";
+		return std::format("the {}\'s", creature.short_name());
 	}
 	else
 	{
-		return creature.short_name() + "\'s";
+		return std::format("{}\'s", creature.short_name());
 	}
 }
 

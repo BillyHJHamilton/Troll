@@ -159,12 +159,12 @@ bool Handle::is_generic () const
 	return identity() == c_IdentityGeneric;
 }
 
-std::string Handle::short_name () const
+char const* Handle::short_name () const
 {
 	return read_creature_stats(index).short_name;
 }
 
-std::string Handle::long_name () const
+char const* Handle::long_name () const
 {
 	return read_creature_stats(index).long_name;
 }
@@ -685,7 +685,7 @@ void remove_defeated_creatures ()
 		{
 			if (creature.has_tag("Faint.Disappear"))
 			{
-				Draw::add_message(creature.long_name() + " disappears.");
+				Draw::add_message(std::format("{} disappears.", creature.long_name()));
 			}
 			else
 			{

@@ -17,7 +17,7 @@ namespace Beam
 	enum Type : int
 	{
 		Spell,
-		Ability,
+		Melee,
 		Projectile,
 	};
 
@@ -32,6 +32,7 @@ namespace Beam
 		Vec3 pos;
 		Beam::Type type;
 		Spell::EffectFunc effect_func;
+		char const* noun;
 		char const* colour;
 		Creature::Handle caster;
 		Creature::Handle intended_target;

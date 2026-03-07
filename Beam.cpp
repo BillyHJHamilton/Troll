@@ -36,7 +36,6 @@ static void shoot_beam_on_stairs (Beam::Data & beam);
 static void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint,
 	char const* colour, LineCache::Itr3D const& line_itr);
 static void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line_itr);
-static std::string beam_description (Beam::Data const & beam);
 static int get_hit_chance (Beam::Data const & beam, Creature::Handle target);
 static void hit_creature (Beam::Data const & beam, Creature::Handle target,
 	LineCache::Itr3D const & line);
@@ -101,6 +100,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		.pos = caster.pos(),
 		.type = Beam::Type::Spell,
 		.effect_func = Spell::get_effect_func(spell),
+		.noun = "spell",
 		.colour = Spell::get_colour(spell),
 		.caster = caster,
 		.intended_target = intended_target,
@@ -123,30 +123,40 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 	assert(line_id != c_Invalid);
 
 	Creature::Handle intended_target = Creature::creature_at_pos(target_pos);
-
 	int ability_range = Ability::get_range(ability);
-	const World& world = World::read();
+	uint flags = f_CasterAimed;
 
-	uint flags = f_None;
+	Beam::Type beam_type = Type::Projectile;
+	char const* noun = "ERROR BEAM";
+	char const* colour = cstr_White;
+	int codepoint = '*';
+
 	if (Ability::target_type(ability) == Ability::TargetType::Melee)
 	{
-		Util::SetFlag(flags, f_StopOnTarget);
 		ability_range = 2;
+		beam_type = Type::Melee;
+		noun = caster.short_name();
 	}
-
-	Util::SetFlag(flags, f_CasterAimed);
+	else if (Ability::target_type(ability) == Ability::TargetType::Projectile)
+	{
+		Ability::ProjectileData const proj = Ability::get_projectile(ability);
+		noun = proj.noun;
+		colour = proj.colour;
+		codepoint = proj.codepoint;
+	}
 
 	return Beam::Data
 	{
 		.start_pos = caster.pos(),
 		.target_pos = target_pos,
 		.pos = caster.pos(),
-		.type = Beam::Type::Ability,
+		.type = beam_type,
 		.effect_func = Ability::get_effect_func(ability),
-		.colour = cstr_White, // TODO?
+		.noun = noun,
+		.colour = colour,
 		.caster = caster,
 		.intended_target = intended_target,
-		.codepoint = '*', // TODO?
+		.codepoint = codepoint,
 		.trajectory = line_id,
 		.max_range = ability_range,
 		.base_accuracy = Ability::get_accuracy(ability),
@@ -214,11 +224,13 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	{
 		if (move.z > 0)
 		{
-			Draw::pos_message(beam.pos, "The " + beam_description(beam) + " hits the ceiling.");
+			Draw::pos_message(beam.pos, std::format("The {} hits the ceiling.",
+				beam.noun));
 		}
 		else
 		{
-			Draw::pos_message(beam.pos, "The " + beam_description(beam) + " hits the floor.");
+			Draw::pos_message(beam.pos, std::format("The {} hits the floor.",
+				beam.noun));
 		}
 		beam.done = true;
 	}
@@ -268,7 +280,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	if (Terrain::is_solid(t))
 	{
 		Draw::pos_message(beam.pos, std::format("The {} hits the {}.",
-			Beam::beam_description(beam), Terrain::get_name(t)));
+			beam.noun, Terrain::get_name(t)));
 		beam.done = true;
 
 		if (Util::IsFlagSet(beam.flags, f_StopOnTarget))
@@ -302,33 +314,12 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		else
 		{
 			Draw::creature_message(creature_in_path, std::format("The {} misses {}.",
-				beam_description(beam), Grammar::you(creature_in_path)));
+				beam.noun, Grammar::you(creature_in_path)));
+			if (beam.type == Type::Melee)
+			{
+				beam.done = true;
+			}
 		}
-	}
-}
-
-static std::string beam_description(Beam::Data const & beam)
-{
-	if (beam.type == Beam::Type::Spell)
-	{
-		return "spell";
-	}
-	else if (beam.type == Beam::Type::Ability)
-	{
-		// TODO: We'll need something more sophisticated to cover the
-		// different ways that abilities may want to describe themselves.
-		if (beam.caster.valid())
-		{
-			return beam.caster.short_name();
-		}
-		else
-		{
-			return "attack";
-		}
-	}
-	else
-	{
-		return "flying motorcycle"; // todo!
 	}
 }
 

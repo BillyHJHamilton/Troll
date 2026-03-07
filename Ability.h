@@ -9,8 +9,9 @@ namespace Ability
 	enum Index : int
 	{
 		None = c_Invalid,
-		StealBean,
-		EatBean,
+		StealBean,	// Gnome
+		EatBean,	// Gnome
+		ShootFire,	// Fire crab
 		Count,
 	};
 
@@ -18,8 +19,9 @@ namespace Ability
 	// We may merge things later on, but for now keeping it separate.
 	enum class TargetType : byte
 	{
-		Melee,		// Ability that hits a creature in an adjacent tile
 		Self,		// Ability that affects the user
+		Melee,		// Ability that hits a creature in an adjacent tile
+		Projectile,	// Ability that shoots a projectile beam at the target
 
 		//Creature, // Beam that continues until it hits a creature
 		//Tile,     // Beam that stops at the target tile
@@ -29,14 +31,22 @@ namespace Ability
 
 	struct Data
 	{
-		int damage;
-		int accuracy; // out of 100.
-		int range;
+		int damage = 0;
+		int accuracy = -1; // out of 100.
+		int range = 0;
 
-		Ability::TargetType target_type;
+		Ability::TargetType target_type = TargetType::Self;
 
 		// I guess for now I'll just use the spell effect code, though.
-		Spell::EffectFunc effect_func;
+		Spell::EffectFunc effect_func = nullptr;
+	};
+
+	struct ProjectileData
+	{
+		char const* shoot_verb = nullptr;
+		char const* noun = nullptr;
+		char const* colour = nullptr;
+		int codepoint = '*';
 	};
 
 	//-------------------------------------------------------------------------
@@ -54,6 +64,9 @@ namespace Ability
 	int get_range (Ability::Index index);
 	bool in_range (Ability::Index index, Vec3 origin, Vec3 target);
 	Spell::EffectFunc get_effect_func (Ability::Index index);
+
+	// Only valid for abilities with target type Projectile
+	ProjectileData get_projectile(Ability::Index index);
 
 	void execute_effect(Ability::Index index, Spell::EffectParams params);
 

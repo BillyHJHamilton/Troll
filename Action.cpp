@@ -302,10 +302,8 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	if (target_type == Ability::TargetType::Melee)
 	{
 		Beam::shoot_ability(ability, user, target_pos, line_id);
-		return;
 	}
-
-	if (target_type == Ability::TargetType::Self)
+	else if (target_type == Ability::TargetType::Self)
 	{
 		if (Ability::is_damaging(ability))
 		{
@@ -321,6 +319,14 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 			.impact_line = nullptr
 		};
 		Ability::execute_effect(ability, params);
+	}
+	else if (target_type == Ability::TargetType::Projectile)
+	{
+		Ability::ProjectileData proj = Ability::get_projectile(ability);
+		Draw::creature_message(user, std::format("{} {} a {}!",
+			Grammar::You(user), Grammar::verbs(proj.shoot_verb, user), proj.noun));
+		Draw::IndentScope indent;
+		Beam::shoot_ability(ability, user, target_pos, line_id);
 	}
 }
 

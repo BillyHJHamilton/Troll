@@ -9,4 +9,5 @@ namespace Ability
 
 	void steal_bean(EffectParams params);
 	void eat_bean(EffectParams params);
+	void fire_gob_hit(EffectParams params);
 }
