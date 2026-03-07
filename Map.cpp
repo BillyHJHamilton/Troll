@@ -1,6 +1,7 @@
 #include "Map.h"
 
 #include "Cloud.h"
+#include "Creature.h"
 #include "Draw.h"
 #include "Line.h"
 #include "MapUtil.h"
@@ -169,14 +170,23 @@ void Map::step_clouds()
 {
 	for (auto itr = cloud_lifetimes.begin(); itr != cloud_lifetimes.end(); )
 	{
+		Vec2 const pos = itr->first;
 		int& lifetime = itr->second;
 
-		// (Here, we can also perform any updates like dealing damage from fire clouds.)
+		Cloud::Type cloud_type = clouds.read(pos.x, pos.y);
+		if (Cloud::affects_creatures(cloud_type))
+		{
+			Creature::Handle creature = Creature::creature_at_pos(pos.xyz(global_z));
+			if (creature.valid())
+			{
+				Cloud::affect_creature(cloud_type, creature);
+			}
+		}
 
 		--lifetime;
 		if(lifetime <= 0)
 		{
-			clear_cloud(itr->first);
+			clear_cloud(pos);
 			itr = cloud_lifetimes.erase(itr);
 		}
 		else

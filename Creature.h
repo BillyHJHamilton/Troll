@@ -78,6 +78,7 @@ namespace Creature
 
 		// Fantastic Beasts and Where to Find Them
 		Gnome,
+		Streeler,
 		FireCrab,
 
 		// AU's!
@@ -86,11 +87,40 @@ namespace Creature
 		Count
 	};
 
+	// Creature Tags represent a creature type's special traits.
+	// They are named like Category_Tag.  Mainly used for Fantastic Beasts.
+	enum class Tag : int
+	{
+		None = c_Invalid,
+		Bot_Blunder,		// Rarely stays in rest mode for long.
+		Bot_Sidestep,		// When not attacking, circles its target.
+		Colour_Rainbow,		// Cycles between rainbow colours.
+		Faint_Disappear,	// When defeated, disappears instead of fainting.
+		Move_Slow,			// It needs to skip a turn before moving (TODO).
+		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
+		Vision_Short,		// Can only see 3 squares instead of 8.
+		Count
+	};
+	using TagBitset = std::bitset<(std::size_t)Tag::Count>;
+
+	// Creature flags represent temporary conditions a creature can have.
+	// Unlike statuses, flags don't have a counter or endround code.
+	// Unlike tags, flags belong to a creature instance, not a type.
+	enum class Flag : int
+	{
+		None = c_Invalid,
+		MoveDelay,		// Must rest a turn before moving.  Set by Move_Slow.
+		Count
+	};
+	using FlagBitset = std::bitset<(std::size_t)Flag::Count>;
+
 	struct Instance
 	{
+		Vec3 pos = {0,0,0};
+		FlagBitset flags;
+		Spell::Bitset spells;
 		Type type = Creature::None;
 		int hp = 0;
-		Vec3 pos = {0,0,0};
 		int rest_turns = 0; // counter for healing by resting
 		Item::Handle carried_item = c_Invalid;
 
@@ -151,13 +181,18 @@ namespace Creature
 		int num_abilities () const;
 		bool has_ability (Ability::Index ability) const;
 		std::vector<Ability::Index> const& ability_list () const;
-		bool has_tag (NameHash tag) const;
+		bool has_tag (Tag tag) const;
+		bool has_flag (Flag flag) const;
+		bool ready_to_move () const;
 		bool has_item () const;
 		Item::Handle peek_item () const;
 
 		// Complex accessors
+		char const* colour () const;
 		bool is_player () const;
 		bool visible () const;
+		bool finds_pos_hazardous (Vec3 pos) const;
+		int vision () const;
 		float miscast_rate_for_spell (Spell::Index spell) const;
 		std::string status_string () const;
 		Spell::TempList spells_known () const;
@@ -170,11 +205,14 @@ namespace Creature
 		void reduce_status (Status::Index status, int reduction);
 		void cure_status (Status::Index status);
 		void cure_all (); // heals status and hp
+		void endround ();
 		void rest_step ();
 		void clear_rest_steps ();
 		void destroy ();
 		void reset_spells ();
 		void learn_spell (Spell::Index spell);
+		void set_flag (Flag flag);
+		void clear_flag (Flag flag);
 		void push_item (Item::Handle item);
 		Item::Handle pop_item ();
 		void drop_all_items ();

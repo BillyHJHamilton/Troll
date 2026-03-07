@@ -6,8 +6,7 @@ To Do:
  - Distraction should apply to other actions like using items
 
 - Beasts
- - Gnomes, for instance
- - Figure out a model for storing beast stats/abilities without bloating creature stats too much.
+ - Add resistances (for example, can't light a fire crab's skirts on fire)
 
 - Bot
  - Do something more clever about tracking through rooms and getting sidetracked
@@ -20,6 +19,10 @@ To Do:
  - Size category?  Could effect evasion.
   - Or just have an evasiveness category, or evasiveness traits...
  - Pack spawning
+
+- Damage
+ - Damage types
+ - More detailed attribution of damage sources (died by falling down stairs, etc)
 
 - Draw
  - Make message indentation programmatic.
@@ -48,8 +51,11 @@ To Do:
 - Miscast effects
 
 - Serialization
- - Show file preview
  - High score table
+ - srz_sparse_grid - for clouds and items
+  - take in the grid and the "default" value
+  - on save, create a temp array of positions difft from default, then save that
+  - on load, load the temp array, then copy the values into the grid after filling with default
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
@@ -115,17 +121,14 @@ UX Notes from Richard
 + Would like a warning or indication when low on health.
  + Could show the hp colour on the player @ icon.
 - White beans are too hard to see (true)  [Tried changing them to light grey, though it's subtle]
-- Didn't know how to save (not mentioned in help)
++ Didn't know how to save (not mentioned in help)
 - HP versus "Stamina" is inconsistent terminology  [Feels like HP is too gamey.  Maybe "healthier"?]
 - Would be nice to see spell durations (for TA, RS, etc)
 - Confusing that alohomora doesn't fly past enemy to hit chest
 - Can't see cursor if playing on a dark screen
  - Add "bright cursor" mode
 + Need an in-game message when save incompatible
-+ The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened.
-- If I rest with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
- - Could break automove any time enemy is visible
- - and treat the input as a single move, in those cases
++ The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened. If I rest with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
 
 -------------------------------------------------------------------------------
 Design Thoughts from Richard
@@ -142,3 +145,4 @@ Design Thoughts from Richard
   too large as the effect number gets higher.  It might help to make the power vary with
   sqrt(N) instead of N.  You would probably want to increase the basse power by ~50% so
   the single-cast effect power is about the same.
+- Level 1 is too hard.

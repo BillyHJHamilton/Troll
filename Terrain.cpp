@@ -11,8 +11,8 @@ namespace Terrain
 		{
 			case Terrain::Open: return '.';
 			case Terrain::Wall: return Codepoint::SolidBlock;
-			case Terrain::UpStairs: return Codepoint::ArrowUp;
-			case Terrain::DownStairs: return Codepoint::ArrowDown;
+			case Terrain::UpStairs: return Codepoint::CaretUp;
+			case Terrain::DownStairs: return Codepoint::CaretDown;
 			case Terrain::Chest: return Codepoint::Chest;
 			default: assert(false); return '?';
 		}

@@ -12,8 +12,6 @@ namespace Codepoint
 	int constexpr BoxCheck = 0x2611;
 	int constexpr BoxX = 0x2612;
 
-	int constexpr CaratUp = 0x2c4;  // 2ef
-	int constexpr CaratDown = 0x2c5;  // 2f0
 	int constexpr HandRight = 0x261b;
 	int constexpr House = 0x2302;
 	int constexpr SmallSquare = 0x25ab;
@@ -21,8 +19,14 @@ namespace Codepoint
 	int constexpr ShortBlock = 0x2583;
 	int constexpr SolidBlock = 0x2588;
 
+	int constexpr MidTilde = 0x2053; // lower than the default one
+	
 	// Custom glyphs.
 	// These ones are in decimal for simplicity.
 	int constexpr OpenCursor = 12337; // 0x3031
 	int constexpr Chest = 12338;
+	int constexpr FlipendoSwitch = 12339;
+	int constexpr Portrait = 12340;
+	int constexpr CaretDown = 12341;
+	int constexpr CaretUp = 12342;
 }

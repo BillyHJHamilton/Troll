@@ -201,6 +201,14 @@ void dispatch_automove()
 			Terrain::Type t1 = World::read().get_terrain(p1);
 			Terrain::Type t2 = World::read().get_terrain(p2);
 
+			Vec2 relative_move = c_Compass[dir];
+			if (Action::is_move_hazardous(Player::handle(), relative_move))
+			{
+				Draw::add_message("That looks hazardous.");
+				Player::stop_automove();
+				return;
+			}
+
 			bool const moved = Action::player_try_move(c_Compass[dir]);
 
 			if (!moved)
@@ -231,6 +239,12 @@ void dispatch_automove()
 		Vec2 move = Bot::pop_player_path();
 		if (move == c_Compass[c_CompassNoMove])
 		{
+			Player::stop_automove();
+			return;
+		}
+		else if (Action::is_move_hazardous(Player::handle(), move))
+		{
+			Draw::add_message("That looks hazardous.");
 			Player::stop_automove();
 			return;
 		}

@@ -60,6 +60,7 @@ namespace Item
 
 	// Represents an item instance, as an integer index to the global array.
 	// Works the same as Creature::Handle.
+	// Note that every Item is potentially a linked list (an "item stack").
 	class Handle
 	{
 		int index;

@@ -33,7 +33,7 @@ namespace Gingerbread
 	std::vector<Ability::Index> const& read_abilities(Creature::Type type);
 	std::string short_name(Creature::Type type);
 	std::string long_name(Creature::Type type);
-	bool has_tag(Creature::Type type, NameHash tag);
+	bool has_tag(Creature::Type type, Creature::Tag tag);
 	Item::Type random_item_drop(Creature::Type type);
 	Item::Handle make_item_for_creature(Creature::Type type);
 

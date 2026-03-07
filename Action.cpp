@@ -26,6 +26,7 @@ namespace Action
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
+Vec3 pos_after_move (Creature::Handle creature, Vec2 relative_move);
 bool check_distraction (Creature::Handle caster);
 bool check_miscast (Creature::Handle caster, Spell::Index spell);
 void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id);
@@ -197,21 +198,23 @@ void player_use_item(int inventory_slot)
 	Player::set_acted(true);
 }
 
+bool is_move_hazardous (Creature::Handle creature, Vec2 relative_move)
+{
+	Vec3 const new_pos = pos_after_move(creature, relative_move);
+	return creature.finds_pos_hazardous(new_pos);
+}
+
 bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode)
 {
 	World const& world = World::read();
-	Vec3 old_pos = creature.pos();
+	Vec3 const new_pos = pos_after_move(creature, relative_move);
 
-	Vec2 new_pos = old_pos.xy() + relative_move;
-	Vec3 new_pos_3d = {new_pos.x, new_pos.y, old_pos.z};
-	new_pos_3d.z += world.get_stairs_dz(old_pos, new_pos);
-
-	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos_3d);
+	Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos);
 	if (creature_in_way != Creature::None)
 	{
 		return false;
 	}
-	else if (world.is_solid(new_pos_3d))
+	else if (world.is_solid(new_pos))
 	{
 		return false;
 	}
@@ -221,6 +224,8 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 
 		if (move_mode == MoveMode::Walk)
 		{
+			assert(creature.ready_to_move());
+
 			int const failure = creature.walk_failure();
 			int const roll = Random::in_range(0, 99);
 			if (Debug::enabled(Debug::Action) && failure > 0)
@@ -237,7 +242,11 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 			}
 		}
 
-		creature.move(new_pos_3d);
+		creature.move(new_pos);
+		if (creature.has_tag(Creature::Tag::Move_Slow))
+		{
+			creature.set_flag(Creature::Flag::MoveDelay);
+		}
 
 		return true;
 	}
@@ -330,6 +339,14 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
+
+Vec3 pos_after_move (Creature::Handle creature, Vec2 relative_move)
+{
+	World const& world = World::read();
+	Vec3 const old_pos = creature.pos();
+	Vec2 const new_pos = old_pos.xy() + relative_move;
+	return new_pos.xyz(old_pos.z + world.get_stairs_dz(old_pos, new_pos));
+}
 
 bool check_distraction (Creature::Handle caster)
 {

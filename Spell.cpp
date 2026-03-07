@@ -83,21 +83,6 @@ void init()
 	// none required, thank you constexpr
 }
 
-void srz_bitset(ISerializer& s, Spell::Bitset& bitset)
-{
-	std::string str;
-	if (s.is_load())
-	{
-		s.srz_string(str);
-		bitset = Spell::Bitset(str);
-	}
-	else
-	{
-		str = bitset.to_string();
-		s.srz_string(str);
-	}
-}
-
 bool is_valid_index(Spell::Index index)
 {
 	return index > Spell::None && index < Spell::Count;

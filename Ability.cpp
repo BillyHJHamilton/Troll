@@ -23,6 +23,7 @@ static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
 {	//								Dmg	Acc	Rng	Cooldn	TargetType				EffectFunc
 	/* StealBean */	Ability::Data{	0,	50,	1,	0,0,	TargetType::Melee,		&steal_bean },
 	/* EatBean */	Ability::Data{	0,	-1,	0,	0,0,	TargetType::Self,		&eat_bean },
+	/* Headbutt */	Ability::Data{	2,	70,	1,	0,0,	TargetType::Melee,		&headbutt },
 	/* ShootFire*/	Ability::Data{	3,	70,	6,	0,2,	TargetType::Projectile,	&fire_gob_hit},
 };
 

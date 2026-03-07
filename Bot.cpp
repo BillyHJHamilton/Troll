@@ -27,9 +27,6 @@ namespace Bot
 
 static bool constexpr c_TerminatorMode = false;
 
-// Constant for now.  Can add variable/function later if desired.
-constexpr int c_CreatureVision = 8;
-
 // Number of turns a bot will remain "aware" after losing sight of player.
 static int constexpr c_MaxAwareness = 15;
 
@@ -63,6 +60,7 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 bool is_aware(Creature::Handle const creature);
+bool try_move (Creature::Handle creature, Vec2 relative_move);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 bool try_sidestep(Creature::Handle creature, int target_line);
@@ -251,7 +249,7 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 	brain.target = Creature::Player;
 
 	World const& world = World::read();
-	thoughts.target_line = world.get_los(creature.pos(), brain.target.pos(), c_CreatureVision);
+	thoughts.target_line = world.get_los(creature.pos(), brain.target.pos(), creature.vision());
 	thoughts.target_visible = (thoughts.target_line != c_Invalid);
 
 	if (thoughts.target_visible)
@@ -310,7 +308,8 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 
 		else if (brain.state == State::Rest)
 		{
-			if (Random::one_in(40))
+			if (Random::one_in(40) ||
+				(creature.has_tag(Creature::Tag::Bot_Blunder) && Random::one_in(5)))
 			{
 				brain.state = State::Blunder;
 			}
@@ -463,7 +462,7 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		done = try_use_ability(creature, brain, thoughts);
 	}
 
-	if (!done && creature.has_tag("Move.Sidestep") && !thoughts.want_to_approach)
+	if (!done && creature.has_tag(Creature::Tag::Bot_Sidestep) && !thoughts.want_to_approach)
 	{
 		done = try_sidestep(creature, thoughts.target_line);
 	}
@@ -487,6 +486,26 @@ bool is_aware(Creature::Handle const creature)
 	return s_brains[creature].awareness > 0;
 }
 
+// Move but not if it's hazardous.
+bool try_move (Creature::Handle creature, Vec2 relative_move)
+{
+	// Ignore hazards if current pos is already hazardous.
+	bool const ignore_hazards = creature.finds_pos_hazardous(creature.pos());
+
+	if (Action::is_move_hazardous(creature, relative_move))
+	{
+		return false;
+	}
+
+	if (!creature.ready_to_move())
+	{
+		creature.rest_step();
+		return true;
+	}
+
+	return Action::try_move(creature, relative_move, MoveMode::Walk);
+}
+
 // A naïve move straight towards the destination.
 bool try_move_towards(Creature::Handle creature, Vec3 dest)
 {
@@ -501,7 +520,7 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 		Math::Sign(to_dest.y)
 	};
 
-	bool moved = Action::try_move(creature, move_dir, MoveMode::Walk);
+	bool moved = Bot::try_move(creature, move_dir);
 
 	if (!moved)
 	{
@@ -515,10 +534,10 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 			std::swap(alt0,alt1);
 		}
 
-		moved = Action::try_move(creature, alt0, MoveMode::Walk);
+		moved = Bot::try_move(creature, alt0);
 		if (!moved)
 		{
-			moved = Action::try_move(creature, alt1, MoveMode::Walk);
+			moved = Bot::try_move(creature, alt1);
 		}
 	}
 
@@ -576,12 +595,19 @@ bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts
 
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 {
+	// Early exit here so we don't consume the move from the stack.
+	if (!creature.ready_to_move())
+	{
+		creature.rest_step();
+		return true;
+	}
+
 	// Try to follow our plan
 	Vec3 const next_pos = Util::PopBack(move_stack);
 	Vec2 const next_move = next_pos.xy() - creature.pos().xy();
 	if (next_move.x >= -1 && next_move.x <= 1 && next_move.y >= -1 && next_move.y <= 1)
 	{
-		return Action::try_move(creature, next_move, MoveMode::Walk);
+		return Bot::try_move(creature, next_move);
 	}
 
 	return false;
@@ -601,11 +627,11 @@ bool try_sidestep(Creature::Handle creature, int target_line)
 		std::swap(v1,v2);
 	}
 
-	bool moved = Action::try_move(creature, v1, MoveMode::Walk);
+	bool moved = Bot::try_move(creature, v1);
 
 	if (!moved)
 	{
-		moved = Action::try_move(creature, v2, MoveMode::Walk);
+		moved = Bot::try_move(creature, v2);
 	}
 
 	return moved;

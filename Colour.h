@@ -180,3 +180,9 @@ extern char const* const         cstr_Crimson;
 extern char const* const     cstr_DarkCrimson;
 extern char const* const   cstr_DarkerCrimson;
 extern char const* const  cstr_DarkestCrimson;
+
+namespace Colour
+{
+	// Unique colours from 0 - 20
+	char const* rainbow(int x);
+}

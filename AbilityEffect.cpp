@@ -64,6 +64,17 @@ void eat_bean(EffectParams params)
 	}
 }
 
+void headbutt(EffectParams params)
+{
+	Creature::Handle const user = params.caster;
+	Creature::Handle const target = params.target;
+	if (user.valid() && target.valid())
+	{
+		Draw::creature_message(target, std::format("{} {} {}!",
+			Grammar::You(user), Grammar::verbs("headbutt",user), Grammar::you(target)));
+	}
+}
+
 void fire_gob_hit(EffectParams params)
 {
 	Creature::Handle const target = params.target;

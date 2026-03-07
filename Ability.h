@@ -12,6 +12,7 @@ namespace Ability
 		None = c_Invalid,
 		StealBean,	// Gnome
 		EatBean,	// Gnome
+		Headbutt,	// Streeler
 		ShootFire,	// Fire crab
 		Count,
 	};

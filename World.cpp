@@ -534,7 +534,7 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 			Cloud::Type const cloud = get_cloud(pos);
 			if (cloud != Cloud::None)
 			{
-				code = Cloud::get_character(cloud);
+				code = Cloud::get_codepoint(cloud);
 				draw_colour = Cloud::get_colour(cloud);
 			}
 			else

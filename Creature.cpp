@@ -7,8 +7,11 @@
 
 #include "Ability.h"
 #include "Bot.h"
+#include "Cloud.h"
+#include "Colour.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Grammar.h"
 #include "Grid.h"
 #include "Gingerbread.h"
@@ -29,6 +32,9 @@ namespace Creature
 
 //-------------------------------------------------------------------------------------------------
 
+constexpr int c_VisionNormal = 8;
+constexpr int c_VisionShort = 3;
+
 // Individual creatures are stored in the s_creatures array.
 // The parallel arrays (s_creature_status, s_derived_stats, etc.) hold further information.
 // The arrays are hidden but can be accessed with the functions such as creature_type()
@@ -38,7 +44,6 @@ namespace Creature
 Creature::Instance s_creatures [c_MaxCreatures];
 Grid<int> s_creature_status; // (creature, status)
 Creature::DerivedStats s_derived_stats [c_MaxCreatures];
-Spell::Bitset s_spells_known [c_MaxCreatures];
 int s_max_creature_index;
 
 std::vector<Creature::Handle> s_visible_creatures;
@@ -85,7 +90,6 @@ void clear ()
 	{
 		s_creatures[i] = Instance{};
 		s_derived_stats[i] = DerivedStats{};
-		s_spells_known[i] = Spell::Bitset{};
 	}
 
 	s_creature_status = Grid(c_MaxCreatures, Status::Count, 0);
@@ -101,10 +105,13 @@ void clear ()
 
 void Creature::Instance::serialize(ISerializer& s)
 {
+	s.srz_vec3(pos);
+	s.srz_value(flags);
+	s.srz_value(spells);
 	s.srz_value(type);
 	s.srz_int(hp);
-	s.srz_vec3(pos);
 	s.srz_int(rest_turns);
+	s.srz_item_handle(carried_item);
 }
 
 void serialize (ISerializer& s)
@@ -115,7 +122,6 @@ void serialize (ISerializer& s)
 	for (int i = 0; i < s_max_creature_index; ++i)
 	{
 		s_creatures[i].serialize(s);
-		Spell::srz_bitset(s, s_spells_known[i]);
 
 		// Don't save/load derived stats; just regenerate them.
 		if (s.is_load())
@@ -243,14 +249,14 @@ int Handle::walk_failure () const
 int Handle::num_spells () const
 {
 	assert(valid());
-	Spell::Bitset const & spell_bitset = s_spells_known[index];
+	Spell::Bitset const & spell_bitset = s_creatures[index].spells;
 	return (int)spell_bitset.count();
 }
 
 bool Handle::knows_spell (Spell::Index spell) const
 {
 	assert(valid());
-	Spell::Bitset const & spell_bitset = s_spells_known[index];
+	Spell::Bitset const & spell_bitset = s_creatures[index].spells;
 	return spell_bitset.test(spell);
 }
 
@@ -272,10 +278,21 @@ std::vector<Ability::Index> const& Handle::ability_list () const
 	return Gingerbread::read_abilities(type());
 }
 
-bool Handle::has_tag (NameHash tag) const
+bool Handle::has_tag (Tag tag) const
 {
 	assert(valid());
 	return Gingerbread::has_tag(type(), tag);
+}
+
+bool Handle::has_flag (Flag flag) const
+{
+	assert(valid());
+	return read_creature_instance(index).flags.test((size_t)flag);
+}
+
+bool Handle::ready_to_move () const
+{
+	return !has_flag(Flag::MoveDelay);
 }
 
 bool Handle::has_item () const
@@ -307,6 +324,23 @@ Item::Handle Handle::peek_item () const
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Complex accessor functions
 
+char const* Handle::colour () const
+{
+	assert(valid());
+	if (has_tag(Tag::Colour_Rainbow))
+	{
+		int const x = (pos().x / 3) +
+			(pos().y / 7) + 
+			(Game::get_turn_number() / 12) +
+			(index * 4);
+		return Colour::rainbow(x);
+	}
+	else
+	{
+		return Gingerbread::read(type()).colour;
+	}
+}
+
 bool Handle::is_player () const
 {
 	if (Handle(index).type() == Creature::Player)
@@ -330,6 +364,36 @@ bool Handle::visible () const
 
 	World const& world = World::read();
 	return world.is_visible(pos());
+}
+
+bool Handle::finds_pos_hazardous (Vec3 pos) const
+{
+	Cloud::Type cloud = World::read().get_cloud(pos);
+	if (cloud != Cloud::None)
+	{
+		if (Cloud::hazardous_for(cloud, *this))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+int Handle::vision () const
+{
+	if (has_tag(Tag::Vision_Short))
+	{
+		return c_VisionShort;
+	}
+	else if (is_player())
+	{
+		return Player::vision_radius;
+	}
+	else
+	{
+		return c_VisionNormal;
+	}
 }
 
 float Handle::miscast_rate_for_spell (Spell::Index spell) const
@@ -368,7 +432,7 @@ std::string Handle::status_string () const
 
 Spell::TempList Handle::spells_known () const
 {
-	Spell::Bitset const & spell_bitset = s_spells_known[index];
+	Spell::Bitset const & spell_bitset = s_creatures[index].spells;
 	return Spell::bitset_to_temp_list(spell_bitset);
 }
 
@@ -459,9 +523,21 @@ void Handle::cure_all ()
 	edit_creature_instance(index).hp = max_hp();
 }
 
+void Handle::endround ()
+{
+	if (has_tag(Tag::Trail_Slime))
+	{
+		World::edit().try_add_cloud(pos(), Cloud::Slime, Random::in_range(21,24));
+	}
+
+	Status::do_endround(*this);
+}
+
 void Handle::rest_step ()
 {
 	Creature::Instance& inst = edit_creature_instance(index);
+
+	clear_flag(Flag::MoveDelay);
 
 	if (is_hurt()
 		&& read_derived_stats(index).distractedness == 0)
@@ -498,13 +574,25 @@ void Handle::destroy ()
 
 void Handle::reset_spells ()
 {
-	s_spells_known[index] = Gingerbread::read_spells(type());
+	s_creatures[index].spells = Gingerbread::read_spells(type());
 }
 
 void Handle::learn_spell (Spell::Index spell)
 {
 	assert(Spell::is_valid_index(spell));
-	s_spells_known[index].set((int)spell);
+	s_creatures[index].spells.set((int)spell);
+}
+
+void Handle::set_flag (Flag flag)
+{
+	assert(valid());
+	s_creatures[index].flags.set((size_t)flag, true);
+}
+
+void Handle::clear_flag (Flag flag)
+{
+	assert(valid());
+	s_creatures[index].flags.set((size_t)flag, false);
 }
 
 void Handle::push_item (Item::Handle item)
@@ -649,9 +737,9 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	// allocate new creature on the arrays
 	s_creatures[new_index] =
 	{
-		type,
-		Gingerbread::read(type).max_hp,
-		pos
+		.pos = pos,
+		.type = type,
+		.hp = Gingerbread::read(type).max_hp,
 	};
 
 	Creature::Handle new_creature(new_index);
@@ -686,7 +774,7 @@ void remove_defeated_creatures ()
 
 		if (creature.visible() || instigator_type == Type::Player)
 		{
-			if (creature.has_tag("Faint.Disappear"))
+			if (creature.has_tag(Tag::Faint_Disappear))
 			{
 				Draw::add_message(std::format("{} disappears.", creature.long_name()));
 			}
@@ -744,7 +832,7 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 	{
 		Creature::Type const type = creature.type();
 		int const code = Gingerbread::read(type).codepoint;
-		char const * creature_colour = Gingerbread::read(type).colour;
+		char const * creature_colour = creature.colour();
 
 		if (Target::is_target(creature))
 		{

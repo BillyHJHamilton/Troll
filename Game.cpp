@@ -307,7 +307,7 @@ void end_turn()
 {
 	Player::set_acted(false);
 
-	Status::do_endround(Player::handle());
+	Player::handle().endround();
 	Creature::remove_defeated_creatures();
 	Spawn::check_spawning();
 
@@ -322,7 +322,10 @@ void end_turn()
 	{
 		Bot::do_turn(*itr);
 		Creature::remove_defeated_creatures(); // Check often so message order feels right...
-		Status::do_endround(*itr);
+		if (itr->valid())
+		{
+			itr->endround();
+		}
 		Creature::remove_defeated_creatures();
 	}
 
