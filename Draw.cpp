@@ -227,9 +227,9 @@ void add_message_indent()
 	++s_message_indent;
 }
 
-void clear_message_indent()
+void reduce_message_indent()
 {
-	s_message_indent = 0;
+	--s_message_indent;
 }
 
 void add_message(std::string && message)

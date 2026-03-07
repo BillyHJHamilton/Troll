@@ -73,7 +73,13 @@ namespace Draw
 	// Game message system
 
 	void add_message_indent();
-	void clear_message_indent();
+	void reduce_message_indent();
+
+	struct IndentScope
+	{
+		IndentScope() { add_message_indent(); }
+		~IndentScope() { reduce_message_indent(); }
+	};
 
 	void add_message(std::string&& message);
 

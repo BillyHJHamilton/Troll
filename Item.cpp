@@ -284,6 +284,8 @@ void Handle::destroy_stack()
 UseResult Handle::use_notes()
 {
 	Draw::add_message("You peruse " + name() + ".");
+	Draw::IndentScope indent;
+
 	if (has_flavour())
 	{
 		Spell::Index spell = (Spell::Index)flavour();
@@ -293,17 +295,17 @@ UseResult Handle::use_notes()
 			return UseResult::Consumed;
 		}
 
-		Draw::add_message(" It's all about the " + Spell::get_name(spell) + " spell.");
+		Draw::add_message("It's all about the " + Spell::get_name(spell) + " spell.");
 
 		if (Player::handle().knows_spell(spell))
 		{
-			Draw::add_message(" But you already know that one.");
+			Draw::add_message("But you already know that one.");
 		}
 		else
 		{
 			// TODO: This should really be a longer action, not safe to use in combat.
 
-			Draw::add_message(" Learned to cast " + Spell::get_name(spell) + "!");
+			Draw::add_message("Learned to cast " + Spell::get_name(spell) + "!");
 			Player::handle().learn_spell(spell);
 		}
 		return UseResult::Consumed;
@@ -321,6 +323,7 @@ UseResult Handle::use_bbbean()
 UseResult Handle::use_potion()
 {
 	Draw::add_message(std::format("You drink the {}.", name()));
+	Draw::IndentScope indent;
 	Potion::drink(Player::handle(), flavour());
 	return UseResult::Consumed;
 }

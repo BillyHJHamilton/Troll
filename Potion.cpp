@@ -24,7 +24,7 @@ void drink_wiggenweld (Creature::Handle imbiber);
 //-------------------------------------------------------------------------------------------------
 // Data
 
-char const* cstr_NoEffect = " The potion has no effect.";
+char const* cstr_NoEffect = "The potion has no effect.";
 
 using EffectFunc = void(*)(Creature::Handle imbiber);
 
@@ -138,7 +138,7 @@ void drink_calming(Creature::Handle imbiber)
 		imbiber.cure_status(Status::Tickled);
 	}
 
-	Draw::creature_message(imbiber, std::format(" {} {} suddenly calm.",
+	Draw::creature_message(imbiber, std::format("{} {} suddenly calm.",
 			Grammar::You(imbiber), Grammar::feel(imbiber)));
 	imbiber.inflict_status(Status::Calm, 9);
 }
@@ -149,12 +149,12 @@ void drink_wiggenweld(Creature::Handle imbiber)
 	{
 		if (imbiber.is_player())
 		{
-			Draw::add_message(" You feel your stamina returning.");
+			Draw::add_message("You feel your stamina returning.");
 		}
 		else
 		{
 			Draw::creature_message(imbiber,
-				std::format(" You see {} stamina returning.",
+				std::format("You see {} stamina returning.",
 				Grammar::your(imbiber)));
 		}
 

@@ -356,17 +356,17 @@ std::string eat_message(int flavour)
 			switch (roll)
 			{
 				case 0:
-					fmt = " Mmm, {}!";
+					fmt = "Mmm, {}!";
 					break;
 				case 1:
-					fmt = " Ah... {}!";
+					fmt = "Ah... {}!";
 					break;
 				case 2:
-					fmt = " {}, delicious!";
+					fmt = "{}, delicious!";
 					capitalize = true;
 					break;
 				case 3:
-					fmt = " A lovely {} flavour.";
+					fmt = "A lovely {} flavour.";
 					break;
 			}
 			break;
@@ -378,16 +378,16 @@ std::string eat_message(int flavour)
 			switch (roll)
 			{
 				case 0:
-					fmt = " Not bad, it's {} flavour.";
+					fmt = "Not bad, it's {} flavour.";
 					break;
 				case 1:
-					fmt = " It tastes like {}.";
+					fmt = "It tastes like {}.";
 					break;
 				case 2:
-					fmt = " A nice {} flavour.";
+					fmt = "A nice {} flavour.";
 					break;
 				case 3:
-					fmt = " It tastes pretty good.";
+					fmt = "It tastes pretty good.";
 					break;
 			}
 			break;
@@ -399,17 +399,17 @@ std::string eat_message(int flavour)
 			switch (roll)
 			{
 				case 0:
-					fmt = " Was that... {}?";
+					fmt = "Was that... {}?";
 					break;
 				case 1:
-					fmt = " Seems to be... {}?";
+					fmt = "Seems to be... {}?";
 					break;
 				case 2:
-					fmt = " {} flavour?";
+					fmt = "{} flavour?";
 					capitalize = true;
 					break;
 				case 3:
-					fmt = " It tastes a little strange.";
+					fmt = "It tastes a little strange.";
 					break;
 			}
 			break;
@@ -421,18 +421,18 @@ std::string eat_message(int flavour)
 			switch (roll)
 			{
 				case 0:
-					fmt = " Blech!  It tastes like {}!";
+					fmt = "Blech!  It tastes like {}!";
 					break;
 				case 1:
-					fmt = " Alas!  {}!";
+					fmt = "Alas!  {}!";
 					capitalize = true;
 					break;
 				case 2:
-					fmt = " {} flavour!?";
+					fmt = "{} flavour!?";
 					capitalize = true;
 					break;
 				case 3:
-					fmt = " It tastes horrible!";
+					fmt = "It tastes horrible!";
 					break;
 			}
 			break;

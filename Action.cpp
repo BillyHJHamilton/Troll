@@ -393,6 +393,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 	Draw::creature_message(caster, Grammar::You(caster) + " "
 		+ Grammar::verbs("cast", caster) + " "
 		+ Spell::get_name(spell) + "!");
+	Draw::IndentScope indent;
 
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{

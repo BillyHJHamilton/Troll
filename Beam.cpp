@@ -214,11 +214,11 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	{
 		if (move.z > 0)
 		{
-			Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the ceiling.");
+			Draw::pos_message(beam.pos, "The " + beam_description(beam) + " hits the ceiling.");
 		}
 		else
 		{
-			Draw::pos_message(beam.pos, " The " + beam_description(beam) + " hits the floor.");
+			Draw::pos_message(beam.pos, "The " + beam_description(beam) + " hits the floor.");
 		}
 		beam.done = true;
 	}
@@ -267,7 +267,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	Terrain::Type t = world.get_terrain(beam.pos);
 	if (Terrain::is_solid(t))
 	{
-		Draw::pos_message(beam.pos, std::format(" The {} hits the {}.",
+		Draw::pos_message(beam.pos, std::format("The {} hits the {}.",
 			Beam::beam_description(beam), Terrain::get_name(t)));
 		beam.done = true;
 
@@ -301,7 +301,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 		}
 		else
 		{
-			Draw::creature_message(creature_in_path, std::format(" The {} misses {}.",
+			Draw::creature_message(creature_in_path, std::format("The {} misses {}.",
 				beam_description(beam), Grammar::you(creature_in_path)));
 		}
 	}
