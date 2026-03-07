@@ -4,6 +4,7 @@
 
 #include "Draw.h"
 #include "Game.h"
+#include "Grammar.h"
 #include "Gingerbread.h"
 #include "Input.h"
 #include "Inventory.h"
@@ -172,7 +173,8 @@ void show_game_over()
 	std::string content = std::format(
 		"Game Over.\n\n"
 		"You were defeated by {}.",
-		Gingerbread::long_name(Player::get_defeated_by()));
+		Grammar::format_name_by_type(Player::get_defeated_by(),
+			{ .long_name = true, .mode = Grammar::NameParam::Indefinite }));
 
 	s_menu_document.init(std::move(content), &Game::reset);
 }

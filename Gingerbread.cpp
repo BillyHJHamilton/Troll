@@ -226,7 +226,7 @@ void init()
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,
 		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter,
 		/*Magic*/ 0, /*HP*/ 2, "", {}, {Ability::StealBean, Ability::EatBean},
-		{Item::BBBean, Item::None}, {50, 50});
+		{}, {});
 
 	mix_gingerbread(Creature::Streeler, c_IdentityGeneric,
 		/*Difficulty*/ 0.8f, /*Probability*/ 1.0f,
