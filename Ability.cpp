@@ -59,6 +59,11 @@ bool is_damaging(Ability::Index index)
 	return get_damage(index) > 0;
 }
 
+Damage::Type damage_type(Ability::Index index)
+{
+	return s_ability_list.at(index).damage_type;
+}
+
 TargetType target_type(Ability::Index index)
 {
 	assert(is_valid(index));

@@ -41,6 +41,7 @@ namespace Beam
 		int max_range;
 		int base_accuracy;
 		int cloud_accuracy_loss;
+		Damage::Type damage_type;
 		int damage;
 		int spell_power;
 		uint flags;

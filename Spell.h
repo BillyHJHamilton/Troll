@@ -115,6 +115,7 @@ namespace Spell
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
 	bool is_damaging (Spell::Index spell_index);
+	Damage::Type damage_type (Spell::Index spell_index);
 	int get_power (Spell::Index spell_index, Creature::Handle caster);
 	TargetType get_target_type (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);

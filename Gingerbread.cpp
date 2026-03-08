@@ -77,6 +77,8 @@ struct Builder
 	Builder& abil(std::vector<Ability::Index>&& abilities);
 	Builder& item(std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
 	Builder& resist(Damage::Type type);
+	Builder& vuln(Damage::Type type);
+	Builder& immune(Damage::Type type);
 	
 	template<class ... Packed>
 	Builder& tags(Creature::Tag tag, Packed... args)
@@ -90,6 +92,20 @@ struct Builder
 	{
 		resist(type);
 		return resist(args...);
+	}
+
+	template<class ... Packed>
+	Builder& vuln(Damage::Type type, Packed... args)
+	{
+		vuln(type);
+		return vuln(args...);
+	}
+
+	template<class ... Packed>
+	Builder& immune(Damage::Type type, Packed... args)
+	{
+		immune(type);
+		return immune(args...);
 	}
 
 protected:
@@ -248,12 +264,14 @@ void init()
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
 		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
 			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
+		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
 	Builder(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 1.0f, /*HP*/ 5,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter)
 		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
+		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
 	// Alternate universe characters!
@@ -349,6 +367,17 @@ Spell::Bitset const& read_spells(Creature::Type type)
 
 	DebugBreak();
 	return s_gingerbread_spells[0];
+}
+
+float Gingerbread::read_resistance(Creature::Type type, Damage::Type damage_type)
+{
+	if (is_valid_type(type))
+	{
+		return s_resistances.read(type, damage_type);
+	}
+
+	DebugBreak();
+	return 1.0f;
 }
 
 std::vector<Ability::Index> const& Gingerbread::read_abilities(Creature::Type type)
@@ -644,6 +673,18 @@ Builder& Builder::item(std::vector<Item::Type>&& item_drops, std::vector<int>&& 
 Builder& Builder::resist(Damage::Type type)
 {
 	s_resistances.edit(m_type, (int)type) = 0.5f;
+	return *this;
+}
+
+Builder& Builder::vuln(Damage::Type type)
+{
+	s_resistances.edit(m_type, (int)type) = 2.0f;
+	return *this;
+}
+
+Builder& Builder::immune(Damage::Type type)
+{
+	s_resistances.edit(m_type, (int)type) = 0.0f;
 	return *this;
 }
 

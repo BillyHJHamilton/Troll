@@ -9,6 +9,7 @@
 #include "Bot.h"
 #include "Cloud.h"
 #include "Colour.h"
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Game.h"
@@ -321,6 +322,16 @@ Item::Handle Handle::peek_item () const
 	return read_creature_instance(index).carried_item;
 }
 
+bool Handle::is_immune (Damage::Type damage_type) const
+{
+	return Gingerbread::read_resistance(type(), damage_type) == 0.0f;
+}
+
+bool Handle::resists (Damage::Type damage_type) const
+{
+	return Gingerbread::read_resistance(type(), damage_type) < 1.0f;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Complex accessor functions
 
@@ -439,17 +450,49 @@ Spell::TempList Handle::spells_known () const
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Mutator functions
 
-void Handle::take_damage (int damage, Creature::Handle instigator)
+void Handle::take_damage (int damage, Damage::Type damage_type, Creature::Handle instigator)
 {
 	Creature::Instance & c = edit_creature_instance(index);
-	c.hp -= damage;
 
-	clear_rest_steps();
-
-	if (c.hp <= 0)
+	float const factor = Gingerbread::read_resistance(type(), damage_type);
+	int new_damage = Math::RoundToInt((float)damage * factor);
+	
+	// Minimum 1 damage if not fully resisted.
+	if (factor > 0.0f && damage > 0)
 	{
-		c.hp = 0;
-		s_fainting_creatures.try_emplace(*this, instigator.valid() ? instigator.type() : Type::None);
+		new_damage = std::max(new_damage, 1);
+	}
+
+	if (new_damage < damage)
+	{
+		if (new_damage > 0)
+		{
+			Draw::creature_message(*this, std::format("{} {}.",
+				Grammar::You(*this), Grammar::verbs("resist",*this)));
+		}
+		else
+		{
+			Draw::creature_message(*this, std::format("{} unharmed.",
+				Grammar::You_are(*this)));
+		}
+	}
+	else if (new_damage > damage)
+	{
+		Draw::creature_message(*this, std::format("{} strongly affected!",
+			Grammar::You_are(*this)));
+	}
+
+	if (new_damage > 0.0f)
+	{
+		c.hp -= new_damage;
+
+		clear_rest_steps();
+
+		if (c.hp <= 0)
+		{
+			c.hp = 0;
+			s_fainting_creatures.try_emplace(*this, instigator.valid() ? instigator.type() : Type::None);
+		}
 	}
 }
 

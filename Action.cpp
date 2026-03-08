@@ -310,12 +310,6 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	}
 	else if (target_type == Ability::TargetType::Self)
 	{
-		if (Ability::is_damaging(ability))
-		{
-			int const dmg = Ability::get_damage(ability);
-			user.take_damage(dmg, user);
-		}
-
 		Spell::EffectParams params
 		{
 			.caster = user,
@@ -324,6 +318,12 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 			.impact_line = nullptr
 		};
 		Ability::execute_effect(ability, params);
+
+		if (Ability::is_damaging(ability))
+		{
+			int const dmg = Ability::get_damage(ability);
+			user.take_damage(dmg, Ability::damage_type(ability), user);
+		}
 	}
 	else if (target_type == Ability::TargetType::Projectile)
 	{
@@ -427,17 +427,18 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		};
 
 		Spell::execute_effect(spell, params);
+
+		if (Spell::is_damaging(spell))
+		{
+			int const damage = Spell::get_damage(spell, caster);
+			caster.take_damage(damage, Spell::damage_type(spell), caster);
+		}
 	}
 	else if (line_id == c_Invalid)
 	{
 		// Spell is configured to go off without a beam.
 
 		Creature::Handle target = Creature::creature_at_pos(target_pos);
-		if (target.valid())
-		{
-			int const damage = Spell::get_damage(spell, caster);
-			target.take_damage(damage, caster);
-		}
 
 		Spell::EffectParams params
 		{
@@ -446,8 +447,13 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 			.target_pos = target_pos,
 			.impact_line = nullptr
 		};
-
 		Spell::execute_effect(spell, params);
+
+		if (target.valid() && Spell::is_damaging(spell))
+		{
+			int const damage = Spell::get_damage(spell, caster);
+			target.take_damage(damage, Spell::damage_type(spell), caster);
+		}
 	}
 	else
 	{

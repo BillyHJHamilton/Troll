@@ -109,6 +109,7 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		.max_range = spell_range,
 		.base_accuracy = Spell::get_accuracy(spell),
 		.cloud_accuracy_loss = 0,
+		.damage_type = Spell::damage_type(spell),
 		.damage = Spell::get_damage(spell, caster),
 		.spell_power = Spell::get_power(spell, caster),
 		.flags = flags,
@@ -161,6 +162,7 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.max_range = ability_range,
 		.base_accuracy = Ability::get_accuracy(ability),
 		.cloud_accuracy_loss = 0,
+		.damage_type = Ability::damage_type(ability),
 		.damage = Ability::get_damage(ability),
 		.spell_power = 0, // not a spell
 		.flags = flags,
@@ -405,8 +407,8 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 
 	// todo - exception for protego: block or reflect spell
 
-	// deal damage and then apply effect
-	target.take_damage(beam.damage, beam.caster);
+	// Apply effect, then deal damage.
+	// We do it in this order so you'll see the hit message before the resist message.
 	if (beam.effect_func != nullptr)
 	{
 		Spell::EffectParams params
@@ -418,6 +420,10 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 		};
 
 		beam.effect_func(params);
+	}
+	if (beam.damage > 0)
+	{
+		target.take_damage(beam.damage, beam.damage_type, beam.caster);
 	}
 }
 

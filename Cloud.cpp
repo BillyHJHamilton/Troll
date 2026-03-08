@@ -2,6 +2,7 @@
 #include "Codepoint.h"
 #include "Colour.h"
 #include "Creature.h"
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
@@ -87,7 +88,8 @@ namespace Cloud
 		switch (cloud)
 		{
 			case Cloud::Slime:
-				return !creature.has_tag(Creature::Tag::Trail_Slime);
+				return !creature.has_tag(Creature::Tag::Trail_Slime)
+					&& !creature.is_immune(Damage::Acid);
 
 			default:
 				return false;
@@ -113,11 +115,11 @@ namespace Cloud
 
 	void slime_burn(Creature::Handle creature)
 	{
-		if (!creature.has_tag(Creature::Tag::Trail_Slime))
+		if (hazardous_for(Cloud::Slime, creature))
 		{
 			Draw::creature_message(creature, std::format("{} burned by the slime.",
 				Grammar::You_are(creature)));
-			creature.take_damage(1, Creature::None);
+			creature.take_damage(1, Damage::Acid, Creature::None);
 		}
 	}
 }

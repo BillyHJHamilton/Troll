@@ -3,6 +3,7 @@
 #include "Beam.h"
 #include "Cloud.h"
 #include "Creature.h"
+#include "Damage.h"
 #include "Draw.h"
 #include "Grammar.h"
 #include "Inventory.h"
@@ -27,6 +28,7 @@ namespace Spell
 void vermillious (EffectParams params)
 {
 	Creature::Handle const target = params.target;
+
 	Draw::creature_message(target, std::format("{0} showed in sparks!",
 		Grammar::You_are(target)));
 }
@@ -61,27 +63,27 @@ void flipendo (EffectParams params)
 	{
 		Draw::creature_message(target, std::format("{0} knocked into the stairs!",
 			Grammar::You_are(target)));
-		target.take_damage(1, caster);
+		target.take_damage(1, Damage::Basic, caster);
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
 		Draw::creature_message(target, std::format("{0} knocked into the wall!",
 			Grammar::You_are(target)));
-		target.take_damage(1, caster);
+		target.take_damage(1, Damage::Basic, caster);
 	}
 	else if (secondary_target != Creature::None)
 	{
 		Draw::creature_message(target, std::format("{0} knocked into {1}!",
 			Grammar::You_are(target), Grammar::you(secondary_target)));
-		target.take_damage(1, caster);
-		secondary_target.take_damage(1, caster);
+		target.take_damage(1, Damage::Basic, caster);
+		secondary_target.take_damage(1, Damage::Basic, caster);
 	}
 	else if (dz < 0)
 	{
 		Draw::creature_message(target, std::format("{0} knocked down the stairs!",
 			Grammar::You_are(target)));
 		target.move(knock_pos);
-		target.take_damage(4, caster);
+		target.take_damage(4, Damage::Basic, caster);
 		Draw::draw_screen();
 		Draw::anim_delay();
 	}
@@ -290,7 +292,7 @@ void lacarnum_inflamare (EffectParams params)
 	{
 		Draw::creature_message(target, std::format("{} burned!",
 			Grammar::You_are(target)));
-		target.take_damage(Random::in_range(1,3), caster);
+		target.take_damage(Random::in_range(1,3), Damage::Fire, caster);
 	}
 	else
 	{

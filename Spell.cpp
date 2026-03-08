@@ -91,26 +91,32 @@ bool is_valid_index(Spell::Index index)
 
 std::string get_name (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].name;
 }
 
 std::string get_abbrev (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].abbrev;
 }
 
 char const* get_colour (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].colour;
 }
 
 int get_difficulty (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].difficulty;
 }
 
 int get_damage (Spell::Index spell_index, Creature::Handle caster)
 {
+	assert(is_valid_index(spell_index));
+
 	int const skill_magic = caster.skill_magic();
 
 	if (s_spell_list[spell_index].damage >= 0)
@@ -123,41 +129,55 @@ int get_damage (Spell::Index spell_index, Creature::Handle caster)
 
 bool is_damaging (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].damage != 0;
+}
+
+Damage::Type damage_type (Spell::Index spell_index)
+{
+	assert(is_valid_index(spell_index));
+	return s_spell_list[spell_index].damage_type;
 }
 
 int get_power (Spell::Index spell_index, Creature::Handle caster)
 {
+	assert(is_valid_index(spell_index));
 	return caster.skill_magic() * Spell::get_difficulty(spell_index);
 }
 
 TargetType get_target_type (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].target_type;
 }
 
 int get_accuracy (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].accuracy;
 }
 
 int get_range(Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].range;
 }
 
 EffectFunc get_effect_func (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].effect_func;
 }
 
 int Spell::get_dark (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].dark;
 }
 
 Miscast::Category get_miscast_category (Spell::Index spell_index)
 {
+	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].miscast_category;
 }
 

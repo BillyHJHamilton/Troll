@@ -67,6 +67,7 @@ namespace Ability
 
 	int get_damage(Ability::Index index);
 	bool is_damaging(Ability::Index index);
+	Damage::Type damage_type(Ability::Index index);
 
 	TargetType target_type(Ability::Index index);
 	int get_accuracy (Ability::Index index);

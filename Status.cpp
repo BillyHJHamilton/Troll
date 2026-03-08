@@ -3,6 +3,7 @@
 #include "Action.h"
 #include "Colour.h"
 #include "Creature.h"
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Geometry.h"
@@ -159,7 +160,7 @@ void endround_dancing(Creature::Handle creature)
 		if (moved && new_pos.z < old_pos.z &&
 			World::read().get_terrain(new_pos) == Terrain::UpStairs)
 		{
-			creature.take_damage(3, Creature::None);
+			creature.take_damage(3, Damage::Basic, Creature::None);
 
 			if (World::read().is_visible(old_pos) ||
 				World::read().is_visible(new_pos))
@@ -244,7 +245,7 @@ void calc_burning(Creature::Handle creature, Creature::DerivedStats& ds, int sev
 
 void endround_burning(Creature::Handle creature)
 {
-	creature.take_damage(1, Creature::None);
+	creature.take_damage(1, Damage::Fire, Creature::None);
 	Draw::creature_message(creature, Grammar::You_are(creature) + " burned!");
 	creature.reduce_status(Burning, 1);
 	//if (creature.has_status(Burning))

@@ -2,6 +2,7 @@
 
 #if _DEBUG
 
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Creature.h"
@@ -60,7 +61,7 @@ void MenuDebug::handle_input (int key)
 			case DebugMenuOption::DefeatAllEnemies:
 				for (Creature::HandleItr itr(1); itr; ++itr)
 				{
-					itr->take_damage(1000, Creature::None);
+					itr->take_damage(1000, Damage::Basic, Creature::None);
 				}
 				//Menu::close();
 				break;

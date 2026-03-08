@@ -7,6 +7,7 @@ namespace Damage
 		None = -1,
 		Basic = 0,
 		Fire,
+		Acid,
 		Count,
 	};
 }

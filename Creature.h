@@ -188,6 +188,8 @@ namespace Creature
 		bool ready_to_move () const;
 		bool has_item () const;
 		Item::Handle peek_item () const;
+		bool is_immune (Damage::Type damage_type) const;
+		bool resists (Damage::Type damage_type) const;
 
 		// Complex accessors
 		char const* colour () const;
@@ -200,7 +202,7 @@ namespace Creature
 		Spell::TempList spells_known () const;
 
 		// Mutators
-		void take_damage (int damage, Creature::Handle instigator);
+		void take_damage (int damage, Damage::Type damage_type, Creature::Handle instigator);
 		void heal_hp (int healing);
 		void move (Vec3 const & new_pos);
 		void inflict_status (Status::Index status, int severity);
