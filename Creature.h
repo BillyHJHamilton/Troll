@@ -96,6 +96,8 @@ namespace Creature
 		Bot_Sidestep,		// When not attacking, circles its target.
 		Colour_Rainbow,		// Cycles between rainbow colours.
 		Faint_Disappear,	// When defeated, disappears instead of fainting.
+		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
+		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
 		Move_Slow,			// It needs to skip a turn before moving (TODO).
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.

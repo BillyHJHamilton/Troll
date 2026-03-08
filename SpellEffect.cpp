@@ -131,7 +131,12 @@ void tarantallegra (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::Calm))
+	if (target.has_tag(Creature::Tag::Immune_Legs))
+	{
+		Draw::creature_message(target, std::format("{} unaffected.", 
+			Grammar::You_are(target)));
+	}
+	else if (target.has_status(Status::Calm))
 	{
 		Draw::creature_message(target, std::format("{} {} calm.",
 			Grammar::You(target), Grammar::verbs("remain", target)));
@@ -169,7 +174,12 @@ void locomotor_mortis (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	if (target.has_status(Status::LegLocked))
+	if (target.has_tag(Creature::Tag::Immune_Legs))
+	{
+		Draw::creature_message(target, std::format("{} unaffected.",
+			Grammar::You_are(target)));
+	}
+	else if (target.has_status(Status::LegLocked))
 	{
 		Draw::creature_message(target,
 			std::format("{0} legs are more tightly locked together!",
@@ -252,28 +262,46 @@ void mimblewimble (EffectParams params)
 {
 	Creature::Handle target = params.target;
 
-	char const* fmt = target.has_status(Status::TongueTied) ?
-		"{0} {1} more tongue-tied." :
-		"{0} {1} tongue-tied.";
+	if (target.num_spells() == 0)
+	{
+		Draw::creature_message(target, std::format("{} unaffected.", 
+			Grammar::You_are(target)));
+	}
+	else
+	{
+		char const* fmt = target.has_status(Status::TongueTied) ?
+			"{0} {1} more tongue-tied." :
+			"{0} {1} tongue-tied.";
 	
-	std::string s1 = Grammar::You(target);
-	std::string s2 = Grammar::verbs("become", target);
-	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1,s2)));
+		std::string s1 = Grammar::You(target);
+		std::string s2 = Grammar::verbs("become", target);
+		Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1,s2)));
 
-	target.inflict_status(Status::TongueTied, 5);
+		target.inflict_status(Status::TongueTied, 5);
+	}
 }
 
 void lacarnum_inflamare (EffectParams params)
 {
+	Creature::Handle caster = params.caster;
 	Creature::Handle target = params.target;
 
-	char const* fmt = target.has_status(Status::Burning) ?
-		"{0} clothes are burning in more places!" :
-		"{0} clothes burst into flames!";
-	std::string s1 = Grammar::Your(target);
-	Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
+	if (target.has_tag(Creature::Tag::Immune_Clothes))
+	{
+		Draw::creature_message(target, std::format("{} burned!",
+			Grammar::You_are(target)));
+		target.take_damage(Random::in_range(1,3), caster);
+	}
+	else
+	{
+		char const* fmt = target.has_status(Status::Burning) ?
+			"{0} clothes are burning in more places!" :
+			"{0} clothes burst into flames!";
+		std::string s1 = Grammar::Your(target);
+		Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
 
-	target.inflict_status(Status::Burning, 5);
+		target.inflict_status(Status::Burning, 5);
+	}
 }
 
 void furnunculus (EffectParams params)

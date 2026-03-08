@@ -80,6 +80,8 @@ To Do:
  - Player miscast taunts
  - Pre-attack taunts
  - "You'll pay for that" taunts
+ - Make taunts affected by Mimblewimble.
+  - swap words?  swap letters?
 
 - Terrain
  - Furniture for cover/obstacles?

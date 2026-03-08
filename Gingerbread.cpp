@@ -225,21 +225,23 @@ void init()
 	mix_gingerbread(Creature::Gnome, c_IdentityGeneric,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f,
 		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter,
-		/*Magic*/ 0, /*HP*/ 2, "", {}, {Ability::StealBean, Ability::EatBean},
+		/*Magic*/ 0, /*HP*/ 2, "", {Tag::Immune_Clothes}, {Ability::StealBean, Ability::EatBean},
 		{}, {});
 
 	mix_gingerbread(Creature::Streeler, c_IdentityGeneric,
 		/*Difficulty*/ 0.8f, /*Probability*/ 1.0f,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter,
 		/*Magic*/ 0, /*HP*/ 4, "",
-		{Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short},
+		{Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
+		 Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short},
 		{Ability::Headbutt},
 		{}, {});
 
 	mix_gingerbread(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 1.0f,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter,
-		/*Magic*/ 0, /*HP*/ 5, "", {Tag::Bot_Sidestep}, {Ability::ShootFire},
+		/*Magic*/ 0, /*HP*/ 5, "", {Tag::Bot_Sidestep, Tag::Immune_Clothes},
+		{Ability::ShootFire},
 		{}, {});
 
 	// Alternate universe characters!
