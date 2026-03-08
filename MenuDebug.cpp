@@ -79,22 +79,21 @@ void MenuDebug::handle_input (int key)
 //-------------------------------------------------------------------------------------------------
 // Debug log category menu
 
-void MenuDebugLogCategories::refresh()
+void MenuDebugLogCategories::init()
 {
 	set_title("Log Categories:");
+	reserve(Debug::Category::Count + 2);
 
-	m_options.resize(Debug::Category::Count + 2);
+	add_option("Back", c_Invalid);
+
 	for (int i = 0; i < Debug::Category::Count; ++i)
 	{
 		Debug::Category category = (Debug::Category)(i);
-		bool const enabled = Debug::enabled(category);
-		m_options[i].label = std::format("[[{}]] {}",
-			enabled ? "ON" : "  ",
-			Debug::category_name(category));
-		m_options[i].value = (int)category;
+		add_option(Debug::category_name(category), i);
 	}
-	m_options[Debug::Category::Count] = {"Enable All", c_EnableAll};
-	m_options[Debug::Category::Count + 1] = {"Disable All", c_DisableAll};
+
+	add_option("Enable All", c_EnableAll);
+	add_option("Disable All", c_DisableAll);
 }
 
 void MenuDebugLogCategories::handle_input (int key)
@@ -109,24 +108,36 @@ void MenuDebugLogCategories::handle_input (int key)
 		else if (value == c_EnableAll)
 		{
 			Debug::set_all_enabled(true);
-			refresh();
 		}
 		else if (value == c_DisableAll)
 		{
 			Debug::set_all_enabled(false);
-			refresh();
 		}
 		else
 		{
-			Debug::Category category = (Debug::Category)value;
-			Debug::set_enabled(category, !Debug::enabled(category));
-			refresh();
+			MenuList::handle_input(key);
 		}
 	}
 	else
 	{
 		MenuList::handle_input(key);
 	}
+}
+
+bool MenuDebugLogCategories::is_toggle (int option)
+{
+	return option > (int)Debug::Category::None &&
+		option < (int)Debug::Category::Count;
+}
+
+bool MenuDebugLogCategories::get_toggle_value (int option)
+{
+	return Debug::enabled((Debug::Category)option);
+}
+
+void MenuDebugLogCategories::on_toggle(int option, bool new_value)
+{
+	Debug::set_enabled((Debug::Category)option, new_value);
 }
 
 #endif // _DEBUG

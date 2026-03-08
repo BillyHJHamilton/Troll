@@ -77,6 +77,7 @@ void init()
 
 #if _DEBUG
 	s_menu_debug.init();
+	s_menu_debug_log_categories.init();
 #endif
 
 	s_back_stack.reserve(4);
@@ -244,7 +245,7 @@ void show_debug_menu()
 void show_debug_log_categories()
 {
 	set_menu(s_menu_debug_log_categories);
-	s_menu_debug_log_categories.refresh();
+	//s_menu_debug_log_categories.refresh();
 	s_menu_debug_log_categories.reset_cursor();
 }
 #endif

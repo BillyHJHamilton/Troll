@@ -13,6 +13,7 @@ namespace Config
 int constexpr c_ConfigVersionNumber = 0;
 
 bool s_large_font = false;
+bool s_brighter_target = false;
 
 //-------------------------------------------------------------------------------------------------
 // Serialization
@@ -23,8 +24,9 @@ void serialize(ISerializer& s)
 	s.srz_int(version_number);
 
 	s.srz_bool(s_large_font);
+	s.srz_bool(s_brighter_target);
 
-	// TODO: When adding new config properties, could check min version number for each.
+	// TODO: When adding new config properties, check the min version number for each.
 	// if (version_number >= 1) { ... }
 }
 
@@ -56,9 +58,24 @@ void load_fonts (bool large)
 	}
 }
 
+bool large_font_enabled ()
+{
+	return s_large_font;
+}
+
 void toggle_font_size ()
 {
 	load_fonts(!s_large_font);
+}
+
+bool brighter_target_enabled ()
+{
+	return s_brighter_target;
+}
+
+void set_brighter_target (bool enabled)
+{
+	s_brighter_target = enabled;
 }
 
 int get_width()

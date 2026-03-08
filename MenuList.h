@@ -16,8 +16,8 @@ public:
 	};
 	using OptionList = std::vector<Option>;
 
-	virtual void draw_screen();
-	virtual void handle_input(int key);
+	virtual void draw_screen() override;
+	virtual void handle_input(int key) override;
 
 	void clear_list();
 
@@ -55,4 +55,20 @@ protected:
 	// Layout parameters
 	int m_list_start = 2;
 	int m_max_lines = 27;
+
+	//---------------------------------------------------------------------------------------------
+	// Optional toggle interface
+
+	// These functions can be used to add toggles to a menu.
+	// Create your list of options as usual.  Then define the three functions below to
+	// indicate which of the menu options are toggles, and what they do.
+	// See MenuSettings for an example.
+
+	virtual bool is_toggle(int option_value) { return false; }
+	virtual bool get_toggle_value(int option_value) { return false; }
+	virtual void on_toggle(int option_value, bool new_value) {}
+
+	// Not sure if these are useful
+	//void enable_all_toggles();
+	//void disable_all_toggles();
 };

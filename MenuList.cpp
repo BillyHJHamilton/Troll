@@ -28,14 +28,36 @@ void MenuList::draw_screen ()
 	for (int i = m_scroll_top; i <= m_scroll_bottom; ++i)
 	{
 		int const line_y = m_list_start + (i - m_scroll_top);
-		if (m_options[i].colour != nullptr)
+
+		if (is_toggle(m_options[i].value))
 		{
-			terminal_print(c_Indent, line_y, std::format("[color={}]{}[/color]",
-				m_options[i].colour, m_options[i].label).c_str());
+			// Special case for drawing toggles.
+			bool const enabled = get_toggle_value(m_options[i].value);
+			if (enabled)
+			{
+				terminal_print(c_Indent, line_y,
+					std::format("[[ON]] {}",
+					m_options[i].label.c_str()).c_str());
+			}
+			else
+			{
+				terminal_print(c_Indent, line_y,
+					std::format("[color=lighter grey][[  ]] {}[/color]",
+					m_options[i].label).c_str());
+			}
 		}
 		else
 		{
-			terminal_print(c_Indent, line_y, m_options[i].label.c_str());
+			// Normal list option, not a toggle.
+			if (m_options[i].colour != nullptr)
+			{
+				terminal_print(c_Indent, line_y, std::format("[color={}]{}[/color]",
+					m_options[i].colour, m_options[i].label).c_str());
+			}
+			else
+			{
+				terminal_print(c_Indent, line_y, m_options[i].label.c_str());
+			}
 		}
 	}
 
@@ -75,12 +97,20 @@ void MenuList::handle_input (int key)
 			break;
 
 		case TK_ENTER:
+		{
+			int const value = get_selected().value;
+			if (key == TK_ENTER && is_toggle(value))
+			{
+				on_toggle(value, !get_toggle_value(value));
+			}
+			break;
+		}
+
 		case TK_ESCAPE:
 			Menu::back();
 			break;
 
 		case TK_RESIZED:
-			// uh oh
 			on_resize();
 	}
 }
@@ -243,3 +273,29 @@ void MenuList::calc_scroll_bottom()
 		m_scroll_top + m_max_lines,
 		Util::LastIndex(m_options));
 }
+
+//-------------------------------------------------------------------------------------------------
+// Optional toggle interface
+//
+//void MenuList::enable_all_toggles()
+//{
+//	for (Option& option : m_options)
+//	{
+//		if (is_toggle(option.value))
+//		{
+//			on_toggle(option.value, true);
+//		}
+//	}
+//}
+//
+//void MenuList::disable_all_toggles()
+//{
+//	for (Option& option : m_options)
+//	{
+//		if (is_toggle(option.value))
+//		{
+//			on_toggle(option.value, false);
+//		}
+//	}
+//}
+

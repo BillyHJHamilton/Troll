@@ -43,7 +43,7 @@ namespace House
 				"Start with +5 Magic Skill";
 			case Slytherin:  return
 				"Cunning and ambitious.\n"
-				"Can learn dark spells.";
+				"Can learn dark spells (also not a real mechanic yet).";
 			default: DebugBreak(); return "";
 		}
 	}

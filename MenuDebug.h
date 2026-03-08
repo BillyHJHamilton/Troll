@@ -28,9 +28,13 @@ protected:
 class MenuDebugLogCategories : public MenuList
 {
 public:
-	void refresh();
+	void init();
 
 	virtual void handle_input (int key);
+
+	virtual bool is_toggle(int option_value);
+	virtual bool get_toggle_value(int option_value);
+	virtual void on_toggle(int option_value, bool new_value);
 
 protected:
 	static int constexpr c_EnableAll = -2;

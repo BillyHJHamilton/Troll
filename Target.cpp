@@ -2,6 +2,7 @@
 
 #include "Codepoint.h"
 #include "Colour.h"
+#include "Config.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -315,19 +316,21 @@ char const* colour()
 
 char const* colour(Visibility visibility, bool is_wall)
 {
+	bool const bright_mode = Config::brighter_target_enabled();
+
 	if (is_wall)
 	{
 		if (visibility == Visibility::Visible)
 		{
-			return cstr_DarkWhite;
+			return (bright_mode) ? cstr_LighterPurple : cstr_DarkWhite;
 		}
 		else if (visibility == Visibility::Explored)
 		{
-			return cstr_DarkerGrey;
+			return (bright_mode) ? cstr_DarkPurple : cstr_DarkerGrey;
 		}
 	}
 
-	return cstr_DarkestGrey;
+	return (bright_mode) ? cstr_DarkerPurple : cstr_DarkestGrey;
 }
 
 void draw (Draw::View view)

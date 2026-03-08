@@ -6,8 +6,9 @@
 
 namespace Debug
 {
-	enum Category
+	enum Category : int
 	{
+		None = -1,
 		Action,
 		Bot,
 		Item,
