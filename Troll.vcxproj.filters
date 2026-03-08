@@ -225,6 +225,9 @@
     <ClCompile Include="AbilityEffect.cpp">
       <Filter>Source Files\Magic</Filter>
     </ClCompile>
+    <ClCompile Include="Taunt.cpp">
+      <Filter>Source Files\Creature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -424,6 +427,9 @@
     </ClInclude>
     <ClInclude Include="Damage.h">
       <Filter>Header Files\Magic</Filter>
+    </ClInclude>
+    <ClInclude Include="Taunt.h">
+      <Filter>Header Files\Creature</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

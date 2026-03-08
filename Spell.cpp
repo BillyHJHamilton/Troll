@@ -79,11 +79,6 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	// /* Avada Kedavra */ "The Killing Curse.  Causes a green flash of light, followed by death.  No magical protection can block this spell.  Using this curse is punishable by a lifetime in Azkaban."
 };
 
-void init()
-{
-	// none required, thank you constexpr
-}
-
 bool is_valid_index(Spell::Index index)
 {
 	return index > Spell::None && index < Spell::Count;

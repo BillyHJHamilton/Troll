@@ -171,11 +171,22 @@ void show_game_over()
 {
 	set_menu(s_menu_document);
 
-	std::string content = std::format(
-		"Game Over.\n\n"
-		"You were defeated by {}.",
-		Grammar::format_name_by_type(Player::get_defeated_by(),
-			{ .long_name = true, .mode = Grammar::NameParam::Indefinite }));
+	std::string content = "Game Over.";
+	
+	Creature::Type defeated_by = Player::get_defeated_by();
+	if (defeated_by == Creature::Player)
+	{
+		content = "Game Over.\n\n"
+		"You were defeated by ... yourself.";
+	}
+	else if (defeated_by != Creature::None)
+	{
+		content = std::format(
+			"Game Over.\n\n"
+			"You were defeated by {}.",
+			Grammar::format_name_by_type(Player::get_defeated_by(),
+				{ .long_name = true, .mode = Grammar::NameParam::Indefinite }));
+	}
 
 	s_menu_document.init(std::move(content), &Game::reset);
 }

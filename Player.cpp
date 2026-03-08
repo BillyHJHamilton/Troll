@@ -6,6 +6,7 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Game.h"
 #include "Gingerbread.h"
 #include "Math.h"
 #include "Pathfind.h"
@@ -274,6 +275,24 @@ bool has_acted ()
 void set_acted(bool acted)
 {
 	s_player_data.acted = acted;
+}
+
+Spell::Index get_recent_miscast ()
+{
+	if (read_data().miscast_turn < Game::get_turn_number() - 1)
+	{
+		return Spell::None;
+	}
+	else
+	{
+		return read_data().miscast_spell;
+	}
+}
+
+void set_miscasted (Spell::Index spell_index)
+{
+	edit_data().miscast_turn = Game::get_turn_number();
+	edit_data().miscast_spell = spell_index;
 }
 
 bool is_game_over()

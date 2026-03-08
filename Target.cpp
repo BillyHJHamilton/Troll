@@ -61,10 +61,6 @@ void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
 //-------------------------------------------------------------------------------------------------
 // Interface functions
 
-void init ()
-{
-}
-
 void clear ()
 {
 	s_target_mode = TargetMode::Automatic_Creature;

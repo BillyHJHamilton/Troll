@@ -26,6 +26,7 @@
 #include "Stairs.h"
 #include "Status.h"
 #include "Target.h"
+#include "Taunt.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -70,9 +71,8 @@ void init()
 	LineCache::init();
 	Menu::init();
 	Random::init();
-	Spell::init();
 	Status::init();
-	Target::init();
+	Taunt::init();
 
 	Config::load();
 }
@@ -95,6 +95,7 @@ void clear()
 	Player::clear();
 	Spawn::clear();
 	Target::clear();
+	Taunt::clear();
 	World::clear();
 
 	s_filename.clear();
@@ -148,12 +149,14 @@ bool try_serialize_all(ISerializer& s)
 	s.srz_int(s_turn_number);
 
 	// Then serialize everything else in alphabetical order.
+	Ability::serialize(s);
 	Bot::serialize(s);
 	Creature::serialize(s);
 	Gingerbread::serialize(s);
 	Inventory::serialize(s);
 	Item::serialize(s);
 	Spawn::serialize(s);
+	Taunt::serialize(s);
 	World::edit().serialize(s);
 
 	if (s.is_load())

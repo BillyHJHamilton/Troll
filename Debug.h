@@ -35,7 +35,7 @@ namespace Debug
 	#endif
 }
 
-inline void DebugBreak(std::string msg = "Error")
+inline void DebugBreak(char const* msg = "Error")
 {
 #ifdef _DEBUG
 	std::cerr << msg << std::endl;
@@ -43,7 +43,7 @@ inline void DebugBreak(std::string msg = "Error")
 #endif
 }
 
-inline bool Check(bool value, std::string msg = "Error")
+inline bool Check(bool value, char const* msg = "Error")
 {
 #ifdef _DEBUG
 	if (!value)

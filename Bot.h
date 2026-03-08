@@ -25,6 +25,7 @@ namespace Bot
 		int awareness = 0;
 		int patience = 0;
 		int pathfind_ready = 0;
+		int last_taunt = c_Invalid;
 		Bot::State state = Rest;
 
 		void serialize(ISerializer& s);
@@ -46,4 +47,7 @@ namespace Bot
 
 	// Enemy creature bot
 	void do_turn(Creature::Handle creature_index);
+
+	// Let a creature know something tried to hit it.
+	void notice_attack(Creature::Handle creature, Vec3 attack_origin);
 }

@@ -482,7 +482,7 @@ void Handle::take_damage (int damage, Damage::Type damage_type, Creature::Handle
 			Grammar::You_are(*this)));
 	}
 
-	if (new_damage > 0.0f)
+	if (new_damage > 0)
 	{
 		c.hp -= new_damage;
 

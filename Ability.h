@@ -62,6 +62,7 @@ namespace Ability
 
 	void init();
 	void clear();
+	void serialize(ISerializer& s);
 
 	bool is_valid(Ability::Index index);
 

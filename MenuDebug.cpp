@@ -24,6 +24,7 @@ void MenuDebug::init()
 		{"Cancel", DebugMenuOption::Cancel},
 		{"Learn All Spells", DebugMenuOption::LearnAllSpells},
 		{"Increase Stats", DebugMenuOption::IncreaseStats},
+		{"Lower Magic Skill", DebugMenuOption::LowerMagicSkill},
 		{"Toggle Reveal Map", DebugMenuOption::ToggleRevealMap},
 		{"Defeat All Enemies", DebugMenuOption::DefeatAllEnemies},
 		{"Set Log Categories", DebugMenuOption::SetLogCategories},
@@ -53,6 +54,10 @@ void MenuDebug::handle_input (int key)
 				Player::handle().heal_hp(100);
 				//Menu::close();
 				Draw::add_message("You feel remarkably fit.");
+				break;
+			case DebugMenuOption::LowerMagicSkill:
+				Gingerbread::edit_player_stats().skill_magic = 10;
+				Draw::add_message("You feel unskillful.");
 				break;
 			case DebugMenuOption::ToggleRevealMap:
 				Draw::toggle_los_cheat();

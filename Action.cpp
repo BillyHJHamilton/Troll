@@ -405,6 +405,11 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, i
 		Draw::draw_tile_temp('X', caster.pos().xy(), view, "black");
 	}
 
+	if (caster.is_player())
+	{
+		Player::set_miscasted(spell);
+	}
+
 	// todo - proper miscasts
 	//Miscast::perform(caster, target, spell_used, line_id ...);
 }

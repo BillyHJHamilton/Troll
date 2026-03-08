@@ -17,6 +17,7 @@
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
+#include "Taunt.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -47,6 +48,8 @@ struct Thoughts
 
 	// Set to true if we try to use an ability from out of range.
 	bool want_to_approach = false;
+
+	bool has_taunted = false;
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -77,6 +80,12 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target);
 float rate_ability (Creature::Handle creature, Creature::Handle target, Ability::Index ability);
 
+void taunt_greeting(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void taunt_followup(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts,
+	Spell::Index spell);
+
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
@@ -97,6 +106,8 @@ void Brain::serialize(ISerializer& s)
 	s.srz_value(target);
 	s.srz_int(awareness);
 	s.srz_int(patience);
+	s.srz_int(pathfind_ready);
+	s.srz_int(last_taunt);
 	s.srz_value(state);
 }
 
@@ -237,6 +248,22 @@ void do_turn (Creature::Handle creature)
 		case Bot::Fight:
 			bot_fight(creature, brain, thoughts);
 			break;
+	}
+}
+
+void notice_attack(Creature::Handle creature, Vec3 attack_origin)
+{
+	Brain& brain = s_brains[creature];
+
+	if (brain.state == State::Rest || brain.state == State::Blunder)
+	{
+		brain.state = State::Blunder;
+		brain.target_pos = attack_origin;
+		brain.patience = manhattan_distance(creature.pos(), attack_origin);
+	}
+	else if (brain.state == State::Chase)
+	{
+		brain.awareness = c_MaxAwareness;
 	}
 }
 
@@ -432,10 +459,19 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	{
 		// Spend a turn noticing the player.
 		brain.awareness = c_MaxAwareness;
-		Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
+
+		taunt_greeting(creature, brain, thoughts);
+		if (!thoughts.has_taunted)
+		{
+			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
+		}
 
 		return;
 	}
+	
+	// Consider taunting the player.
+	taunt_followup(creature, brain, thoughts);
+	taunt_fight(creature, brain, thoughts);
 
 	bool tried_spell = false;
 	bool tried_ability = false;
@@ -565,6 +601,7 @@ bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		}
 		else if (within_range(creature.pos(), brain.target_pos, Spell::get_range(spell)))
 		{
+			taunt_attack_spell(creature, brain, thoughts, spell);
 			Action::try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
 			return true;
 		}
@@ -868,6 +905,100 @@ float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::
 
 	// Who knows, really?
 	return 1.0f;
+}
+
+void say_taunt(Creature::Handle creature, Brain& brain, Thoughts& thoughts, int taunt)
+{
+	Taunt::say_taunt(creature, taunt);
+	brain.last_taunt = taunt;
+	thoughts.has_taunted = true;
+}
+
+void taunt_greeting(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
+	{
+		IntTempList taunts;
+		Taunt::find_taunts(creature, Taunt::Greeting, c_Invalid, taunts);
+
+		int const num_taunts = Util::Size(taunts);
+		if (num_taunts > 0 && Random::coinflip())
+		{
+			say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
+		}
+	}
+}
+
+void taunt_followup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (!thoughts.has_taunted && brain.last_taunt != c_Invalid)
+	{
+		int const taunt = Taunt::find_followup(creature, brain.last_taunt);
+		if (taunt != c_Invalid)
+		{
+			say_taunt(creature, brain, thoughts, taunt);
+		}
+	}
+}
+
+void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
+	{
+		IntTempList taunts;
+		Taunt::find_taunts(creature, Taunt::AnyTime, c_Invalid, taunts);
+
+		if (creature.hp_percent() <= 0.5f)
+		{
+			Taunt::find_taunts(creature, Taunt::Hurt, c_Invalid, taunts);
+		}
+
+		if (brain.target.hp_percent() < 0.6f && 
+			brain.target.hp_percent() < creature.hp_percent())
+		{
+			Taunt::find_taunts(creature, Taunt::Winning, c_Invalid, taunts);
+		}
+
+		Spell::Index const player_miscast = Player::get_recent_miscast();
+		if (player_miscast != Spell::None)
+		{
+			Taunt::find_taunts(creature, Taunt::PlayerMiscast, player_miscast, taunts);
+		}
+
+		Taunt::find_status_taunts(creature, brain.target, taunts);
+
+		int const num_taunts = Util::Size(taunts);
+		if (num_taunts > 0)
+		{
+			// More likely to taunt if we have more available
+			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
+			if (Random::in_range(0.0f, 6.0f) < p_taunt)
+			{
+				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
+			}
+		}
+	}
+}
+
+void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts,
+	Spell::Index spell)
+{
+	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
+	{
+		IntTempList taunts;
+		Taunt::find_taunts(creature, Taunt::AttackSpell, spell, taunts);
+
+		int const num_taunts = Util::Size(taunts);
+		if (num_taunts > 0)
+		{
+			// More likely to taunt if we have more available
+			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
+			if (Random::in_range(0.0f, 5.0f) < p_taunt)
+			{
+				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
+			}
+		}
+	}
 }
 
 } // namespace Bot

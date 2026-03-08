@@ -1,6 +1,7 @@
 #include "Ability.h"
 #include "Beam.h"
 #include "BitFlag.h"
+#include "Bot.h"
 #include "Colour.h"
 #include "Cloud.h"
 #include "Creature.h"
@@ -297,6 +298,9 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	int creature_in_path = Creature::creature_at_pos(beam.pos);
 	if (creature_in_path != Creature::None)
 	{
+		// Notify the creature that it's being shot at.
+		Bot::notice_attack(creature_in_path, beam.start_pos);
+
 		// check accuracy
 		int hit_chance = get_hit_chance(beam, creature_in_path);
 		int accuracy_roll = Random::in_range(0,99);

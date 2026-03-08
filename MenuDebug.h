@@ -18,6 +18,7 @@ protected:
 		Cancel = 0,
 		LearnAllSpells,
 		IncreaseStats,
+		LowerMagicSkill,
 		ToggleRevealMap,
 		DefeatAllEnemies,
 		SetLogCategories,

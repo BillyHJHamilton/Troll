@@ -7,8 +7,8 @@
 
 namespace Target
 {
-	void init();
 	void clear();
+
 	void update();
 	void cycle(int step);
 	void move(Vec2 dir);

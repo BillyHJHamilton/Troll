@@ -6,6 +6,7 @@
 #include "Debug.h"
 #include "MapUtil.h"
 #include "Random.h"
+#include "Serialize.h"
 
 #include <array>
 
@@ -41,6 +42,11 @@ void init()
 void clear()
 {
 	s_cooldowns.clear();
+}
+
+void serialize(ISerializer& s)
+{
+	s.srz_vector(s_cooldowns, "Ability Cooldowns");
 }
 
 bool is_valid(Ability::Index index)

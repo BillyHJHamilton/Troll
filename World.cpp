@@ -388,12 +388,14 @@ void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 			pos1[other_axis] += 1;
 			pos2[other_axis] -= 1;
 
-			if (!Terrain::permits_sight(get_terrain(pos1)))
+			if (!Terrain::permits_sight(get_terrain(pos1)) &&
+				Terrain::is_solid(get_terrain(pos1)))
 			{
 				set_visibility(pos1, Visibility::Visible);
 			}
 
-			if (!Terrain::permits_sight(get_terrain(pos2)))
+			if (!Terrain::permits_sight(get_terrain(pos2)) &&
+				Terrain::is_solid(get_terrain(pos1)))
 			{
 				set_visibility(pos2, Visibility::Visible);
 			}

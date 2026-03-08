@@ -159,6 +159,8 @@ void init()
 		.magic(0, "VM FP")
 		.item({Item::None, Item::Notes}, {50, 50});
 
+	// TODO: Camera ability (or item, which player can also use).
+	// It should blind you (reduce LOS) and produce some smoke, too.
 	Builder(Creature::ColinCreevy_0, "Colin",
 		/*Difficulty*/ 0.3f, /*Probability*/ 1.0f, /*HP*/ 5)
 		.magic(8, "VM MW")
@@ -171,16 +173,16 @@ void init()
 
 	Builder(Creature::Harry_1, "Harry", 
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 12)
-		.magic(10, "VM FP TA")
+		.magic(10, "VM FP LM")
 		.item({Item::Notes, Item::PotionItem}, {60, 40});
 	
 	Builder(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 10)
-		.magic(15, "VM FP LM")
+		.magic(15, "VM FP TA")
 		.item({Item::Notes}, {100});
 
 	Builder(Creature::Ron_2, "Ron",
-		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 16)
+		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 14)
 		.magic(5, "FP VM FM")
 		.item({Item::Notes}, {100});
 
@@ -196,7 +198,7 @@ void init()
 
 	Builder(Creature::Goyle_3, "Goyle",
 		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f, /*HP*/ 20)
-		.magic(15, "VM FP TA")
+		.magic(15, "VM FP LM")
 		.item({Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	Builder(Creature::Harry_4, "Harry",
@@ -274,15 +276,16 @@ void init()
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
-	// Alternate universe characters!
+	// Alternate universe characters:
 
-	// Currently same as normal Harry, but 2 more hp.  Think about how to make it unique.
+	// Similar to normal Harry, but 2 more hp and moves slowly.
 	// Technically his notes shouldn't be in his own handwriting, should they?
 	// Possible items: monogrammed socks, magic robes, self-stirring cauldron stick, magic jar...
 	Builder(Creature::HarryTheHufflepuff_1, "Harry",
 		/*Difficulty*/ 1.2f, /*Probability*/ 0.1f, /*HP*/ 14,
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
-		.magic(10, "VM FP TA")
+		.magic(10, "VM FP LM")
+		.tags(Creature::Tag::Move_Slow)
 		.item({Item::Notes, Item::PotionItem}, {70, 30});
 }
 
