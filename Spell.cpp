@@ -1,6 +1,7 @@
 #include "Spell.h"
 
 #include "Creature.h"
+#include "Damage.h"
 #include "MiscastCategory.h"
 #include "Serialize.h"
 #include "SpellEffect.h"
@@ -18,25 +19,25 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 // so it's undefined whether the colours are initialized yet.  If only cstrings could be constexpr!
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
-{	//			Spell name				Abbrv	Colour				Dif Drk Dmg			Acc Rng	Effect function			Target type				Miscast type
-	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	2,			85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
+{	//			Spell name				Abbrv	Colour				Dif Drk Type			Dmg		Acc Rng	Effect function			Target type				Miscast type
+	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
 #if d_EnableMegadrill
-	Spell::Data {"Megadrill",			"MG",	"light amber",		0,	0,	20,			999,8,	nullptr,				TargetType::Sight,		Miscast::Beam },
+	Spell::Data {"Megadrill",			"MG",	"light amber",		0,	0,	Damage::Basic,	20,		999,8,	nullptr,				TargetType::Sight,		Miscast::Beam },
 #endif
-	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	2,			70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	0,			50, 8,	&alohomora,				TargetType::Tile,		Miscast::Charm },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	0,			90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	0,			85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	0,			90,	8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	0,			-1, 8,	&fumos,					TargetType::Tile,		Miscast::Conjuring },
-	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	0,			90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  0,			65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  4,			60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  0,			-1, 0,  &finite_incantatem,		TargetType::Self,		Miscast::Charm },
-	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  0,			-1, 8,  &accio,					TargetType::Sight,		Miscast::Conjuring },
-	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  c_DmgSP,	75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  0,			85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
-	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  0,			80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	Damage::Basic,	2,		70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	Damage::None,	0,		50, 8,	&alohomora,				TargetType::Tile,		Miscast::Charm },
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	Damage::None,	0,		90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	Damage::None,	0,		85,	8,	&locomotor_mortis,		TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	Damage::None,	0,		90,	8,	&rictusempra,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	Damage::None,	0,		-1, 8,	&fumos,					TargetType::Tile,		Miscast::Conjuring },
+	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	Damage::None,	0,		90,	8,	&mimblewimble,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  Damage::None,	0,		65, 3,  &lacarnum_inflamare,	TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::Basic,	4,		60, 6,  &furnunculus,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  Damage::None,	0,		-1, 0,  &finite_incantatem,		TargetType::Self,		Miscast::Charm },
+	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  Damage::None,	0,		-1, 8,  &accio,					TargetType::Sight,		Miscast::Conjuring },
+	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::Basic,	c_DmgSP,75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
+	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =

@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Creature.h"
+#include "Damage.h"
 #include "Geometry.h"
 
 // Abilities are similar to spells, but with no miscasts or magic skill involved.
@@ -33,6 +34,8 @@ namespace Ability
 
 	struct Data
 	{
+		Damage::Type damage_type = (Damage::Type)0;
+
 		int damage = 0;
 		int accuracy = -1; // out of 100.
 		int range = 0;

@@ -2,6 +2,7 @@
 
 #include "AbilityEffect.h"
 #include "Colour.h"
+#include "Damage.h"
 #include "Debug.h"
 #include "MapUtil.h"
 #include "Random.h"
@@ -20,11 +21,11 @@ struct CooldownEntry
 std::vector<CooldownEntry> s_cooldowns;
 
 static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
-{	//								Dmg	Acc	Rng	Cooldn	TargetType				EffectFunc
-	/* StealBean */	Ability::Data{	0,	50,	1,	0,0,	TargetType::Melee,		&steal_bean },
-	/* EatBean */	Ability::Data{	0,	-1,	0,	0,0,	TargetType::Self,		&eat_bean },
-	/* Headbutt */	Ability::Data{	2,	70,	1,	0,0,	TargetType::Melee,		&headbutt },
-	/* ShootFire*/	Ability::Data{	3,	70,	6,	0,2,	TargetType::Projectile,	&fire_gob_hit},
+{	//								Damage Type		Dmg	Acc	Rng	Cooldn	TargetType				EffectFunc
+	/* StealBean */	Ability::Data{	Damage::None,	0,	50,	1,	0,0,	TargetType::Melee,		&steal_bean },
+	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	TargetType::Self,		&eat_bean },
+	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	TargetType::Melee,		&headbutt },
+	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	TargetType::Projectile,	&fire_gob_hit},
 };
 
 static std::unordered_map<Ability::Index,Ability::ProjectileData> s_projectiles;

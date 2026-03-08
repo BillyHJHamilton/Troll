@@ -78,6 +78,8 @@ namespace Spell
 		int difficulty;
 		int dark;
 
+		Damage::Type damage_type;
+
 		int damage;
 		int accuracy; // out of 100.
 		int range;

@@ -53,6 +53,11 @@ namespace Creature
 	class Handle;
 }
 
+namespace Damage
+{
+	enum Type : int;
+}
+
 namespace Draw
 {
 	struct View;

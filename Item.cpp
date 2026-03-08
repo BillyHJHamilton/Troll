@@ -389,9 +389,11 @@ Item::Handle make_notes (Creature::Type owner_type)
 			Gingerbread::read(owner_type).short_name, Spell::get_name(spell));
 	}
 
-	// Try not to choose a damaging spell since they are so ubiquitous
+	// Try not to choose Vermillious and Flipendo since they are so ubiquitous
 	// and the player probably knows them already;
-	for (int i = 0; i < 2 && Spell::is_damaging(spell); ++i)
+	for (int i = 0;
+		i < 2 && (spell == Spell::Flipendo || spell == Spell::Vermillious);
+		++i)
 	{
 		spell = Random::from_vector(spells);
 

@@ -306,6 +306,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Colour.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Creature.h" />
+    <ClInclude Include="Damage.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="MenuDebug.h" />
