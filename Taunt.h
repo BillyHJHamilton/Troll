@@ -21,7 +21,7 @@ namespace Taunt
 		PlayerMiscast,	// Subtype is spell player miscasted, or -1 for any.
 		HasStatus,		// Subtype is status NPC is enjoying.  Don't use -1.
 		PlayerStatus,	// Subtype is status the player is enjoying.  Don't use -1.
-		Hurt,
+		Losing,
 		Winning,
 		FollowUp,		// Used immediately after previous taunt.
 	};

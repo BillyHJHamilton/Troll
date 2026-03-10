@@ -948,12 +948,12 @@ void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		IntTempList taunts;
 		Taunt::find_taunts(creature, Taunt::AnyTime, c_Invalid, taunts);
 
-		if (creature.hp_percent() <= 0.5f)
+		if (creature.hp_percent() <= 0.5f &&
+			creature.hp_percent() < brain.target.hp_percent())
 		{
-			Taunt::find_taunts(creature, Taunt::Hurt, c_Invalid, taunts);
+			Taunt::find_taunts(creature, Taunt::Losing, c_Invalid, taunts);
 		}
-
-		if (brain.target.hp_percent() < 0.6f && 
+		else if (brain.target.hp_percent() < 0.6f && 
 			brain.target.hp_percent() < creature.hp_percent())
 		{
 			Taunt::find_taunts(creature, Taunt::Winning, c_Invalid, taunts);

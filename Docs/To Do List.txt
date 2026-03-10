@@ -2,15 +2,11 @@
 To Do:
 -------------------------------------------------------------------------------
 
-- Actions
- - Distraction should apply to other actions like using items
-
 - Bot
  - Do something more clever about tracking through rooms and getting sidetracked
  - Sidestep to find good attack position if shooting through friends
-
-- Config
- - Create a general purpose "Config Menu" (descendant or relative of MenuList) with on/off toggles built in.
+ - More complex weighting and considation of different possible actions
+  - Extend the rating system for abilities to apply to spells and other possible actions
 
 - Creatures
  - Size category?  Could effect evasion.
@@ -29,6 +25,7 @@ To Do:
 
 - Items
  - Support some grammar functions for items (like for creatures)
+ - In theory, NPCs should sometimes use items (without needing a bean!)
 
 - Map generation
  - Named regions, more layout

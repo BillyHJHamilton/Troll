@@ -9,6 +9,7 @@
 #include "Item.h"
 #include "Inventory.h"
 #include "Map.h"
+#include "Math.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"
@@ -23,11 +24,15 @@
 namespace Action
 {
 
+float constexpr c_SpellDistraction = 1.0f;
+float constexpr c_AbilityDistraction = 0.75f;
+float constexpr c_ItemDistraction = 0.5f;
+
 //-------------------------------------------------------------------------------------------------
 // Helper function declarations
 
 Vec3 pos_after_move (Creature::Handle creature, Vec2 relative_move);
-bool check_distraction (Creature::Handle caster);
+bool check_distraction (Creature::Handle caster, float distraction_percent);
 bool check_miscast (Creature::Handle caster, Spell::Index spell);
 void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id);
 void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, int line_id);
@@ -194,7 +199,17 @@ bool player_try_cast_spell (Spell::Index spell)
 
 void player_use_item(int inventory_slot)
 {
-	Inventory::edit().use_item(inventory_slot);
+	bool is_distracted = check_distraction(Player::handle(), c_ItemDistraction);
+	if (is_distracted)
+	{
+		Draw::add_message(std::format("{} too distracted to use the item!",
+			Grammar::You_are(Player::handle())));
+	}
+	else
+	{
+		Inventory::edit().use_item(inventory_slot);
+	}
+
 	Player::set_acted(true);
 }
 
@@ -265,7 +280,7 @@ void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_po
 	}
 
 	// 1. Distractedness
-	bool is_distracted = check_distraction(caster);
+	bool is_distracted = check_distraction(caster, c_SpellDistraction);
 	if (is_distracted)
 	{
 		Draw::add_message(Grammar::You_are(caster) + " too distracted to cast a spell!");
@@ -292,8 +307,7 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	user.clear_rest_steps();
 
 	// Distractedness check.
-	// TODO: Should it be lower for abilities/items than for spells?
-	bool is_distracted = check_distraction(user);
+	bool is_distracted = check_distraction(user, c_AbilityDistraction);
 	if (is_distracted)
 	{
 		Draw::add_message(Grammar::You_are(user) + " too distracted to attack!");
@@ -348,10 +362,11 @@ Vec3 pos_after_move (Creature::Handle creature, Vec2 relative_move)
 	return new_pos.xyz(old_pos.z + world.get_stairs_dz(old_pos, new_pos));
 }
 
-bool check_distraction (Creature::Handle caster)
+bool check_distraction (Creature::Handle caster, float distraction_percent)
 {
-	// Simple percentage chance you won't get to cast at all
-	int distraction_rate = caster.distractedness();
+	// Simple percentage chance you won't get to cast at all.
+	// Apply factor based on type of action.
+	int distraction_rate = Math::RoundToInt(caster.distractedness() * distraction_percent);
 
 	// Always a chance...
 	if (distraction_rate > 90)

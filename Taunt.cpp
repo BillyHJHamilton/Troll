@@ -51,7 +51,7 @@ void init()
 		Taunt::Data{.text="I won't let you!  I'll fight you!"},
 
 		Taunt::Data{.text="looks miserable, but determined",
-			.presentation=Emote, .condition=Hurt},
+			.presentation=Emote, .condition=Losing},
 	};
 
 	s_taunts[Creature::SallyAnne_0] =
@@ -162,9 +162,9 @@ void init()
 		Taunt::Data{.text="smirks sadistically",
 			.presentation=Emote, .condition=Winning},
 		Taunt::Data{.text="How dare you?",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="Just wait until my father hears.",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="Practicing for the ballet?",
 			.condition=PlayerStatus, .subtype=Status::Dancing},
 		Taunt::Data{.text="Think this is funny, do you?",
@@ -186,7 +186,7 @@ void init()
 		Taunt::Data{.text="I'm really sorry about this.",
 			.condition=AttackSpell, .subtype=Spell::LacarnumInflamare},
 		Taunt::Data{.text="You're quite the hellion today.",
-			.condition=Hurt, .rarity=5},
+			.condition=Losing, .rarity=5},
 		Taunt::Data{.text="Are you sure that's a real spell?",
 			.condition=PlayerMiscast},
 		Taunt::Data{.text="You ought to study more.",
@@ -210,23 +210,75 @@ void init()
 		Taunt::Data{.text="Are you mental?"},
 		Taunt::Data{.text="Take this, cauldron-bum!",
 			.condition=AttackSpell, .rarity=5},
-		Taunt::Data{.text="Oh, bloody hell!",
-			.condition=Hurt},
 		Taunt::Data{.text="Dragon bogeys!",
 			.condition=HasStatus, .subtype=Status::Dancing, .rarity=5},
+		Taunt::Data{.text="Oh, bloody hell!",
+			.condition=Losing},
 		Taunt::Data{.text="You need to sort our your priorities.",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="You git!",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="Ron, Ron, Ron Weasley!",
 			.condition=Winning, .rarity=6},
 		// "Excuse me, are you the imprint of a departed soul?"
 	};
 
-	// Crabbe_3,
-	// Goyle_3,
+	s_taunts[Creature::Crabbe_3] =
+	{
+		Taunt::Data{.text="calls out",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="chortles",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="cheers",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="cackles",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="cringes",
+			.presentation=Emote, .condition=Losing},
+		Taunt::Data{.text="cowers",
+			.presentation=Emote, .condition=Losing},
+		Taunt::Data{.text="cracks up",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Tickled},
+		Taunt::Data{.text="looks crispy",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Burning},
+		Taunt::Data{.text="does the can-can",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Dancing},
+		Taunt::Data{.text="does the cha-cha",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Dancing},
+	};
+	
+	s_taunts[Creature::Goyle_3] =
+	{
+		Taunt::Data{.text="grunts",
+			.presentation=Emote, .condition=Greeting},
+		Taunt::Data{.text="grins",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="gloats",
+			.presentation=Emote, .condition=Winning},
+		Taunt::Data{.text="grimaces",
+			.presentation=Emote, .condition=Losing},
+		Taunt::Data{.text="glowers",
+			.presentation=Emote, .condition=Losing},
+		Taunt::Data{.text="groans",
+			.presentation=Emote, .condition=Losing},
+		Taunt::Data{.text="giggles",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Tickled},
+		Taunt::Data{.text="gasps",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Burning},
+		Taunt::Data{.text="gallops and gambols",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Dancing},
+		Taunt::Data{.text="dances Gangnam Style",
+			.presentation=Emote, .condition=HasStatus, .subtype=Status::Dancing, .rarity=10},
+	};
+
 	// Harry_4,
-	// Cedric_4,
+
+	s_taunts[Creature::Cedric_4] =
+	{
+		Taunt::Data{.text="sparkles handsomely",
+			.presentation=Emote, .condition=AnyTime, .rarity=10},
+	};
+
 	// Fleur_4,
 	// Krum_5,
 	// Neville_5,
@@ -296,11 +348,11 @@ void init()
 		Taunt::Data{.text="Robes are great.  No need for trousers.",
 			.rarity=3},
 		Taunt::Data{.text="Could you make this a little easier?",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="This is more effort than it's worth.",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="Being bullied is easier than resisting.",
-			.condition=Hurt},
+			.condition=Losing},
 		Taunt::Data{.text="You're waving your wand too much.",
 			.condition=PlayerMiscast},
 		Taunt::Data{.text="Try doing it more slowly.",

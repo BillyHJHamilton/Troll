@@ -13,9 +13,8 @@ namespace Action
 
 	bool is_move_hazardous (Creature::Handle creature, Vec2 relative_move);
 	bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode);
-	
+
 	// Use line_id = c_Invalid if spell is self-targeted or sight targeted.
 	void try_cast_spell(Spell::Index spell, Creature::Handle caster, Vec3 target_pos, int line_id);
-	
 	void try_use_ability(Ability::Index ability, Creature::Handle user, Vec3 target_pos, int line_id);
 }
