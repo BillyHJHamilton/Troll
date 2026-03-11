@@ -220,6 +220,7 @@ void init()
 			.condition=Losing},
 		Taunt::Data{.text="Ron, Ron, Ron Weasley!",
 			.condition=Winning, .rarity=6},
+
 		// "Excuse me, are you the imprint of a departed soul?"
 	};
 
@@ -322,6 +323,8 @@ void init()
 
 	s_taunts[Creature::Streeler] =
 	{
+		Taunt::Data{.text="squeals",
+			.presentation=Emote, .condition=Greeting, .repeat=true},
 		Taunt::Data{.text="makes a squelching sound",
 			.presentation=Emote, .condition=AnyTime, .repeat=true},
 		Taunt::Data{.text="wiggles its eye-stalks",

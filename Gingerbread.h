@@ -2,6 +2,7 @@
 
 #include "NameHash.h"
 #include "Types.h"
+#include "Spawn.h"
 #include "Spell.h" // for bitset
 
 NameHash constexpr c_IdentityGeneric {"Generic"};
@@ -39,6 +40,10 @@ namespace Gingerbread
 
 	void reset_player_stats(House::Type house);
 	Stats& edit_player_stats();
+
+	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
+		FloatTempList& out_weights);
+
 	Creature::Type find_type_to_spawn (float target_difficulty);
 
 	void claim_identity(Creature::Handle creature);

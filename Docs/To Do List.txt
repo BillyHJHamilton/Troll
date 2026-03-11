@@ -12,6 +12,16 @@ To Do:
  - Size category?  Could effect evasion.
   - Or just have an evasiveness category, or evasiveness traits...
  - Pack spawning
+ - New creatures:
+  - Doxy, Cornish Pixe, Imp, Red Cap, Ghoul
+  - Clabbert, Giant Purple Toad, Bundimun
+  - Spider, Dugbog, Salamander, Blast-Ended Skrewt
+  - Monster Book of Monsters, Peeves, Flying Books, Charmed Armour
+  - Ven. Ten., Spikey Bush, Horklump, Bowtruckle
+  - Mountain Troll
+  - Double Ended Newt
+  - Heliopath, Nargles
+  - Egg Creature (https://scifi.stackexchange.com/questions/190670/what-is-this-creature-from-harry-potter-and-the-prisoner-of-azkaban)
 
 - Damage
  - More detailed attribution of damage sources (died by falling down stairs, etc)
@@ -25,7 +35,12 @@ To Do:
 
 - Items
  - Support some grammar functions for items (like for creatures)
- - In theory, NPCs should sometimes use items (without needing a bean!)
+ - In theory, NPCs should sometimes use items (without needing a special ability)
+ - New items:
+  - Candy: pumpkin pastries, cauldron cakes, edible dark marks
+  - Joke shop: fanged frisbee, bashing boomerang, stink pellet, dungbomb
+  - WWW: Fireworks, decoy detonator, extendable ears, shield hat, instant darkness powder, portable swamp
+  - Advanced: dragon orb, bottled starlight, tempest in a bottle
 
 - Map generation
  - Named regions, more layout

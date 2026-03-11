@@ -287,6 +287,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Spawn.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="SpellEffect.cpp" />
+    <ClCompile Include="Squad.cpp" />
     <ClCompile Include="Stairs.cpp" />
     <ClCompile Include="Status.cpp" />
     <ClCompile Include="Target.cpp" />
@@ -352,6 +353,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />
+    <ClInclude Include="Squad.h" />
     <ClInclude Include="Stairs.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Target.h" />

@@ -25,6 +25,7 @@
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
+#include "Squad.h"
 #include "Target.h"
 #include "Taunt.h"
 #include "Terrain.h"
@@ -72,6 +73,7 @@ void init()
 	Menu::init();
 	Random::init();
 	Status::init();
+	Squad::init();
 	Taunt::init();
 
 	Config::load();
@@ -94,6 +96,7 @@ void clear()
 	Menu::clear();
 	Player::clear();
 	Spawn::clear();
+	Squad::clear();
 	Target::clear();
 	Taunt::clear();
 	World::clear();
@@ -156,6 +159,7 @@ bool try_serialize_all(ISerializer& s)
 	Inventory::serialize(s);
 	Item::serialize(s);
 	Spawn::serialize(s);
+	Squad::serialize(s);
 	Taunt::serialize(s);
 	World::edit().serialize(s);
 

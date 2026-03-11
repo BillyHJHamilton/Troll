@@ -8,6 +8,7 @@
 #include <vector>
 
 using IntTempList = std::vector<int,Scratch<int>>;
+using FloatTempList = std::vector<float,Scratch<float>>;
 
 namespace Util
 {

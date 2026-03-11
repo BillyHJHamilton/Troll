@@ -1,9 +1,10 @@
 #pragma once
 
-#include<vector>
-#include<random>
-#include<algorithm>
 #include "Geometry.h"
+#include "VectorUtil.h"
+
+#include<algorithm>
+#include<random>
 
 namespace Random
 {
@@ -16,6 +17,7 @@ namespace Random
 	int index (int size);
 	int weighted_index(const std::vector<int> &weights);
 	int weighted_index(const std::vector<float> &weights);
+	int weighted_index(const FloatTempList &weights);
 	bool coinflip ();
 	bool one_in (int x);
 	CompassDirection compass_direction(bool include_no_move);

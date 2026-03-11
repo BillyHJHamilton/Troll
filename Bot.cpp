@@ -863,8 +863,7 @@ Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target
 {
 	assert(creature.num_abilities() > 0);
 
-	// TODO Right now Random doesn't support temp list.  We could template it, I guess.
-	static std::vector<float> weights;
+	FloatTempList weights;
 	weights.clear();
 	weights.reserve(creature.num_abilities());
 

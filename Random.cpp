@@ -108,6 +108,38 @@ int weighted_index(const std::vector<float> &weights)
 	return 0;
 }
 
+// Copy-pasted from the above since I didn't feel like making a template
+// (since there are some small differences between the int and float versions).
+int weighted_index(const FloatTempList &weights)
+{
+	assert(weights.size() > 0);
+	float sum = 0.0f;
+	for (float w : weights)
+	{
+		assert(w >= 0.0f);
+		sum += w;
+	}
+	assert(sum > 0.0f);
+
+	const float roll = Random::in_range(0.0f, sum);
+
+	float x = roll;
+	for (int i = 0; i < (int)weights.size(); i++)
+	{
+		x -= weights[i];
+		if (x <= 0.0f)
+			return i;
+	}
+	std::cerr << "RandomNumbers - weighted_index (int) failed to resolve." << std::endl;
+	std::cerr << "Contents of weight vector: ";
+	for (float w : weights)
+	{
+		std::cerr << w;
+	}
+	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
+	return 0;
+}
+
 bool coinflip ()
 {
 	static std::uniform_int_distribution<int> dist(0, 1);

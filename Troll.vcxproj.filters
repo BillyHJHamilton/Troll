@@ -228,6 +228,9 @@
     <ClCompile Include="Taunt.cpp">
       <Filter>Source Files\Creature</Filter>
     </ClCompile>
+    <ClCompile Include="Squad.cpp">
+      <Filter>Source Files\Creature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -429,6 +432,9 @@
       <Filter>Header Files\Magic</Filter>
     </ClInclude>
     <ClInclude Include="Taunt.h">
+      <Filter>Header Files\Creature</Filter>
+    </ClInclude>
+    <ClInclude Include="Squad.h">
       <Filter>Header Files\Creature</Filter>
     </ClInclude>
   </ItemGroup>

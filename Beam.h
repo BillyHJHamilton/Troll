@@ -22,8 +22,8 @@ namespace Beam
 	};
 
 	// Beam flags
-	uint constexpr f_CasterAimed   = 1 << 0;
-	uint constexpr f_StopOnTarget = 1 << 2;
+	uint constexpr f_CasterAimed	= 1 << 0;
+	uint constexpr f_StopOnTarget	= 1 << 1;
 
 	struct Data
 	{

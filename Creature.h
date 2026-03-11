@@ -80,6 +80,7 @@ namespace Creature
 		Gnome,
 		Streeler,
 		FireCrab,
+		BigFireCrab,
 
 		// AU's!
 		HarryTheHufflepuff_1,

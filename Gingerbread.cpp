@@ -276,6 +276,13 @@ void init()
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
+	Builder(Creature::BigFireCrab, c_IdentityGeneric,
+		/*Difficulty*/ 2.5f, /*Probability*/ 0.2f, /*HP*/ 10,
+		"big fire crab", "big fire crab", 'c', cstr_Crimson, Gender::Neuter)
+		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
+		.resist(Damage::Fire)
+		.abil({Ability::ShootFire});
+
 	// Alternate universe characters:
 
 	// Similar to normal Harry, but 2 more hp and moves slowly.
@@ -287,6 +294,14 @@ void init()
 		.magic(10, "VM FP LM")
 		.tags(Creature::Tag::Move_Slow)
 		.item({Item::Notes, Item::PotionItem}, {70, 30});
+
+	// Validate that we didn't miss something.
+	for (int i = 0; i < Creature::Count; ++i)
+	{
+		assert(s_gingerbread[i].short_name != nullptr);
+		assert(s_gingerbread[i].long_name != nullptr);
+		assert(s_gingerbread[i].codepoint != 0);
+	}
 }
 
 void clear()
@@ -478,20 +493,9 @@ Gingerbread::Stats& edit_player_stats()
 	return s_gingerbread[Creature::Player];
 }
 
-Creature::Type find_type_to_spawn (float target_difficulty)
+void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
+	FloatTempList& out_weights)
 {
-	std::vector<Creature::Type> options;
-	std::vector<float> weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
-
-	float constexpr c_MaxOverLevel = 2.0f;
-	float constexpr c_MaxUnderLevel = 4.0f;
-
-	// Probability is multiplied by this factor for each level over/under target.
-	float constexpr c_OverLevelFactor = 0.5f;
-	float constexpr c_UnderLevelFactor = 0.75f;
-
 	for (int type = 1; // skip player
 		type < Creature::Type::Count;
 		++type)
@@ -501,8 +505,8 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 
 		// Exclusions
 		if (stats.probability <= 0.0f ||
-			Math::FloatGreater(stats.difficulty, target_difficulty + c_MaxOverLevel) ||
-			Math::FloatLess(stats.difficulty, target_difficulty - c_MaxUnderLevel))
+			Math::FloatGreater(stats.difficulty, target_difficulty + Spawn::c_MaxOverLevel) ||
+			Math::FloatLess(stats.difficulty, target_difficulty - Spawn::c_MaxUnderLevel))
 		{
 			continue;
 		}
@@ -527,26 +531,36 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 		if (Math::FloatGreater(stats.difficulty, target_difficulty))
 		{
 			float const difference = stats.difficulty - target_difficulty;
-			probability *= pow(c_OverLevelFactor, difference);
+			probability *= pow(Spawn::c_OverLevelFactor, difference);
 		}
 		else if (Math::FloatLess(stats.difficulty, target_difficulty))
 		{
 			float const difference = target_difficulty - stats.difficulty;
-			probability *= pow(c_UnderLevelFactor, difference);
+			probability *= pow(Spawn::c_UnderLevelFactor, difference);
 		}
 
 		if (probability > 0.0f)
 		{
-			options.push_back((Creature::Type)type);
-			weights.push_back(probability);
+			out_list.emplace_back(Spawn::Option::Type::Creature, type);
+			out_weights.push_back(probability);
 		}
 	}
+}
+
+Creature::Type find_type_to_spawn (float target_difficulty)
+{
+	Spawn::OptionTempList options;
+	FloatTempList weights;
+	options.reserve(Creature::Count);
+	weights.reserve(Creature::Count);
+
+	find_spawn_options(target_difficulty, options, weights);
 
 	if (Util::Size(options) > 0)
 	{
 		int const choice = Random::weighted_index(weights);
 		assert(Util::IsValidIndex(options, choice));
-		return options.at(choice);
+		return (Creature::Type)options.at(choice).index;
 	}
 	else
 	{
