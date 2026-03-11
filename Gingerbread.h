@@ -41,6 +41,7 @@ namespace Gingerbread
 	void reset_player_stats(House::Type house);
 	Stats& edit_player_stats();
 
+	bool can_spawn_identity (Creature::Type type, float target_difficulty);
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 		FloatTempList& out_weights);
 

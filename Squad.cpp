@@ -1,7 +1,10 @@
 #include "Squad.h"
 
 #include "Creature.h"
+#include "Gingerbread.h"
+#include "Math.h"
 #include "Serialize.h"
+#include "Spawn.h"
 #include "VectorUtil.h"
 
 #include <vector>
@@ -66,10 +69,48 @@ int get_num()
 	return Util::Size(s_squads);
 }
 
+bool can_spawn(int squad_id, float target_difficulty)
+{
+	Squad::Data const& squad = s_squads[squad_id];
+
+	if (squad.probability <= 0.0f ||
+		Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
+	{
+		return false;
+	}
+
+	for (Member const& member : squad.members)
+	{
+		if (!Gingerbread::can_spawn_identity(member.type, target_difficulty))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList out_list,
 	FloatTempList& out_weights)
 {
+	for (int i = 0; i < Util::Size(s_squads); ++i)
+	{
+		Squad::Data const& squad = s_squads[i];
 
+		if (!can_spawn(i, target_difficulty))
+		{
+			continue;
+		}
+
+		float const probability = squad.probability *
+			Spawn::probability_factor(squad.difficulty, target_difficulty);
+
+		if (probability > 0.0f)
+		{
+			out_list.emplace_back(Spawn::Option::Type::Squad, i);
+			out_weights.push_back(probability);
+		}
+	}
 }
 
 } // namespace Squad

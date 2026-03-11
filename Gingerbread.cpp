@@ -493,6 +493,28 @@ Gingerbread::Stats& edit_player_stats()
 	return s_gingerbread[Creature::Player];
 }
 
+bool can_spawn_identity (Creature::Type type, float target_difficulty)
+{
+	Gingerbread::Stats const& stats = s_gingerbread[type];
+	NameHash const identity = stats.identity;
+
+	// Identity-based considerations.
+	// Can't have two of the same person running around at the same time,
+	// and must increase difficulty by at least 1.0 when respawning the same character.
+	if (identity != c_IdentityGeneric)
+	{
+		IdentityMetadata const& metadata = s_metadata[identity];
+
+		if (metadata.current_handle != Creature::None ||
+			Math::FloatLess(stats.difficulty, metadata.spawned_difficulty + 1.0f))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 	FloatTempList& out_weights)
 {
@@ -501,43 +523,16 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 		++type)
 	{
 		Gingerbread::Stats const& stats = s_gingerbread[type];
-		NameHash const identity = stats.identity;
 
-		// Exclusions
 		if (stats.probability <= 0.0f ||
-			Math::FloatGreater(stats.difficulty, target_difficulty + Spawn::c_MaxOverLevel) ||
-			Math::FloatLess(stats.difficulty, target_difficulty - Spawn::c_MaxUnderLevel))
+			!Spawn::difficulty_in_range(stats.difficulty, target_difficulty) ||
+			!can_spawn_identity((Creature::Type)type, target_difficulty))
 		{
 			continue;
 		}
 
-		// Identity-based considerations.
-		// Can't have two of the same person running around at the same time,
-		// and must increase difficulty by at least 1.0 when respawning the same character.
-		if (identity != c_IdentityGeneric)
-		{
-			IdentityMetadata const& metadata = s_metadata[identity];
-
-			if (metadata.current_handle != Creature::None ||
-				Math::FloatLess(stats.difficulty, metadata.spawned_difficulty + 1.0f))
-			{
-				continue;
-			}
-		}
-
-		// Weight modifications
-		float probability = stats.probability;
-
-		if (Math::FloatGreater(stats.difficulty, target_difficulty))
-		{
-			float const difference = stats.difficulty - target_difficulty;
-			probability *= pow(Spawn::c_OverLevelFactor, difference);
-		}
-		else if (Math::FloatLess(stats.difficulty, target_difficulty))
-		{
-			float const difference = target_difficulty - stats.difficulty;
-			probability *= pow(Spawn::c_UnderLevelFactor, difference);
-		}
+		float const probability = stats.probability *
+			Spawn::probability_factor(stats.difficulty, target_difficulty);
 
 		if (probability > 0.0f)
 		{

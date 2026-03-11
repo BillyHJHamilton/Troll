@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Gingerbread.h"
 #include "Map.h"
+#include "Math.h"
 #include "Player.h"
 #include "Random.h"
 #include "Terrain.h"
@@ -150,6 +151,32 @@ void check_spawning()
 			spawn_for_map(map, history, param);
 		}
 	}
+}
+
+bool difficulty_in_range (float difficulty, float target_difficulty)
+{
+	if (Math::FloatGreater(difficulty, target_difficulty + Spawn::c_MaxOverLevel) ||
+		Math::FloatLess(difficulty, target_difficulty - Spawn::c_MaxUnderLevel))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+float probability_factor (float difficulty, float target_difficulty)
+{
+	if (Math::FloatGreater(difficulty, target_difficulty))
+	{
+		float const difference = difficulty - target_difficulty;
+		return pow(Spawn::c_OverLevelFactor, difference);
+	}
+	else if (Math::FloatLess(difficulty, target_difficulty))
+	{
+		float const difference = target_difficulty - difficulty;
+		return pow(Spawn::c_UnderLevelFactor, difference);
+	}
+	return 1.0f;
 }
 
 //-----------------------------------------------------------------------------

@@ -34,4 +34,7 @@ namespace Spawn
 
 	void post_world_setup();
 	void check_spawning();
+
+	bool difficulty_in_range (float difficulty, float target_difficulty);
+	float probability_factor (float difficulty, float target_difficulty);
 }
