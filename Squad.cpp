@@ -43,6 +43,18 @@ static std::vector<int> s_num_spawned;
 void init()
 {
 	s_num_spawned.reserve(s_squads.size());
+
+	// Some validation
+	for (Squad::Data const& squad : s_squads)
+	{
+		assert(Util::Size(squad.members) > 0);
+		for (Member const& member : squad.members)
+		{
+			assert(member.min_num >= 0);
+			assert(member.max_num >= 1);
+			assert(member.max_num >= min_num);
+		}
+	}
 }
 
 void clear()
@@ -69,12 +81,28 @@ int get_num()
 	return Util::Size(s_squads);
 }
 
+bool is_valid_id(int squad_id)
+{
+	return Util::IsValidIndex(s_squads, squad_id);
+}
+
+Squad::Data const& read_data(int squad_id)
+{
+	return s_squads.at(squad_id);
+}
+
 bool can_spawn(int squad_id, float target_difficulty)
 {
 	Squad::Data const& squad = s_squads[squad_id];
 
 	if (squad.probability <= 0.0f ||
 		Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
+	{
+		return false;
+	}
+
+	if (!Util::IsFlagSet(squad.flags, f_Repeat) &&
+		s_num_spawned[squad_id] > 0)
 	{
 		return false;
 	}

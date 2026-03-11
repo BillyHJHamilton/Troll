@@ -8,6 +8,7 @@
 #include "Math.h"
 #include "Player.h"
 #include "Random.h"
+#include "Squad.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -97,6 +98,10 @@ void spawn_for_map(Map& map, History& history, Parameters const& param);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
+
+// Decides on a creature or squad to spawn.
+Spawn::Option choose_spawn_option(float target_difficulty);
+void spawn_squad(int squad_id, Vec3 start_pos);
 
 //-----------------------------------------------------------------------------
 // Interface
@@ -392,21 +397,33 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		Vec2 const pos = next_spawn_position();
 		Vec3 const pos3 = pos.xyz(map.get_z());
 
-		Creature::Type type = Gingerbread::find_type_to_spawn(map.get_difficulty());
-		if (type == Creature::None)
+		Spawn::Option option = choose_spawn_option(map.get_difficulty());
+
+		if (option.type == Option::None)
 		{
 			break;
 		}
 
-		Creature::Handle creature = Creature::spawn_creature(type, pos3);
-		if (Debug::enabled(Debug::Map))
+		else if (option.type == Option::Creature)
 		{
-			std::cout << std::format(" - Spawned {} at ({},{}) - diff {}.\n",
-				creature.long_name(), creature.pos().x, creature.pos().y,
-				Gingerbread::read(creature.type()).difficulty);
+			Creature::Type creature_type = (Creature::Type)option.index;
+			assert(Creature::is_valid_type(creature_type));
+
+			Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format(" - Spawned {} at ({},{}) - diff {}.\n",
+					creature.long_name(), creature.pos().x, creature.pos().y,
+					Gingerbread::read(creature.type()).difficulty);
+			}
+
+			++creatures_spawned;
 		}
 
-		++creatures_spawned;
+		else if (option.type == Option::Squad)
+		{
+			// TODO
+		}
 	}
 
 	if (Debug::enabled(Debug::Map))
@@ -465,6 +482,61 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	}
 
 	return spawned;
+}
+
+Spawn::Option choose_spawn_option(float target_difficulty)
+{
+	Spawn::OptionTempList options;
+	FloatTempList weights;
+	options.reserve(Creature::Count);
+	weights.reserve(Creature::Count);
+
+	Gingerbread::find_spawn_options(target_difficulty, options, weights);
+	Squad::find_spawn_options(target_difficulty, options, weights);
+
+	if (Util::Size(options) > 0)
+	{
+		return options.at(Random::weighted_index(weights));
+	}
+	else
+	{
+		return {Option::None, c_Invalid};
+	}
+}
+
+void spawn_squad(int squad_id, Vec3 start_pos)
+{
+	if (Check(Squad::is_valid_id(squad_id)))
+	{
+		Squad::Data const& squad = Squad::read_data(squad_id);
+
+		std::vector<Creature::Handle, Scratch<Creature::Handle>> spawned;
+		spawned.reserve(10); // should cover it most of the time
+
+		for (Squad::Member const& member : squad.members)
+		{
+			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
+
+			for (int i = 0; i < num_to_spawn; ++i)
+			{
+				// Find a position near start_pos...
+
+				// TODO
+			}
+		}
+
+	}
+
+	//Creature::Type creature_type = (Creature::Type)option.index;
+	//assert(Creature::is_valid_type(creature_type));
+	//
+	//Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);
+	//if (Debug::enabled(Debug::Map))
+	//{
+	//	std::cout << std::format(" - Spawned {} at ({},{}) - diff {}.\n",
+	//		creature.long_name(), creature.pos().x, creature.pos().y,
+	//		Gingerbread::read(creature.type()).difficulty);
+	//}
 }
 
 } // namespace Spawn

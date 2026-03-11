@@ -278,6 +278,7 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 		0       // by definition.
 	});
 
+	// TODO technically we don't need a priority queue here - we could just a normal queue.
 	AStarPriorityQueue frontier;
 	frontier.add(start, 0);
 

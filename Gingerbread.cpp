@@ -360,14 +360,9 @@ void serialize(ISerializer& s)
 	}
 }
 
-bool is_valid_type (Creature::Type type)
-{
-	return type > Creature::None && type < Creature::Count;
-}
-
 Gingerbread::Stats const & read (Creature::Type type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread[type];
 	}
@@ -378,7 +373,7 @@ Gingerbread::Stats const & read (Creature::Type type)
 
 Spell::Bitset const& read_spells(Creature::Type type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread_spells[type];
 	}
@@ -389,7 +384,7 @@ Spell::Bitset const& read_spells(Creature::Type type)
 
 float Gingerbread::read_resistance(Creature::Type type, Damage::Type damage_type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_resistances.read(type, damage_type);
 	}
@@ -400,7 +395,7 @@ float Gingerbread::read_resistance(Creature::Type type, Damage::Type damage_type
 
 std::vector<Ability::Index> const& Gingerbread::read_abilities(Creature::Type type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread_abilities[type];
 	}
@@ -411,7 +406,7 @@ std::vector<Ability::Index> const& Gingerbread::read_abilities(Creature::Type ty
 
 std::string short_name (Creature::Type type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread[type].short_name;
 	}
@@ -420,7 +415,7 @@ std::string short_name (Creature::Type type)
 
 std::string long_name (Creature::Type type)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread[type].long_name;
 	}
@@ -429,7 +424,7 @@ std::string long_name (Creature::Type type)
 
 bool has_tag(Creature::Type type, Creature::Tag tag)
 {
-	if (is_valid_type(type))
+	if (Creature::is_valid_type(type))
 	{
 		return s_gingerbread_tags[type].test((size_t)tag);
 	}
@@ -440,7 +435,7 @@ bool has_tag(Creature::Type type, Creature::Tag tag)
 
 Item::Type random_item_drop(Creature::Type type)
 {
-	if (!is_valid_type(type) ||
+	if (!Creature::is_valid_type(type) ||
 		s_item_weights[type].empty())
 	{
 		return Item::None;
@@ -567,7 +562,7 @@ void claim_identity(Creature::Handle creature)
 {
 	Creature::Type const type = creature.type();
 	NameHash const identity = creature.identity();
-	if (is_valid_type(type) && identity != c_IdentityGeneric)
+	if (Creature::is_valid_type(type) && identity != c_IdentityGeneric)
 	{
 		IdentityMetadata& metadata = s_metadata[identity];
 

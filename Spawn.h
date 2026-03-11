@@ -18,8 +18,9 @@ namespace Spawn
 
 	struct Option
 	{
-		enum class Type : byte
+		enum Type : byte
 		{
+			None,
 			Creature,
 			Squad
 		};
