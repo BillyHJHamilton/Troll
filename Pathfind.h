@@ -50,6 +50,14 @@ namespace Pathfind
 		};
 		GoalType goal = GoalType::Darkness;
 	};
+	
+	struct NearestOpenParam
+	{
+		int max_cost = 3;
+		int num_to_find = 1;
+		bool allow_start = false;
+		bool allow_stairs = false;
+	};
 
 	// Finds spaces that are valid to move to.  Considers stairs.
 	void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out);
@@ -61,4 +69,7 @@ namespace Pathfind
 
 	// Breadth first search for uncollected item or darkness.
 	void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out);
+
+	// Breadth first search for open points near the target.
+	void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_out);
 }

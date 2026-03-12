@@ -4,9 +4,11 @@
 #include "Debug.h"
 #include "MapUtil.h"
 #include "PerfTimer.h"
+#include "Random.h"
 #include "Scratch.h"
 #include "Stairs.h"
 #include "Terrain.h"
+#include "VectorUtil.h"
 #include "Visibility.h"
 #include "World.h"
 
@@ -46,20 +48,6 @@ struct AStarPriorityQueue
 		return best_item;
 	}
 };
-
-//struct NeighbourParameters
-//{
-//	bool allow_creatures = false;
-//	bool allow_stairs = true;
-//	Creature::Handle target_creature = Creature::None;
-//	enum UnexploredMode : byte
-//	{
-//		Default = 0,	// Treat it as its actual terrain, ignoring LOS
-//		Block,			// Don't allow pathing through unexplored
-//		Open,			// Treat all unexplored spaces as open
-//	};
-//	UnexploredMode unexplored_mode = UnexploredMode::Default;
-//};
 
 void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 {
@@ -278,7 +266,7 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 		0       // by definition.
 	});
 
-	// TODO technically we don't need a priority queue here - we could just a normal queue.
+	// TODO technically we don't need a priority queue here - we could just use a normal queue.
 	AStarPriorityQueue frontier;
 	frontier.add(start, 0);
 
@@ -313,19 +301,6 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 				continue;
 			}
 
-			// Prevent pathing through unknown tiles unless that's the goal.
-			if (param.goal != ExploreParam::GoalType::Darkness &&
-				world.get_visibility(neighbour) == Visibility::Hidden)
-			{
-				continue;
-			}
-
-			// Prevent using stairs unless allowed by parameters.
-			if (!param.allow_stairs && neighbour.z != start.z)
-			{
-				continue;
-			}
-
 			NodeInfo* const old_node = Util::Find(discovered, neighbour);
 			if (old_node) // it's BFS, so no need to revisit
 			{
@@ -356,6 +331,81 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 		{
 			path_out.push_back(boomerang);
 			boomerang = discovered[boomerang].come_from;
+		}
+	}
+}
+
+void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_out)
+{
+	PerfTimer perf0("find_nearest_open");
+
+	list_out.clear();
+	list_out.reserve(param.num_to_find);
+
+	World const& world = World::read();
+
+	std::unordered_map<Vec3, int, std::hash<Vec3>, std::equal_to<Vec3>,
+		Scratch<std::pair<const Vec3,int>>> discovered_cost;
+
+	Vec3TempList neighbours; // to avoid reallocating inside loop
+
+	discovered_cost.insert_or_assign(start, 0);
+
+	if (param.allow_start)
+	{
+		Terrain::Type const start_terrain = World::read().get_terrain(start);
+		if (!Terrain::is_solid(start_terrain) &&
+			(param.allow_stairs || !Terrain::is_stairs(start_terrain)) &&
+			!Creature::creature_at_pos(start).valid())
+		{
+			list_out.push_back(start);
+			if (Util::Size(list_out) >= param.num_to_find)
+			{
+				// That was easy.
+				return;
+			}
+		}
+	}
+		
+
+	// TODO technically we don't need a priority queue here - we could just use a normal queue.
+	AStarPriorityQueue frontier;
+	frontier.add(start, 0);
+
+	while (!frontier.empty())
+	{
+		PerfTimer perf2("find_nearest_open - per iteration");
+
+		Vec3 const here = frontier.pop();
+		int const here_cost = discovered_cost.at(here);
+
+		NeighbourParam const neighbour_param
+		{
+			.allow_stairs = param.allow_stairs
+		};
+		find_open_neighbours(here, neighbour_param, neighbours);
+		Random::shuffle_vector(neighbours);
+		for (Vec3 neighbour : neighbours)
+		{
+			int const new_cost = here_cost + 1;
+			if (new_cost > param.max_cost)
+			{
+				continue;
+			}
+
+			if (discovered_cost.contains(neighbour))
+			{
+				continue;
+			}
+
+			list_out.push_back(neighbour);
+			if (Util::Size(list_out) >= param.num_to_find)
+			{
+				return;
+			}
+
+			discovered_cost[neighbour] = new_cost;
+			frontier.add(neighbour, new_cost);
 		}
 	}
 }

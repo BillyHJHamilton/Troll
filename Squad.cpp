@@ -52,7 +52,8 @@ void init()
 		{
 			assert(member.min_num >= 0);
 			assert(member.max_num >= 1);
-			assert(member.max_num >= min_num);
+			assert(member.max_num >= member.min_num);
+			assert(Creature::is_valid_type(member.type));
 		}
 	}
 }
@@ -96,7 +97,7 @@ bool can_spawn(int squad_id, float target_difficulty)
 	Squad::Data const& squad = s_squads[squad_id];
 
 	if (squad.probability <= 0.0f ||
-		Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
+		!Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
 	{
 		return false;
 	}
@@ -118,7 +119,7 @@ bool can_spawn(int squad_id, float target_difficulty)
 	return true;
 }
 
-void find_spawn_options (float target_difficulty, Spawn::OptionTempList out_list,
+void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 	FloatTempList& out_weights)
 {
 	for (int i = 0; i < Util::Size(s_squads); ++i)

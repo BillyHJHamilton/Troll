@@ -191,13 +191,14 @@ void init()
 		.magic(35, "VM MW LC AL FI")
 		.item({Item::Notes}, {100});
 
+	// Crabbe and Goyle have 0 probability because they spawn in a squad instead.
 	Builder(Creature::Crabbe_3, "Crabbe",
-		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f, /*HP*/ 20)
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.0f, /*HP*/ 11)
 		.magic(15, "FN RS")
 		.item({Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 
 	Builder(Creature::Goyle_3, "Goyle",
-		/*Difficulty*/ 3.0f, /*Probability*/ 1.0f, /*HP*/ 20)
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.0f, /*HP*/ 11)
 		.magic(15, "VM FP LM")
 		.item({Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
 

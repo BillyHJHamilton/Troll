@@ -77,6 +77,19 @@ namespace Terrain
 		}
 	}
 
+	bool is_stairs(Terrain::Type t)
+	{
+		switch(t)
+		{
+			case Terrain::UpStairs:
+			case Terrain::DownStairs:
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
 	Terrain::Type swap_stairs(Terrain::Type t)
 	{
 		switch(t)

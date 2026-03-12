@@ -6,6 +6,7 @@
 #include "Gingerbread.h"
 #include "Map.h"
 #include "Math.h"
+#include "Pathfind.h"
 #include "Player.h"
 #include "Random.h"
 #include "Squad.h"
@@ -80,6 +81,8 @@ bool has_spawn_positions();
 
 // Removes and returns a random spawn position from the cached list.
 Vec2 next_spawn_position();
+
+void remove_spawn_position(Vec2 pos);
 
 // Searches remaining spawn positions, so should be called after normal spawning.
 // Calling next_chest_position removes from main list and chest list.
@@ -187,7 +190,6 @@ float probability_factor (float difficulty, float target_difficulty)
 //-----------------------------------------------------------------------------
 // Helper Implementations
 
-
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player)
@@ -259,6 +261,11 @@ Vec2 next_spawn_position()
 	Vec2 const pos = s_spawn_positions.at(i);
 	Util::RemoveSwap(s_spawn_positions, i);
 	return pos;
+}
+
+void remove_spawn_position(Vec2 position)
+{
+	Util::RemoveSwapFirstMatchingItem(s_spawn_positions, position);
 }
 
 bool is_ok_chest_position(const Map& map, Vec2 pos)
@@ -422,7 +429,9 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 
 		else if (option.type == Option::Squad)
 		{
-			// TODO
+			spawn_squad(option.index, pos3);
+
+			++creatures_spawned; // That still only counts as one!
 		}
 	}
 
@@ -510,33 +519,53 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 	{
 		Squad::Data const& squad = Squad::read_data(squad_id);
 
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format(" - Spawning squad {} at ({},{}) - diff {}.\n",
+				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
+		}
+
+		std::vector<Creature::Type, Scratch<Creature::Type>> to_spawn;
 		std::vector<Creature::Handle, Scratch<Creature::Handle>> spawned;
+		to_spawn.reserve(10);
 		spawned.reserve(10); // should cover it most of the time
 
 		for (Squad::Member const& member : squad.members)
 		{
 			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
-
-			for (int i = 0; i < num_to_spawn; ++i)
-			{
-				// Find a position near start_pos...
-
-				// TODO
-			}
+			assert(Creature::is_valid_type(member.type));
+			to_spawn.insert(to_spawn.end(), num_to_spawn, member.type);
 		}
 
+		Vec3TempList spawn_positions;
+		Pathfind::NearestOpenParam nearest_open_param
+		{
+			.max_cost = 5,
+			.num_to_find = Util::Size(to_spawn),
+			.allow_start = true
+		};
+
+		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
+
+		for (int i = 0;
+			i < Util::Size(to_spawn) && i < Util::Size(spawn_positions);
+			++i)
+		{
+			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
+			spawned.push_back(creature);
+			remove_spawn_position(spawn_positions[i].xy());
+
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format("  - Spawned {} at ({},{}) - diff {}.\n",
+					creature.long_name(), creature.pos().x, creature.pos().y,
+					Gingerbread::read(creature.type()).difficulty);
+			}
+
+			// Todo: Assign leader, etc.
+		}
 	}
 
-	//Creature::Type creature_type = (Creature::Type)option.index;
-	//assert(Creature::is_valid_type(creature_type));
-	//
-	//Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);
-	//if (Debug::enabled(Debug::Map))
-	//{
-	//	std::cout << std::format(" - Spawned {} at ({},{}) - diff {}.\n",
-	//		creature.long_name(), creature.pos().x, creature.pos().y,
-	//		Gingerbread::read(creature.type()).difficulty);
-	//}
 }
 
 } // namespace Spawn

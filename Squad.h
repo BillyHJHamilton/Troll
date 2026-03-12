@@ -35,6 +35,6 @@ namespace Squad
 	bool is_valid_id(int squad_id);
 	Squad::Data const& read_data(int squad_id);
 	bool can_spawn(int squad_id, float target_difficulty);
-	void find_spawn_options (float target_difficulty, Spawn::OptionTempList out_list,
+	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 		FloatTempList& out_weights);
 };
