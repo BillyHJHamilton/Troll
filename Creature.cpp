@@ -628,6 +628,7 @@ void Handle::destroy ()
 		Gingerbread::release_identity(*this);
 	}
 
+	remove_from_squad();
 	Ability::clear_cooldowns(*this);
 
 	s_creatures[index].type = Creature::None;
