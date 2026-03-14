@@ -410,4 +410,55 @@ void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_ou
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+// Simpler queries
+
+bool is_choke_point(Vec3 pos)
+{
+	World const& world = World::read();
+
+	if (world.is_solid(pos))
+	{
+		return false;
+	}
+
+	bool solid [c_CompassNoMove];
+	for (int i = 0; i < (int)c_CompassNoMove; ++i)
+	{
+		solid[i] = world.is_solid(pos + c_Compass[i].xy0());
+	}
+
+	// Obvious hallway/doorway cases:
+	// ...  .#.
+	// #@#  .@.
+	// ...  .#.
+	if (solid[c_CompassNorth] && solid[c_CompassSouth])
+	{
+		return true;
+	}
+	if (solid[c_CompassEast] && solid[c_CompassWest])
+	{
+		return true;
+	}
+
+	// And the tricky diagonals:
+	// ##.  #..  .##  ..#
+	// .@#  #@.  #@.  .@#
+	// ..#  .##  #..  ##.
+	if (solid[c_CompassNorthwest] && solid[c_CompassSoutheast] &&
+		((solid[c_CompassNorth] && solid[c_CompassEast]) || 
+		 (solid[c_CompassWest] && solid[c_CompassSouth])))
+	{
+		return true;
+	}
+	if (solid[c_CompassSouthwest] && solid[c_CompassNortheast] &&
+		((solid[c_CompassSouth] && solid[c_CompassEast]) || 
+		 (solid[c_CompassWest] && solid[c_CompassNorth])))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 }

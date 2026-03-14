@@ -67,7 +67,6 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 bool is_aware(Creature::Handle const creature);
 bool is_separated_from_leader(Creature::Handle const creature);
-bool is_in_choke_point(Creature::Handle const creature);
 
 bool try_move (Creature::Handle creature, Vec2 relative_move);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
@@ -363,7 +362,7 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 				brain.state = State::Regroup;
 			}
 
-			if (Random::one_in(5) && is_in_choke_point(creature))
+			if (Random::one_in(5) && Pathfind::is_choke_point(creature.pos()))
 			{
 				brain.state = State::Blunder;
 			}
@@ -641,25 +640,6 @@ bool is_separated_from_leader(Creature::Handle const creature)
 	Vec3 const leader_pos = creature.squad_leader().pos();
 
 	return leader_pos.z != pos.z || !within_range(pos, leader_pos, c_CohesionDist);
-}
-
-bool is_in_choke_point (Creature::Handle creature)
-{
-	Vec3 const pos = creature.pos();
-
-	for (CompassItr c(false); *c < c_CompassWest; ++c)
-	{
-		Vec2 const dir = c_Compass[c];
-		Vec2 const opp = -1 * dir;
-
-		if (World::read().is_solid(pos + dir.xy0())
-			&& World::read().is_solid(pos + opp.xy0()))
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 // Move but not if it's hazardous.

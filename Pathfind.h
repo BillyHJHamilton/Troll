@@ -72,4 +72,9 @@ namespace Pathfind
 
 	// Breadth first search for open points near the target.
 	void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_out);
+
+	//-------------------------------------------------------------------------
+	// Simpler queries
+
+	bool is_choke_point(Vec3 pos);
 }
