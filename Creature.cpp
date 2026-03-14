@@ -793,6 +793,11 @@ bool HandleItr::finished () const
 //-------------------------------------------------------------------------------------------------
 // Global Creature interface
 
+bool is_valid_type (Creature::Type type)
+{
+	return type > Creature::None && type < Creature::Count;
+}
+
 Creature::Handle creature_at_pos (Vec3 pos)
 {
 	PerfTimer perf("creature_at_pos");
@@ -810,7 +815,7 @@ Creature::Handle creature_at_pos (Vec3 pos)
 
 bool is_anyone_at (Vec3 pos)
 {
-	return creature_at_pos(pos) != Creature::None;
+	return creature_at_pos(pos).valid();
 }
 
 Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)

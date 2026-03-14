@@ -26,10 +26,10 @@ namespace Player
 		// Tracking when player last miscasted a spell.
 		// Used to trigger certain taunts.
 		int miscast_turn = -1;
-		Spell::Index miscast_spell = Spell::None;
+		Spell::Index miscast_spell = (Spell::Index)c_Invalid;
 
 		bool game_over = false;
-		Creature::Type defeated_by = (Creature::Type)-1;
+		Creature::Type defeated_by = (Creature::Type)c_Invalid;
 
 		int level = 1;
 		int xp = 0;

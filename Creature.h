@@ -266,7 +266,7 @@ namespace Creature
 	void clear ();
 	void serialize (ISerializer& s);
 
-	bool is_valid_type (Creature::Type type) { return type > Creature::None && type < Creature::Count; }
+	bool is_valid_type (Creature::Type type);
 
 	Creature::Handle creature_at_pos (Vec3 pos);
 	bool is_anyone_at (Vec3 pos);
