@@ -122,7 +122,7 @@ void MenuHelp::init()
 	m_title = "How To Play:";
 	set_options({
 		{"Overview", Page::Overview},
-		{"Movement and Resting", Page::Movement},
+		{"Movement", Page::Movement},  //   and Resting
 		{"Casting Spells", Page::CastingSpells},
 		{"Items", Page::Items},
 		{"Other Commands", Page::OtherCommands},

@@ -202,7 +202,7 @@ bool Handle::can_use () const
 bool Handle::can_discard () const
 {
 	// For now
-	return true;
+	return false;
 }
 
 Item::BagStack Handle::bag_stack_mode () const
@@ -317,6 +317,9 @@ UseResult Handle::use_notes()
 UseResult Handle::use_bbbean()
 {
 	Draw::add_message("You eat a bean.  " + BertieBotts::eat_message(flavour()));
+
+	//Player::handle().heal_hp(BertieBotts::random_heal_amount(flavour()));
+
 	return UseResult::Consumed;
 }
 

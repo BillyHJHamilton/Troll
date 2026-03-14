@@ -53,6 +53,7 @@ namespace Player
 	int current_level ();
 	int current_xp ();
 	int next_xp_threshold ();
+	int total_xp_spent ();
 
 	// Mutators
 	void set_name (std::string str);

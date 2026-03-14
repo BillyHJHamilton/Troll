@@ -327,6 +327,24 @@ int next_xp_threshold ()
 	return 50 * Math::RoundToInt(pow(2, level - 1));
 }
 
+int total_xp_spent ()
+{
+	int const level = read_data().level;
+	return (50 * Math::RoundToInt(pow(2, level - 1))) - 50;
+
+	// For example, if you are level 2, you have spent:
+	//   (50 * 2^1) - 50
+	// = 100 - 50
+	// = 50
+
+	// Or if you are level 4, you have spent:
+	//   (50 * 2^3) - 50
+	// = (50 * 8) - 50
+	// = 400 - 50
+	// = 350
+	// = 50 + 100 + 200
+}
+
 void gain_xp_for (Creature::Type creature_type)
 {
 	float const difficulty = Gingerbread::read(creature_type).difficulty;

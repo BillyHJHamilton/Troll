@@ -11,17 +11,6 @@ To Do:
 - Creatures
  - Size category?  Could effect evasion.
   - Or just have an evasiveness category, or evasiveness traits...
- - Pack spawning
- - New creatures:
-  - Doxy, Cornish Pixe, Imp, Red Cap, Ghoul
-  - Clabbert, Giant Purple Toad, Bundimun
-  - Spider, Dugbog, Salamander, Blast-Ended Skrewt
-  - Monster Book of Monsters, Peeves, Flying Books, Charmed Armour
-  - Ven. Ten., Spikey Bush, Horklump, Bowtruckle
-  - Mountain Troll
-  - Double Ended Newt
-  - Heliopath, Nargles
-  - Egg Creature (https://scifi.stackexchange.com/questions/190670/what-is-this-creature-from-harry-potter-and-the-prisoner-of-azkaban)
 
 - Damage
  - More detailed attribution of damage sources (died by falling down stairs, etc)
@@ -34,6 +23,11 @@ To Do:
  - Support "playable" characters (play as Luna, etc)
 
 - Items
+ - In principle, should show items in remembered areas (maybe greyed out).
+  - But ideally only if you SAW the item there.  (And not if it was hidden in smoke.)
+  - And consider what if someone else stole it?  Do we need to track ghost items?
+ - Beans - Maybe don't always repeat the long name?  Instead, "You have 25 beans."
+  - Could be similar for any stacking item.  (You have 4 Calming Draughts.)
  - Support some grammar functions for items (like for creatures)
  - In theory, NPCs should sometimes use items (without needing a special ability)
  - New items:
@@ -82,6 +76,11 @@ To Do:
  - They need to have a purpose.  Healing?  Hunger/Sugar?
  - Chocolate frogs (with wizard cards)
  - Other types (cauldron cakes, etc)
+
+- Target
+ - Should have a "priority" scale
+  - Swap to higher priority if current target was auto-selected.
+  - But not if player tabbed onto the current one.
 
 - Terrain
  - Furniture for cover/obstacles?
