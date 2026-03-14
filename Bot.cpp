@@ -1046,6 +1046,12 @@ float rate_spell (Creature::Handle caster, Creature::Handle target, Spell::Index
 	switch (spell)
 	{
 		// Special cases:
+
+		case Spell::Flipendo:
+			// It's the main attacking spell in the early game, so use it!
+			rating = 3.5f;
+			break;
+
 		case Spell::Accio:
 			rating = 2.0f;
 			break;
@@ -1089,8 +1095,20 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 	{
 		return true;
 	}
+
+	// Although not technically useless, don't re-apply statuses already at high levels.
+	if ((spell == Spell::Tarantallegra && target.status_severity(Status::Dancing) > 7) ||
+		(spell == Spell::LocomotorMortis && target.status_severity(Status::LegLocked) > 7) ||
+		(spell == Spell::LacarnumInflamare && target.status_severity(Status::Burning) > 7) ||
+		(spell == Spell::Rictusempra && target.status_severity(Status::Tickled) > 7) ||
+		(spell == Spell::Mimblewimble && target.status_severity(Status::TongueTied) > 7) ||
+		(spell == Spell::Impedementa && target.status_severity(Status::Impeded) > 7) ||
+		(spell == Spell::BatBogey && target.status_severity(Status::Batty) > 7) )
+	{
+		return true;
+	}
 	
-	// Finite Inc. is useless if there's no enchantment to break
+	// Finite is useless if there's no enchantment to break
 	if (spell == Spell::FiniteIncantatem)
 	{
 		if ( !caster.has_status(Status::Batty)
