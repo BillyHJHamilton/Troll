@@ -515,9 +515,9 @@ Spawn::Option choose_spawn_option(float target_difficulty)
 
 void spawn_squad(int squad_id, Vec3 start_pos)
 {
-	if (Check(Squad::is_valid_id(squad_id)))
+	if (Check(Squad::is_defined(squad_id)))
 	{
-		Squad::Data const& squad = Squad::read_data(squad_id);
+		Squad::Definition const& squad = Squad::read_definition(squad_id);
 
 		if (Debug::enabled(Debug::Map))
 		{
@@ -525,10 +525,15 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
 		}
 
-		std::vector<Creature::Type, Scratch<Creature::Type>> to_spawn;
-		std::vector<Creature::Handle, Scratch<Creature::Handle>> spawned;
-		to_spawn.reserve(10);
-		spawned.reserve(10); // should cover it most of the time
+		Creature::TypeTempList to_spawn;
+		to_spawn.reserve(Squad::c_MaxSquadSize);
+
+		int const squad_id = Squad::find_free_index();
+		if (squad_id == c_Invalid)
+		{
+			DebugBreak("Max squads reached!  Spawning aborted.");
+			return;
+		}
 
 		for (Squad::Member const& member : squad.members)
 		{
@@ -552,7 +557,7 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 			++i)
 		{
 			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
-			spawned.push_back(creature);
+			creature.set_squad(squad_id);
 			remove_spawn_position(spawn_positions[i].xy());
 
 			if (Debug::enabled(Debug::Map))
@@ -561,8 +566,6 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 					creature.long_name(), creature.pos().x, creature.pos().y,
 					Gingerbread::read(creature.type()).difficulty);
 			}
-
-			// Todo: Assign leader, etc.
 		}
 	}
 

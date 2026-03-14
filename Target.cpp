@@ -125,7 +125,7 @@ void cycle (int step)
 		}
 	}
 
-	std::vector<Creature::Handle> const & visible_creatures = Creature::get_visible_creatures();
+	Creature::HandleList const & visible_creatures = Creature::get_visible_creatures();
 
 	// list of possible targets, with creatures followed by features
 	std::vector<Vec3,Scratch<Vec3>> targets;

@@ -437,6 +437,9 @@
     <ClInclude Include="Squad.h">
       <Filter>Header Files\Creature</Filter>
     </ClInclude>
+    <ClInclude Include="SparseArray.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">

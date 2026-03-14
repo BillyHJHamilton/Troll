@@ -23,6 +23,7 @@
 #include "Random.h"
 #include "Serialize.h"
 #include "Spell.h"
+#include "Squad.h"
 #include "Status.h"
 #include "Target.h"
 #include "VectorUtil.h"
@@ -47,7 +48,7 @@ Grid<int> s_creature_status; // (creature, status)
 Creature::DerivedStats s_derived_stats [c_MaxCreatures];
 int s_max_creature_index;
 
-std::vector<Creature::Handle> s_visible_creatures;
+Creature::HandleList s_visible_creatures;
 std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
 
 static Creature::Instance const & read_creature_instance (Creature::Handle creature)
@@ -104,17 +105,6 @@ void clear ()
 	s_fainting_creatures.reserve(c_MaxCreatures);
 }
 
-void Creature::Instance::serialize(ISerializer& s)
-{
-	s.srz_vec3(pos);
-	s.srz_value(flags);
-	s.srz_value(spells);
-	s.srz_value(type);
-	s.srz_int(hp);
-	s.srz_int(rest_turns);
-	s.srz_item_handle(carried_item);
-}
-
 void serialize (ISerializer& s)
 {
 	s.srz_grid(s_creature_status, "s_creature_status");
@@ -122,7 +112,7 @@ void serialize (ISerializer& s)
 	s.srz_int(s_max_creature_index);
 	for (int i = 0; i < s_max_creature_index; ++i)
 	{
-		s_creatures[i].serialize(s);
+		s.srz_value(s_creatures[i]);
 
 		// Don't save/load derived stats; just regenerate them.
 		if (s.is_load())
@@ -294,6 +284,34 @@ bool Handle::has_flag (Flag flag) const
 bool Handle::ready_to_move () const
 {
 	return !has_flag(Flag::MoveDelay);
+}
+
+bool Handle::has_squad () const
+{
+	return read_creature_instance(index).squad_id != c_Invalid;
+}
+
+Creature::HandleList& Handle::squad_members () const
+{
+	assert(has_squad());
+	int const squad_id = read_creature_instance(index).squad_id;
+	return Squad::get_squad(squad_id);
+}
+
+Creature::Handle Handle::squad_leader () const
+{
+	int const squad_id = read_creature_instance(index).squad_id;
+	if (squad_id == c_Invalid)
+	{
+		return c_Invalid;
+	}
+
+	return Squad::get_squad(squad_id).at(0);
+}
+
+bool Handle::is_squad_leader () const
+{
+	return squad_leader() == *this;
 }
 
 bool Handle::has_item () const
@@ -638,6 +656,36 @@ void Handle::clear_flag (Flag flag)
 	s_creatures[index].flags.set((size_t)flag, false);
 }
 
+void Handle::set_squad (int new_squad_id)
+{
+	assert(valid());
+	int& squad_id = s_creatures[index].squad_id;
+
+	if (squad_id == new_squad_id)
+	{
+		return;
+	}
+
+	if (squad_id != c_Invalid)
+	{
+		Squad::remove_creature(squad_id, *this);
+	}
+
+	squad_id = new_squad_id;
+	Squad::add_creature(new_squad_id, *this);
+}
+
+void Handle::remove_from_squad ()
+{
+	assert(valid());
+	int& squad_id = s_creatures[index].squad_id;
+
+	if (squad_id != c_Invalid)
+	{
+		Squad::remove_creature(squad_id, *this);
+	}
+}
+
 void Handle::push_item (Item::Handle item)
 {
 	assert(valid());
@@ -906,7 +954,7 @@ void draw_visible_creatures (Draw::View const & view)
 	}
 }
 
-std::vector<Creature::Handle> const & get_visible_creatures ()
+Creature::HandleList const & get_visible_creatures ()
 {
 	return s_visible_creatures;
 }

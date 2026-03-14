@@ -2,11 +2,15 @@
 
 #include "Types.h"
 #include "BitFlag.h"
+#include "Creature.h"
 #include "Spawn.h"
 
 // Code related to spawning groups of several creatures at once (a squad).
 namespace Squad
 {
+	int constexpr c_MaxSquadSize = 10;
+	int constexpr c_MaxActiveSquads = 100;
+
 	// Squad flags
 	uint constexpr f_Repeat		= 1 << 0;
 
@@ -18,7 +22,7 @@ namespace Squad
 	};
 	using MemberList = std::vector<Member>;
 
-	struct Data
+	struct Definition
 	{
 		char const* debug_name = "Error Squad";
 		float difficulty = 0.0f;
@@ -31,10 +35,22 @@ namespace Squad
 	void clear();
 	void serialize(ISerializer& s);
 
-	int get_num();
-	bool is_valid_id(int squad_id);
-	Squad::Data const& read_data(int squad_id);
+	//---------------------------------------------------------------------------------------------
+	// Spawning squads
+
+	//int num_defined();
+	bool is_defined(int squad_id);
+	Squad::Definition const& read_definition(int squad_id);
 	bool can_spawn(int squad_id, float target_difficulty);
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 		FloatTempList& out_weights);
+
+	//---------------------------------------------------------------------------------------------
+	// Active squads
+
+	int find_free_index ();
+	Creature::HandleList& get_squad (int index);
+	void add_creature (int squad_index, Creature::Handle creature);
+	void remove_creature (int squad_index, Creature::Handle creature);
+//	int add_active_squad(Creature::HandleTempList const& handles);
 };

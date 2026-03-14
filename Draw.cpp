@@ -451,7 +451,7 @@ void print_visible_creature_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 
-	const std::vector<Creature::Handle>& visible_creatures = Creature::get_visible_creatures();
+	Creature::HandleList const& visible_creatures = Creature::get_visible_creatures();
 	for (int vci = 0; vci < visible_creatures.size(); vci++)
 	{
 		Creature::Handle ci = visible_creatures[vci];

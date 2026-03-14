@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "Item.h"
 #include "NameHash.h"
+#include "Scratch.h"
 #include "Spell.h"
 
 #include <iostream>
@@ -11,8 +12,6 @@
 // Creatures are people and other living beings in the game.
 // Most creatures are the "bad guys", but there is also a creature for the player.
 // This keeps the code simple as we can use the same functions for player and NPC.
-// Concerns that only apply to the player, like XP, will be in the Player module.
-// Concerns for AI that only apply to NPCs are in the Bot module.
 
 // Individual creatures are identified by a Creature::Handle throughout the program.
 // This can be treated as an int, but also provides an interface for that creature.
@@ -21,8 +20,14 @@
 // handle may be reused.  If necessary we can add a separate ID for each individual.
 
 // Each creature has a type (Creature::Type) enum.  Don't confuse handle with type.
-// There may be multiple creatures of the same type, though hopefully not for named
+// There may be multiple creatures of the same type, though normally not for named
 // characters like Neville or Dumbledore.
+
+// Related modules:
+//  - Player - Values that apply only to the player, like XP.
+//  - Bot - Creature behaviour and AI related data
+//  - Gingerbread - Invariant data about a creature type
+//  - Squad - Groups of creatures spawned together
 
 enum class Gender : byte
 {
@@ -88,6 +93,9 @@ namespace Creature
 		Count
 	};
 
+	using TypeList = std::vector<Creature::Type>;
+	using TypeTempList = std::vector<Creature::Type, Scratch<Creature::Type>>;
+
 	// Creature Tags represent a creature type's special traits.
 	// They are named like Category_Tag.  Mainly used for Fantastic Beasts.
 	enum class Tag : int
@@ -123,11 +131,10 @@ namespace Creature
 		FlagBitset flags;
 		Spell::Bitset spells;
 		Type type = Creature::None;
+		int squad_id = c_Invalid;
 		int hp = 0;
 		int rest_turns = 0; // counter for healing by resting
 		Item::Handle carried_item = c_Invalid;
-
-		void serialize(ISerializer& s);
 	};
 
 	struct DerivedStats
@@ -139,6 +146,9 @@ namespace Creature
 		int shield_strength = 0;
 		int walk_failure = 0;
 	};
+
+	using HandleList = std::vector<Creature::Handle>;
+	using HandleTempList = std::vector<Creature::Handle, Scratch<Creature::Handle>>;
 
 	// Creature::Handle
 	// This is simply a glorified array index that automatically forwards
@@ -187,6 +197,10 @@ namespace Creature
 		bool has_tag (Tag tag) const;
 		bool has_flag (Flag flag) const;
 		bool ready_to_move () const;
+		bool has_squad () const;
+		Creature::HandleList& squad_members () const;
+		Creature::Handle squad_leader () const; // by Avalon Hill
+		bool is_squad_leader () const;
 		bool has_item () const;
 		Item::Handle peek_item () const;
 		bool is_immune (Damage::Type damage_type) const;
@@ -218,6 +232,8 @@ namespace Creature
 		void learn_spell (Spell::Index spell);
 		void set_flag (Flag flag);
 		void clear_flag (Flag flag);
+		void set_squad (int new_squad_id);
+		void remove_from_squad ();
 		void push_item (Item::Handle item);
 		Item::Handle pop_item ();
 		void drop_all_items ();
@@ -260,6 +276,6 @@ namespace Creature
 	void update_visible_creatures ();
 	void draw_creature (Creature::Handle creature_index, Draw::View const & view);
 	void draw_visible_creatures (Draw::View const & view);
-	std::vector<Creature::Handle> const & get_visible_creatures ();
+	Creature::HandleList const & get_visible_creatures ();
 	bool has_visible_enemy ();
 };
