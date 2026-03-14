@@ -107,6 +107,14 @@ int chessboard_distance(Vec2 p0, Vec2 p1)
 //------------------------------------------------------------------------------
 // Vec3
 
+Vec3 Vec3::adjusted(Axis a, int n) const
+{
+	assert(a >= 0 && a <= 2);
+	Vec3 copy = *this;
+	copy[a] += n;
+	return copy;
+}
+
 inline Vec3 componentwise_min(Vec3 a, Vec3 b)
 {
 	return { std::min(a.x,b.x), std::min(a.y, b.y), std::min(a.z, b.z) };

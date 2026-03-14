@@ -237,7 +237,7 @@ void update()
 	bool did_something = false;
 	while (!did_something)
 	{
-		if (terminal_has_input())
+		if (terminal_has_input() || !Player::is_automoving())
 		{
 			Input::Result result = Input::handle_next_input();
 			if (result == Input::Result::Skipped)
@@ -251,7 +251,7 @@ void update()
 			}
 		}
 
-		if (!did_something)
+		if (Player::is_automoving() && !did_something)
 		{
 			Player::dispatch_automove();
 			did_something = true;

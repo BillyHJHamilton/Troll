@@ -215,6 +215,7 @@ struct Vec3
 	const int& operator[] (unsigned int n) const { return data[n]; }
 
 	Vec2 xy() const { return { x,y }; }
+	Vec3 adjusted(Axis a, int n) const;
 };
 
 inline bool operator== (Vec3 lhs, Vec3 rhs)

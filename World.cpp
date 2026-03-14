@@ -373,31 +373,48 @@ void World::add_stairs_visibility(Vec3 viewer)
 
 void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 {
-	int constexpr c_min_dist = 3;
-	int constexpr c_max_dist = 7;
-	for (int r = c_min_dist; r <= c_max_dist; ++r)
+	int constexpr c_MinDist = 3;
+	int constexpr c_MaxDist = 7;
+	for (int r = c_MinDist; r <= c_MaxDist; ++r)
 	{
-		Vec3 open_pos = viewer;
-		open_pos[a] += (r * sign);
+		Vec3 const open_pos = viewer.adjusted(a, r*sign);
 
 		if (is_visible(open_pos))
 		{
-			Axis other_axis = get_other_axis(a);
-			Vec3 pos1 = open_pos;
-			Vec3 pos2 = open_pos;
-			pos1[other_axis] += 1;
-			pos2[other_axis] -= 1;
+			Axis const other_axis = get_other_axis(a);
+			Vec3 const p1 = open_pos.adjusted(other_axis, 1);
+			Vec3 const p2 = open_pos.adjusted(other_axis, 2);
+			Vec3 const m1 = open_pos.adjusted(other_axis, -1);
+			Vec3 const m2 = open_pos.adjusted(other_axis, -2);
 
-			if (!Terrain::permits_sight(get_terrain(pos1)) &&
-				Terrain::is_solid(get_terrain(pos1)))
+			if (is_visible(p1))
 			{
-				set_visibility(pos1, Visibility::Visible);
+				if (r >= 5 &&
+					is_visible(p2.adjusted(a, -1*sign)) &&
+					!permits_sight(p2) &&
+					is_solid(p2))
+				{
+					set_visibility(p2, Visibility::Visible);
+				}
 			}
-
-			if (!Terrain::permits_sight(get_terrain(pos2)) &&
-				Terrain::is_solid(get_terrain(pos2)))
+			else if (!permits_sight(p1) && is_solid(p1))
 			{
-				set_visibility(pos2, Visibility::Visible);
+				set_visibility(p1, Visibility::Visible);
+			}
+			
+			if (is_visible(m1))
+			{
+				if (r >= 5 &&
+					is_visible(m2.adjusted(a, -1*sign)) &&
+					!permits_sight(m2) &&
+					is_solid(m2))
+				{
+					set_visibility(m2, Visibility::Visible);
+				}
+			}
+			else if (!permits_sight(m1) && is_solid(m1))
+			{
+				set_visibility(m1, Visibility::Visible);
 			}
 		}
 	}
