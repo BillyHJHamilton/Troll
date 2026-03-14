@@ -38,6 +38,8 @@ static int constexpr c_MaxPathCost = 25;
 // For performance reasons, and so they don't change directions wildly.
 static int constexpr c_PathfindCooldown = 5;
 
+static int constexpr c_CohesionDist = 4;
+
 static std::vector<Brain> s_brains;
 
 // Data used by bot during a single turn.
@@ -59,14 +61,19 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void bot_regroup(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 bool is_aware(Creature::Handle const creature);
+bool is_separated_from_leader(Creature::Handle const creature);
+bool is_in_choke_point(Creature::Handle const creature);
+
 bool try_move (Creature::Handle creature, Vec2 relative_move);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 bool try_sidestep(Creature::Handle creature, int target_line);
+
 bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
@@ -241,6 +248,10 @@ void do_turn (Creature::Handle creature)
 			bot_blunder(creature, brain, thoughts);
 			break;
 
+		case Bot::Regroup:
+			bot_regroup(creature, brain, thoughts);
+			break;
+
 		case Bot::Chase:
 			bot_chase(creature, brain, thoughts);
 			break;
@@ -324,6 +335,18 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 			}
 		}
 
+		else if (brain.state == State::Regroup)
+		{
+			if (!creature.has_squad() || creature.is_squad_leader())
+			{
+				brain.state = State::Rest;
+			}
+			if (brain.move_stack.empty() && !is_separated_from_leader(creature))
+			{
+				brain.state = State::Rest;
+			}
+		}
+
 		else if (brain.state == State::Blunder)
 		{
 			if (brain.patience <= 0 &&
@@ -335,6 +358,16 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 
 		else if (brain.state == State::Rest)
 		{
+			if (Random::one_in(5) && is_separated_from_leader(creature))
+			{
+				brain.state = State::Regroup;
+			}
+
+			if (Random::one_in(5) && is_in_choke_point(creature))
+			{
+				brain.state = State::Blunder;
+			}
+
 			if (Random::one_in(40) ||
 				(creature.has_tag(Creature::Tag::Bot_Blunder) && Random::one_in(5)))
 			{
@@ -374,6 +407,81 @@ void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		brain.patience = 0;
 	}
 }
+
+void bot_regroup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	if (!creature.has_squad() || creature.is_squad_leader())
+	{
+		creature.rest_step();
+		return;
+	}
+
+	Vec3 const pos = creature.pos();
+	brain.target_pos = creature.squad_leader().pos();
+	bool moved = false;
+
+	if (pos.z == brain.target_pos.z
+		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) <= 2)
+	{
+		brain.move_stack.clear();
+		moved = try_move_towards(creature, brain.target_pos);
+
+		if (!moved)
+		{
+			creature.rest_step();
+			moved = true;
+		}
+	}
+
+	if (!moved && !brain.move_stack.empty())
+	{
+		// We have a plan.  See if we can still follow it.
+		moved = try_follow_path(creature, brain.move_stack);
+	}
+
+	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
+	{
+		// Try to formulate a new plan.
+		Pathfind::AstarParam param
+		{
+			.max_cost = c_MaxPathCost,
+			.ignore_creatures = false
+		};
+		Pathfind::astar(pos, brain.target_pos, param, brain.move_stack);
+
+		// Cooldown before pathfinding again.
+		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;
+
+		if (!brain.move_stack.empty())
+		{
+			if (Debug::enabled(Debug::Bot))
+			{
+				std::cout << std::format("{} - Found path with length {}.\n",
+					creature.short_name(), brain.move_stack.size());
+			}
+
+			moved = try_follow_path(creature, brain.move_stack);
+		}
+		else
+		{
+			if (Debug::enabled(Debug::Bot))
+			{
+				std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
+			}
+		}
+	}
+
+	if (!moved)
+	{
+		moved = try_move_towards(creature, brain.target_pos);
+	}
+
+	if (!moved)
+	{
+		creature.rest_step();
+	}
+}
+
 
 void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
@@ -520,6 +628,38 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 bool is_aware(Creature::Handle const creature)
 {
 	return s_brains[creature].awareness > 0;
+}
+
+bool is_separated_from_leader(Creature::Handle const creature)
+{
+	if (!creature.has_squad() || creature.is_squad_leader())
+	{
+		return false;
+	}
+
+	Vec3 const pos = creature.pos();
+	Vec3 const leader_pos = creature.squad_leader().pos();
+
+	return leader_pos.z != pos.z || !within_range(pos, leader_pos, c_CohesionDist);
+}
+
+bool is_in_choke_point (Creature::Handle creature)
+{
+	Vec3 const pos = creature.pos();
+
+	for (CompassItr c(false); *c < c_CompassWest; ++c)
+	{
+		Vec2 const dir = c_Compass[c];
+		Vec2 const opp = -1 * dir;
+
+		if (World::read().is_solid(pos + dir.xy0())
+			&& World::read().is_solid(pos + opp.xy0()))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // Move but not if it's hazardous.

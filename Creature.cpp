@@ -685,6 +685,7 @@ void Handle::remove_from_squad ()
 	{
 		Squad::remove_creature(squad_id, *this);
 	}
+	squad_id = c_Invalid;
 }
 
 void Handle::push_item (Item::Handle item)

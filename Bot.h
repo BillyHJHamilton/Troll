@@ -12,6 +12,7 @@ namespace Bot
 	{
 		Rest,
 		Blunder,
+		Regroup,
 		Chase,
 		Fight,
 	};
