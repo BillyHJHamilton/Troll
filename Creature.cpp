@@ -355,6 +355,12 @@ bool Handle::resists (Damage::Type damage_type) const
 	return Gingerbread::read_resistance(type(), damage_type) < 1.0f;
 }
 
+bool Handle::is_friend (Creature::Handle other_creature) const
+{
+	// For now, this is pretty simple:
+	return is_player() == other_creature.is_player();
+}
+
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Complex accessor functions
 
@@ -642,12 +648,14 @@ void Handle::destroy ()
 void Handle::reset_spells ()
 {
 	s_creatures[index].spells = Gingerbread::read_spells(type());
+	Bot::notify_attacks_changed(*this);
 }
 
 void Handle::learn_spell (Spell::Index spell)
 {
 	assert(Spell::is_valid_index(spell));
 	s_creatures[index].spells.set((int)spell);
+	Bot::notify_attacks_changed(*this);
 }
 
 void Handle::set_flag (Flag flag)
@@ -846,7 +854,7 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 	new_creature.cure_all();
 	new_creature.update_derived_stats();
 
-	Bot::init_brain(new_creature);
+	Bot::reset_brain(new_creature);
 	Gingerbread::claim_identity(new_creature);
 
 	Item::Handle item = Gingerbread::make_item_for_creature(type);

@@ -63,7 +63,6 @@ void init()
 
 	Ability::init();
 	BertieBotts::init();
-	Bot::init();
 	Creature::init();
 	Debug::init();
 	Draw::init();

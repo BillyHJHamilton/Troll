@@ -146,6 +146,13 @@ TargetType get_target_type (Spell::Index spell_index)
 	return s_spell_list[spell_index].target_type;
 }
 
+bool has_accuracy (Spell::Index spell_index)
+{
+	assert(is_valid_index(spell_index));
+	return s_spell_list.at(spell_index).accuracy > 0
+		&& s_spell_list.at(spell_index).accuracy < 100;
+}
+
 int get_accuracy (Spell::Index spell_index)
 {
 	assert(is_valid_index(spell_index));
@@ -156,6 +163,26 @@ int get_range(Spell::Index spell_index)
 {
 	assert(is_valid_index(spell_index));
 	return s_spell_list[spell_index].range;
+}
+
+bool in_range (Spell::Index index, Vec3 origin, Vec3 target)
+{
+	assert(is_valid_index(index));
+
+	switch (get_target_type(index))
+	{
+		case TargetType::Self:
+			return true;
+
+		case TargetType::Creature:
+		case TargetType::Sight:
+		case TargetType::Tile:
+			return within_range(origin.xy(), target.xy(), get_range(index));
+
+		default:
+			DebugBreak();
+			return false;
+	}
 }
 
 EffectFunc get_effect_func (Spell::Index spell_index)

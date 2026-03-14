@@ -113,8 +113,10 @@ namespace Spell
 	Damage::Type damage_type (Spell::Index spell_index);
 	int get_power (Spell::Index spell_index, Creature::Handle caster);
 	TargetType get_target_type (Spell::Index spell_index);
+	bool has_accuracy (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);
 	int get_range (Spell::Index spell_index);
+	bool in_range (Spell::Index index, Vec3 origin, Vec3 target);
 	EffectFunc get_effect_func (Spell::Index spell_index);
 	Miscast::Category get_miscast_category (Spell::Index spell_index);
 	Spell::Index get_index_by_name (std::string const & spell_name);

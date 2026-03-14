@@ -21,6 +21,7 @@
 #include "VectorUtil.h"
 #include "World.h"
 
+#include <array>
 #include <format>
 
 namespace Bot
@@ -40,7 +41,10 @@ static int constexpr c_PathfindCooldown = 5;
 
 static int constexpr c_CohesionDist = 4;
 
-static std::vector<Brain> s_brains;
+using MoveStack = std::vector<Vec3>;
+
+static std::array<Brain, Creature::c_MaxCreatures> s_brains;
+static std::array<MoveStack, Creature::c_MaxCreatures> s_move_stacks;
 
 // Data used by bot during a single turn.
 struct Thoughts
@@ -48,17 +52,37 @@ struct Thoughts
 	bool target_visible = false;
 	int target_line = c_Invalid;
 
+	bool clear_line_of_fire = false;
+
 	// Set to true if we try to use an ability from out of range.
 	bool want_to_approach = false;
 
 	bool has_taunted = false;
 };
 
+struct AttackOption
+{
+	enum Type : byte
+	{
+		None,
+		Spell,
+		Ability
+	};
+
+	Type type = None;
+	int index = c_Invalid;
+};
+using AttackTempList = std::vector<AttackOption, Scratch<AttackOption>>;
+
 // ------------------------------------------------------------------------------------------------
 // Helper function declarations
 
+Brain& get_brain(Creature::Handle handle);
+std::vector<Vec3>& get_move_stack(Creature::Handle handle);
+
 char const* state_name(Bot::State state);
 
+void update_attack_ranges(Creature::Handle creature, Brain& brain);
 void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void enter_state(Creature::Handle creature, Brain& brain, Bot::State state);
@@ -71,6 +95,7 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 bool is_aware(Creature::Handle const creature);
 bool is_separated_from_leader(Creature::Handle const creature);
+bool has_clear_line_of_fire(Creature::Handle const creature, Brain const& brain, Thoughts const& thoughts);
 
 bool try_move (Creature::Handle creature, Vec2 relative_move);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
@@ -78,17 +103,16 @@ bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 bool try_sidestep(Creature::Handle creature, int target_line);
 bool try_go_to_target_pos (Creature::Handle creature, Brain& brain);
 
-bool try_use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
-bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
-Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target);
-Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
-	Spell::TempList const & spell_list);
-float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
+bool try_attack(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+AttackOption choose_attack(Creature::Handle creature, Creature::Handle target);
+
+void use_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts, Spell::Index spell);
+float rate_spell (Creature::Handle creature, Creature::Handle target, Spell::Index spell);
 bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target);
 Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 	int line_id, int spell_range);
 
-Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target);
+void use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts, Ability::Index ability);
 float rate_ability (Creature::Handle creature, Creature::Handle target, Ability::Index ability);
 
 void taunt_greeting(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
@@ -100,58 +124,59 @@ void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoug
 // ------------------------------------------------------------------------------------------------
 // Interface functions
 
-void init()
-{
-	s_brains.reserve(Creature::c_MaxCreatures);
-}
-
 void clear()
 {
-	s_brains.clear();
-}
+	for (Brain& brain : s_brains)
+	{
+		brain = Brain{};
+	}
 
-void Brain::serialize(ISerializer& s)
-{
-	s.srz_vector(move_stack, "brain.move_stack");
-	s.srz_vec3(target_pos);
-	s.srz_value(target);
-	s.srz_int(awareness);
-	s.srz_int(patience);
-	s.srz_int(pathfind_ready);
-	s.srz_int(last_taunt);
-	s.srz_value(state);
+	for (std::vector<Vec3>& row : s_move_stacks)
+	{
+		row.clear();
+	}
 }
 
 void serialize(ISerializer& s)
 {
-	s.srz_vector_advanced(s_brains, "brains");
+	int num_brains = Creature::c_MaxCreatures;
+	s.srz_int(num_brains);
+
+	if (num_brains != Creature::c_MaxCreatures)
+	{
+		DebugBreak("Array size mismatch!");
+		return;
+	}
+
+	s.srz_array_data(s_brains.data(), Creature::c_MaxCreatures);
+
+	for (int i = 0; i < Creature::c_MaxCreatures; ++i)
+	{
+		s.srz_vector(s_move_stacks[i], "move stack");
+	}
 }
 
-void init_brain(Creature::Handle handle)
+void reset_brain(Creature::Handle handle)
 {
-	// Technically we leave an empty brain for the player.
+	// Technically we leave a brain for the player.
 	// It's not worth the confusingness of offsetting the indices.
+	// We even use the move stack a little for auto-move.
 
-	if (Util::IsValidIndex(s_brains, handle))
-	{
-		s_brains[handle] = Brain{}; // TODO I fear this reallocates the move_stack vector
-	}
-	else
-	{
-		while (s_brains.size() < handle + 1)
-		{
-			s_brains.emplace_back();
-		}
-	}
+	s_brains.at((int)handle) = Brain{};
+	s_move_stacks.at((int)handle).clear();
 }
+
+// ------------------------------------------------------------------------------------------------
+// Essential access functions
 
 Brain& get_brain(Creature::Handle handle)
 {
-	if (!Util::IsValidIndex(s_brains, handle))
-	{
-		init_brain(handle);
-	}
-	return s_brains[handle];
+	return s_brains.at(handle);
+}
+
+std::vector<Vec3>& get_move_stack(Creature::Handle handle)
+{
+	return s_move_stacks.at(handle);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -159,7 +184,7 @@ Brain& get_brain(Creature::Handle handle)
 
 bool try_player_pathfind(Vec3 goal)
 {
-	Brain& brain = get_brain(0);
+	MoveStack& move_stack = get_move_stack(0);
 
 	Pathfind::AstarParam param
 	{
@@ -167,14 +192,14 @@ bool try_player_pathfind(Vec3 goal)
 		.ignore_creatures = true,
 		.allow_unexplored = false,
 	};
-	Pathfind::astar(Player::pos(), goal, param, brain.move_stack);
+	Pathfind::astar(Player::pos(), goal, param, move_stack);
 
-	return !brain.move_stack.empty();
+	return !move_stack.empty();
 }
 
 bool try_player_collect()
 {
-	Brain& brain = get_brain(0);
+	MoveStack& move_stack = get_move_stack(0);
 
 	Pathfind::ExploreParam param
 	{
@@ -182,14 +207,14 @@ bool try_player_collect()
 		.allow_stairs = false,
 		.goal = Pathfind::ExploreParam::GoalType::Item,
 	};
-	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
+	Pathfind::into_darkness(Player::pos(), param, move_stack);
 
-	return !brain.move_stack.empty();
+	return !move_stack.empty();
 }
 
 bool try_player_explore()
 {
-	Brain& brain = get_brain(0);
+	MoveStack& move_stack = get_move_stack(0);
 
 	Pathfind::ExploreParam param
 	{
@@ -197,18 +222,19 @@ bool try_player_explore()
 		.allow_stairs = false,
 		.goal = Pathfind::ExploreParam::GoalType::Darkness,
 	};
-	Pathfind::into_darkness(Player::pos(), param, brain.move_stack);
+	Pathfind::into_darkness(Player::pos(), param, move_stack);
 
-	return !brain.move_stack.empty();
+	return !move_stack.empty();
 }
 
 
 Vec2 pop_player_path()
 {
-	Brain& brain = get_brain(0);
-	if (!brain.move_stack.empty())
+	MoveStack& move_stack = get_move_stack(0);
+
+	if (!move_stack.empty())
 	{
-		Vec3 const next_pos = Util::PopBack(brain.move_stack);
+		Vec3 const next_pos = Util::PopBack(move_stack);
 		Vec2 const next_move = next_pos.xy() - Player::pos().xy();
 		if (next_move.x >= -1 && next_move.x <= 1 && next_move.y >= -1 && next_move.y <= 1)
 		{
@@ -220,14 +246,14 @@ Vec2 pop_player_path()
 
 bool has_player_path()
 {
-	Brain& brain = get_brain(0);
-	return !brain.move_stack.empty();
+	MoveStack& move_stack = get_move_stack(0);
+	return !move_stack.empty();
 }
 
 void clear_player_path()
 {
-	Brain& brain = get_brain(0);
-	brain.move_stack.clear();
+	MoveStack& move_stack = get_move_stack(0);
+	move_stack.clear();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -237,6 +263,8 @@ void do_turn (Creature::Handle creature)
 {
 	Brain& brain = s_brains[creature];
 	Thoughts thoughts {};
+
+	update_attack_ranges(creature, brain);
 
 	check_for_target(creature, brain, thoughts);
 
@@ -303,15 +331,14 @@ void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 		default:
 			DebugBreak("Missing state in notify_investigate");
 	}
-	
+}
 
-	if (brain.state == State::Rest || brain.state == State::Blunder)
-	{
-	}
-	else if (brain.state == State::Chase)
-	{
-		brain.awareness = c_MaxAwareness;
-	}
+void notify_attacks_changed(Creature::Handle creature)
+{
+	Brain& brain = s_brains[creature];
+	brain.any_attack_range = c_Invalid;
+	brain.all_attack_range = c_Invalid;
+	brain.dmg_attack_range = c_Invalid;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -334,6 +361,63 @@ char const* state_name(Bot::State state)
 	}
 }
 
+void update_attack_ranges(Creature::Handle creature, Brain& brain)
+{
+	if (brain.any_attack_range == c_Invalid ||
+		brain.all_attack_range == c_Invalid ||
+		brain.dmg_attack_range == c_Invalid)
+	{
+		int most_damage = 0;
+
+		brain.all_attack_range = creature.vision();
+		brain.dmg_attack_range = -1;
+		brain.any_attack_range = -1;
+
+		for (Spell::Index spell : creature.spells_known())
+		{
+			if (Spell::get_target_type(spell) != Spell::TargetType::Self)
+			{
+				int const range = Spell::get_range(spell);
+				brain.all_attack_range = std::min(range, brain.all_attack_range);
+				brain.any_attack_range = std::max(range, brain.any_attack_range);
+
+				int const dmg = Spell::get_damage(spell, creature);
+				if (dmg >= most_damage)
+				{
+					brain.dmg_attack_range = std::max(range, brain.dmg_attack_range);
+				}
+			}
+		}
+
+		for (Ability::Index ability : creature.ability_list())
+		{
+			Ability::TargetType const target_type = Ability::target_type(ability);
+			if (target_type != Ability::TargetType::Self)
+			{
+				int const range = Ability::get_range(ability); // TODO This isn't quite right for melee.
+				brain.all_attack_range = std::min(range, brain.all_attack_range);
+				brain.any_attack_range = std::max(range, brain.any_attack_range);
+
+				int const dmg = Ability::get_damage(ability);
+				if (dmg >= most_damage)
+				{
+					brain.dmg_attack_range = std::max(range, brain.dmg_attack_range);
+				}
+			}
+		}
+
+		// Cases where we found NO attacks - don't bother trying to get close!
+		if (brain.dmg_attack_range == -1)
+		{
+			brain.dmg_attack_range = creature.vision();
+		}
+		if (brain.any_attack_range == -1)
+		{
+			brain.any_attack_range = creature.vision();
+		}
+	}
+}
+
 void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
 	// Todo: Could support other targets in future.
@@ -346,6 +430,7 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 	if (thoughts.target_visible)
 	{
 		brain.target_pos = brain.target.pos();
+		thoughts.clear_line_of_fire = has_clear_line_of_fire(creature, brain, thoughts);
 	}
 }
 
@@ -384,7 +469,7 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 
 				enter_state(creature, brain, State::Blunder);
 				brain.patience = 0;
-				brain.move_stack.clear();
+				get_move_stack(creature).clear();
 			}
 		}
 
@@ -394,7 +479,7 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 			{
 				enter_state(creature, brain, State::Blunder);
 				brain.patience = 0;
-				brain.move_stack.clear();
+				get_move_stack(creature).clear();
 			}
 		}
 
@@ -404,7 +489,8 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 			{
 				enter_state(creature, brain, State::Rest);
 			}
-			if (brain.move_stack.empty() && !is_separated_from_leader(creature))
+			if (get_move_stack(creature).empty() &&
+				!is_separated_from_leader(creature))
 			{
 				enter_state(creature, brain, State::Rest);
 			}
@@ -501,7 +587,7 @@ void bot_regroup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	if (pos.z == brain.target_pos.z
 		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) <= 2)
 	{
-		brain.move_stack.clear();
+		get_move_stack(creature).clear();
 		creature.rest_step();
 		moved = true;
 	}
@@ -547,7 +633,7 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 	if (pos == brain.target_pos)
 	{
-		brain.move_stack.clear();
+		get_move_stack(creature).clear();
 
 		if (brain.target.valid())
 		{
@@ -571,6 +657,21 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	// Notify squadmates over tactical radio.
+	if (creature.has_squad())
+	{
+		Creature::HandleList const& squad_members = creature.squad_members();
+		for (Creature::Handle const& ally : squad_members)
+		{
+			if (ally == creature)
+			{
+				continue;
+			}
+
+			notify_investigate(ally, brain.target_pos);
+		}
+	}
+
 	if (!is_aware(creature))
 	{
 		// Spend a turn noticing the player.
@@ -582,27 +683,6 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
 		}
 
-		// Notify squadmates (over MultiBand Intra-Team Radio, perhaps).
-		if (creature.has_squad())
-		{
-			if (Debug::enabled(Debug::Bot))
-			{
-				std::cout << std::format("{} - signalling to allies.\n",
-					creature.short_name());
-			}
-
-			Creature::HandleList const& squad_members = creature.squad_members();
-			for (Creature::Handle const& ally : squad_members)
-			{
-				if (ally == creature)
-				{
-					continue;
-				}
-
-				notify_investigate(ally, brain.target_pos);
-			}
-		}
-
 		return;
 	}
 	
@@ -610,40 +690,35 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	taunt_followup(creature, brain, thoughts);
 	taunt_fight(creature, brain, thoughts);
 
-	bool tried_spell = false;
-	bool tried_ability = false;
-
-	int const num_spells = creature.num_spells();
-	int const num_abilities = creature.num_abilities();
-
 	bool done = false;
 
-	// Chance to try ability before spell.  If not, we'll try again after.
-	if (num_abilities > 0 &&
-		Random::in_range(1,num_spells + num_abilities) > num_spells)
-	{
-		done = try_use_ability(creature, brain, thoughts);
-	}
+	bool const any_range = within_range(creature.pos(), brain.target_pos, brain.any_attack_range);
+	bool const dmg_range = within_range(creature.pos(), brain.target_pos, brain.dmg_attack_range);
+	bool const all_range = within_range(creature.pos(), brain.target_pos, brain.all_attack_range);
 
-	if (!done && num_spells > 0 && !thoughts.want_to_approach)
-	{
-		done = try_use_spell(creature, brain, thoughts);
-	}
+	bool const want_to_approach = !any_range ||
+		(Random::coinflip() && !dmg_range) ||
+		(Random::coinflip() && !all_range);
 
-	if (!done && num_abilities > 0 && !thoughts.want_to_approach)
+	if (want_to_approach)
 	{
-		done = try_use_ability(creature, brain, thoughts);
-	}
-
-	if (!done && creature.has_tag(Creature::Tag::Bot_Sidestep) && !thoughts.want_to_approach)
-	{
-		done = try_sidestep(creature, thoughts.target_line);
+		done = try_move_towards(creature, Player::pos());
 	}
 
 	if (!done)
 	{
-		done = try_move_towards(creature, Player::pos());
+		done = try_attack(creature, brain, thoughts);
 	}
+
+	if (!done && creature.has_tag(Creature::Tag::Bot_Sidestep))
+	{
+		done = try_sidestep(creature, thoughts.target_line);
+	}
+
+	//if (!done)
+	//{
+	//	done = try_move_towards(creature, Player::pos());
+	//}
 
 	if (!done)
 	{
@@ -670,6 +745,35 @@ bool is_separated_from_leader(Creature::Handle const creature)
 	Vec3 const leader_pos = creature.squad_leader().pos();
 
 	return leader_pos.z != pos.z || !within_range(pos, leader_pos, c_CohesionDist);
+}
+
+bool has_clear_line_of_fire(Creature::Handle const creature, Brain const& brain,
+	Thoughts const& thoughts)
+{
+	if (!thoughts.target_visible || thoughts.target_line == c_Invalid)
+	{
+		return false;
+	}
+	else if (thoughts.target_line == LineCache::c_StairsLine)
+	{
+		return true;
+	}
+
+	LineCache::Itr3D itr(creature.pos(), thoughts.target_line);
+
+	for (++itr; // skip start position
+		itr && *itr != brain.target_pos;
+		++itr)
+	{
+		Creature::Handle creature_in_path = Creature::creature_at_pos(*itr);
+		if (creature_in_path.valid() &&
+			creature.is_friend(creature_in_path))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 // Move but not if it's hazardous.
@@ -730,113 +834,7 @@ bool try_move_towards(Creature::Handle creature, Vec3 dest)
 	return moved;
 }
 
-bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
-{
-	Vec3 const pos = creature.pos();
-	bool moved = false;
 
-	if (pos.z == brain.target_pos.z
-		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) == 1)
-	{
-		// Only one square away, you can do it!
-		moved = try_move_towards(creature, brain.target_pos);
-	}
-
-	if (!moved && !brain.move_stack.empty())
-	{
-		// We have a plan.  See if we can still follow it.
-		moved = try_follow_path(creature, brain.move_stack);
-	}
-
-	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
-	{
-		// Try to formulate a new plan.
-		Pathfind::AstarParam param
-		{
-			.max_cost = c_MaxPathCost,
-			.ignore_creatures = false
-		};
-		Pathfind::astar(pos, brain.target_pos, param, brain.move_stack);
-
-		// Cooldown before pathfinding again.
-		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;
-
-		if (!brain.move_stack.empty())
-		{
-			if (Debug::enabled(Debug::Bot))
-			{
-				std::cout << std::format("{} - Found path with length {}.\n",
-					creature.short_name(), brain.move_stack.size());
-			}
-
-			moved = try_follow_path(creature, brain.move_stack);
-		}
-		else
-		{
-			if (Debug::enabled(Debug::Bot))
-			{
-				std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
-			}
-		}
-	}
-
-	if (!moved)
-	{
-		moved = try_move_towards(creature, brain.target_pos);
-	}
-
-	return moved;
-}
-
-bool try_use_spell (Creature::Handle creature, Brain& brain, Thoughts& thoughts)
-{
-	assert(brain.target.valid());
-	if (creature.num_spells() > 0)
-	{
-		Spell::Index spell = choose_spell(creature, brain.target);
-		if (Spell::get_target_type(spell) == Spell::TargetType::Self)
-		{
-			Action::try_cast_spell(spell, creature, creature.pos(), c_Invalid);
-			return true;
-		}
-		else if (spell == Spell::Fumos)
-		{
-			Vec3 aim_pos = aim_halfway_between(creature, brain.target, thoughts.target_line,
-				Spell::get_range(spell));
-			int const aim_line = (aim_pos == creature.pos()) ? c_Invalid : thoughts.target_line;
-			Action::try_cast_spell(spell, creature, aim_pos, aim_line);
-			return true;
-		}
-		else if (within_range(creature.pos(), brain.target_pos, Spell::get_range(spell)))
-		{
-			taunt_attack_spell(creature, brain, thoughts, spell);
-			Action::try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
-			return true;
-		}
-		else
-		{
-			thoughts.want_to_approach = true;
-			return false;
-		}
-	}
-	return false;
-}
-
-bool try_use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
-{
-	assert(brain.target.valid());
-	if (creature.num_abilities() > 0)
-	{
-		Ability::Index ability = choose_ability(creature, brain.target);
-		if (ability != Ability::None &&
-			Ability::in_range(ability, creature.pos(), Player::pos()))
-		{
-			Action::try_use_ability(ability, creature, Player::pos(), thoughts.target_line);
-			return true;
-		}
-	}
-	return false;
-}
 
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack)
 {
@@ -882,122 +880,208 @@ bool try_sidestep(Creature::Handle creature, int target_line)
 	return moved;
 }
 
-Spell::Index choose_spell (Creature::Handle caster, Creature::Handle target)
+// Try pathfinding if possible, or otherwise just move towards.
+bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
 {
-	Spell::Index spell_chosen = Spell::None;
-	Spell::TempList spell_list = caster.spells_known();
+	MoveStack& move_stack = get_move_stack(creature);
 
-	// 1/3 chance of doing attack with best predicted damage
-	if (Random::one_in(3))
+	Vec3 const pos = creature.pos();
+	bool moved = false;
+
+	if (pos.z == brain.target_pos.z
+		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) == 1)
 	{
-		spell_chosen = highest_predicted_damage_spell(caster, target, spell_list);
-		if (spell_chosen != Spell::None)
+		// Only one square away, you can do it!
+		moved = try_move_towards(creature, brain.target_pos);
+	}
+
+	if (!moved && !move_stack.empty())
+	{
+		// We have a plan.  See if we can still follow it.
+		moved = try_follow_path(creature, move_stack);
+	}
+
+	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
+	{
+		// Try to formulate a new plan.
+		Pathfind::AstarParam param
+		{
+			.max_cost = c_MaxPathCost,
+			.ignore_creatures = false
+		};
+		Pathfind::astar(pos, brain.target_pos, param, move_stack);
+
+		// Cooldown before pathfinding again.
+		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;
+
+		if (!move_stack.empty())
 		{
 			if (Debug::enabled(Debug::Bot))
 			{
-				std::cout << std::format("{} using highest output spell = {}\n",
-					caster.short_name(), Spell::get_name(spell_chosen));
+				std::cout << std::format("{} - Found path with length {}.\n",
+					creature.short_name(), move_stack.size());
 			}
 
-			return spell_chosen;
+			moved = try_follow_path(creature, move_stack);
 		}
-	}
-
-	// if not, and shield available, good chance of doing that
-	//if (random (2.0) < 1.0
-	//	&& caster.spell_castable(Spell::Protego)
-	//    && caster.get_miscast_rate(Spell::Protego) < 40)
-	//{
-	//	//cout << "Doing shield." << endl;
-	//	return Spell::Protego;
-	//}
-
-	// otherwise do something random with reasonable chance of success
-	if (spell_list.size() == 0)
-	{
-		return Spell::None;
-	}
-
-	Random::shuffle_vector(spell_list);
-
-	for (int i = 0; i < spell_list.size(); ++i)
-	{
-		spell_chosen = spell_list[i];
-		if ( !spell_is_useless(spell_chosen, caster, target)
-			 && Random::in_range(0.0f, 100.0f) > caster.miscast_rate_for_spell(spell_chosen) )
+		else
 		{
 			if (Debug::enabled(Debug::Bot))
 			{
-				std::cout << std::format("{} using random reasonable spell = {}\n",
-					caster.short_name(), Spell::get_name(spell_chosen));
+				std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
 			}
-
-			return spell_chosen;
 		}
 	}
 
-	if (Debug::enabled(Debug::Bot))
+	if (!moved)
 	{
-		std::cout << std::format("{} couldn't find good spell.  Using random = {}\n",
-			caster.short_name(), Spell::get_name(spell_chosen));
+		moved = try_move_towards(creature, brain.target_pos);
 	}
 
-	// if can't find anything that might succeed, give up and just cast whatever
-	return spell_chosen;
+	return moved;
 }
 
-Spell::Index highest_predicted_damage_spell (Creature::Handle caster, Creature::Handle target,
-	Spell::TempList const & spell_list)
+bool try_attack(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
-	Spell::Index best_spell = Spell::None;
-	float best_estimate = 0.0f;
-	for (Spell::Index spell : spell_list)
+	AttackOption const attack = choose_attack(creature, brain.target);
+
+	if (attack.type == AttackOption::Spell)
 	{
-		float estimate = estimated_damage_output(spell, caster, target);
-		if (estimate > best_estimate)
+		use_spell(creature, brain, thoughts, (Spell::Index)attack.index);
+		return true;
+	}
+	else if (attack.type == AttackOption::Ability)
+	{
+		use_ability(creature, brain, thoughts, (Ability::Index)attack.index);
+		return true;
+	}
+	else // None
+	{
+		return false;
+	}
+}
+
+AttackOption choose_attack (Creature::Handle creature, Creature::Handle target)
+{
+	AttackTempList options;
+	FloatTempList weights;
+	options.reserve(creature.num_spells() + creature.num_abilities());
+	weights.reserve(creature.num_spells() + creature.num_abilities());
+
+	float total_weight = 0.0f;
+
+	for (Ability::Index ability : creature.ability_list())
+	{
+		float const rating = rate_ability(creature, target, ability);
+		if (rating > 0.0f)
 		{
-			best_estimate = estimate;
-			best_spell = spell;
+			options.emplace_back(AttackOption::Ability, (int)ability);
+			weights.push_back(rating);
+			total_weight += rating;
 		}
 	}
 
-	return best_spell;
-}
-
-float estimated_damage_output (Spell::Index spell, Creature::Handle caster, Creature::Handle target)
-{
-	float estimate;
-
-	// Special cases go here.
-	// We could also allow spells to define a damage estimator function...
-
-	// Normal spell
-	estimate = static_cast<float>(Spell::get_damage(spell, caster));
-
-	// Factor in accuracy
-	int const accuracy = Beam::accuracy_at_range(Spell::get_accuracy(spell),
-		caster.pos(), target.pos());
-	estimate = estimate * (accuracy / 100.0f);
-
-	// Factor in miscast rate
-	float good_cast_rate = 100.0f - caster.miscast_rate_for_spell(spell);
-	estimate = estimate * (good_cast_rate / 100.0f);
-
-	// We don't factor in distraction, because it is the same for all spells
-
-	if (estimate < 0)
+	for (Spell::Index spell : creature.spells_known())
 	{
-		estimate = 0;
+		float const rating = rate_spell(creature, target, spell);
+		if (rating > 0.0f)
+		{
+			options.emplace_back(AttackOption::Spell, (int)spell);
+			weights.push_back(rating);
+			total_weight += rating;
+		}
 	}
 
-	return estimate;
+	if (total_weight > 0.0f)
+	{
+		int const choice = Random::weighted_index(weights);
+		return options.at(choice);
+	}
+	else
+	{
+		return AttackOption{};
+	}
+}
+
+void use_spell (Creature::Handle creature, Brain& brain, Thoughts& thoughts, Spell::Index spell)
+{
+	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
+	{
+		Action::try_cast_spell(spell, creature, creature.pos(), c_Invalid);
+	}
+	else
+	{
+		assert(brain.target.valid());
+
+		if (spell == Spell::Fumos)
+		{
+			Vec3 aim_pos = aim_halfway_between(creature, brain.target, thoughts.target_line,
+				Spell::get_range(spell));
+			int const aim_line = (aim_pos == creature.pos()) ? c_Invalid : thoughts.target_line;
+			Action::try_cast_spell(spell, creature, aim_pos, aim_line);
+		}
+		else
+		{
+			assert(Spell::in_range(spell, creature.pos(), brain.target_pos));
+			taunt_attack_spell(creature, brain, thoughts, spell);
+			Action::try_cast_spell(spell, creature, brain.target_pos, thoughts.target_line);
+		}
+	}
+}
+
+float rate_spell (Creature::Handle caster, Creature::Handle target, Spell::Index spell)
+{
+	if (!Spell::in_range(spell, caster.pos(), target.pos()))
+	{
+		return 0.0f;
+	}
+
+	if (spell_is_useless(spell, caster, target))
+	{
+		return 0.0f;
+	}
+
+	float rating = 0.0f;
+
+	switch (spell)
+	{
+		// Special cases:
+		case Spell::Accio:
+			rating = 2.0f;
+			break;
+
+		default:
+			if (Spell::is_damaging(spell))
+			{
+				rating = (float)Spell::get_damage(spell, caster);
+			}
+			else
+			{
+				// Estimate based on the difficulty, I suppose.
+				rating = Spell::get_difficulty(spell) * 0.1f;
+			}
+	}
+
+	// Factor in accuracy.
+	if (Spell::has_accuracy(spell))
+	{
+		int const accuracy = Beam::accuracy_at_range(Spell::get_accuracy(spell),
+			caster.pos(), target.pos());
+		rating = rating * (accuracy / 100.0f);
+	}
+
+	// Factor in miscast rate.
+	float const success_rate = 100.0f - caster.miscast_rate_for_spell(spell);
+	rating = rating * (success_rate / 100.0f);
+
+	return rating;
 }
 
 bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Handle target)
 {
 	// if we have virtually no chance of casting it, it's useless
 	float miscast_rate = caster.miscast_rate_for_spell(spell);
-	if (miscast_rate >= 99.0)
+	if (miscast_rate >= 95.0)
 		return true;
 
 	// Non-combat spells
@@ -1006,7 +1090,7 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 		return true;
 	}
 	
-	// finite inc. is useless if there's no enchantment to break
+	// Finite Inc. is useless if there's no enchantment to break
 	if (spell == Spell::FiniteIncantatem)
 	{
 		if ( !caster.has_status(Status::Batty)
@@ -1067,30 +1151,17 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 	return aim_pos;
 }
 
-Ability::Index choose_ability(Creature::Handle creature, Creature::Handle target)
+void use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts, Ability::Index ability)
 {
-	assert(creature.num_abilities() > 0);
-
-	FloatTempList weights;
-	weights.clear();
-	weights.reserve(creature.num_abilities());
-
-	float total_weight = 0.0f;
-	for (Ability::Index ability : creature.ability_list())
+	Ability::TargetType const target_type = Ability::target_type(ability);
+	if (target_type == Ability::TargetType::Self)
 	{
-		float const value = rate_ability(creature, target, ability);
-		total_weight += value;
-		weights.push_back(value);
-	}
-
-	if (total_weight > 0.0f)
-	{
-		int const choice = Random::weighted_index(weights);
-		return creature.ability_list().at(choice);
+		Action::try_use_ability(ability, creature, creature.pos(), c_Invalid);
 	}
 	else
 	{
-		return Ability::None;
+		assert(Ability::in_range(ability, creature.pos(), brain.target_pos));
+		Action::try_use_ability(ability, creature, brain.target_pos, thoughts.target_line);
 	}
 }
 
@@ -1101,17 +1172,42 @@ float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::
 		return 0.0f;
 	}
 
+	if (!Ability::in_range(ability, creature.pos(), target.pos()))
+	{
+		return 0.0f;
+	}
+
+	float rating = 0.0f;
+
 	switch (ability)
 	{
 		case Ability::EatBean:
-			return (creature.has_item() && creature.peek_item().type() == Item::BBBean) ?
+			rating = (creature.has_item() && creature.peek_item().type() == Item::BBBean) ?
 				5.0f : // Greatsome joy and felicitation!  Gurgi love eat bean!
 				0.0f;
 			break;
+
+		default:
+			if (Ability::is_damaging(ability))
+			{
+				rating = (float)Ability::get_damage(ability); 
+			}
+			else
+			{
+				// Who knows, really?
+				rating = 1.0f;
+			}
 	}
 
-	// Who knows, really?
-	return 1.0f;
+	// Factor in accuracy.
+	if (Ability::has_accuracy(ability))
+	{
+		int const accuracy = Beam::accuracy_at_range(Ability::get_accuracy(ability),
+			creature.pos(), target.pos());
+		rating = rating * (accuracy / 100.0f);
+	}
+
+	return rating;
 }
 
 void say_taunt(Creature::Handle creature, Brain& brain, Thoughts& thoughts, int taunt)

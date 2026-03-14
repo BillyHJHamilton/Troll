@@ -76,6 +76,13 @@ TargetType target_type(Ability::Index index)
 	return s_ability_list.at(index).target_type;
 }
 
+bool has_accuracy (Ability::Index index)
+{
+	assert(is_valid(index));
+	return s_ability_list.at(index).accuracy > 0
+		&& s_ability_list.at(index).accuracy < 100;
+}
+
 int get_accuracy (Ability::Index index)
 {
 	assert(is_valid(index));

@@ -71,6 +71,7 @@ namespace Ability
 	Damage::Type damage_type(Ability::Index index);
 
 	TargetType target_type(Ability::Index index);
+	bool has_accuracy (Ability::Index index);
 	int get_accuracy (Ability::Index index);
 	int get_range (Ability::Index index);
 	bool in_range (Ability::Index index, Vec3 origin, Vec3 target);
