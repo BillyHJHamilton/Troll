@@ -389,7 +389,7 @@ void spawn_for_map(Map& map, History& history, Parameters const& param)
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Have spawned {}/{} total.  Next spawn in {}.",
+		std::cout << std::format("Have spawned {}/{} total.  Next spawn in {}.\n",
 			history.creatures_spawned, param.lifetime_max_creatures, cooldown);
 	}
 }

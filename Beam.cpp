@@ -295,11 +295,14 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 	}
 
 	// might hit creature
-	int creature_in_path = Creature::creature_at_pos(beam.pos);
+	Creature::Handle creature_in_path = Creature::creature_at_pos(beam.pos);
 	if (creature_in_path != Creature::None)
 	{
 		// Notify the creature that it's being shot at.
-		Bot::notice_attack(creature_in_path, beam.start_pos);
+		if (!creature_in_path.is_player())
+		{
+			Bot::notify_investigate(creature_in_path, beam.start_pos);
+		}
 
 		// check accuracy
 		int hit_chance = get_hit_chance(beam, creature_in_path);

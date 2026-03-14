@@ -200,6 +200,7 @@ namespace Creature
 		bool has_squad () const;
 		Creature::HandleList& squad_members () const;
 		Creature::Handle squad_leader () const; // by Avalon Hill
+		bool has_squad_leader () const;
 		bool is_squad_leader () const;
 		bool has_item () const;
 		Item::Handle peek_item () const;

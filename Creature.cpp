@@ -309,9 +309,14 @@ Creature::Handle Handle::squad_leader () const
 	return Squad::get_squad(squad_id).at(0);
 }
 
+bool Handle::has_squad_leader () const
+{
+	return has_squad() && squad_leader() != *this;
+}
+
 bool Handle::is_squad_leader () const
 {
-	return squad_leader() == *this;
+	return has_squad() && squad_leader() == *this;
 }
 
 bool Handle::has_item () const

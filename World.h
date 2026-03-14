@@ -33,6 +33,8 @@ public:
 	bool permits_sight(Vec3 pos) const;
 	void set_terrain(Vec3 pos, Terrain::Type new_terrain);
 
+	bool is_choke_point(Vec3 pos) const;
+
 	// Clouds
 	Cloud::Type get_cloud(Vec3 pos) const;
 	int get_cloud_lifetime(Vec3 pos) const;

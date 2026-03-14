@@ -155,6 +155,52 @@ void World::set_terrain(Vec3 pos, Terrain::Type new_terrain)
 	}
 }
 
+bool World::is_choke_point(Vec3 pos) const
+{
+	if (is_solid(pos))
+	{
+		return false;
+	}
+
+	bool solid [c_CompassNoMove];
+	for (int i = 0; i < (int)c_CompassNoMove; ++i)
+	{
+		solid[i] = is_solid(pos + c_Compass[i].xy0());
+	}
+
+	// Obvious hallway/doorway cases:
+	// ...  .#.
+	// #@#  .@.
+	// ...  .#.
+	if (solid[c_CompassNorth] && solid[c_CompassSouth])
+	{
+		return true;
+	}
+	if (solid[c_CompassEast] && solid[c_CompassWest])
+	{
+		return true;
+	}
+
+	// And the tricky diagonals:
+	// ##.  #..  .##  ..#
+	// .@#  #@.  #@.  .@#
+	// ..#  .##  #..  ##.
+	if (solid[c_CompassNorthwest] && solid[c_CompassSoutheast] &&
+		((solid[c_CompassNorth] && solid[c_CompassEast]) || 
+		 (solid[c_CompassWest] && solid[c_CompassSouth])))
+	{
+		return true;
+	}
+	if (solid[c_CompassSouthwest] && solid[c_CompassNortheast] &&
+		((solid[c_CompassSouth] && solid[c_CompassEast]) || 
+		 (solid[c_CompassWest] && solid[c_CompassNorth])))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 Cloud::Type World::get_cloud(Vec3 pos) const
 {
 	int const map_id = find_map(pos);

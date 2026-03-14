@@ -13,6 +13,7 @@ namespace Bot
 		Rest,
 		Blunder,
 		Regroup,
+		Investigate,
 		Chase,
 		Fight,
 	};
@@ -49,6 +50,6 @@ namespace Bot
 	// Enemy creature bot
 	void do_turn(Creature::Handle creature_index);
 
-	// Let a creature know something tried to hit it.
-	void notice_attack(Creature::Handle creature, Vec3 attack_origin);
+	// Tell a creature it should go take a look over there, if it's not busy.
+	void notify_investigate(Creature::Handle creature, Vec3 attack_origin);
 }
