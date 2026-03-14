@@ -219,11 +219,6 @@ void update()
 	// Confirm that temp memory from last frame was released.
 	assert(Scratchpad::is_empty());
 
-	if (s_turn_number % c_AutosaveFrequency == 0)
-	{
-		Game::save();
-	}
-
 	if (s_game_mode == GameMode::Normal)
 	{
 		World::edit().update_visibility(Player::pos(), Player::vision_radius);
@@ -248,9 +243,13 @@ void update()
 				did_something = true;
 				Player::stop_automove();
 			}
+			else if (result == Input::Result::StartAutomate)
+			{
+				did_something = true;
+			}
 		}
 
-		if (Player::is_automoving() && !did_something)
+		if (Player::is_automoving())
 		{
 			Player::dispatch_automove();
 			did_something = true;
@@ -345,6 +344,11 @@ void end_turn()
 	{
 		game_over();
 		return;
+	}
+
+	if (s_turn_number % c_AutosaveFrequency == 0)
+	{
+		Game::save();
 	}
 
 	++s_turn_number;
