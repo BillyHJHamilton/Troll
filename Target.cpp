@@ -29,6 +29,7 @@ enum class TargetMode : byte
 TargetMode s_target_mode;
 Creature::Handle s_target_creature;
 Vec3 s_target_pos;
+bool s_manual_automatic = false; // true if player manually cycled onto current creature
 
 //-------------------------------------------------------------------------------------------------
 // Helper functions
@@ -58,6 +59,11 @@ void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
 	}
 }
 
+void switch_to_higher_priority ()
+{
+
+}
+
 //-------------------------------------------------------------------------------------------------
 // Interface functions
 
@@ -65,6 +71,7 @@ void clear ()
 {
 	s_target_mode = TargetMode::Automatic_Creature;
 	s_target_creature.invalidate();
+	s_manual_automatic = false;
 }
 
 void update ()
@@ -88,16 +95,17 @@ void update ()
 		if (!s_target_creature.valid())
 		{
 			// acquire target
-			cycle(1);
+			cycle(1, /*manually*/ false);
 		}
 	}
 
 	else if (s_target_mode == TargetMode::Automatic_Position)
 	{
 		if (!World::read().is_visible(s_target_pos) ||
-			!is_feature_target(s_target_pos))
+			!is_feature_target(s_target_pos) ||
+			(Creature::has_visible_enemy() && !s_manual_automatic))
 		{
-			cycle(1);
+			cycle(1, /*manually*/ false);
 		}
 	}
 
@@ -105,13 +113,16 @@ void update ()
 	{
 		if (!Draw::get_view().contains_global_pos(s_target_pos))
 		{
-			cycle(1);
+			cycle(1, /*manually*/ false);
 		}
 	}
 }
 
-void cycle (int step)
+void cycle (int step, bool manually)
 {
+	// If we selected this manually, don't automatically switch off.
+	s_manual_automatic = manually;
+
 	if (s_target_mode == TargetMode::Manual)
 	{
 		s_target_creature = Creature::creature_at_pos(s_target_pos);
@@ -134,7 +145,12 @@ void cycle (int step)
 	{
 		targets.push_back(creature.pos());
 	}
-	find_visible_features(targets);
+
+	// Don't consider features when in pure automatic mode.
+	if (targets.empty() || manually)
+	{
+		find_visible_features(targets);
+	}
 
 	int const num_targets = Util::Size(targets);
 	if (targets.size() > 0)
@@ -209,10 +225,12 @@ void set_to(Vec3 new_pos)
 		{
 			s_target_mode = TargetMode::Automatic_Creature;
 			s_target_creature = creature;
+			s_manual_automatic = true;
 		}
 		else if (is_feature_target(new_pos))
 		{
 			s_target_mode = TargetMode::Automatic_Position;
+			s_manual_automatic = true;
 		}
 		else
 		{
@@ -228,6 +246,7 @@ void snap_to_player()
 	s_target_mode = TargetMode::Automatic_Creature;
 	s_target_creature = Player::handle();
 	s_target_pos = Player::pos();
+	s_manual_automatic = true;
 }
 
 bool is_valid()

@@ -10,7 +10,7 @@ namespace Target
 	void clear();
 
 	void update();
-	void cycle(int step);
+	void cycle(int step, bool manually);
 	void move(Vec2 dir);
 	void set_to(Vec3 new_pos);
 	void snap_to_player();

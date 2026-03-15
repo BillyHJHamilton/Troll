@@ -184,7 +184,7 @@ Input::Result handle_next_input ()
 		}
 		else if (key == TK_TAB && !terminal_check(TK_CONTROL))
 		{
-			Target::cycle(1);
+			Target::cycle(1, /*manually*/ true);
 			return Result::Handled;
 		}
 
@@ -309,7 +309,7 @@ Input::Result handle_next_input ()
 	{
 		if (key == TK_TAB)
 		{
-			Target::cycle(-1);
+			Target::cycle(-1, /*manually*/ true);
 			return Result::Handled;
 		}
 
