@@ -131,6 +131,8 @@ bool serialize_file_type_label(ISerializer& s)
 
 bool try_serialize_all(ISerializer& s)
 {
+	PerfTimer perf("try_serialize_all");
+
 	bool file_valid = serialize_file_type_label(s);
 	if (!file_valid)
 	{
@@ -310,6 +312,8 @@ int get_turn_number()
 
 void end_turn()
 {
+	PerfTimer perf("Game::end_turn");
+
 	Player::set_acted(false);
 
 	Player::handle().endround();

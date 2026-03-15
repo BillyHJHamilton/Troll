@@ -10,6 +10,7 @@
 #include "Inventory.h"
 #include "Map.h"
 #include "Math.h"
+#include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
 #include "Spell.h"

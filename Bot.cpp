@@ -11,6 +11,7 @@
 #include "Grammar.h"
 #include "Math.h"
 #include "Pathfind.h"
+#include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
@@ -261,6 +262,8 @@ void clear_player_path()
 
 void do_turn (Creature::Handle creature)
 {
+	PerfTimer perf("Bot::do_turn");
+
 	Brain& brain = s_brains[creature];
 	Thoughts thoughts {};
 
@@ -657,6 +660,8 @@ void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	PerfTimer perf0("bot_fight");
+
 	// Notify squadmates over tactical radio.
 	if (creature.has_squad())
 	{
@@ -943,6 +948,8 @@ bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
 
 bool try_attack(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	PerfTimer perf0("try_attack");
+
 	AttackOption const attack = choose_attack(creature, brain.target);
 
 	if (attack.type == AttackOption::Spell)
@@ -963,6 +970,8 @@ bool try_attack(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 AttackOption choose_attack (Creature::Handle creature, Creature::Handle target)
 {
+	PerfTimer perf0("choose_attack");
+
 	AttackTempList options;
 	FloatTempList weights;
 	options.reserve(creature.num_spells() + creature.num_abilities());
@@ -1005,6 +1014,8 @@ AttackOption choose_attack (Creature::Handle creature, Creature::Handle target)
 
 void use_spell (Creature::Handle creature, Brain& brain, Thoughts& thoughts, Spell::Index spell)
 {
+	PerfTimer perf0("use_spell");
+
 	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
 	{
 		Action::try_cast_spell(spell, creature, creature.pos(), c_Invalid);
@@ -1171,6 +1182,8 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 
 void use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts, Ability::Index ability)
 {
+	PerfTimer perf0("use_ability");
+
 	Ability::TargetType const target_type = Ability::target_type(ability);
 	if (target_type == Ability::TargetType::Self)
 	{
@@ -1264,6 +1277,8 @@ void taunt_followup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	PerfTimer perf("taunt_fight");
+
 	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
 	{
 		IntTempList taunts;

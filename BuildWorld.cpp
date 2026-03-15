@@ -2,12 +2,15 @@
 
 #include "Map.h"
 #include "MapGenerator.h"
+#include "PerfTimer.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "World.h"
 
 void BuildWorld()
 {
+	PerfTimer perf("BuildWorld");
+
 	World& world = World::edit();
 
 	//Box2 const map_box_0 = Box2(0, 0, 30, 30);

@@ -66,48 +66,45 @@ void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 		stairs_compass = Stairs::compass_dir(stairs_dir);
 	}
 
+	for (CompassItr itr(true); itr; ++itr)
 	{
-		PerfTimer perf1("find_open_neighbours - compass loop");
-		for (CompassItr itr(true); itr; ++itr)
+		Vec3 const next_pos = (itr == stairs_compass) ?
+			pos + Stairs::relative_move(stairs_dir) :
+			pos + itr.get_vec3();
+
+		Visibility const vis = world.get_visibility(next_pos);
+
+		if (vis == Visibility::Hidden &&
+			param.unexplored_mode == NeighbourParam::UnexploredMode::Block)
 		{
-			Vec3 const next_pos = (itr == stairs_compass) ?
-				pos + Stairs::relative_move(stairs_dir) :
-				pos + itr.get_vec3();
-
-			Visibility const vis = world.get_visibility(next_pos);
-
-			if (vis == Visibility::Hidden &&
-				param.unexplored_mode == NeighbourParam::UnexploredMode::Block)
-			{
-				continue;
-			}
-
-			Terrain::Type const t = world.get_terrain(next_pos);
-
-			if (!param.allow_stairs &&
-				(t == Terrain::UpStairs || t == Terrain::DownStairs))
-			{
-				continue;
-			}
-
-			if (Terrain::is_solid(t) &&
-				(vis != Visibility::Hidden ||
-				 param.unexplored_mode != NeighbourParam::UnexploredMode::Open))
-			{
-				continue;
-			}
-
-			if (!param.ignore_creatures)
-			{
-				Creature::Handle creature = Creature::creature_at_pos(next_pos);
-				if (creature.valid() && creature != param.target_creature)
-				{
-					continue;
-				}
-			}
-
-			out.push_back(next_pos);
+			continue;
 		}
+
+		Terrain::Type const t = world.get_terrain(next_pos);
+
+		if (!param.allow_stairs &&
+			(t == Terrain::UpStairs || t == Terrain::DownStairs))
+		{
+			continue;
+		}
+
+		if (Terrain::is_solid(t) &&
+			(vis != Visibility::Hidden ||
+				param.unexplored_mode != NeighbourParam::UnexploredMode::Open))
+		{
+			continue;
+		}
+
+		if (!param.ignore_creatures)
+		{
+			Creature::Handle creature = Creature::creature_at_pos(next_pos);
+			if (creature.valid() && creature != param.target_creature)
+			{
+				continue;
+			}
+		}
+
+		out.push_back(next_pos);
 	}
 }
 
@@ -154,60 +151,56 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 	AStarPriorityQueue frontier;
 	frontier.add(start, 0);
 
+	while (!frontier.empty())
 	{
-		PerfTimer perf1("astar - core loop");
+		PerfTimer perf2("astar - per iteration");
 
-		while (!frontier.empty())
+		Vec3 const here = frontier.pop();
+		NodeInfo& here_node = discovered.at(here);
+
+		if (here == goal)
 		{
-			PerfTimer perf2("astar - per iteration");
+			break;
+		}
 
-			Vec3 const here = frontier.pop();
-			NodeInfo& here_node = discovered.at(here);
+		NeighbourParam neighbour_param
+		{
+			.ignore_creatures = param.ignore_creatures,
+			.allow_stairs = true,
+			.target_creature = target,
+			.unexplored_mode = NeighbourParam::UnexploredMode::Default
+		};
 
-			if (here == goal)
+		find_open_neighbours(here, neighbour_param, neighbours);
+		for (Vec3 neighbour : neighbours)
+		{
+			int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
+
+			if (new_cost > param.max_cost)
 			{
-				break;
+				continue;
 			}
 
-			NeighbourParam neighbour_param
+			// Option to prevent pathing through unknown tiles.
+			if (!param.allow_unexplored && neighbour != goal &&
+				world.get_visibility(neighbour) == Visibility::Hidden)
 			{
-				.ignore_creatures = param.ignore_creatures,
-				.allow_stairs = true,
-				.target_creature = target,
-				.unexplored_mode = NeighbourParam::UnexploredMode::Default
-			};
+				continue;
+			}
 
-			find_open_neighbours(here, neighbour_param, neighbours);
-			for (Vec3 neighbour : neighbours)
+			NodeInfo* const old_node = Util::Find(discovered, neighbour);
+			if (old_node && old_node->total_cost <= new_cost)
 			{
-				int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
+				continue;
+			}
+			else
+			{
+				discovered[neighbour] = {here, new_cost};
 
-				if (new_cost > param.max_cost)
-				{
-					continue;
-				}
-
-				// Option to prevent pathing through unknown tiles.
-				if (!param.allow_unexplored && neighbour != goal &&
-					world.get_visibility(neighbour) == Visibility::Hidden)
-				{
-					continue;
-				}
-
-				NodeInfo* const old_node = Util::Find(discovered, neighbour);
-				if (old_node && old_node->total_cost <= new_cost)
-				{
-					continue;
-				}
-				else
-				{
-					discovered[neighbour] = {here, new_cost};
-
-					int const vertical_distance = std::abs(neighbour.z - goal.z);
-					int const heuristic = manhattan_distance(neighbour.xy(), goal.xy())
-						+ c_HeightFactor*vertical_distance;
-					frontier.add(neighbour, heuristic);
-				}
+				int const vertical_distance = std::abs(neighbour.z - goal.z);
+				int const heuristic = manhattan_distance(neighbour.xy(), goal.xy())
+					+ c_HeightFactor*vertical_distance;
+				frontier.add(neighbour, heuristic);
 			}
 		}
 	}

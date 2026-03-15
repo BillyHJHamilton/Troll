@@ -7,6 +7,7 @@
 #include "Map.h"
 #include "Math.h"
 #include "Pathfind.h"
+#include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
 #include "Squad.h"
@@ -353,6 +354,8 @@ bool is_map_ready(int map_id, int player_map, Parameters const& param)
 
 void spawn_for_map(Map& map, History& history, Parameters const& param)
 {
+	PerfTimer perf("spawn_for_map");
+
 	bool const is_first_spawn = !history.has_ever_spawned();
 
 	int creatures_to_spawn = 1;
