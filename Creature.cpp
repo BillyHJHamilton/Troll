@@ -755,6 +755,11 @@ void Handle::update_derived_stats ()
 			Status::apply_to_derived_stats(si, *this, ds);
 		}
 	}
+
+	if (has_tag(Creature::Tag::Stat_Evasive))
+	{
+		ds.evasion += 25;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

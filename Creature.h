@@ -108,7 +108,8 @@ namespace Creature
 		Faint_Disappear,	// When defeated, disappears instead of fainting.
 		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
 		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
-		Move_Slow,			// It needs to skip a turn before moving (TODO).
+		Move_Slow,			// It needs to skip a turn before moving.
+		Stat_Evasive,		// It gains an innate +25 bonus to evasion.
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.
 		Count

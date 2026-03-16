@@ -259,7 +259,7 @@ void init()
 	Builder(Creature::Gnome, c_IdentityGeneric,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 2,
 		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter)
-		.tags(Tag::Immune_Clothes)
+		.tags(Tag::Immune_Clothes, Tag::Stat_Evasive)
 		.abil({Ability::StealBean, Ability::EatBean});
 
 	Builder(Creature::Streeler, c_IdentityGeneric,
