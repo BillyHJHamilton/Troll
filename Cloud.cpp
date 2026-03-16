@@ -119,7 +119,13 @@ namespace Cloud
 		{
 			Draw::creature_message(creature, std::format("{} burned by the slime.",
 				Grammar::You_are(creature)));
-			creature.take_damage(1, Damage::Acid, Creature::None);
+			Damage::Packet const dmg
+			{
+				.amount = 1,
+				.type = Damage::Acid,
+				.cause = Damage::Cause(Cloud::Slime)
+			};
+			creature.take_damage(dmg);
 		}
 	}
 }

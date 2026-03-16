@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Geometry.h"
 #include "Types.h"
+
+#include "Damage.h"
+#include "Geometry.h"
 
 namespace Player
 {
@@ -29,7 +31,7 @@ namespace Player
 		Spell::Index miscast_spell = (Spell::Index)c_Invalid;
 
 		bool game_over = false;
-		Creature::Type defeated_by = (Creature::Type)c_Invalid;
+		Damage::Cause defeated_by = {};
 
 		int level = 1;
 		int xp = 0;
@@ -49,7 +51,7 @@ namespace Player
 	bool has_acted ();
 	Spell::Index get_recent_miscast ();
 	bool is_game_over ();
-	Creature::Type get_defeated_by ();
+	Damage::Cause get_defeated_by ();
 	int current_level ();
 	int current_xp ();
 	int next_xp_threshold ();
@@ -66,6 +68,6 @@ namespace Player
 	void dispatch_automove ();
 	void set_acted (bool acted);
 	void set_miscasted (Spell::Index spell_index);
-	void set_game_over (Creature::Type instigator);
+	void set_game_over (Damage::Cause defeated_by);
 	void gain_xp_for (Creature::Type creature);
 };

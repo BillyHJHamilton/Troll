@@ -231,6 +231,9 @@
     <ClCompile Include="Squad.cpp">
       <Filter>Source Files\Creature</Filter>
     </ClCompile>
+    <ClCompile Include="Damage.cpp">
+      <Filter>Source Files\Magic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">

@@ -66,7 +66,7 @@ void MenuDebug::handle_input (int key)
 			case DebugMenuOption::DefeatAllEnemies:
 				for (Creature::HandleItr itr(1); itr; ++itr)
 				{
-					itr->take_damage(1000, Damage::Basic, Creature::None);
+					itr->take_damage({1000, Damage::Basic, {}});
 				}
 				//Menu::close();
 				break;

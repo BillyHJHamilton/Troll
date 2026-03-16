@@ -51,7 +51,7 @@ void Player::Data::serialize(ISerializer& s)
 	// Don't need to serialize these since we won't save in the middle of a turn.
 	assert(!acted);
 	assert(!game_over);
-	assert(defeated_by == Creature::None);
+	assert(defeated_by.type == Damage::Cause::None);
 	
 	s.srz_int(level);
 	s.srz_int(xp);
@@ -300,12 +300,12 @@ bool is_game_over()
 	return read_data().game_over;
 }
 
-Creature::Type get_defeated_by ()
+Damage::Cause get_defeated_by ()
 {
 	return read_data().defeated_by;
 }
 
-void set_game_over(Creature::Type defeated_by)
+void set_game_over(Damage::Cause defeated_by)
 {
 	s_player_data.game_over = true;
 	s_player_data.defeated_by = defeated_by;

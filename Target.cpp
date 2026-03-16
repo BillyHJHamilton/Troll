@@ -59,11 +59,6 @@ void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
 	}
 }
 
-void switch_to_higher_priority ()
-{
-
-}
-
 //-------------------------------------------------------------------------------------------------
 // Interface functions
 

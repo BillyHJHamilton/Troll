@@ -1,12 +1,22 @@
 -------------------------------------------------------------------------------
+Features I'd like for a .1 or .2 release
+-------------------------------------------------------------------------------
+- High score table
+ - Stretch: Damage packets and better death attribution
+- Some way to win the game (temp victory condition)
+- Show current location/dungeon level
+- AI move to better firing position, at least in simple cases
+
+-------------------------------------------------------------------------------
 To Do:
 -------------------------------------------------------------------------------
+
+- Actions
+ - Moving should give a small evasion boost
 
 - Bot
  - Do something more clever about tracking through rooms and getting sidetracked
  - Sidestep to find good attack position if shooting through friends
- - More complex weighting and considation of different possible actions
-  - Extend the rating system for abilities to apply to spells and other possible actions
 
 - Creatures
  - Size category?  Could effect evasion.
@@ -30,19 +40,25 @@ To Do:
   - Could be similar for any stacking item.  (You have 4 Calming Draughts.)
  - Support some grammar functions for items (like for creatures)
  - In theory, NPCs should sometimes use items (without needing a special ability)
+  - But it's too bad if they ruin their treasure.  May need a more advanced way of assigning items to characters.
+  - They may need multiple item slots, or the ability to search their inventory stack.
  - New items:
   - Candy: pumpkin pastries, cauldron cakes, edible dark marks
   - Joke shop: fanged frisbee, bashing boomerang, stink pellet, dungbomb
+   - Stink pellet could create a poison cloud; dungbomb perhaps a slime puddle?
+   - Or have a "sick" status of some kind which causes distraction
   - WWW: Fireworks, decoy detonator, extendable ears, shield hat, instant darkness powder, portable swamp
   - Advanced: dragon orb, bottled starlight, tempest in a bottle
 
 - Map generation
- - Named regions, more layout
- - Special rooms
- - Locked doors
- - Secret treasure rooms
+ - Show level name/number on screen
+ - More advanced map layout
+ - New things in map:
+  - Special rooms
+  - Locked doors
+  - Secret treasure rooms
  - (Advanced) Staircases that change
- - Add stronger methods to enforce internal connectivity (for "crossroads" levels)
+ - Stronger methods to enforce internal connectivity (for "crossroads" levels)
 
 - Potions
  - Could randomize the colours - though for some (Felix Felicis) this feels wrong
@@ -77,11 +93,6 @@ To Do:
  - Chocolate frogs (with wizard cards)
  - Other types (cauldron cakes, etc)
 
-- Target
- - Should have a "priority" scale
-  - Swap to higher priority if current target was auto-selected.
-  - But not if player tabbed onto the current one.
-
 - Terrain
  - Furniture for cover/obstacles?
  - Breakable terrain?
@@ -104,12 +115,6 @@ To consider:
  - But without making it too hard to aim at moving characters.
 
 -------------------------------------------------------------------------------
-Bugs
--------------------------------------------------------------------------------
-
-- Wall LOS funny on narrow (3-wide) rooms near edge of vision
-
--------------------------------------------------------------------------------
 UX Notes from Richard
 -------------------------------------------------------------------------------
 
@@ -123,8 +128,7 @@ UX Notes from Richard
 - HP versus "Stamina" is inconsistent terminology  [Feels like HP is too gamey.  Maybe "healthier"?]
 - Would be nice to see spell durations (for TA, RS, etc)
 - Confusing that alohomora doesn't fly past enemy to hit chest
-- Can't see cursor if playing on a dark screen
- - Add "bright cursor" mode
++ Can't see cursor if playing on a dark screen. - Added "bright cursor" mode
 + Need an in-game message when save incompatible
 + The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened. If I rest with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
 

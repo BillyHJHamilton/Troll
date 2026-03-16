@@ -134,6 +134,16 @@ Damage::Type damage_type (Spell::Index spell_index)
 	return s_spell_list[spell_index].damage_type;
 }
 
+Damage::Packet damage_packet (Spell::Index spell_index, Creature::Handle caster)
+{
+	return Damage::Packet
+	{
+		.amount = get_damage(spell_index, caster),
+		.type = damage_type(spell_index),
+		.cause = Damage::Cause(caster)
+	};
+}
+
 int get_power (Spell::Index spell_index, Creature::Handle caster)
 {
 	assert(is_valid_index(spell_index));

@@ -49,7 +49,7 @@ Creature::DerivedStats s_derived_stats [c_MaxCreatures];
 int s_max_creature_index;
 
 Creature::HandleList s_visible_creatures;
-std::unordered_map<int,int> s_fainting_creatures; // and instigator for each
+std::unordered_map<int,Damage::Cause> s_fainting_creatures; // and how they fainted
 
 static Creature::Instance const & read_creature_instance (Creature::Handle creature)
 {
@@ -479,20 +479,20 @@ Spell::TempList Handle::spells_known () const
 //-------------------------------------------------------------------------------------------------
 // Creature Handle - Mutator functions
 
-void Handle::take_damage (int damage, Damage::Type damage_type, Creature::Handle instigator)
+void Handle::take_damage (Damage::Packet const& dmg)
 {
 	Creature::Instance & c = edit_creature_instance(index);
 
-	float const factor = Gingerbread::read_resistance(type(), damage_type);
-	int new_damage = Math::RoundToInt((float)damage * factor);
+	float const factor = Gingerbread::read_resistance(type(), dmg.type);
+	int new_damage = Math::RoundToInt((float)dmg.amount * factor);
 	
 	// Minimum 1 damage if not fully resisted.
-	if (factor > 0.0f && damage > 0)
+	if (factor > 0.0f && dmg.amount > 0)
 	{
 		new_damage = std::max(new_damage, 1);
 	}
 
-	if (new_damage < damage)
+	if (new_damage < dmg.amount)
 	{
 		if (new_damage > 0)
 		{
@@ -505,7 +505,7 @@ void Handle::take_damage (int damage, Damage::Type damage_type, Creature::Handle
 				Grammar::You_are(*this)));
 		}
 	}
-	else if (new_damage > damage)
+	else if (new_damage > dmg.amount)
 	{
 		Draw::creature_message(*this, std::format("{} strongly affected!",
 			Grammar::You_are(*this)));
@@ -520,7 +520,7 @@ void Handle::take_damage (int damage, Damage::Type damage_type, Creature::Handle
 		if (c.hp <= 0)
 		{
 			c.hp = 0;
-			s_fainting_creatures.try_emplace(*this, instigator.valid() ? instigator.type() : Type::None);
+			s_fainting_creatures.try_emplace(index, dmg.cause);
 		}
 	}
 }
@@ -878,10 +878,13 @@ void remove_defeated_creatures ()
 {
 	int num_removed = 0;
 
-	for (std::pair<int,int> const& pair : s_fainting_creatures)
+	for (std::pair<int,Damage::Cause> const& pair : s_fainting_creatures)
 	{
 		Handle creature = pair.first;
-		Creature::Type const instigator_type = (Creature::Type)pair.second;
+		Damage::Cause const& cause = pair.second;
+
+		Creature::Type const instigator_type = (cause.type == Damage::Cause::Creature) ?
+			(Creature::Type)cause.index : Creature::None;
 
 		if (creature.visible() || instigator_type == Type::Player)
 		{
@@ -897,7 +900,7 @@ void remove_defeated_creatures ()
 
 		if (creature.is_player())
 		{
-			Player::set_game_over(instigator_type);
+			Player::set_game_over(cause);
 		}
 		else
 		{

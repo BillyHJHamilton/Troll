@@ -430,7 +430,13 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 	}
 	if (beam.damage > 0)
 	{
-		target.take_damage(beam.damage, beam.damage_type, beam.caster);
+		Damage::Packet const dmg
+		{
+			.amount = beam.damage,
+			.type = beam.damage_type,
+			.cause = Damage::Cause(beam.caster)
+		};
+		target.take_damage(dmg);
 	}
 }
 

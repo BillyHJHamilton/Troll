@@ -56,6 +56,8 @@ namespace Creature
 namespace Damage
 {
 	enum Type : int;
+	struct Cause;
+	struct Packet;
 }
 
 namespace Draw

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+
 #include "Geometry.h"
 #include "Item.h"
 #include "NameHash.h"
@@ -219,7 +220,7 @@ namespace Creature
 		Spell::TempList spells_known () const;
 
 		// Mutators
-		void take_damage (int damage, Damage::Type damage_type, Creature::Handle instigator);
+		void take_damage (Damage::Packet const& damage_packet);
 		void heal_hp (int healing);
 		void move (Vec3 const & new_pos);
 		void inflict_status (Status::Index status, int severity);

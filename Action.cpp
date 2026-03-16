@@ -336,8 +336,13 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 
 		if (Ability::is_damaging(ability))
 		{
-			int const dmg = Ability::get_damage(ability);
-			user.take_damage(dmg, Ability::damage_type(ability), user);
+			Damage::Packet const dmg
+			{
+				.amount = Ability::get_damage(ability),
+				.type = Ability::damage_type(ability),
+				.cause = Damage::Cause(user)
+			};
+			user.take_damage(dmg);
 		}
 	}
 	else if (target_type == Ability::TargetType::Projectile)
@@ -451,8 +456,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 		if (Spell::is_damaging(spell))
 		{
-			int const damage = Spell::get_damage(spell, caster);
-			caster.take_damage(damage, Spell::damage_type(spell), caster);
+			caster.take_damage(Spell::damage_packet(spell, caster));
 		}
 	}
 	else if (line_id == c_Invalid)
@@ -473,7 +477,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		if (target.valid() && Spell::is_damaging(spell))
 		{
 			int const damage = Spell::get_damage(spell, caster);
-			target.take_damage(damage, Spell::damage_type(spell), caster);
+			target.take_damage(Spell::damage_packet(spell, caster));
 		}
 	}
 	else

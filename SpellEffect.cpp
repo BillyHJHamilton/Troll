@@ -63,27 +63,27 @@ void flipendo (EffectParams params)
 	{
 		Draw::creature_message(target, std::format("{0} knocked into the stairs!",
 			Grammar::You_are(target)));
-		target.take_damage(1, Damage::Basic, caster);
+		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
 		Draw::creature_message(target, std::format("{0} knocked into the wall!",
 			Grammar::You_are(target)));
-		target.take_damage(1, Damage::Basic, caster);
+		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
 	}
 	else if (secondary_target != Creature::None)
 	{
 		Draw::creature_message(target, std::format("{0} knocked into {1}!",
 			Grammar::You_are(target), Grammar::you(secondary_target)));
-		target.take_damage(1, Damage::Basic, caster);
-		secondary_target.take_damage(1, Damage::Basic, caster);
+		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
+		secondary_target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
 	}
 	else if (dz < 0)
 	{
 		Draw::creature_message(target, std::format("{0} knocked down the stairs!",
 			Grammar::You_are(target)));
 		target.move(knock_pos);
-		target.take_damage(4, Damage::Basic, caster);
+		target.take_damage({4, Damage::Basic, Damage::Cause(caster)});
 		Draw::draw_screen();
 		Draw::anim_delay();
 	}
@@ -292,7 +292,14 @@ void lacarnum_inflamare (EffectParams params)
 	{
 		Draw::creature_message(target, std::format("{} burned!",
 			Grammar::You_are(target)));
-		target.take_damage(Random::in_range(1,3), Damage::Fire, caster);
+
+		Damage::Packet const dmg
+		{
+			.amount = Random::in_range(1,3),
+			.type = Damage::Fire,
+			.cause = Damage::Cause(caster)
+		};
+		target.take_damage(dmg);
 	}
 	else
 	{
