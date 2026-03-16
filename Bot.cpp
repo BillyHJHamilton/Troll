@@ -204,7 +204,7 @@ bool try_player_collect()
 
 	Pathfind::ExploreParam param
 	{
-		.max_cost = Player::vision_radius,
+		.max_cost = Player::c_VisionRadius,
 		.allow_stairs = false,
 		.goal = Pathfind::ExploreParam::GoalType::Item,
 	};

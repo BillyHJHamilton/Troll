@@ -15,8 +15,6 @@ public:
 protected:
 	bool is_valid_character (char c);
 
-	static int constexpr c_MaxNameLength = 16;
-
 	std::string name;
 };
 

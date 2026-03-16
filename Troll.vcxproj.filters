@@ -234,8 +234,11 @@
     <ClCompile Include="Damage.cpp">
       <Filter>Source Files\Magic</Filter>
     </ClCompile>
-    <ClCompile Include="MenuGameOver.cpp">
+    <ClCompile Include="MenuHighScores.cpp">
       <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="Score.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -446,8 +449,11 @@
     <ClInclude Include="SparseArray.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="MenuGameOver.h">
+    <ClInclude Include="MenuHighScores.h">
       <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="Score.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

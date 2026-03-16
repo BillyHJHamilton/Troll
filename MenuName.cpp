@@ -16,7 +16,7 @@ void MenuName::draw_screen ()
 	terminal_put(1, 2, Codepoint::HandRight); // hand
 
 	terminal_color(cstr_Grey);
-	for (int x = 3; x < (3 + c_MaxNameLength); ++x)
+	for (int x = 3; x < (3 + Player::c_MaxNameLength); ++x)
 	{
 		terminal_put(x, 2, '_');
 	}
@@ -54,7 +54,7 @@ void MenuName::handle_input (int key)
 	{
 		char c = terminal_state(TK_CHAR);
 
-		if (is_valid_character(c) && name.size() < c_MaxNameLength)
+		if (is_valid_character(c) && name.size() < Player::c_MaxNameLength)
 		{
 			name.push_back(c);
 		}

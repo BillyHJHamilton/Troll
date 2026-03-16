@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "Inventory.h"
 #include "MenuDocument.h"
-#include "MenuGameOver.h"
+#include "MenuHighScores.h"
 #include "MenuHelp.h"
 #include "MenuInventory.h"
 #include "MenuLoad.h"
@@ -31,7 +31,7 @@ namespace Menu
 
 // Menus in alphabetic order
 MenuDocument s_menu_document;
-MenuGameOver s_menu_game_over;
+MenuHighScores s_menu_high_scores;
 MenuHelp s_menu_help;
 MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
@@ -165,8 +165,14 @@ void show_help()
 
 void show_game_over()
 {
-	set_menu(s_menu_game_over);
-	s_menu_game_over.refresh();
+	set_menu(s_menu_high_scores);
+	s_menu_high_scores.show_game_over();
+}
+
+void show_high_scores()
+{
+	set_menu(s_menu_high_scores);
+	s_menu_high_scores.show_scores();
 }
 
 void show_house_selection()

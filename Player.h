@@ -7,7 +7,8 @@
 
 namespace Player
 {
-	static int constexpr vision_radius = 8;
+	static int constexpr c_MaxNameLength = 16;
+	static int constexpr c_VisionRadius = 8;
 
 	enum class AutomoveType
 	{

@@ -6,9 +6,9 @@
 
 const char* const MenuHelp::cstr_Overview =
 	"TROLL is a game set in the world of Harry Potter fanfiction.  "
-		"As a young witch or wizard, your goal is (TODO).  "
-		"Along the way, you must explore the world, collect items, learn spells, "
-		"and face many opponents.\n"
+		"As a young witch or wizard, you must explore the world, collect items, "
+		"learn spells, and face many opponents.  "
+		"Ultimately, your goal is to defeat the Dark Princess, Mary Sue.\n"
 	"\n"
 	"This is a roguelike game.  This means:\n"
 	"  - As you play, your progress is automatically saved.\n"
@@ -122,7 +122,7 @@ void MenuHelp::init()
 	m_title = "How To Play:";
 	set_options({
 		{"Overview", Page::Overview},
-		{"Movement", Page::Movement},  //   and Resting
+		{"Movement and Resting", Page::Movement},
 		{"Casting Spells", Page::CastingSpells},
 		{"Items", Page::Items},
 		{"Other Commands", Page::OtherCommands},

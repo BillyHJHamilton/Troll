@@ -17,6 +17,7 @@ protected:
 		LoadGame,
 		Help,
 		Settings,
+		HighScores,
 #if _DEBUG
 		SetLogging,
 #endif

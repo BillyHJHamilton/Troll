@@ -250,7 +250,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
-    <ClCompile Include="MenuGameOver.cpp" />
+    <ClCompile Include="MenuHighScores.cpp" />
     <ClCompile Include="MenuHelp.cpp" />
     <ClCompile Include="MenuInventory.cpp" />
     <ClCompile Include="MenuLoad.cpp" />
@@ -284,6 +284,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Potion.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Score.cpp" />
     <ClCompile Include="Scratch.cpp" />
     <ClCompile Include="Serialize.cpp" />
     <ClCompile Include="Spawn.cpp" />
@@ -314,7 +315,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="MenuDebug.h" />
-    <ClInclude Include="MenuGameOver.h" />
+    <ClInclude Include="MenuHighScores.h" />
     <ClInclude Include="MenuHelp.h" />
     <ClInclude Include="MenuInventory.h" />
     <ClInclude Include="MenuLoad.h" />
@@ -350,6 +351,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Potion.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Score.h" />
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="SerializeSaveLoad.h" />

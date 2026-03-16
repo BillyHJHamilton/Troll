@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Features I'd like for a .1 or .2 release
 -------------------------------------------------------------------------------
-- High score table
- - Stretch: Damage packets and better death attribution
+X High score table
+ X Stretch: Damage packets and better death attribution
 - Some way to win the game (temp victory condition)
 - Show current location/dungeon level
 - AI move to better firing position, at least in simple cases
@@ -21,9 +21,6 @@ To Do:
 - Creatures
  - Size category?  Could effect evasion.
   - Or just have an evasiveness category, or evasiveness traits...
-
-- Damage
- - More detailed attribution of damage sources (died by falling down stairs, etc)
 
 - Features
  - Chests should really be placed as part of Map Generation, not creature spawning
@@ -98,6 +95,8 @@ To Do:
  - Breakable terrain?
 
 - UI
+ - Add "confirm" which pauses until Y/N is pressed (or Enter, depending on type).
+  - And using this, add a way to forfeit game from the in-game menu.
  - Show spell durations (and thus, read them as part of the spell effects)
  - Support mouse input in menus?
   - Mouse move could highlight, mouse click would move cursor,

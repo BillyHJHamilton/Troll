@@ -428,7 +428,7 @@ int Handle::vision () const
 	}
 	else if (is_player())
 	{
-		return Player::vision_radius;
+		return Player::c_VisionRadius;
 	}
 	else
 	{

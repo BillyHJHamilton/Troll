@@ -175,7 +175,7 @@ bool player_try_cast_spell (Spell::Index spell)
 		}
 
 		int line_id = World::read().get_los(Player::pos(), target_pos.value(),
-			Player::vision_radius);
+			Player::c_VisionRadius);
 		if (line_id == c_Invalid)
 		{
 			Draw::add_message("Target not visible.");

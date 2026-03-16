@@ -44,6 +44,7 @@ namespace Menu
 	void show_document(std::string&& message);
 	void show_help();
 	void show_game_over();
+	void show_high_scores();
 
 	// List Menus
 	void show_spells_known();

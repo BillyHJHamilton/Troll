@@ -20,6 +20,7 @@
 #include "Potion.h"
 #include "Random.h"
 #include "Scratch.h"
+#include "Score.h"
 #include "SerializeSaveLoad.h"
 #include "Spawn.h"
 #include "Spell.h"
@@ -71,6 +72,7 @@ void init()
 	LineCache::init();
 	Menu::init();
 	Random::init();
+	Score::init();
 	Status::init();
 	Squad::init();
 	Taunt::init();
@@ -94,6 +96,7 @@ void clear()
 	Item::clear();
 	Menu::clear();
 	Player::clear();
+	Score::clear();
 	Spawn::clear();
 	Squad::clear();
 	Target::clear();
@@ -204,7 +207,7 @@ void setup()
 		}
 	}
 
-	World::edit().update_visibility(Player::pos(), Player::vision_radius);
+	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 
 	Spawn::post_world_setup();
 	Spawn::check_spawning();
@@ -223,7 +226,7 @@ void update()
 
 	if (s_game_mode == GameMode::Normal)
 	{
-		World::edit().update_visibility(Player::pos(), Player::vision_radius);
+		World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 		Creature::update_visible_creatures();
 		Target::update();
 	}
@@ -321,7 +324,7 @@ void end_turn()
 	Spawn::check_spawning();
 
 	// Need to update visibility since player has likely moved.
-	World::edit().update_visibility(Player::pos(), Player::vision_radius);
+	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 	Creature::update_visible_creatures();
 
 	// Now all other creatures act.

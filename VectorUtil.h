@@ -154,6 +154,15 @@ namespace Util
 		}
 	}
 	
+	// Utility function for inserting with simpler syntax
+
+	template<typename VectorItemType, typename Alc>
+	void InsertAt(std::vector<VectorItemType,Alc>& vector, int indexToInsert, VectorItemType item)
+	{
+		vector.insert(vector.begin() + indexToInsert, item);
+	}
+
+	
 	// Usable only if an IsValid function has been defined for the item type.
 	//template<typename VectorItemType>
 	//void RemoveSwapAllInvalidItems(std::vector<VectorItemType,Alc>& vector)
