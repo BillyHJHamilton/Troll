@@ -2,18 +2,11 @@
 
 #include "BearLibTerminal.h"
 
-#include "Cloud.h" // for game over
-#include "Damage.h" // for game over
-#include "Debug.h" // for game over
-#include "Status.h" // for game over
-
 #include "Draw.h"
-#include "Game.h"
-#include "Grammar.h"
-#include "Gingerbread.h"
 #include "Input.h"
 #include "Inventory.h"
 #include "MenuDocument.h"
+#include "MenuGameOver.h"
 #include "MenuHelp.h"
 #include "MenuInventory.h"
 #include "MenuLoad.h"
@@ -24,10 +17,7 @@
 #include "MenuSettings.h"
 #include "MenuSpells.h"
 #include "MenuTitle.h"
-#include "Player.h"
 #include "VectorUtil.h"
-
-#include <format>
 
 #if _DEBUG
 	#include "MenuDebug.h"
@@ -41,6 +31,7 @@ namespace Menu
 
 // Menus in alphabetic order
 MenuDocument s_menu_document;
+MenuGameOver s_menu_game_over;
 MenuHelp s_menu_help;
 MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
@@ -174,75 +165,8 @@ void show_help()
 
 void show_game_over()
 {
-	set_menu(s_menu_document);
-
-	std::string content = "Game Over.";
-
-	Damage::Cause defeated_by = Player::get_defeated_by();
-
-	if (defeated_by.type == Damage::Cause::Creature)
-	{
-		Creature::Type const creature_type = (Creature::Type)defeated_by.index;
-
-		if (creature_type == Creature::Player)
-		{
-			content = "Game Over.\n\n"
-			"You were defeated by ... yourself.";
-		}
-		else if (creature_type != Creature::None)
-		{
-			content = std::format(
-				"Game Over.\n\n"
-				"You were defeated by {}.",
-				Grammar::format_name_by_type(creature_type,
-					{ .long_name = true, .mode = Grammar::NameParam::Indefinite }));
-		}
-	}
-	else if (defeated_by.type == Damage::Cause::Status)
-	{
-		Status::Index const status = (Status::Index)defeated_by.index;
-		char const* predicate = nullptr;
-		switch (status)
-		{
-			case Status::Dancing:
-				predicate = "careless dancing";
-				break;
-			case Status::Burning:
-				predicate = "catching on fire";
-				break;
-			default:
-				DebugBreak("Missing string for defeated by status.");
-				predicate = "an unexpected situation";
-				break;
-		}
-
-		content = std::format(
-			"Game Over.\n\n"
-			"You were defeated by {}.",
-			predicate);
-	}
-	else if (defeated_by.type == Damage::Cause::Cloud)
-	{
-		Cloud::Type const cloud = (Cloud::Type)defeated_by.index;
-		char const* predicate = nullptr;
-		switch (cloud)
-		{
-			case Cloud::Slime:
-				predicate = "acidic slime";
-				break;
-			default:
-				DebugBreak("Missing string for defeated by cloud.");
-				predicate = "a cloud of errors";
-				break;
-		}
-
-		content = std::format(
-			"Game Over.\n\n"
-			"You were defeated by {}.",
-			predicate);
-	}
-
-	s_menu_document.init(std::move(content), &Game::reset);
+	set_menu(s_menu_game_over);
+	s_menu_game_over.refresh();
 }
 
 void show_house_selection()
