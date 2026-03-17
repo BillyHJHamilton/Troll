@@ -38,6 +38,7 @@ void endround_burning(Creature::Handle creature);
 void endround_impeded(Creature::Handle creature);
 void endround_batty(Creature::Handle creature);
 void endround_calm(Creature::Handle creature);
+void endround_venom(Creature::Handle creature);
 
 // functions for printing message when a status is removed
 void cure_dancing(Creature::Handle const creature);
@@ -48,6 +49,7 @@ void cure_burning(Creature::Handle const creature);
 void cure_impeded(Creature::Handle const creature);
 void cure_batty(Creature::Handle const creature);
 void cure_calm(Creature::Handle const creature);
+void cure_venom(Creature::Handle const creature);
 
 Status::Data s_status_data [Status::Count];
 
@@ -62,6 +64,13 @@ void init ()
 	s_status_data[Status::Impeded] = {"Imped", cstr_LighterYellow, &calc_impeded, &endround_impeded, &cure_impeded};
 	s_status_data[Status::Batty] = {"Batty", cstr_LighterYellow, &calc_batty, &endround_batty, &cure_batty};
 	s_status_data[Status::Calm] = {"Calm", cstr_LighterViolet, &calc_calm, &endround_calm, &cure_calm};
+	s_status_data[Status::Venom] = {"Venom", cstr_LighterViolet, nullptr, &endround_venom, &cure_venom};
+
+	// Validation
+	for (int i = 0; i < Status::Count; ++i)
+	{
+		assert(s_status_data[i].abbrev != nullptr);
+	}
 }
 
 int max_severity (Status::Index status_index)
@@ -310,7 +319,6 @@ void cure_batty(Creature::Handle const creature)
 		+ " no longer being attacked by black winged things.");
 }
 
-
 // ------------------------------------------------------------------------------------------------
 // Calm
 
@@ -328,6 +336,38 @@ void cure_calm(Creature::Handle const creature)
 {
 	Draw::creature_message(creature, std::format("{} no longer {} so calm.",
 		Grammar::You(creature), Grammar::feel(creature)));
+}
+
+// ------------------------------------------------------------------------------------------------
+// Venom
+
+void endround_venom(Creature::Handle creature)
+{
+	int const severity = creature.status_severity(Venom);
+	if (Random::coinflip())
+	{
+		Damage::Packet dmg
+		{
+			.amount = 1,
+			.type = Damage::Basic,
+			.cause = Damage::Cause(Venom)
+		};
+		creature.take_damage(dmg);
+
+		Draw::creature_message(creature, std::format("{} weakened by venom.",
+			Grammar::You_are(creature)));
+	}
+
+	if (Random::one_in(3))
+	{
+		creature.reduce_status(Venom, 1);
+	}
+}
+
+void cure_venom(Creature::Handle const creature)
+{
+	Draw::creature_message(creature, std::format("{} survived the venom.",
+		Grammar::You_have(creature)));
 }
 
 } // namespace status

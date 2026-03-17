@@ -87,6 +87,8 @@ namespace Creature
 		Streeler,
 		FireCrab,
 		BigFireCrab,
+		Doxy,
+		//Imp,
 
 		// AU's!
 		HarryTheHufflepuff_1,

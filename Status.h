@@ -24,6 +24,9 @@ namespace Status
 		Impeded,
 		Batty,
 
+		// Ability statuses
+		Venom,
+
 		// Potion statuses
 		Calm,
 

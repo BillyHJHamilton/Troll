@@ -15,6 +15,7 @@ namespace Ability
 		EatBean,	// Gnome
 		Headbutt,	// Streeler
 		ShootFire,	// Fire crab
+		DoxyBite,	// Doxy
 		Count,
 	};
 

@@ -33,6 +33,11 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::BigFireCrab},
 		{Creature::FireCrab, 2,3},
 	}},
+
+	{ .debug_name="Doxy Swarm", .difficulty=4.0f, .probability=0.3f,
+	  .flags=f_Repeat, .members={
+		{Creature::Doxy, 4,6},
+	}},
 };
 
 static std::vector<int> s_num_spawned;

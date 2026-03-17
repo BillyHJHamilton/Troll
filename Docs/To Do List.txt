@@ -6,6 +6,7 @@ X High score table
 - Some way to win the game (temp victory condition)
 - Show current location/dungeon level
 - AI move to better firing position, at least in simple cases
+- Correct diagonal range handling (at least for melee)
 
 -------------------------------------------------------------------------------
 To Do:
@@ -84,6 +85,15 @@ To Do:
   - Push characters further at higher power?
  - Finite Incantatem
   - In principle it could be targeted, if we have lingering spell effects.
+
+- Status
+ - Prone
+  - Leglock + Flipendo should have a chance to knock you down.
+  - Take one damage when falling down.
+  - While prone, trying to move instead makes you stand up (wasting a turn).
+  - While prone, your evasiveness is further reduced.
+  - And you can't dance while prone.
+  - The imp will also have a tripping attack.
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?

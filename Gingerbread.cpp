@@ -263,7 +263,7 @@ void init()
 		.abil({Ability::StealBean, Ability::EatBean});
 
 	Builder(Creature::Streeler, c_IdentityGeneric,
-		/*Difficulty*/ 0.8f, /*Probability*/ 1.0f, /*HP*/ 4,
+		/*Difficulty*/ 0.8f, /*Probability*/ 0.8f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
 		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
 			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
@@ -271,7 +271,7 @@ void init()
 		.abil({Ability::Headbutt});
 
 	Builder(Creature::FireCrab, c_IdentityGeneric,
-		/*Difficulty*/ 1.5f, /*Probability*/ 1.0f, /*HP*/ 5,
+		/*Difficulty*/ 1.5f, /*Probability*/ 0.8f, /*HP*/ 5,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter)
 		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
@@ -283,6 +283,12 @@ void init()
 		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
+
+	Builder(Creature::Doxy, c_IdentityGeneric,
+		/*Difficulty*/ 1.5f, /*Probability*/ 0.6f, /*HP*/ 4,
+		"doxy", "doxy", 'd', cstr_LighterBlue, Gender::Neuter)
+		.tags(Tag::Stat_Evasive, Tag::Immune_Legs, Tag::Immune_Clothes)
+		.abil({Ability::DoxyBite});
 
 	// Alternate universe characters:
 

@@ -4,6 +4,8 @@
 #include "Draw.h"
 #include "Grammar.h"
 #include "Inventory.h"
+#include "Random.h"
+#include "Status.h"
 
 #include <format>
 
@@ -82,6 +84,19 @@ void fire_gob_hit(EffectParams params)
 	{
 		Draw::creature_message(target, std::format("{} burned!",
 			Grammar::You_are(target)));
+	}
+}
+
+void doxy_bite(EffectParams params)
+{
+	Creature::Handle const user = params.caster;
+	Creature::Handle target = params.target;
+	if (user.valid() && target.valid())
+	{
+		Draw::creature_message(target, std::format("{} {} {} a nasty bite!",
+			Grammar::You(user), Grammar::verbs("give",user), Grammar::you(target)));
+
+		target.inflict_status(Status::Venom, Random::in_range(3,4));
 	}
 }
 

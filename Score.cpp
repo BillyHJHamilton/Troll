@@ -170,6 +170,9 @@ void make_defeated_by_string(std::string& out_string)
 			case Status::Burning:
 				out_string = "catching on fire";
 				break;
+			case Status::Venom:
+				out_string = "venom";
+				break;
 			default:
 				DebugBreak("Defeated by: unhandled status index.");
 				out_string = "an unexpected situation";

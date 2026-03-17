@@ -190,6 +190,22 @@ std::string You_are (Creature::Handle creature)
 	}
 }
 
+std::string You_have (Creature::Handle creature)
+{
+	if (creature.is_player())
+	{
+		return "You have";
+	}
+	else if (creature.is_generic())
+	{
+		return std::format("The {} has", creature.short_name());
+	}
+	else
+	{
+		return std::format("{} has", creature.short_name());
+	}
+}
+
 std::string verbs(std::string verb, Creature::Handle creature)
 {
 	if (creature.is_player())

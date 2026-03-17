@@ -35,6 +35,7 @@ namespace Grammar
 	std::string your_pr (Creature::Handle creature); // uses his/her/its instead of name
 
 	std::string You_are (Creature::Handle creature);
+	std::string You_have (Creature::Handle creature);
 	std::string verbs (std::string verb, Creature::Handle creature);
 	std::string feel (Creature::Handle creature);
 }
