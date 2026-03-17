@@ -249,6 +249,11 @@ void init()
 		"Ravenclaw", "First-Year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
 		.magic(8, "MW VM RS");
 
+	Builder(Creature::Gryffindor_1, c_IdentityGeneric,
+		/*Difficulty*/ 0.7f, /*Probability*/ 0.3f, /*HP*/ 4,
+		"Gryffindor", "First-Year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Male)
+		.magic(7, "FP RS LC");
+
 	Builder(Creature::Slytherin_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f, /*HP*/ 4,
 		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)

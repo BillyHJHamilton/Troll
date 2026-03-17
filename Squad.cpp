@@ -22,7 +22,7 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::Gnome, 2,5},
 	}},
 
-	{ .debug_name="Puff Posse", .difficulty=2.0f, .probability=0.2f,
+	{ .debug_name="Puff Posse", .difficulty=1.5f, .probability=0.1f,
 	  .flags=f_Repeat, .members={
 		{Creature::Hufflepuff_1, 3,4}
 	}},

@@ -80,6 +80,7 @@ namespace Creature
 		// Generic Students
 		Hufflepuff_1,
 		Ravenclaw_1,
+		Gryffindor_1,
 		Slytherin_1,
 
 		// Fantastic Beasts and Where to Find Them
