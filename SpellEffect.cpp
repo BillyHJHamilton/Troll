@@ -65,6 +65,22 @@ void flipendo (EffectParams params)
 			Grammar::You_are(target)));
 		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
 	}
+	else if ((target.type() == Creature::FireCrab || target.type() == Creature::BigFireCrab)
+		&& !target.has_status(Status::Prone) && Random::coinflip())
+	{
+		Draw::creature_message(target, std::format("{} flipped on its back!",
+			Grammar::You_are(target)));
+		target.inflict_status(Status::Prone, 1);
+	}
+	else if (target.type() != Creature::FireCrab && target.type() != Creature::BigFireCrab &&
+		target.has_status(Status::LegLocked) && !target.has_status(Status::Prone)
+		&& Random::in_range(1,10) <= target.status_severity(Status::LegLocked))
+	{
+		Draw::creature_message(target, std::format("{} {} down!",
+			Grammar::You(target), Grammar::verbs("fall", target)));
+		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
+		target.inflict_status(Status::Prone, 1);
+	}
 	else if (World::read().is_solid(knock_pos))
 	{
 		Draw::creature_message(target, std::format("{0} knocked into the wall!",

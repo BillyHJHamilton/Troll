@@ -452,12 +452,20 @@ std::string Handle::status_string () const
 	while (i < Status::Count && num_out < 6)
 	{
 		Status::Index si = static_cast<Status::Index>(i);
-		if (has_status(si))
+		if (has_status(si)) // && !Status::hidden(si)
 		{
 			if (num_out < 5)
 			{
-				outs << std::format("[color={}]{}({})[/color] ",
-					Status::colour(si), Status::abbrev(si), status_severity(si));
+				if (Status::show_number(si))
+				{
+					outs << std::format("[color={}]{}({})[/color] ",
+						Status::colour(si), Status::abbrev(si), status_severity(si));
+				}
+				else
+				{
+					outs << std::format("[color={}]{}[/color] ",
+						Status::colour(si), Status::abbrev(si));
+				}
 			}
 			else
 			{

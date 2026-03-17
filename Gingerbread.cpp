@@ -252,13 +252,13 @@ void init()
 	Builder(Creature::Slytherin_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f, /*HP*/ 4,
 		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)
-		.magic(6, "FN FM LM");
+		.magic(7, "FN FM LM");
 
 	// Fantastic Beasts and Where To Find Them:
 
 	Builder(Creature::Gnome, c_IdentityGeneric,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 2,
-		"gnome", "garden gnome", 'g', cstr_LighterOrange, Gender::Neuter)
+		"gnome", "garden gnome", 'g', cstr_LightOrange, Gender::Neuter)
 		.tags(Tag::Immune_Clothes, Tag::Stat_Evasive)
 		.abil({Ability::StealBean, Ability::EatBean});
 
@@ -289,6 +289,12 @@ void init()
 		"doxy", "doxy", 'd', cstr_LighterBlue, Gender::Neuter)
 		.tags(Tag::Stat_Evasive, Tag::Immune_Legs, Tag::Immune_Clothes)
 		.abil({Ability::DoxyBite});
+	
+	Builder(Creature::Imp, c_IdentityGeneric,
+		/*Difficulty*/ 2.0f, /*Probability*/ 0.5f, /*HP*/ 5,
+		"imp", "imp", 'i', cstr_LighterOrange, Gender::Neuter)
+		.tags(Tag::Stat_Evasive, Tag::Immune_Clothes)
+		.abil({Ability::TripKick, Ability::Scratch});
 
 	// Alternate universe characters:
 

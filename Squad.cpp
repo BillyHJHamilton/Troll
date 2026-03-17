@@ -22,6 +22,11 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::Gnome, 2,5},
 	}},
 
+	{ .debug_name="Puff Posse", .difficulty=2.0f, .probability=0.2f,
+	  .flags=f_Repeat, .members={
+		{Creature::Hufflepuff_1, 3,4}
+	}},
+
 	{ .debug_name="Crabbe and Goyle", .difficulty=3.0f, .probability=1.0f,
 	  .flags=f_None, .members={
 		{Creature::Crabbe_3},
@@ -34,7 +39,12 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::FireCrab, 2,3},
 	}},
 
-	{ .debug_name="Doxy Swarm", .difficulty=4.0f, .probability=0.3f,
+	{ .debug_name="Imp Nest", .difficulty=3.0f, .probability=0.3f,
+	  .flags=f_Repeat, .members={
+		{Creature::Imp, 2,3},
+	}},
+
+	{ .debug_name="Doxy Nest", .difficulty=4.0f, .probability=0.3f,
 	  .flags=f_Repeat, .members={
 		{Creature::Doxy, 4,6},
 	}},

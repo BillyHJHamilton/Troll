@@ -16,6 +16,8 @@ namespace Ability
 		Headbutt,	// Streeler
 		ShootFire,	// Fire crab
 		DoxyBite,	// Doxy
+		TripKick,	// Imp
+		Scratch,	// Imp
 		Count,
 	};
 

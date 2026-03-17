@@ -12,4 +12,6 @@ namespace Ability
 	void headbutt(EffectParams params);
 	void fire_gob_hit(EffectParams params);
 	void doxy_bite(EffectParams params);
+	void trip_kick(EffectParams params);
+	void scratch(EffectParams params);
 }

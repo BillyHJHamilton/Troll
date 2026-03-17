@@ -21,8 +21,19 @@ std::string capitalized (std::string s)
 	return s;
 }
 
-std::string format_name_internal (bool is_player, bool is_generic, Gender gender,
-	char const* name, NameParam param = {})
+bool start_vowel (Creature::Type creature)
+{
+	switch (creature)
+	{
+		case Creature::Imp:
+			return true;
+		default:
+			return false;
+	}
+}
+
+std::string format_name_internal (bool is_player, bool is_generic, bool vowel,
+	Gender gender, char const* name, NameParam param = {})
 {
 	if (is_player)
 	{
@@ -52,8 +63,8 @@ std::string format_name_internal (bool is_player, bool is_generic, Gender gender
 
 			case NameParam::Indefinite:
 				return (param.capitalize) ?
-					std::format("A {}", name) :
-					std::format("a {}", name);
+					(vowel ? std::format("An {}", name) : std::format("A {}", name)) :
+					(vowel ? std::format("an {}", name) : std::format("a {}", name));
 
 			case NameParam::DefinitePossessive:
 				return (param.capitalize) ?
@@ -62,8 +73,8 @@ std::string format_name_internal (bool is_player, bool is_generic, Gender gender
 
 			case NameParam::IndefinitePossessive:
 				return (param.capitalize) ?
-					std::format("A {}\'s", name) :
-					std::format("a {}\'s", name);
+					(vowel ? std::format("An {}\'s", name) : std::format("A {}\'s", name)) :
+					(vowel ? std::format("an {}\'s", name) : std::format("a {}\'s", name));
 
 			case NameParam::Plain:
 			case NameParam::NominativePronoun:
@@ -131,8 +142,8 @@ std::string format_name_internal (bool is_player, bool is_generic, Gender gender
 
 std::string format_name (Creature::Handle creature, NameParam param)
 {
-	return format_name_internal (
-		creature.is_player(), creature.is_generic(), creature.gender(),
+	return format_name_internal (creature.is_player(), creature.is_generic(),
+		start_vowel(creature.type()), creature.gender(),
 		param.long_name ? creature.long_name() : creature.short_name(), param);
 }
 
@@ -140,8 +151,8 @@ std::string format_name_by_type (Creature::Type creature_type, NameParam param)
 {
 	Gingerbread::Stats stats = Gingerbread::read(creature_type);
 
-	return format_name_internal (
-		(creature_type == Creature::Player), stats.identity == c_IdentityGeneric,
+	return format_name_internal ((creature_type == Creature::Player),
+		stats.identity == c_IdentityGeneric, start_vowel(creature_type),
 		stats.gender, param.long_name ? stats.long_name : stats.short_name, param);
 }
 

@@ -26,6 +26,7 @@ namespace Status
 
 		// Ability statuses
 		Venom,
+		Prone,
 
 		// Potion statuses
 		Calm,
@@ -45,8 +46,10 @@ namespace Status
 	};
 
 	void init();
-
+	
 	int max_severity(Status::Index status);
+	bool show_number(Status::Index status);
+
 	char const* abbrev(Status::Index status);
 	char const* colour(Status::Index status);
 

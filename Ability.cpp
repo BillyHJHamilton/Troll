@@ -27,7 +27,9 @@ static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
 	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	TargetType::Self,		&eat_bean },
 	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	TargetType::Melee,		&headbutt },
 	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	TargetType::Projectile,	&fire_gob_hit},
-	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	70,	1,	0,0,	TargetType::Melee,		&doxy_bite },
+	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	TargetType::Melee,		&doxy_bite },
+	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	TargetType::Melee,		&trip_kick },
+	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	TargetType::Melee,		&scratch },
 };
 
 static std::unordered_map<Ability::Index,Ability::ProjectileData> s_projectiles;

@@ -100,4 +100,36 @@ void doxy_bite(EffectParams params)
 	}
 }
 
+void trip_kick(EffectParams params)
+{
+	Creature::Handle const user = params.caster;
+	Creature::Handle target = params.target;
+	if (user.valid() && target.valid())
+	{
+		if (target.has_tag(Creature::Tag::Immune_Legs) ||
+			target.has_status(Status::Prone))
+		{
+			Draw::creature_message(target, std::format("{} {} {}!",
+				Grammar::You(user), Grammar::verbs("kick",user), Grammar::you(target)));
+		}
+		else
+		{
+			Draw::creature_message(target, std::format("{} {} {}!",
+				Grammar::You(user), Grammar::verbs("trip",user), Grammar::you(target)));
+			target.inflict_status(Status::Prone, 1);
+		}
+	}
+}
+
+void scratch(EffectParams params)
+{
+	Creature::Handle const user = params.caster;
+	Creature::Handle const target = params.target;
+	if (user.valid() && target.valid())
+	{
+		Draw::creature_message(target, std::format("{} {} {}!",
+			Grammar::You(user), Grammar::verbs("scratche",user), Grammar::you(target)));
+	}
+}
+
 }

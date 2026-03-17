@@ -15,6 +15,7 @@
 #include "Random.h"
 #include "Spell.h"
 #include "SpellEffect.h"
+#include "Status.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "World.h"
@@ -241,6 +242,12 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 		if (move_mode == MoveMode::Walk)
 		{
 			assert(creature.ready_to_move());
+
+			if (creature.has_status(Status::Prone))
+			{
+				creature.cure_status(Status::Prone);
+				return true;
+			}
 
 			int const failure = creature.walk_failure();
 			int const roll = Random::in_range(0, 99);

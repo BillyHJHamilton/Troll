@@ -1218,6 +1218,9 @@ float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::
 				0.0f;
 			break;
 
+		case Ability::TripKick:
+			return 5.0f;
+
 		default:
 			if (Ability::is_damaging(ability))
 			{

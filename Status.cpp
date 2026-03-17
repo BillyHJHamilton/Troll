@@ -28,6 +28,7 @@ void calc_burning(Creature::Handle creature, Creature::DerivedStats& ds, int sev
 void calc_impeded(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_batty(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 void calc_calm(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
+void calc_prone(Creature::Handle creature, Creature::DerivedStats& ds, int severity);
 
 // functions for updating each status at end of round
 void endround_dancing(Creature::Handle creature);
@@ -50,6 +51,7 @@ void cure_impeded(Creature::Handle const creature);
 void cure_batty(Creature::Handle const creature);
 void cure_calm(Creature::Handle const creature);
 void cure_venom(Creature::Handle const creature);
+void cure_prone(Creature::Handle const creature);
 
 Status::Data s_status_data [Status::Count];
 
@@ -63,8 +65,11 @@ void init ()
 	s_status_data[Status::Burning] = {"Fire", cstr_LighterYellow, &calc_burning, &endround_burning, &cure_burning};
 	s_status_data[Status::Impeded] = {"Imped", cstr_LighterYellow, &calc_impeded, &endround_impeded, &cure_impeded};
 	s_status_data[Status::Batty] = {"Batty", cstr_LighterYellow, &calc_batty, &endround_batty, &cure_batty};
+
+	s_status_data[Status::Venom] = {"Venom", cstr_LighterYellow, nullptr, &endround_venom, &cure_venom};
+	s_status_data[Status::Prone] = {"Prone", cstr_LighterYellow, &calc_prone, nullptr, &cure_prone};
+
 	s_status_data[Status::Calm] = {"Calm", cstr_LighterViolet, &calc_calm, &endround_calm, &cure_calm};
-	s_status_data[Status::Venom] = {"Venom", cstr_LighterViolet, nullptr, &endround_venom, &cure_venom};
 
 	// Validation
 	for (int i = 0; i < Status::Count; ++i)
@@ -75,14 +80,29 @@ void init ()
 
 int max_severity (Status::Index status_index)
 {
-	if (status_index == Status::Shield)
-		return 4;
-//	else if (status_index == Status::Disintegration)
-//		return 2;
-//	else if (status_index == Status::Hate)
-//		return 100;
-	else
-		return 10;
+	switch(status_index)
+	{
+		case Shield:
+			return 4;
+	//	case Disintegration:
+	//		return 2
+		case Prone:
+			return 1;
+		default:
+			return 10;
+	}
+}
+
+bool show_number (Status::Index status_index)
+{
+	switch(status_index)
+	{
+		case Prone:
+			return false;
+
+		default:
+			return true;
+	}
 }
 
 char const* abbrev(Status::Index status)
@@ -368,6 +388,20 @@ void cure_venom(Creature::Handle const creature)
 {
 	Draw::creature_message(creature, std::format("{} survived the venom.",
 		Grammar::You_have(creature)));
+}
+
+// ------------------------------------------------------------------------------------------------
+// Prone
+
+void calc_prone(Creature::Handle creature, Creature::DerivedStats& ds, int severity)
+{
+	ds.evasion -= 30;
+}
+
+void cure_prone(Creature::Handle const creature)
+{
+	Draw::creature_message(creature, std::format("{} {} back up.",
+		Grammar::You(creature), Grammar::verbs("get", creature)));
 }
 
 } // namespace status
