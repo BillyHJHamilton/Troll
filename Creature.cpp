@@ -764,10 +764,15 @@ void Handle::update_derived_stats ()
 		}
 	}
 
-	if (has_tag(Creature::Tag::Stat_Evasive))
+	if (has_tag(Creature::Tag::Evade_High))
 	{
 		ds.evasion += 25;
 	}
+	else if (has_tag(Creature::Tag::Evade_Medium))
+	{
+		ds.evasion += 12;
+	}
+
 }
 
 //-------------------------------------------------------------------------------------------------

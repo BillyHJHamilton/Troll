@@ -111,7 +111,7 @@ bool in_range (Ability::Index index, Vec3 origin, Vec3 target)
 			return chessboard_adjacent(origin.xy(), target.xy());
 
 		case TargetType::Projectile:
-			return within_range(origin.xy(), target.xy(), get_range(index));
+			return range_2d(origin, target, get_range(index));
 
 		default:
 			DebugBreak();

@@ -264,7 +264,7 @@ void init()
 	Builder(Creature::Gnome, c_IdentityGeneric,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 2,
 		"gnome", "garden gnome", 'g', cstr_LightOrange, Gender::Neuter)
-		.tags(Tag::Immune_Clothes, Tag::Stat_Evasive)
+		.tags(Tag::Immune_Clothes, Tag::Evade_High)
 		.abil({Ability::StealBean, Ability::EatBean});
 
 	Builder(Creature::Streeler, c_IdentityGeneric,
@@ -292,13 +292,13 @@ void init()
 	Builder(Creature::Doxy, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 0.6f, /*HP*/ 4,
 		"doxy", "doxy", 'd', cstr_LighterBlue, Gender::Neuter)
-		.tags(Tag::Stat_Evasive, Tag::Immune_Legs, Tag::Immune_Clothes)
+		.tags(Tag::Evade_High, Tag::Immune_Legs, Tag::Immune_Clothes)
 		.abil({Ability::DoxyBite});
 	
 	Builder(Creature::Imp, c_IdentityGeneric,
 		/*Difficulty*/ 2.0f, /*Probability*/ 0.5f, /*HP*/ 5,
 		"imp", "imp", 'i', cstr_LighterOrange, Gender::Neuter)
-		.tags(Tag::Stat_Evasive, Tag::Immune_Clothes)
+		.tags(Tag::Evade_Medium, Tag::Immune_Clothes)
 		.abil({Ability::TripKick, Ability::Scratch});
 
 	// Alternate universe characters:

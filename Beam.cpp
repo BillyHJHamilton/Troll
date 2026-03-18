@@ -61,7 +61,7 @@ void shoot_ability (Ability::Index ability, Creature::Handle user, Vec3 target_p
 
 int accuracy_at_range(int base_accuracy, Vec3 start, Vec3 end)
 {
-	int const dist = (int)euclidean_distance(start, end);
+	int const dist = (int)euclid_2d(start, end);
 	int const loss = dist * c_AccuracyLoss;
 	return std::max(c_MinRangedAccuracy, base_accuracy - loss);
 }
@@ -239,10 +239,11 @@ void shoot_beam_on_stairs (Beam::Data & beam)
 	}
 }
 
-void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint, char const* colour, LineCache::Itr3D const& line_itr)
+void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoint,
+	char const* colour, LineCache::Itr3D const& line_itr)
 {
-	bool const out_of_range = !within_range(beam.start_pos, beam.pos, beam.max_range);
-	if (out_of_range)
+	bool const in_range = range_2d(beam.start_pos, beam.pos, beam.max_range);
+	if (!in_range)
 	{
 		beam.done = true;
 	}

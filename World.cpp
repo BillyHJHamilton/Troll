@@ -420,7 +420,7 @@ void World::add_stairs_visibility(Vec3 viewer)
 void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
 {
 	int constexpr c_MinDist = 3;
-	int constexpr c_MaxDist = 7;
+	int constexpr c_MaxDist = 8;
 	for (int r = c_MinDist; r <= c_MaxDist; ++r)
 	{
 		Vec3 const open_pos = viewer.adjusted(a, r*sign);
@@ -486,7 +486,7 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 {
 	PerfTimer perf0("get_los");
 
-	if (range != -1 && !within_range(start, end, range))
+	if (range != -1 && !range_2d(start, end, range))
 	{
 		return c_Invalid;
 	}
@@ -543,7 +543,7 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 	}
 
 	if (range != -1 &&
-		!within_range(start, end, range - cloud_loss))
+		!range_2d(start, end, range - cloud_loss))
 	{
 		// The clouds were too thick.
 		return false;

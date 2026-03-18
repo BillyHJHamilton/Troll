@@ -145,24 +145,35 @@ Vec2 componentwise_min(Vec2 a, Vec2 b);
 Vec2 componentwise_max(Vec2 a, Vec2 b);
 
 // Pythagoras
-int squared_distance(Vec2 p0, Vec2 p1);
+int square_dist(Vec2 p0, Vec2 p1);
 
-// Returns true if euclidean distance <= range (by checking squared_distance).
-bool within_range(Vec2 p0, Vec2 p1, int max_range);
-bool within_range(Vec2 p0, Vec2 p1, float max_range);
+// Checks against squared distance.
+// Doesn't include the +0.5 from rounded_range.
+bool strict_range(Vec2 p0, Vec2 p1, int max_range);
 
-// Don't use this if you could use squared_distance or within_range, of course.
-float euclidean_distance(Vec2 p0, Vec2 p1);
+// Returns true if euclidean distance <= range (by checking square_dist).
+bool float_range(Vec2 p0, Vec2 p1, float max_range);
+
+// Checks "float_range" with a float range of max_range + 0.5f.
+// This is the standard method for attack and vision ranges in Troll.
+inline bool rounded_range(Vec2 p0, Vec2 p1, int max_range)
+{
+	return float_range(p0, p1, (float)max_range + 0.5f);
+}
+
+// Gets the euclidean distance (the square root of square_dist).
+// Don't use this if you could use one of the cheaper range functions, of course.
+float euclid(Vec2 p0, Vec2 p1);
 
 // Sum of distance in each dimension (i.e., distance with no diagonals allowed).
-int manhattan_distance(Vec2 p0, Vec2 p1);
+int manhattan(Vec2 p0, Vec2 p1);
 
 // Distance in shortest dimension (i.e., distance if diagonals cost only 1).
-int chessboard_distance(Vec2 p0, Vec2 p1);
+int chessboard(Vec2 p0, Vec2 p1);
 
 inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
 {
-	return chessboard_distance(p0,p1) == 1;
+	return chessboard(p0,p1) == 1;
 }
 
 // Support for unordered_map<Vec2>
@@ -279,21 +290,37 @@ inline Vec3 Vec2::xyz(int z) const
 inline Vec3 componentwise_min(Vec3 a, Vec3 b);
 inline Vec3 componentwise_max(Vec3 a, Vec3 b);
 
-// Pythagoras
-int squared_distance(Vec3 p0, Vec3 p1);
+// Calls rounded_range on the xy components of the vectors.
+inline bool range_2d(Vec3 p0, Vec3 p1, int max_range)
+{
+	return rounded_range(p0.xy(), p1.xy(), max_range);
+}
 
-// Returns true if euclidean distance <= range (by checking squared_distance).
-bool within_range(Vec3 p0, Vec3 p1, int max_range);
-bool within_range(Vec3 p0, Vec3 p1, float max_range);
+// Get euclidean distance on the xy components of the vectors.
+inline bool euclid_2d(Vec3 p0, Vec3 p1)
+{
+	return euclid(p0.xy(), p1.xy());
+}
 
-// Don't use this if you could use the above, of course.
-float euclidean_distance(Vec3 p0, Vec3 p1);
+// Get manhattan distance on the xy components of the vectors.
+inline bool manhattan_2d(Vec3 p0, Vec3 p1)
+{
+	return manhattan(p0.xy(), p1.xy());
+}
 
-// Sum of distance in each dimension (i.e., distance with no diagonals allowed).
-int manhattan_distance(Vec3 p0, Vec3 p1);
+// Get chessboard distance on the xy components of the vectors.
+inline bool chessboard_2d(Vec3 p0, Vec3 p1)
+{
+	return chessboard(p0.xy(), p1.xy());
+}
 
-// Distance in shortest dimension (i.e., distance if diagonals cost only 1).
-int chessboard_distance(Vec3 p0, Vec3 p1);
+// For the rare case that you really want to do these operations in 3D space.
+int square_dist_3d(Vec3 p0, Vec3 p1);
+bool strict_range_3d(Vec3 p0, Vec3 p1, int range);
+bool range_3d(Vec3 p0, Vec3 p1, float range);
+float euclid_3d(Vec3 p0, Vec3 p1);
+int manhattan_3d(Vec3 p0, Vec3 p1);
+int chessboard_3d(Vec3 p0, Vec3 p1);
 
 // Support for unordered_map<Vec3>
 namespace std

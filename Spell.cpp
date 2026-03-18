@@ -187,7 +187,7 @@ bool in_range (Spell::Index index, Vec3 origin, Vec3 target)
 		case TargetType::Creature:
 		case TargetType::Sight:
 		case TargetType::Tile:
-			return within_range(origin.xy(), target.xy(), get_range(index));
+			return rounded_range(origin.xy(), target.xy(), get_range(index));
 
 		default:
 			DebugBreak();
