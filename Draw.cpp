@@ -110,12 +110,12 @@ Vec3 View::mouse_to_global_pos() const
 	return pos2.xyz(get_z(pos2));
 }
 
-void update_view (int width, int height)
+void update_view (Box2 viewport)
 {
-	s_view.viewport = Box2(0, 0, width, height);
+	s_view.viewport = viewport;
 
 	// Centre the view on the player
-	Vec2 const half_vec{width/2, height/2};
+	Vec2 const half_vec{viewport.size.x/2, viewport.size.y/2};
 	Vec3 const viewer = Player::pos();
 	s_view.start = viewer.xy() - half_vec;
 	s_view.z = viewer.z;
@@ -341,15 +341,15 @@ void update_screen()
 	int const c_SpellAreaLeft = Config::get_width() - c_SpellAreaWidth;
 
 	int const c_ViewWidth = (c_StatAreaLeft - 1) / c_TileWidthFactor; // View uses wide tiles
-	int const c_ViewHeight = Config::get_height();
+	int const c_ViewHeight = Config::get_height() - 1;
 
-	update_view(c_ViewWidth, c_ViewHeight);
+	update_view(Box2{0, 1, c_ViewWidth, c_ViewHeight});
 	Draw::View const& view = get_view();
 
 	terminal_font("tile");
 	World::read().draw(view);
 
-	Gingerbread::edit_player_stats().colour = get_hp_colour(Player::handle()); // try this?
+	Gingerbread::edit_player_stats().colour = get_hp_colour(Player::handle());
 	draw_creature(Creature::Player, view);
 
 	Creature::draw_visible_creatures(view);
@@ -358,6 +358,10 @@ void update_screen()
 	// restore default font for printing text
 	terminal_font("");
 	terminal_color(cstr_White);
+
+	// map name
+	char const* map_name = World::read().find_map_name(Player::pos());
+	terminal_print_ext(0, 0, c_StatAreaLeft - 1, 1, TK_ALIGN_CENTER, map_name);
 
 	// player stat areas
 	Box2 const player_stat_area = Box2(c_StatAreaLeft, 1, c_StatAreaWidth, 6);

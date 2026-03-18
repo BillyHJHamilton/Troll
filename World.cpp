@@ -102,6 +102,17 @@ int World::find_map(Vec3 global_pos) const
 	return c_Invalid;
 }
 
+char const* World::find_map_name(Vec3 global_pos) const
+{
+	int const map_id = find_map(global_pos);
+	if (map_id != c_Invalid)
+	{
+		return read_map(map_id).get_name();
+	}
+
+	return "";
+}
+
 float World::find_map_difficulty(Vec3 pos) const
 {
 	int const map_id = find_map(pos);

@@ -20,8 +20,10 @@ To Do:
  - Sidestep to find good attack position if shooting through friends
 
 - Creatures
- - Size category?  Could effect evasion.
-  - Or just have an evasiveness category, or evasiveness traits...
+ - Random spell selection trait for the generic students
+  - Maybe with some customization, though I'm not sure how
+  - It could be you enter a list and it culls it down to 2-3 spells, say.
+  - Or else you enter some, and it fills the rest.
 
 - Features
  - Chests should really be placed as part of Map Generation, not creature spawning
@@ -64,11 +66,13 @@ To Do:
 - Miscast effects
 
 - Serialization
- - High score table
  - srz_sparse_grid - for clouds and items
   - take in the grid and the "default" value
   - on save, create a temp array of positions difft from default, then save that
   - on load, load the temp array, then copy the values into the grid after filling with default
+ - Maybe should add a "debug" flag to the saved files.
+  - Otherwise "Megadrill" messes up the character spells-known lists.
+  - Alternatively, include megadrill in the real game, but don't allow selecting it.
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.

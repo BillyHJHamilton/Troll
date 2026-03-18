@@ -73,4 +73,13 @@ void BuildWorld()
 	}
 
 	//world.edit_map(dungeon_id).get_generator().Generate();
+
+	// Set map names
+	world.edit_map(0).set_name("Hogwarts - Ground Floor");
+	world.edit_map(1).set_name("Hogwarts - First Floor");
+	world.edit_map(2).set_name("Hogwarts - Second Floor");
+	world.edit_map(3).set_name("Hogwarts - Third Floor");
+	world.edit_map(4).set_name("Hogwarts - Fourth Floor");
+	world.edit_map(5).set_name("Hogwarts - Fifth Floor");
+	world.edit_map(6).set_name("Hogwarts - Sixth Floor");
 }

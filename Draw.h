@@ -9,7 +9,7 @@ namespace Draw
 {
 	struct View
 	{
-		Box2 viewport; // on the screen
+		Box2 viewport; // on the screen, in "wide" tiles
 		Vec2 start; // upper left corner of draw area in global coords
 		int z; // vertical slice to draw
 		bool ignore_visibility;
@@ -48,7 +48,7 @@ namespace Draw
 	void init();
 	void clear();
 
-	void update_view(int width, int height);
+	void update_view(Box2 viewport);
 
 	// Gets the cached view, from the last time update_view was called.
 	View const& get_view();

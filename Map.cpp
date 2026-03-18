@@ -30,6 +30,7 @@ void Map::serialize(ISerializer& s)
 {
 	s.srz_box2(map_box);
 	s.srz_int(global_z);
+	s.srz_string(name);
 	s.srz_float(difficulty);
 
 	s.srz_grid(terrain, "map.terrain");
@@ -47,6 +48,11 @@ void Map::serialize(ISerializer& s)
 	{
 		get_generator().Serialize(s);
 	}
+}
+
+void Map::set_name(std::string&& new_name)
+{
+	name = new_name;
 }
 
 MapGenerator& Map::get_generator()

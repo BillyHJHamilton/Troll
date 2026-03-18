@@ -26,6 +26,7 @@ public:
 	// If no map contains the position, returns c_Invalid.
 	int find_map(Vec3 global_pos) const;
 
+	char const* find_map_name(Vec3 global_pos) const;
 	float find_map_difficulty(Vec3 global_pos) const;
 
 	Terrain::Type get_terrain(Vec3 pos) const;

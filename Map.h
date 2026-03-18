@@ -19,11 +19,14 @@ public:
 	void init(int z, float map_difficulty, Box2 box, Terrain::Type fill);
 	void serialize(ISerializer& s);
 
+	void set_name(std::string&& new_name);
+
 	MapGenerator& get_generator();
 
 	Box2 get_box() const { return map_box; }
 	Box2 get_box_minus_border(int border_size) const { return map_box.minus_border(border_size); }
 	int get_z() const { return global_z; }
+	char const* get_name() const { return name.c_str(); }
 	float get_difficulty() const { return difficulty; }
 
 	inline Vec2 global_to_local(Vec2 global) const { return global - map_box.min; }
@@ -74,6 +77,8 @@ protected:
 
 	// All maps are flat, so it only needs a single z coordinate.
 	int global_z = 0;
+
+	std::string name;
 
 	// Map's difficulty rating, for creature and item placement.
 	float difficulty = 0.0f;
