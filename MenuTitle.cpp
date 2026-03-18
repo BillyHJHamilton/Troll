@@ -72,7 +72,7 @@ void MenuTitle::draw_screen ()
 	terminal_print(25, 21, cstr_CastleText);
 }
 
-void MenuTitle::handle_input (int key)
+Input::Result MenuTitle::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
@@ -80,40 +80,44 @@ void MenuTitle::handle_input (int key)
 		{
 			case TitleMenuOption::NewGame:
 				Menu::show_name_entry();
-				break;
+				return Input::Result::Handled;
+
 			case TitleMenuOption::LoadGame:
 				Menu::push();
 				Menu::show_load();
-				break;
+				return Input::Result::Handled;
+
 			case TitleMenuOption::Help:
 				Menu::push();
 				Menu::show_help();
-				break;
+				return Input::Result::Handled;
+
 			case TitleMenuOption::Settings:
 				Menu::push();
 				Menu::show_settings();
-				break;
+				return Input::Result::Handled;
+
 			case TitleMenuOption::HighScores:
 				Menu::push();
 				Menu::show_high_scores();
-				break;
+				return Input::Result::Handled;
+
 #if _DEBUG
 			case TitleMenuOption::SetLogging:
 				Menu::push();
 				Menu::show_debug_log_categories();
-				break;
+				return Input::Result::Handled;
 #endif
 			case TitleMenuOption::Quit:
 				Input::request_quit();
-				break;
+				return Input::Result::Handled;
 		}
 	}
 	else if (key == TK_ESCAPE)
 	{
 		Input::request_quit();
+		return Input::Result::Handled;
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }

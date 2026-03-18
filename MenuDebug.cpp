@@ -31,7 +31,7 @@ void MenuDebug::init()
 	});
 }
 
-void MenuDebug::handle_input (int key)
+Input::Result MenuDebug::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
@@ -39,7 +39,8 @@ void MenuDebug::handle_input (int key)
 		{
 			case DebugMenuOption::Cancel:
 				Menu::close();
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::LearnAllSpells:
 				for (int i = 0; i < Spell::Count; ++i)
 				{
@@ -47,39 +48,42 @@ void MenuDebug::handle_input (int key)
 				}
 				//Menu::close();
 				Draw::add_message("Your knowledge returns from future past.");
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::IncreaseStats:
 				Gingerbread::edit_player_stats().max_hp += 100;
 				Gingerbread::edit_player_stats().skill_magic += 100;
 				Player::handle().heal_hp(100);
 				//Menu::close();
 				Draw::add_message("You feel remarkably fit.");
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::LowerMagicSkill:
 				Gingerbread::edit_player_stats().skill_magic = 10;
 				Draw::add_message("You feel unskillful.");
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::ToggleRevealMap:
 				Draw::toggle_los_cheat();
 				//Menu::close();
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::DefeatAllEnemies:
 				for (Creature::HandleItr itr(1); itr; ++itr)
 				{
 					itr->take_damage({1000, Damage::Basic, {}});
 				}
 				//Menu::close();
-				break;
+				return Input::Result::Handled;
+
 			case DebugMenuOption::SetLogCategories:
 				Menu::push();
 				Menu::show_debug_log_categories();
-				break;
+				return Input::Result::Handled;
 		}
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -102,7 +106,7 @@ void MenuDebugLogCategories::init()
 	add_option("Disable All", c_DisableAll);
 }
 
-void MenuDebugLogCategories::handle_input (int key)
+Input::Result MenuDebugLogCategories::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
@@ -110,24 +114,21 @@ void MenuDebugLogCategories::handle_input (int key)
 		if (value == c_Invalid)
 		{
 			Menu::back();
+			return Input::Result::Handled;
 		}
 		else if (value == c_EnableAll)
 		{
 			Debug::set_all_enabled(true);
+			return Input::Result::Handled;
 		}
 		else if (value == c_DisableAll)
 		{
 			Debug::set_all_enabled(false);
-		}
-		else
-		{
-			MenuList::handle_input(key);
+			return Input::Result::Handled;
 		}
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }
 
 bool MenuDebugLogCategories::is_toggle (int option)

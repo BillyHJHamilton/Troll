@@ -27,19 +27,21 @@ void MenuName::draw_screen ()
 	terminal_layer(0);
 }
 
-void MenuName::handle_input (int key)
+Input::Result MenuName::handle_input (int key)
 {
 	// TODO Should we store the player name in wstring to support unusual characters?
 
 	if (key == TK_ESCAPE)
 	{
 		Menu::show_title();
+		return Input::Result::Handled;
 	}
 	else if (key == TK_BACKSPACE)
 	{
 		if (name.size() > 0)
 		{
 			name.pop_back();
+			return Input::Result::Handled;
 		}
 	}
 	else if (key == TK_ENTER)
@@ -48,6 +50,7 @@ void MenuName::handle_input (int key)
 		{
 			Player::set_name(name);
 			Menu::show_house_selection();
+			return Input::Result::Handled;
 		}
 	}
 	else if (terminal_check(TK_CHAR))
@@ -58,7 +61,10 @@ void MenuName::handle_input (int key)
 		{
 			name.push_back(c);
 		}
+		return Input::Result::Handled;
 	}
+
+	return Input::Result::Skipped;
 }
 
 void MenuName::init()

@@ -19,13 +19,14 @@ void MenuSpells::draw_screen ()
 	draw_selected_spell();
 }
 
-void MenuSpells::handle_input (int key)
+Input::Result MenuSpells::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
 		if (m_mode == Mode::StartingSpells)
 		{
 			select_starting_spell();
+			return Input::Result::Handled;
 		}
 		else if (m_mode == Mode::KnownSpells)
 		{
@@ -34,6 +35,8 @@ void MenuSpells::handle_input (int key)
 			Draw::add_message(std::format("To cast {}, hold shift and type {}.",
 				Spell::get_name(spell), Spell::get_abbrev(spell)));
 			//player_try_cast_spell((Spell::Index)get_selected().value);
+
+			return Input::Result::Handled;
 		}
 	}
 	else if (key == TK_ESCAPE)
@@ -46,11 +49,10 @@ void MenuSpells::handle_input (int key)
 		{
 			Menu::back();
 		}
+		return Input::Result::Handled;
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }
 
 void MenuSpells::show_known_spells ()

@@ -68,7 +68,7 @@ void MenuHighScores::draw_screen ()
 	}
 }
 
-void MenuHighScores::handle_input (int key)
+Input::Result MenuHighScores::handle_input (int key)
 {
 	switch(key)
 	{
@@ -82,6 +82,8 @@ void MenuHighScores::handle_input (int key)
 			{
 				Menu::back();
 			}
-			break;
+			return Input::Result::Handled;
 	}
+
+	return Input::Result::Skipped;
 }

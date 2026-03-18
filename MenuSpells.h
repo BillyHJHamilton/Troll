@@ -8,7 +8,7 @@ class MenuSpells : public MenuList
 {
 public:
 	virtual void draw_screen ();
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 	// Show the menu with a list of spells known by the player.
 	void show_known_spells ();

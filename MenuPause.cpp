@@ -20,7 +20,7 @@ MenuPause::MenuPause()
 	};
 }
 
-void MenuPause::handle_input (int key)
+Input::Result MenuPause::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
@@ -28,35 +28,39 @@ void MenuPause::handle_input (int key)
 		{
 			case PauseMenuOption::Resume:
 				Menu::close();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::SpellsKnown:
 				Menu::push();
 				Menu::show_spells_known();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::Inventory:
 				Menu::push();
 				Menu::show_inventory();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::Help:
 				Menu::push();
 				Menu::show_help();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::MessageHistory:
 				Menu::push();
 				Menu::show_message_history();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::Settings:
 				Menu::push();
 				Menu::show_settings();
-				break;
+				return Input::Result::Handled;
+
 			case PauseMenuOption::SaveAndQuit:
 				Game::save();
 				Game::reset();
-				break;
+				return Input::Result::Handled;
 		}
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }

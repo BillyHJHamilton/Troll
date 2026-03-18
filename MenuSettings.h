@@ -9,7 +9,7 @@ public:
 	void init();
 
 	virtual void draw_screen();
-	virtual void handle_input (int key) override;
+	virtual Input::Result handle_input (int key) override;
 
 	virtual bool is_toggle (int option) override;
 	virtual bool get_toggle_value (int option) override;

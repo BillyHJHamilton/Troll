@@ -10,7 +10,7 @@ class MenuDebug : public MenuList
 public:
 	void init();
 
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 protected:
 	enum DebugMenuOption : byte
@@ -31,7 +31,7 @@ class MenuDebugLogCategories : public MenuList
 public:
 	void init();
 
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 	virtual bool is_toggle(int option_value);
 	virtual bool get_toggle_value(int option_value);

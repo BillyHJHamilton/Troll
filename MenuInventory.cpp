@@ -15,21 +15,20 @@ void MenuInventory::draw_screen()
 	draw_selected_item();
 }
 
-void MenuInventory::handle_input (int key)
+Input::Result MenuInventory::handle_input (int key)
 {
 	switch (key)
 	{
 		case TK_ENTER:
 			try_use_item();
-			break;
+			return Input::Result::Handled;
 
 		case TK_DELETE:
 			try_discard_item();
-			break;
+			return Input::Result::Handled;
 
 		default:
-			MenuList::handle_input(key);
-			break;
+			return MenuList::handle_input(key);
 	}
 }
 

@@ -70,7 +70,7 @@ void MenuLoad::draw_screen()
 	}
 }
 
-void MenuLoad::handle_input (int key)
+Input::Result MenuLoad::handle_input (int key)
 {
 	if (key == TK_ENTER)
 	{
@@ -78,6 +78,7 @@ void MenuLoad::handle_input (int key)
 		if (file_index == c_Invalid)
 		{
 			Menu::back();
+			return Input::Result::Handled;
 		}
 		else if (Util::IsValidIndex(metadata_list, file_index))
 		{
@@ -89,17 +90,17 @@ void MenuLoad::handle_input (int key)
 
 				Game::save();
 				Game::load(filename);
+				return Input::Result::Handled;
 			}
 		}
 	}
 	else if (key == TK_ESCAPE)
 	{
 		Menu::back();
+		return Input::Result::Handled;
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }
 
 /*static*/ MenuLoad::FileMetadata MenuLoad::get_metadata(std::string const& stem)

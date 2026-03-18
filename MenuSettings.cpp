@@ -52,18 +52,17 @@ void MenuSettings::draw_screen()
 	}
 }
 
-void MenuSettings::handle_input (int key)
+Input::Result MenuSettings::handle_input (int key)
 {
 	if (key == TK_ENTER && 
 		get_selected().value == SettingsOption::Back)
 	{
 		Config::save();
 		Menu::back();
+		return Input::Result::Handled;
 	}
-	else
-	{
-		MenuList::handle_input(key);
-	}
+
+	return MenuList::handle_input(key);
 }
 
 bool MenuSettings::is_toggle (int option)

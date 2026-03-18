@@ -8,7 +8,7 @@ public:
 	void init();
 
 	virtual void draw_screen();
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 protected:
 	void select_house();

@@ -8,7 +8,7 @@ class MenuPause : public MenuList
 public:
 	MenuPause();
 
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 protected:
 	enum PauseMenuOption : byte

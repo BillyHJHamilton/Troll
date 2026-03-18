@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Input.h"
 #include <string>
 
 // Interface for a UI menu type.
@@ -10,7 +11,7 @@ public:
 	virtual ~IMenu() {}
 
 	virtual void draw_screen () = 0;
-	virtual void handle_input (int key) = 0;
+	virtual Input::Result handle_input (int key) = 0;
 };
 
 namespace Menu
@@ -28,7 +29,7 @@ namespace Menu
 	void push();
 
 	void update_screen();
-	void handle_input(int key);
+	Input::Result handle_input(int key);
 
 	//-----------------------------------------------------
 	// List of menus:

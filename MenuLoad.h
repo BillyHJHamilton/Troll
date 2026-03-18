@@ -9,7 +9,7 @@ class MenuLoad : public MenuList
 {
 public:
 	virtual void draw_screen() override;
-	virtual void handle_input (int key) override;
+	virtual Input::Result handle_input (int key) override;
 	void refresh();
 protected:
 	struct FileMetadata

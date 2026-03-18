@@ -17,7 +17,7 @@ public:
 	using OptionList = std::vector<Option>;
 
 	virtual void draw_screen() override;
-	virtual void handle_input(int key) override;
+	virtual Input::Result handle_input(int key) override;
 
 	void clear_list();
 

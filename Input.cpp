@@ -99,8 +99,7 @@ Input::Result handle_next_input ()
 	
 	if (Game::get_mode() == GameMode::Menu)
 	{
-		Menu::handle_input(key);
-		return Result::Handled;
+		return Menu::handle_input(key);
 	}
 
 	//-----------------------------------------------------------

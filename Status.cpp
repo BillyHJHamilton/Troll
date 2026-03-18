@@ -163,45 +163,48 @@ void calc_dancing(Creature::Handle creature, Creature::DerivedStats & ds, int se
 
 void endround_dancing(Creature::Handle creature)
 {
-	// Chance of random movement.
-	int const roll_max = 2 + creature.status_severity(Dancing);
-	int const roll = Random::in_range(0, roll_max);
-
-	if (Debug::enabled(Debug::Action))
+	if (!creature.has_status(Status::Prone))
 	{
-		std::cout << std::format("{} dances on 3+.  Roll (0-{}) = {}\n",
-			creature.short_name(), roll_max, roll);
-	}
+		// Chance of random movement.
+		int const roll_max = 2 + creature.status_severity(Dancing);
+		int const roll = Random::in_range(0, roll_max);
 
-	if (roll >= 3)
-	{
-		Vec3 const old_pos = creature.pos();
-
-		Vec3TempList possible_moves;
-		Pathfind::find_open_neighbours(old_pos, { .allow_stairs = true }, possible_moves);
-		Vec3 const move_to = Random::from_vector(possible_moves);
-		Vec2 const step = move_to.xy() - old_pos.xy();
-
-		bool const moved = Action::try_move(creature, step, MoveMode::Forced);
-		Vec3 const new_pos = creature.pos();
-
-		// Check for falling down stairs
-		if (moved && new_pos.z < old_pos.z &&
-			World::read().get_terrain(new_pos) == Terrain::UpStairs)
+		if (Debug::enabled(Debug::Action))
 		{
-			Damage::Packet const dmg
-			{
-				.amount = 3,
-				.type = Damage::Basic,
-				.cause = Damage::Cause(Status::Dancing)
-			};
-			creature.take_damage(dmg);
+			std::cout << std::format("{} dances on 3+.  Roll (0-{}) = {}\n",
+				creature.short_name(), roll_max, roll);
+		}
 
-			if (World::read().is_visible(old_pos) ||
-				World::read().is_visible(new_pos))
+		if (roll >= 3)
+		{
+			Vec3 const old_pos = creature.pos();
+
+			Vec3TempList possible_moves;
+			Pathfind::find_open_neighbours(old_pos, { .allow_stairs = true }, possible_moves);
+			Vec3 const move_to = Random::from_vector(possible_moves);
+			Vec2 const step = move_to.xy() - old_pos.xy();
+
+			bool const moved = Action::try_move(creature, step, MoveMode::Forced);
+			Vec3 const new_pos = creature.pos();
+
+			// Check for falling down stairs
+			if (moved && new_pos.z < old_pos.z &&
+				World::read().get_terrain(new_pos) == Terrain::UpStairs)
 			{
-				Draw::add_message(Grammar::You(creature) + " " +
-					Grammar::verbs("fall", creature) + " down the stairs!");
+				Damage::Packet const dmg
+				{
+					.amount = 3,
+					.type = Damage::Basic,
+					.cause = Damage::Cause(Status::Dancing)
+				};
+				creature.take_damage(dmg);
+
+				if (World::read().is_visible(old_pos) ||
+					World::read().is_visible(new_pos))
+				{
+					Draw::add_message(Grammar::You(creature) + " " +
+						Grammar::verbs("fall", creature) + " down the stairs!");
+				}
 			}
 		}
 	}

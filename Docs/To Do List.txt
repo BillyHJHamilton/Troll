@@ -88,10 +88,6 @@ To Do:
 
 - Status
  - Prone
-  - Leglock + Flipendo should have a chance to knock you down.
-  - Take one damage when falling down.
-  - While prone, trying to move instead makes you stand up (wasting a turn).
-  - While prone, your evasiveness is further reduced.
   - And you can't dance while prone.
   - The imp will also have a tripping attack.
 

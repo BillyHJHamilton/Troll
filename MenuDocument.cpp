@@ -20,7 +20,7 @@ void MenuDocument::draw_screen ()
 	terminal_print(0, 0, m_text.c_str());
 }
 
-void MenuDocument::handle_input (int key)
+Input::Result MenuDocument::handle_input (int key)
 {
 	switch(key)
 	{
@@ -34,6 +34,8 @@ void MenuDocument::handle_input (int key)
 			{
 				Menu::back();
 			}
-			break;
+			return Input::Result::Handled;
 	}
+
+	return Input::Result::Skipped;
 }

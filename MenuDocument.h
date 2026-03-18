@@ -14,7 +14,7 @@ public:
 	void init(std::string&& content, VoidFunction on_complete);
 
 	virtual void draw_screen ();
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 protected:
 	std::string m_text;

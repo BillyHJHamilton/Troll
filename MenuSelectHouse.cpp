@@ -31,18 +31,20 @@ void MenuSelectHouse::draw_screen()
 	}
 }
 
-void MenuSelectHouse::handle_input (int key)
+Input::Result MenuSelectHouse::handle_input (int key)
 {
 	switch (key)
 	{
 		case TK_ENTER:
 			select_house();
-			break;
+			return Input::Result::Handled;
+
 		case TK_ESCAPE:
 			Menu::show_name_entry();
-			break;
+			return Input::Result::Handled;
+
 		default:
-			MenuList::handle_input(key);
+			return MenuList::handle_input(key);
 	}
 }
 

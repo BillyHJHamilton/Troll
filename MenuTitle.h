@@ -8,7 +8,7 @@ class MenuTitle : public MenuList
 public:
 	void init();
 	virtual void draw_screen();
-	virtual void handle_input (int key);
+	virtual Input::Result handle_input (int key);
 
 protected:
 	enum TitleMenuOption : byte

@@ -6,7 +6,7 @@ class MenuInventory : public MenuList
 {
 public:
 	virtual void draw_screen();
-	virtual void handle_input(int key);
+	virtual Input::Result handle_input(int key);
 
 	void refresh();
 

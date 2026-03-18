@@ -2,6 +2,7 @@
 
 #include "BearLibTerminal.h"
 
+#include "Debug.h"
 #include "Draw.h"
 #include "Input.h"
 #include "Inventory.h"
@@ -121,11 +122,16 @@ void update_screen()
 	}
 }
 
-void handle_input(int key)
+Input::Result handle_input(int key)
 {
 	if (s_current_menu)
 	{
-		s_current_menu->handle_input(key);
+		return s_current_menu->handle_input(key);
+	}
+	else
+	{
+		DebugBreak("Menu mode with no current menu!");
+		return Input::Result::Skipped;
 	}
 }
 

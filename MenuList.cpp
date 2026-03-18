@@ -70,49 +70,53 @@ void MenuList::draw_screen ()
 	terminal_put(1, m_list_start + m_cursor - m_scroll_top, Codepoint::HandRight);
 }
 
-void MenuList::handle_input (int key)
+Input::Result MenuList::handle_input (int key)
 {
 	switch (key)
 	{
 		case TK_UP:
 		case TK_KP_8:
 			cursor_up();
-			break;
+			return Input::Result::Handled;
 
 		case TK_DOWN:
 		case TK_KP_2:
 			cursor_down();
-			break;
+			return Input::Result::Handled;
 
 		case TK_LEFT:
 		case TK_KP_4:
 		case TK_PAGEUP:
 			page_up();
-			break;
+			return Input::Result::Handled;
 
 		case TK_RIGHT:
 		case TK_KP_6:
 		case TK_PAGEDOWN:
 			page_down();
-			break;
+			return Input::Result::Handled;
 
 		case TK_ENTER:
 		{
 			int const value = get_selected().value;
-			if (key == TK_ENTER && is_toggle(value))
+			if (is_toggle(value))
 			{
 				on_toggle(value, !get_toggle_value(value));
+				return Input::Result::Handled;
 			}
-			break;
+			return Input::Result::Skipped;
 		}
 
 		case TK_ESCAPE:
 			Menu::back();
-			break;
+			return Input::Result::Handled;
 
 		case TK_RESIZED:
 			on_resize();
+			return Input::Result::Handled;
 	}
+
+	return Input::Result::Skipped;
 }
 
 void MenuList::clear_list()
