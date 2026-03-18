@@ -169,7 +169,7 @@ bool player_try_cast_spell (Spell::Index spell)
 			return true;
 		}
 		
-		if (!within_range(Player::pos(), target_pos.value(), Spell::get_range(spell)))
+		if (!Spell::in_range(spell, Player::pos(), target_pos.value()))
 		{
 			Draw::add_message("The target is out of range.");
 			return false;

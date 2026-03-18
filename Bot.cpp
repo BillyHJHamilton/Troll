@@ -316,7 +316,7 @@ void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 		case State::Investigate:
 			enter_state(creature, brain, State::Investigate);
 			brain.target_pos = target_pos;
-			brain.patience = manhattan_distance(creature.pos(), target_pos);
+			brain.patience = manhattan_2d(creature.pos(), target_pos);
 			break;
 
 		case State::Chase:
@@ -553,7 +553,7 @@ void bot_blunder(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		Box2 const box = Box2::around_tile(creature.pos().xy(), max_distance);
 		brain.target_pos = Random::in_box(box).xyz(creature.pos().z);
 
-		brain.patience = manhattan_distance(creature.pos().xy(), brain.target_pos.xy());
+		brain.patience = manhattan(creature.pos().xy(), brain.target_pos.xy());
 	}
 
 	bool moved = try_move_towards(creature, brain.target_pos);
@@ -588,7 +588,7 @@ void bot_regroup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	bool moved = false;
 
 	if (pos.z == brain.target_pos.z
-		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) <= 2)
+		&& chessboard(pos.xy(), brain.target_pos.xy()) <= 2)
 	{
 		get_move_stack(creature).clear();
 		creature.rest_step();
@@ -697,9 +697,9 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 	bool done = false;
 
-	bool const any_range = within_range(creature.pos(), brain.target_pos, brain.any_attack_range);
-	bool const dmg_range = within_range(creature.pos(), brain.target_pos, brain.dmg_attack_range);
-	bool const all_range = within_range(creature.pos(), brain.target_pos, brain.all_attack_range);
+	bool const any_range = range_2d(creature.pos(), brain.target_pos, brain.any_attack_range);
+	bool const dmg_range = range_2d(creature.pos(), brain.target_pos, brain.dmg_attack_range);
+	bool const all_range = range_2d(creature.pos(), brain.target_pos, brain.all_attack_range);
 
 	bool const want_to_approach = !any_range ||
 		(Random::coinflip() && !dmg_range) ||
@@ -749,7 +749,7 @@ bool is_separated_from_leader(Creature::Handle const creature)
 	Vec3 const pos = creature.pos();
 	Vec3 const leader_pos = creature.squad_leader().pos();
 
-	return leader_pos.z != pos.z || !within_range(pos, leader_pos, c_CohesionDist);
+	return leader_pos.z != pos.z || !range_2d(pos, leader_pos, c_CohesionDist);
 }
 
 bool has_clear_line_of_fire(Creature::Handle const creature, Brain const& brain,
@@ -894,7 +894,7 @@ bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
 	bool moved = false;
 
 	if (pos.z == brain.target_pos.z
-		&& chessboard_distance(pos.xy(), brain.target_pos.xy()) == 1)
+		&& chessboard(pos.xy(), brain.target_pos.xy()) == 1)
 	{
 		// Only one square away, you can do it!
 		moved = try_move_towards(creature, brain.target_pos);
@@ -1157,7 +1157,7 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 	int line_id, int spell_range)
 {
 	// Aim halfway between us
-	float const current_range = euclidean_distance(caster.pos(), target.pos());
+	float const current_range = euclid_2d(caster.pos(), target.pos());
 	float const half_range = current_range/2.0f;
 	Vec3 aim_pos = caster.pos();
 	if (line_id != LineCache::c_StairsLine)
@@ -1166,8 +1166,8 @@ Vec3 aim_halfway_between (Creature::Handle caster, Creature::Handle target,
 		while (itr)
 		{
 			++itr;
-			if (within_range(caster.pos(), *itr, half_range) &&
-				within_range(caster.pos(), *itr, spell_range))
+			if (range_2d(caster.pos(), *itr, (int)half_range) &&
+				range_2d(caster.pos(), *itr, spell_range))
 			{
 				aim_pos = *itr;
 			}

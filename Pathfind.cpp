@@ -122,7 +122,7 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 	World const& world = World::read();
 	Creature::Handle const target = Creature::creature_at_pos(goal);
 
-	if (chessboard_distance(start, goal) > param.max_cost)
+	if (chessboard_3d(start, goal) > param.max_cost)
 	{
 		if (Debug::enabled(Debug::Bot))
 		{
@@ -198,7 +198,7 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 				discovered[neighbour] = {here, new_cost};
 
 				int const vertical_distance = std::abs(neighbour.z - goal.z);
-				int const heuristic = manhattan_distance(neighbour.xy(), goal.xy())
+				int const heuristic = manhattan(neighbour.xy(), goal.xy())
 					+ c_HeightFactor*vertical_distance;
 				frontier.add(neighbour, heuristic);
 			}

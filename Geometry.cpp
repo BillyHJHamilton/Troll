@@ -59,7 +59,7 @@ inline Vec2 componentwise_max(Vec2 a, Vec2 b)
 	return {std::max(a.x,b.x), std::max(a.y, b.y)};
 }
 
-int squared_distance(Vec2 p0, Vec2 p1)
+int square_dist(Vec2 p0, Vec2 p1)
 {
 	int const dx = p0.x - p1.x;
 	int const dy = p0.y - p1.y;
@@ -71,33 +71,33 @@ int squared_distance(Vec2 p0, Vec2 p1)
 	return dx*dx + dy*dy;
 }
 
-bool within_range(Vec2 p0, Vec2 p1, int max_range)
+bool strict_range(Vec2 p0, Vec2 p1, int max_range)
 {
 	assert(max_range < sqrt(INT_MAX));
 	int const squared_max_range = max_range * max_range;
-	return squared_distance(p0,p1) <= squared_max_range;
+	return square_dist(p0,p1) <= squared_max_range;
 }
 
-bool within_range(Vec2 p0, Vec2 p1, float max_range)
+bool float_range(Vec2 p0, Vec2 p1, float max_range)
 {
 	assert(max_range < sqrt(FLT_MAX));
 	float const squared_max_range = max_range * max_range;
-	return (float)squared_distance(p0,p1) <= squared_max_range;
+	return (float)square_dist(p0,p1) <= squared_max_range;
 }
 
-float euclidean_distance(Vec2 p0, Vec2 p1)
+float euclid(Vec2 p0, Vec2 p1)
 {
-	return (float)(sqrt(squared_distance(p0,p1)));
+	return (float)(sqrt(square_dist(p0,p1)));
 }
 
-int manhattan_distance(Vec2 p0, Vec2 p1)
+int manhattan(Vec2 p0, Vec2 p1)
 {
 	int const dx = abs(p0.x - p1.x);
 	int const dy = abs(p0.y - p1.y);
 	return dx + dy;
 }
 
-int chessboard_distance(Vec2 p0, Vec2 p1)
+int chessboard(Vec2 p0, Vec2 p1)
 {
 	int const dx = abs(p0.x - p1.x);
 	int const dy = abs(p0.y - p1.y);
@@ -124,7 +124,7 @@ inline Vec3 componentwise_max(Vec3 a, Vec3 b)
 	return { std::max(a.x,b.x), std::max(a.y, b.y), std::max(a.z, b.z) };
 }
 
-int squared_distance(Vec3 p0, Vec3 p1)
+int square_dist_3d(Vec3 p0, Vec3 p1)
 {
 	int const dx = p0.x - p1.x;
 	int const dy = p0.y - p1.y;
@@ -138,26 +138,26 @@ int squared_distance(Vec3 p0, Vec3 p1)
 	return dx*dx + dy*dy + dz*dz;
 }
 
-bool within_range(Vec3 p0, Vec3 p1, int max_range)
+bool strict_range_3d(Vec3 p0, Vec3 p1, int max_range)
 {
 	assert(max_range < sqrt(INT_MAX));
 	int const squared_max_range = max_range * max_range;
-	return squared_distance(p0,p1) <= squared_max_range;
+	return square_dist_3d(p0,p1) <= squared_max_range;
 }
 
-bool within_range(Vec3 p0, Vec3 p1, float max_range)
+bool range_3d(Vec3 p0, Vec3 p1, float max_range)
 {
 	assert(max_range < sqrt(FLT_MAX));
 	float const squared_max_range = max_range * max_range;
-	return (float)squared_distance(p0,p1) <= squared_max_range;
+	return (float)square_dist_3d(p0,p1) <= squared_max_range;
 }
 
-float euclidean_distance(Vec3 p0, Vec3 p1)
+float euclid_3d(Vec3 p0, Vec3 p1)
 {
-	return (float)(sqrt(squared_distance(p0,p1)));
+	return (float)(sqrt(square_dist_3d(p0,p1)));
 }
 
-int manhattan_distance(Vec3 p0, Vec3 p1)
+int manhattan_3d(Vec3 p0, Vec3 p1)
 {
 	int const dx = abs(p0.x - p1.x);
 	int const dy = abs(p0.y - p1.y);
@@ -165,7 +165,7 @@ int manhattan_distance(Vec3 p0, Vec3 p1)
 	return dx + dy + dz;
 }
 
-int chessboard_distance(Vec3 p0, Vec3 p1)
+int chessboard_3d(Vec3 p0, Vec3 p1)
 {
 	int const dx = abs(p0.x - p1.x);
 	int const dy = abs(p0.y - p1.y);

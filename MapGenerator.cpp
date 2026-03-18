@@ -856,7 +856,7 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 	Vec2 p0 = new_stairs.StairsLocalEnd();
 	Vec2 p1 = other_stairs.StairsLocalEnd();
 
-	if(within_range(p0, p1, m_Param.MinStairsProximity))
+	if(strict_range(p0, p1, m_Param.MinStairsProximity))
 	{
 		return true;
 	}

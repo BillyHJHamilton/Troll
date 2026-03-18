@@ -227,7 +227,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 		}
 
 		if (Player::pos().z == map.get_z() &&
-			chessboard_distance(Player::pos().xy(), pos2) < min_range_from_player)
+			chessboard(Player::pos().xy(), pos2) < min_range_from_player)
 		{
 			++num_near_player;
 			continue;
