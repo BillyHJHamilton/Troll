@@ -246,6 +246,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Colour.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Confirm.cpp" />
     <ClCompile Include="Damage.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Creature.cpp" />

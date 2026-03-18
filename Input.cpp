@@ -5,6 +5,7 @@
 #include "Action.h"
 #include "BertieBotts.h" // test
 #include "Bot.h"
+#include "Confirm.h"
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
@@ -100,6 +101,10 @@ Input::Result handle_next_input ()
 	if (Game::get_mode() == GameMode::Menu)
 	{
 		return Menu::handle_input(key);
+	}
+	else if (Game::get_mode() == GameMode::Confirm)
+	{
+		return Confirm::handle_input(key);
 	}
 
 	//-----------------------------------------------------------

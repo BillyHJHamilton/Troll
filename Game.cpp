@@ -5,6 +5,7 @@
 #include "Bot.h"
 #include "BuildWorld.h"
 #include "Config.h"
+#include "Confirm.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Gingerbread.h"
@@ -334,22 +335,25 @@ void end_turn()
 	{
 		Bot::do_turn(*itr);
 		Creature::remove_defeated_creatures(); // Check often so message order feels right...
-		if (itr->valid())
+		if (itr->valid() && !Player::is_game_over())
 		{
 			itr->endround();
+			Creature::remove_defeated_creatures();
 		}
-		Creature::remove_defeated_creatures();
 	}
 
 	// Update clouds
-	World::edit().step_clouds();
-	Creature::remove_defeated_creatures();
+	if (!Player::is_game_over())
+	{
+		World::edit().step_clouds();
+		Creature::remove_defeated_creatures();
+	}
 
 	Ability::tick_cooldowns();
 
 	if (Player::is_game_over())
 	{
-		game_over();
+		Confirm::press_enter(&Game::game_over);
 		return;
 	}
 
