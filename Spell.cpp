@@ -21,9 +21,6 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour				Dif Drk Type			Dmg		Acc Rng	Effect function			Target type				Miscast type
 	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			TargetType::Creature,	Miscast::Beam },
-#if d_EnableMegadrill
-	Spell::Data {"Megadrill",			"MG",	"light amber",		0,	0,	Damage::Basic,	20,		999,8,	nullptr,				TargetType::Sight,		Miscast::Beam },
-#endif
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	Damage::Basic,	2,		70,	8,	&flipendo,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	Damage::None,	0,		50, 8,	&alohomora,				TargetType::Tile,		Miscast::Charm },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	Damage::None,	0,		90,	8,	&tarantallegra,			TargetType::Creature,	Miscast::Beam },
@@ -38,14 +35,16 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::Basic,	c_DmgSP,75, 7,  &stupefy,				TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			TargetType::Creature,	Miscast::Beam },
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			TargetType::Creature,	Miscast::Beam },
+#if _DEBUG
+	Spell::Data {"Megabolt",			"MG",	"light amber",		0,	0,	Damage::Basic,	20,		999,8,	nullptr,				TargetType::Sight,		Miscast::Beam },
+#else
+	Spell::Data {"Megabolt",			"MG",	"light amber",		999,0,	Damage::Basic,	0,		0,	0,	nullptr,				TargetType::Sight,		Miscast::Beam },
+#endif
 };
 
 static std::array<const char*, Spell::Count> constexpr s_spell_description =
 {
 	/* Vermillious */ "Shoots a shower of hot sparks, dealing minor damage.",
-#if d_EnableMegadrill
-	/* Megadrill */ "For Emergency Use Only.  Terms And Conditions Apply.  Use At Your Own Risk.",
-#endif
 	/* Flipendo */ "The Knockback Jinx.  Knocks the target backwards for small damage.  Deals extra damage if the target hits something.",
 	/* Alohomora */ "The Unlocking Charm.  Opens locks on doors and chests.",
 	/* Tarantallegra */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
@@ -77,6 +76,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	// /* Crucio */ "The Cruciatus Curse.  Causes the victim extreme pain.  Using this curse is punishable by a lifetime in Azkaban."
 	// /* Sectumsempra */ "The victim of this evil spell is slashed open, as if by a sword.  This wound will cause some damage each turn."
 	// /* Avada Kedavra */ "The Killing Curse.  Causes a green flash of light, followed by death.  No magical protection can block this spell.  Using this curse is punishable by a lifetime in Azkaban."
+	/* Megabolt */ "For Emergency Use Only.  Terms And Conditions May Apply.  Use At Your Own Risk.",
 };
 
 bool is_valid_index(Spell::Index index)

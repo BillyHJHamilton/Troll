@@ -7,22 +7,12 @@
 #include <string>
 #include <vector>
 
-// Enables an overpowered spell for debug purposes.
-#if _DEBUG
-	#define d_EnableMegadrill true
-#else
-	#define d_EnableMegadrill false
-#endif
-
 namespace Spell
 {
 	enum Index : int
 	{
 		None = -1,
 		Vermillious = 0,
-#if d_EnableMegadrill
-		Megadrill, // Test spell
-#endif
 		Flipendo,
 		Alohomora,
 		Tarantallegra,
@@ -53,6 +43,8 @@ namespace Spell
 		// Crucio,
 		// Sectumsempra,
 		// AvadaKedavra,
+
+		Megabolt, // Overpowered spell for debug purposes
 
 		Count
 	};
