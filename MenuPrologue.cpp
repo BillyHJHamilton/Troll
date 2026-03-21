@@ -41,12 +41,12 @@ void MenuPrologue::refresh()
 		options.push_back(Prologue::Outlaw);
 	}
 
-	if (best_score >= 500 && Random::one_in(3))
+	if (best_score >= 600 && Random::one_in(3))
 	{
 		options.push_back(Prologue::IceSlide);
 	}
 
-	if (best_score >= 1000 && Random::one_in(5))
+	if (best_score >= 2000 && Random::one_in(5))
 	{
 		options.push_back(Prologue::Twilight);
 	}

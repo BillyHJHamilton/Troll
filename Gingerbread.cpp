@@ -240,24 +240,77 @@ void init()
 	// Generic students:
 
 	Builder(Creature::Hufflepuff_1, c_IdentityGeneric,
-		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f, /*HP*/ 4,
-		"Hufflepuff", "First-Year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
-		.magic(6, "TA VM LM");
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 5,
+		"Hufflepuff", "first-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
+		.magic(6, "TA")
+		.tags(Tag::Spells_Random);
 
 	Builder(Creature::Ravenclaw_1, c_IdentityGeneric,
-		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f, /*HP*/ 3,
-		"Ravenclaw", "First-Year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
-		.magic(8, "MW VM RS");
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 3,
+		"Ravenclaw", "first-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
+		.magic(8, "MW")
+		.tags(Tag::Spells_Random);
 
 	Builder(Creature::Gryffindor_1, c_IdentityGeneric,
-		/*Difficulty*/ 0.7f, /*Probability*/ 0.3f, /*HP*/ 4,
-		"Gryffindor", "First-Year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Male)
-		.magic(7, "FP RS LC");
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
+		"Gryffindor", "first-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Male)
+		.magic(7, "FP")
+		.tags(Tag::Spells_Random);
 
 	Builder(Creature::Slytherin_1, c_IdentityGeneric,
-		/*Difficulty*/ 0.6f, /*Probability*/ 0.3f, /*HP*/ 4,
-		"Slytherin", "First-Year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)
-		.magic(7, "FN FM LM");
+		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
+		"Slytherin", "first-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)
+		.magic(7, "FN")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Hufflepuff_2, c_IdentityGeneric,
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 7,
+		"Hufflepuff", "second-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Female)
+		.magic(12, "TA")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Ravenclaw_2, c_IdentityGeneric,
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 5,
+		"Ravenclaw", "second-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Male)
+		.magic(20, "MW")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Gryffindor_2, c_IdentityGeneric,
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
+		"Gryffindor", "second-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
+		.magic(15, "RS")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Slytherin_2, c_IdentityGeneric,
+		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
+		"Slytherin", "second-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
+		.magic(15, "LM")
+		.tags(Tag::Spells_Random);
+
+
+	Builder(Creature::Hufflepuff_3, c_IdentityGeneric,
+		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 14,
+		"Hufflepuff", "third-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
+		.magic(22, "TA")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Ravenclaw_3, c_IdentityGeneric,
+		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 9,
+		"Ravenclaw", "third-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
+		.magic(30, "MW")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Gryffindor_3, c_IdentityGeneric,
+		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 11,
+		"Gryffindor", "third-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
+		.magic(24, "FP")
+		.tags(Tag::Spells_Random);
+
+	Builder(Creature::Slytherin_3, c_IdentityGeneric,
+		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 10,
+		"Slytherin", "third-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
+		.magic(26, "FN")
+		.tags(Tag::Spells_Random);
 
 	// Fantastic Beasts and Where To Find Them:
 

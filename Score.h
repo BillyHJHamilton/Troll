@@ -8,6 +8,7 @@ namespace Score
 {
 	enum class Ending : int
 	{
+		Unfinished = c_Invalid,
 		Defeated = 0,
 		Won = 1
 	};

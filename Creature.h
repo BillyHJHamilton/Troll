@@ -83,6 +83,16 @@ namespace Creature
 		Gryffindor_1,
 		Slytherin_1,
 
+		Hufflepuff_2,
+		Ravenclaw_2,
+		Gryffindor_2,
+		Slytherin_2,
+
+		Hufflepuff_3,
+		Ravenclaw_3,
+		Gryffindor_3,
+		Slytherin_3,
+
 		// Fantastic Beasts and Where to Find Them
 		Gnome,
 		Streeler,
@@ -114,6 +124,7 @@ namespace Creature
 		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
 		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
 		Move_Slow,			// It needs to skip a turn before moving.
+		Spells_Random,		// Will be assigned some random spells near its skill level.
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.
 		Count
@@ -238,6 +249,7 @@ namespace Creature
 		void destroy ();
 		void reset_spells ();
 		void learn_spell (Spell::Index spell);
+		void learn_random_spells();
 		void set_flag (Flag flag);
 		void clear_flag (Flag flag);
 		void set_squad (int new_squad_id);

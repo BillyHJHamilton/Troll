@@ -656,6 +656,12 @@ void Handle::destroy ()
 void Handle::reset_spells ()
 {
 	s_creatures[index].spells = Gingerbread::read_spells(type());
+
+	if (has_tag(Tag::Spells_Random))
+	{
+		learn_random_spells();
+	}
+
 	Bot::notify_attacks_changed(*this);
 }
 
@@ -664,6 +670,69 @@ void Handle::learn_spell (Spell::Index spell)
 	assert(Spell::is_valid_index(spell));
 	s_creatures[index].spells.set((int)spell);
 	Bot::notify_attacks_changed(*this);
+}
+
+void Handle::learn_random_spells()
+{
+	Spell::TempList options;
+	Spell::TempList damaging_options;
+	options.reserve(Spell::Count);
+	damaging_options.reserve(Spell::Count / 2);
+
+	int const skill = skill_magic();
+	int const min = skill - 50;
+	int const max = skill + 25;
+
+	bool has_damaging = false;
+	for (int i = 0; i < Spell::Count; ++i)
+	{
+		Spell::Index const spell = (Spell::Index)i;
+		int const difficulty = Spell::get_difficulty(spell);
+		if ((difficulty >= min || spell == Spell::Stupefy) &&
+			difficulty <= max &&
+			spell != Spell::Megabolt)
+		{
+			if (!knows_spell(spell))
+			{
+				options.push_back(spell);
+				if (Spell::is_damaging(spell))
+				{
+					damaging_options.push_back(spell);
+				}
+			}
+			else if (Spell::is_damaging(spell))
+			{
+				has_damaging = true;
+			}
+		}
+	}
+
+	// If we don't have a damaging spell, add at least one.
+	if (!has_damaging)
+	{
+		if (!damaging_options.empty())
+		{
+			Spell::Index const spell = Random::from_vector(damaging_options);
+			s_creatures[index].spells.set((int)spell);
+			Util::RemoveSwapFirstMatchingItem(options, spell);
+		}
+		else
+		{
+			s_creatures[index].spells.set((int)Spell::Vermillious);
+		}
+	}
+
+	// Now learn a couple random spells.
+	int const num_to_learn = Random::in_range(2,4) - num_spells();
+	for (int i = 0;
+		i < num_to_learn && !options.empty();
+		++i)
+	{
+		int const r = Random::index(options);
+		Spell::Index const spell = options[r];
+		s_creatures[index].spells.set((int)spell);
+		Util::RemoveSwap(options, r);
+	}
 }
 
 void Handle::set_flag (Flag flag)

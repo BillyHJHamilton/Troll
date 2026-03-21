@@ -5,7 +5,7 @@ X High score table
  X Stretch: Damage packets and better death attribution
 - Some way to win the game (temp victory condition)
 X Show current location/dungeon level
-- AI move to better firing position, at least in simple cases
+X AI move to better firing position, at least in simple cases
 X Correct diagonal range handling (at least for melee)
 
 -------------------------------------------------------------------------------
