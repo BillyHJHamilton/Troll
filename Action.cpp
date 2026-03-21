@@ -275,6 +275,46 @@ bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode
 	}
 }
 
+bool is_clear_firing_position(Creature::Handle creature, Vec3 start, Vec3 target, int range)
+{
+	int const line_id = World::read().get_los(start, target, range);
+	return is_line_of_fire_clear(creature, start, target, line_id);
+}
+
+bool is_line_of_fire_clear(Creature::Handle creature, Vec3 start, Vec3 target, int line_id)
+{
+	if (line_id == c_Invalid)
+	{
+		return false;
+	}
+	else if (line_id == LineCache::c_StairsLine)
+	{
+		return true;
+	}
+
+	LineCache::Itr3D itr(start, line_id);
+
+	for (++itr; // skip start position
+		itr && *itr != target; // stop at target position
+		++itr)
+	{
+		Terrain::Type t = World::read().get_terrain(*itr);
+		if (Terrain::is_solid(t))
+		{
+			return false;
+		}
+
+		Creature::Handle creature_in_path = Creature::creature_at_pos(*itr);
+		if (creature_in_path.valid() &&
+			creature.is_friend(creature_in_path))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void try_cast_spell (Spell::Index spell, Creature::Handle caster, Vec3 target_pos, int line_id)
 {
 	caster.clear_rest_steps();

@@ -19,6 +19,7 @@
 #include "Stairs.h"
 #include "Status.h"
 #include "Taunt.h"
+#include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -102,7 +103,8 @@ bool try_move (Creature::Handle creature, Vec2 relative_move);
 bool try_move_towards(Creature::Handle creature, Vec3 dest);
 bool try_follow_path(Creature::Handle creature, std::vector<Vec3>& move_stack);
 bool try_sidestep(Creature::Handle creature, int target_line);
-bool try_go_to_target_pos (Creature::Handle creature, Brain& brain);
+bool try_go_to_firing_position(Creature::Handle creature, Brain& brain);
+bool try_go_to_target_pos(Creature::Handle creature, Brain& brain);
 
 bool try_attack(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 AttackOption choose_attack(Creature::Handle creature, Creature::Handle target);
@@ -471,8 +473,6 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 				}
 
 				enter_state(creature, brain, State::Blunder);
-				brain.patience = 0;
-				get_move_stack(creature).clear();
 			}
 		}
 
@@ -481,8 +481,6 @@ void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& though
 			if (brain.patience <= 0 || creature.pos() == brain.target_pos)
 			{
 				enter_state(creature, brain, State::Blunder);
-				brain.patience = 0;
-				get_move_stack(creature).clear();
 			}
 		}
 
@@ -536,6 +534,19 @@ void enter_state(Creature::Handle creature, Brain& brain, Bot::State state)
 	}
 
 	brain.state = state;
+
+	// Reset pathfinding when changing states.
+	get_move_stack(creature).clear();
+	brain.pathfind_ready = Game::get_turn_number();
+
+	switch(state)
+	{
+		case State::Blunder:
+		{
+			brain.patience = 0;
+		}
+		break;
+	}
 
 	if (Debug::enabled(Debug::Bot))
 	{
@@ -710,6 +721,18 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		done = try_move_towards(creature, Player::pos());
 	}
 
+	if (!done && !thoughts.clear_line_of_fire && !Random::one_in(3))
+	{
+		done = try_go_to_firing_position(creature, brain);
+	}
+
+	// Squad creatures - Try not to block the hallway
+	if (!done && creature.has_squad() && World::read().is_choke_point(creature.pos()) &&
+		Random::coinflip())
+	{
+		done = try_move_towards(creature, Player::pos());
+	}
+
 	if (!done)
 	{
 		done = try_attack(creature, brain, thoughts);
@@ -719,11 +742,6 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	{
 		done = try_sidestep(creature, thoughts.target_line);
 	}
-
-	//if (!done)
-	//{
-	//	done = try_move_towards(creature, Player::pos());
-	//}
 
 	if (!done)
 	{
@@ -755,30 +773,13 @@ bool is_separated_from_leader(Creature::Handle const creature)
 bool has_clear_line_of_fire(Creature::Handle const creature, Brain const& brain,
 	Thoughts const& thoughts)
 {
-	if (!thoughts.target_visible || thoughts.target_line == c_Invalid)
+	if (!thoughts.target_visible)
 	{
 		return false;
 	}
-	else if (thoughts.target_line == LineCache::c_StairsLine)
-	{
-		return true;
-	}
 
-	LineCache::Itr3D itr(creature.pos(), thoughts.target_line);
-
-	for (++itr; // skip start position
-		itr && *itr != brain.target_pos;
-		++itr)
-	{
-		Creature::Handle creature_in_path = Creature::creature_at_pos(*itr);
-		if (creature_in_path.valid() &&
-			creature.is_friend(creature_in_path))
-		{
-			return false;
-		}
-	}
-
-	return true;
+	return Action::is_line_of_fire_clear(creature, creature.pos(), brain.target_pos,
+		thoughts.target_line);
 }
 
 // Move but not if it's hazardous.
@@ -885,8 +886,54 @@ bool try_sidestep(Creature::Handle creature, int target_line)
 	return moved;
 }
 
+
+bool try_go_to_firing_position(Creature::Handle creature, Brain& brain)
+{
+	MoveStack& move_stack = get_move_stack(creature);
+	bool moved = false;
+
+	// If we already have a solid plan, execute on that.
+	if (!moved && !move_stack.empty() &&
+		Action::is_clear_firing_position(creature, move_stack[0], brain.target_pos,
+			brain.dmg_attack_range))
+	{
+		moved = try_follow_path(creature, move_stack);
+	}
+
+	// If not, try to formulate a new plan.
+	if (!moved && Game::get_turn_number() >= brain.pathfind_ready)
+	{
+		Pathfind::FiringPositionParams param
+		{
+			.max_cost = creature.vision(),
+			.max_range = brain.dmg_attack_range,
+		};
+		Pathfind::find_firing_position(creature, brain.target_pos, param, move_stack);
+
+		// Cooldown before pathfinding again.
+		brain.pathfind_ready = Game::get_turn_number() + c_PathfindCooldown;
+
+		if (!move_stack.empty())
+		{
+			if (Debug::enabled(Debug::Bot))
+			{
+				std::cout << std::format("{} - Found path to firing position, length {}.\n",
+					creature.short_name(), move_stack.size());
+			}
+
+			moved = try_follow_path(creature, move_stack);
+		}
+		else if (Debug::enabled(Debug::Bot))
+		{
+			std::cout << std::format("{} - Failed to find firing position.\n", creature.short_name());
+		}
+	}
+
+	return moved;
+}
+
 // Try pathfinding if possible, or otherwise just move towards.
-bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
+bool try_go_to_target_pos(Creature::Handle creature, Brain& brain)
 {
 	MoveStack& move_stack = get_move_stack(creature);
 
@@ -929,12 +976,9 @@ bool try_go_to_target_pos (Creature::Handle creature, Brain& brain)
 
 			moved = try_follow_path(creature, move_stack);
 		}
-		else
+		else if (Debug::enabled(Debug::Bot))
 		{
-			if (Debug::enabled(Debug::Bot))
-			{
-				std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
-			}
+			std::cout << std::format("{} - Pathfinding failed.\n", creature.short_name());
 		}
 	}
 

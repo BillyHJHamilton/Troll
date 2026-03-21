@@ -1,5 +1,6 @@
 #include "Pathfind.h"
 
+#include "Action.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "MapUtil.h"
@@ -319,6 +320,94 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 		{
 			boomerang = discovered[boomerang].come_from;
 		}
+
+		while (boomerang != start)
+		{
+			path_out.push_back(boomerang);
+			boomerang = discovered[boomerang].come_from;
+		}
+	}
+}
+
+void find_firing_position(Creature::Handle creature, Vec3 target, FiringPositionParams param,
+	std::vector<Vec3>& path_out)
+{
+	PerfTimer perf0("find_firing_position");
+
+	path_out.clear();
+	path_out.reserve(param.max_cost);
+
+	World const& world = World::read();
+
+	struct NodeInfo
+	{
+		Vec3 come_from;
+		int total_cost;
+	};
+	std::unordered_map<Vec3, NodeInfo, std::hash<Vec3>, std::equal_to<Vec3>,
+		Scratch<std::pair<const Vec3,NodeInfo>>> discovered;
+
+	Vec3TempList neighbours; // to avoid reallocating inside loop
+	Vec3 start = creature.pos();
+	Vec3 destination = start; // set if goal is found
+
+	discovered.insert_or_assign(start, NodeInfo 
+	{
+		start,  // comes from itself, sure.
+		0       // by definition.
+	});
+
+	// TODO technically we don't need a priority queue here - we could just use a normal queue.
+	AStarPriorityQueue frontier;
+	frontier.add(start, 0);
+
+	while (!frontier.empty())
+	{
+		PerfTimer perf2("find_firing_position - per iteration");
+
+		Vec3 const here = frontier.pop();
+		NodeInfo& here_node = discovered.at(here);
+
+		if (Action::is_clear_firing_position(creature, here, target, param.max_range))
+		{
+			destination = here;
+			break;
+		}
+
+		NeighbourParam neighbour_param
+		{
+			.ignore_creatures = false,
+			.allow_stairs = true,
+		};
+		find_open_neighbours(here, neighbour_param, neighbours);
+		Random::shuffle_vector(neighbours); // don't always move a predictable direction
+		for (Vec3 neighbour : neighbours)
+		{
+			int const new_cost = here_node.total_cost + 1; // for now, no terrain costs
+
+			if (new_cost > param.max_cost)
+			{
+				continue;
+			}
+
+			NodeInfo* const old_node = Util::Find(discovered, neighbour);
+			if (old_node) // it's BFS, so no need to revisit
+			{
+				continue;
+			}
+			else
+			{
+				discovered[neighbour] = {here, new_cost};
+				frontier.add(neighbour, new_cost);
+			}
+		}
+	}
+
+	if (destination != start)
+	{
+		assert(discovered.contains(destination));
+
+		Vec3 boomerang = destination;
 
 		while (boomerang != start)
 		{

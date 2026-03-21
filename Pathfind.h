@@ -50,6 +50,12 @@ namespace Pathfind
 		};
 		GoalType goal = GoalType::Darkness;
 	};
+
+	struct FiringPositionParams
+	{
+		int max_cost = 3;
+		int max_range = 8;
+	};
 	
 	struct NearestOpenParam
 	{
@@ -69,6 +75,10 @@ namespace Pathfind
 
 	// Breadth first search for uncollected item or darkness.
 	void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out);
+
+	// Breadth first search for an open firing position.
+	void find_firing_position(Creature::Handle creature, Vec3 target, FiringPositionParams param,
+		std::vector<Vec3>& path_out);
 
 	// Breadth first search for open points near the target.
 	void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_out);
