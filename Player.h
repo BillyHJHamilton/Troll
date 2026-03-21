@@ -31,7 +31,7 @@ namespace Player
 		int miscast_turn = -1;
 		Spell::Index miscast_spell = (Spell::Index)c_Invalid;
 
-		bool game_over = false;
+		Score::Ending ending = (Score::Ending)c_Invalid;
 		Damage::Cause defeated_by = {};
 
 		int level = 1;
@@ -52,6 +52,7 @@ namespace Player
 	bool has_acted ();
 	Spell::Index get_recent_miscast ();
 	bool is_game_over ();
+	Score::Ending get_ending ();
 	Damage::Cause get_defeated_by ();
 	int current_level ();
 	int current_xp ();
@@ -69,6 +70,7 @@ namespace Player
 	void dispatch_automove ();
 	void set_acted (bool acted);
 	void set_miscasted (Spell::Index spell_index);
-	void set_game_over (Damage::Cause defeated_by);
+	void set_defeated (Damage::Cause defeated_by);
+	void set_won ();
 	void gain_xp_for (Creature::Type creature);
 };

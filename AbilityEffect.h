@@ -14,4 +14,6 @@ namespace Ability
 	void doxy_bite(EffectParams params);
 	void trip_kick(EffectParams params);
 	void scratch(EffectParams params);
+	void believe(EffectParams params);
+	void karate(EffectParams params);
 }

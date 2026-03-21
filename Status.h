@@ -49,6 +49,7 @@ namespace Status
 	
 	int max_severity(Status::Index status);
 	bool show_number(Status::Index status);
+	bool is_harmful(Status::Index status);
 
 	char const* abbrev(Status::Index status);
 	char const* colour(Status::Index status);

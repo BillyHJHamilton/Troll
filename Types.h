@@ -103,6 +103,12 @@ namespace Player
 	struct Data;
 }
 
+namespace Score
+{
+	enum class Ending : int;
+	struct Entry;
+}
+
 namespace Spell
 {
 	enum Index : int;

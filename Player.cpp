@@ -10,6 +10,7 @@
 #include "Gingerbread.h"
 #include "Math.h"
 #include "Pathfind.h"
+#include "Score.h"
 #include "Serialize.h"
 #include "Spell.h"
 #include "Visibility.h"
@@ -50,7 +51,7 @@ void Player::Data::serialize(ISerializer& s)
 
 	// Don't need to serialize these since we won't save in the middle of a turn.
 	assert(!acted);
-	assert(!game_over);
+	assert(ending == Score::Ending::Unfinished);
 	assert(defeated_by.type == Damage::Cause::None);
 	
 	s.srz_int(level);
@@ -297,7 +298,12 @@ void set_miscasted (Spell::Index spell_index)
 
 bool is_game_over()
 {
-	return read_data().game_over;
+	return read_data().ending != Score::Ending::Unfinished;
+}
+
+Score::Ending get_ending()
+{
+	return read_data().ending;
 }
 
 Damage::Cause get_defeated_by ()
@@ -305,10 +311,15 @@ Damage::Cause get_defeated_by ()
 	return read_data().defeated_by;
 }
 
-void set_game_over(Damage::Cause defeated_by)
+void set_defeated (Damage::Cause defeated_by)
 {
-	s_player_data.game_over = true;
+	s_player_data.ending = Score::Ending::Defeated;
 	s_player_data.defeated_by = defeated_by;
+}
+
+void set_won ()
+{
+	s_player_data.ending = Score::Ending::Won;
 }
 
 int current_level ()

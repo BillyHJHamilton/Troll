@@ -78,9 +78,9 @@ void init ()
 	}
 }
 
-int max_severity (Status::Index status_index)
+int max_severity (Status::Index status)
 {
-	switch(status_index)
+	switch(status)
 	{
 		case Shield:
 			return 4;
@@ -93,11 +93,23 @@ int max_severity (Status::Index status_index)
 	}
 }
 
-bool show_number (Status::Index status_index)
+bool show_number (Status::Index status)
 {
-	switch(status_index)
+	switch(status)
 	{
 		case Prone:
+			return false;
+
+		default:
+			return true;
+	}
+}
+
+bool is_harmful(Status::Index status)
+{
+	switch(status)
+	{
+		case Calm:
 			return false;
 
 		default:

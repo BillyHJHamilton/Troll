@@ -399,7 +399,7 @@ void update_attack_ranges(Creature::Handle creature, Brain& brain)
 			Ability::TargetType const target_type = Ability::target_type(ability);
 			if (target_type != Ability::TargetType::Self)
 			{
-				int const range = Ability::get_range(ability); // TODO This isn't quite right for melee.
+				int const range = Ability::get_range(ability);
 				brain.all_attack_range = std::min(range, brain.all_attack_range);
 				brain.any_attack_range = std::max(range, brain.any_attack_range);
 
@@ -1263,7 +1263,12 @@ float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::
 			break;
 
 		case Ability::TripKick:
-			return 5.0f;
+			rating = 5.0f;
+			break;
+
+		case Ability::Believe:
+			return 8.0f * (1.0f - creature.hp_percent());
+			break;
 
 		default:
 			if (Ability::is_damaging(ability))
@@ -1355,7 +1360,7 @@ void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		{
 			// More likely to taunt if we have more available
 			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
-			if (Random::in_range(0.0f, 6.0f) < p_taunt)
+			if (Random::in_range(0.0f, 8.0f) < p_taunt)
 			{
 				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
 			}
@@ -1376,7 +1381,7 @@ void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoug
 		{
 			// More likely to taunt if we have more available
 			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
-			if (Random::in_range(0.0f, 5.0f) < p_taunt)
+			if (Random::in_range(0.0f, 8.0f) < p_taunt)
 			{
 				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
 			}

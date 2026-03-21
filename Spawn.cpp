@@ -23,32 +23,6 @@ namespace Spawn
 //-----------------------------------------------------------------------------
 // Data
 
-struct Parameters
-{
-	// Amount of creatures to spawn initially.
-	int min_creatures = 4;
-	int max_creatures = 6;
-
-	// Time delay after each spawn event before spawning another creature.
-	// (After the initial burst, each round adds only one creatures at a time.)
-	int cooldown_min = 120;
-	int cooldown_max = 200;
-
-	// This parameter applies only to later spawns, not the initial ones.
-	int min_range_from_player = 15;
-
-	// Total amount of creatures to ever spawn on the map.
-	int lifetime_max_creatures = 9;
-
-	// Amount of items to spawn.
-	int min_items = 25;
-	int max_items = 35;
-
-	// Amount of chests to spawn.
-	int min_chests = 1;
-	int max_chests = 3;
-};
-
 struct History
 {
 	int next_spawn_time = -1;
@@ -57,7 +31,6 @@ struct History
 	int chests_spanwed = 0;
 
 	bool has_ever_spawned() const { return next_spawn_time > -1; }
-	void serialize(ISerializer& s);
 };
 
 std::vector<Spawn::History> s_spawn_history;
@@ -93,12 +66,13 @@ bool has_special_positions();
 Vec2 next_special_position();
 
 // Check if a map meets the conditions to spawn.
-bool is_map_ready(int map_id, int player_map, Parameters const& param);
+bool is_map_ready(int map_id, int player_map);
 
 // Do spawning for a single map.
-void spawn_for_map(Map& map, History& history, Parameters const& param);
+void spawn_for_map(Map& map, History& history);
 
 // Note: Must call find_spawn_positions first.
+int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
@@ -115,16 +89,9 @@ void clear()
 	s_spawn_history.clear();
 }
 
-void History::serialize(ISerializer& s)
-{
-	s.srz_int(next_spawn_time);
-	s.srz_int(creatures_spawned);
-	s.srz_int(items_spawned);
-}
-
 void serialize(ISerializer& s)
 {
-	s.srz_vector_advanced(s_spawn_history, "s_spawn_history");
+	s.srz_vector(s_spawn_history, "s_spawn_history");
 }
 
 void post_world_setup()
@@ -141,12 +108,9 @@ void check_spawning()
 		return;
 	}
 
-	// For now, always use the default parameters.
-	Parameters const param{};
-
 	for (int map_id = 0; map_id < World::read().num_maps(); ++map_id)
 	{
-		if (is_map_ready(map_id, player_map, param))
+		if (is_map_ready(map_id, player_map))
 		{
 			Map& map = World::edit().edit_map(map_id);
 			History& history = s_spawn_history[map_id];
@@ -157,7 +121,7 @@ void check_spawning()
 					map_id, map.get_difficulty());
 			}
 
-			spawn_for_map(map, history, param);
+			spawn_for_map(map, history);
 		}
 	}
 }
@@ -332,9 +296,10 @@ Vec2 next_special_position()
 	return pos;
 }
 
-bool is_map_ready(int map_id, int player_map, Parameters const& param)
+bool is_map_ready(int map_id, int player_map)
 {
 	const Spawn::History& history = s_spawn_history[map_id];
+	const Spawn::Parameters& param = World::read().read_map(map_id).read_spawn_param();
 
 	// Spawning doesn't start for a map until visited by player.
 	if (!history.has_ever_spawned())
@@ -352,9 +317,11 @@ bool is_map_ready(int map_id, int player_map, Parameters const& param)
 	return true;
 }
 
-void spawn_for_map(Map& map, History& history, Parameters const& param)
+void spawn_for_map(Map& map, History& history)
 {
 	PerfTimer perf("spawn_for_map");
+
+	Spawn::Parameters const& param = map.read_spawn_param();
 
 	bool const is_first_spawn = !history.has_ever_spawned();
 
@@ -372,6 +339,11 @@ void spawn_for_map(Map& map, History& history, Parameters const& param)
 	}
 
 	find_spawn_positions(map, min_range);
+
+	if (is_first_spawn)
+	{
+		history.creatures_spawned += spawn_boss(map);
+	}
 
 	history.creatures_spawned += spawn_creatures(map, creatures_to_spawn);
 
@@ -395,6 +367,29 @@ void spawn_for_map(Map& map, History& history, Parameters const& param)
 		std::cout << std::format("Have spawned {}/{} total.  Next spawn in {}.\n",
 			history.creatures_spawned, param.lifetime_max_creatures, cooldown);
 	}
+}
+
+int spawn_boss(Map const& map)
+{
+	Creature::Type const boss_type = map.read_spawn_param().boss;
+
+	if (Creature::is_valid_type(boss_type) && has_spawn_positions())
+	{
+		Vec2 const pos = next_spawn_position();
+		Vec3 const pos3 = pos.xyz(map.get_z());
+
+		Creature::Handle creature = Creature::spawn_creature(boss_type, pos3);
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format(" - Spawned boss {} at ({},{}) - diff {}.\n",
+				creature.long_name(), creature.pos().x, creature.pos().y,
+				Gingerbread::read(creature.type()).difficulty);
+		}
+
+		return 1;
+	}
+
+	return 0;
 }
 
 // Note: Must call find_spawn_positions first.
@@ -433,7 +428,6 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		else if (option.type == Option::Squad)
 		{
 			spawn_squad(option.index, pos3);
-
 			++creatures_spawned; // That still only counts as one!
 		}
 	}

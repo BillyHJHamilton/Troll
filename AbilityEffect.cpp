@@ -132,4 +132,89 @@ void scratch(EffectParams params)
 	}
 }
 
+void believe(EffectParams params)
+{
+	Creature::Handle user = params.caster;
+	if (user.valid())
+	{
+		user.heal_hp(Random::in_range(5,10));
+
+		// 50% chance to cure each harmful status
+		for (int i = 0; i < Status::Count; ++i)
+		{
+			Status::Index status = (Status::Index)i;
+			if (Status::is_harmful(status) &&
+				user.has_status(status) &&
+				Random::coinflip())
+			{
+				user.cure_status(status);
+			}
+		}
+
+		Draw::creature_message(user, std::format("{} {} in {}!",
+			Grammar::You(user), Grammar::verbs("believe", user),
+			Grammar::format_name(user, {.mode=Grammar::NameParam::ReflexivePronoun})));
+	}
+}
+
+char const* random_karate_move()
+{
+	switch(Random::in_range(0,39))
+	{
+		case 0: return "a karate chop";
+		case 1: return "a spinning kick";
+		case 2: return "a middle-finger knuckle fist";
+		case 3: return "a palm strike";
+		case 4: return "a rising mountain punch";
+		case 5: return "a flowering scissor punch";
+		case 6: return "a stomping joint kick";
+		case 7: return "a heel-drop knee kick";
+		case 8: return "a double elbow energy strike";
+		case 9: return "a sudden jump kick";
+		case 10: return "a forbidden dragon punch";
+		case 11: return "an inverted spiral kick";
+		case 12: return "a twisted wrist strike";
+		case 13: return "an elegant water-spider kick";
+		case 14: return "a shocking force punch";
+		case 15: return "a backhand thrust";
+		case 16: return "a knife-blade finger swipe";
+		case 17: return "a double-finger knockout punch";
+		case 18: return "a bent wrist double strike";
+		case 19: return "a knee kick";
+		case 20: return "a triple reflex punch";
+		case 21: return "a power stance reversal";
+		case 22: return "a hidden lightning kick";
+		case 23: return "a revolving door kick";
+		case 24: return "an underwater mountain punch";
+		case 25: return "a flowing ocean chop";
+		case 26: return "a gentle wind-strike fist";
+		case 27: return "a spinning shin strike";
+		case 28: return "a knee-drop heel kick";
+		case 29: return "a rolling elbow smash";
+		case 30: return "a tiger claw punch";
+		case 31: return "a slack-jaw chin strike";
+		case 32: return "a full-body hip smack";
+		case 33: return "a focused energy stomach slam";
+		case 34: return "a whip-type shoelace kick";
+		case 35: return "a high-tension sleeve strike";
+		case 36: return "a rippling muscle punch";
+		case 37: return "a blossoming lotus kick";
+		case 38: return "a flying punch";
+		default: return "a secret karate move";
+	}
+}
+
+void karate(EffectParams params)
+{
+	Creature::Handle const user = params.caster;
+	Creature::Handle const target = params.target;
+	if (user.valid() && target.valid())
+	{
+		Draw::creature_message(target, std::format("{} {} {} with {}!",
+			Grammar::You(user), Grammar::verbs("hits",user), Grammar::you(target),
+			random_karate_move()));
+	}
+}
+
+
 }

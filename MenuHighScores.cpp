@@ -14,10 +14,21 @@ void MenuHighScores::show_game_over()
 	Score::Entry const& new_entry = Score::make_player_score();
 
 	m_mode = Mode::GameOver;
-	m_text = std::format("Game Over.\n\n"
-		"You were defeated by {}.\n"
-		"Total score: {} points",
-		new_entry.defeated_by, new_entry.points);
+
+	if (new_entry.ending == Score::Ending::Defeated)
+	{
+		m_text = std::format("Game Over.\n\n"
+			"You were defeated by {}.\n"
+			"Total score: {} points",
+			new_entry.defeated_by, new_entry.points);
+	}
+	else if (new_entry.ending == Score::Ending::Won)
+	{
+		m_text = std::format("Game Over.\n\n"
+			"You won the game!\n"
+			"Total score: {} points",
+			new_entry.points);
+	}
 }
 
 void MenuHighScores::show_scores()

@@ -987,10 +987,16 @@ void remove_defeated_creatures ()
 
 		if (creature.is_player())
 		{
-			Player::set_game_over(cause);
+			Player::set_defeated(cause);
 		}
 		else
 		{
+			if (creature.type() == Creature::MarySue &&
+				!Player::is_game_over())
+			{
+				Player::set_won();
+			}
+
 			++num_removed;
 			Player::gain_xp_for(creature.type());
 

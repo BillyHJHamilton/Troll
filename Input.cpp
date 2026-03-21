@@ -13,6 +13,7 @@
 #include "Map.h"
 #include "Menu.h"
 #include "Player.h"
+#include "Spawn.h"
 #include "Spell.h"
 #include "Target.h"
 #include "World.h"
@@ -295,11 +296,13 @@ Input::Result handle_next_input ()
 			if (key == TK_P)
 			{
 				Player::handle().move(Player::pos() + Vec3{0,0,1});
+				Spawn::check_spawning();
 				return Result::Handled;
 			}
 			if (key == TK_SEMICOLON)
 			{
 				Player::handle().move(Player::pos() + Vec3{0,0,-1});
+				Spawn::check_spawning();
 				return Result::Handled;
 			}
 		}

@@ -18,6 +18,8 @@ namespace Ability
 		DoxyBite,	// Doxy
 		TripKick,	// Imp
 		Scratch,	// Imp
+		Believe,	// MarySue
+		Karate,		// MarySue
 		Count,
 	};
 

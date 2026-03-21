@@ -30,6 +30,8 @@ static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
 	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	TargetType::Melee,		&doxy_bite },
 	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	TargetType::Melee,		&trip_kick },
 	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	TargetType::Melee,		&scratch },
+	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,10,	TargetType::Self,		&believe },
+	/* Karate */	Ability::Data{	Damage::Basic,	8,	70,	1,	2,3,	TargetType::Melee,		&karate },
 };
 
 static std::unordered_map<Ability::Index,Ability::ProjectileData> s_projectiles;

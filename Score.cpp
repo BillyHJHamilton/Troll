@@ -74,8 +74,11 @@ void clear()
 Entry const& make_player_score()
 {
 	s_player_entry.name = Player::name();
-	make_defeated_by_string(s_player_entry.defeated_by);
-	s_player_entry.ending = Ending::Defeated;
+	s_player_entry.ending = Player::get_ending();
+	if (s_player_entry.ending == Ending::Defeated)
+	{
+		make_defeated_by_string(s_player_entry.defeated_by);
+	}
 	s_player_entry.points = compute_points();
 
 	bool inserted = false;
@@ -212,6 +215,11 @@ int compute_points()
 	if (bean_slot != c_Invalid)
 	{
 		points += Inventory::read().peek_item(bean_slot).stack_height();
+	}
+
+	if (Player::get_ending() == Ending::Won)
+	{
+		points += 2000;
 	}
 
 	return points;

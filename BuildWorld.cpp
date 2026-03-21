@@ -1,5 +1,6 @@
 #include "BuildWorld.h"
 
+#include "Creature.h"
 #include "Map.h"
 #include "MapGenerator.h"
 #include "PerfTimer.h"
@@ -37,7 +38,7 @@ void BuildWorld()
 	//world.edit_map(4).get_generator().Generate();
 
 	// Create a stack of levels.
-	int constexpr c_MaxZ = 6;
+	int constexpr c_MaxZ = 7;
 
 	// Pass 1 - allocate levels
 	for (int z = 0; z <= c_MaxZ; ++z)
@@ -82,4 +83,16 @@ void BuildWorld()
 	world.edit_map(4).set_name("Hogwarts - Fourth Floor");
 	world.edit_map(5).set_name("Hogwarts - Fifth Floor");
 	world.edit_map(6).set_name("Hogwarts - Sixth Floor");
+	world.edit_map(7).set_name("Hogwarts - Seventh Floor");
+
+	world.edit_map(7).set_spawn_param({
+		.boss = Creature::MarySue,
+		.min_creatures = 9,
+		.max_creatures = 10,
+		.cooldown_min = 60,
+		.cooldown_max = 120,
+		.lifetime_max_creatures = 30,
+		.min_chests = 5,
+		.max_chests = 7,
+	});
 }

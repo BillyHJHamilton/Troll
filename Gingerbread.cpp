@@ -144,6 +144,7 @@ void init()
 	register_identity("Krum", "Victor Krum", cstr_Flame, Gender::Male);
 	register_identity("Luna", "Luna Lovegood", House::colour(House::Ravenclaw), Gender::Female);
 	register_identity("Malfoy", "Draco Malfoy", House::colour(House::Slytherin), Gender::Male);
+	register_identity("Mary Sue", "Mary Sue", cstr_Pink, Gender::Female);
 	register_identity("Neville", "Neville Longbottom", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Ron", "Ron Weasley", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Sally-Anne", "Sally-Anne Perks", House::colour(House::Hufflepuff), Gender::Female);
@@ -237,7 +238,14 @@ void init()
 		.magic(50, "SP MW FM TA") // PT
 		.item({Item::Notes}, {100});
 
+	Builder(Creature::MarySue, "Mary Sue",
+		/*Difficulty*/ 7.0f, /*Probability*/ 0.0f, /*HP*/ 30)
+		.magic(80, "SP RS BT FI")
+		.abil({Ability::Believe, Ability::Karate});
+
 	// Generic students:
+
+	// First-years
 
 	Builder(Creature::Hufflepuff_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 5,
@@ -263,6 +271,8 @@ void init()
 		.magic(7, "FN")
 		.tags(Tag::Spells_Random);
 
+	// Second-years
+
 	Builder(Creature::Hufflepuff_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 7,
 		"Hufflepuff", "second-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Female)
@@ -287,6 +297,7 @@ void init()
 		.magic(15, "LM")
 		.tags(Tag::Spells_Random);
 
+	// Third-years
 
 	Builder(Creature::Hufflepuff_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 14,

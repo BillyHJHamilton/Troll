@@ -77,6 +77,8 @@ namespace Creature
 		Ginny_5,
 		Luna_5,
 
+		MarySue,
+
 		// Generic Students
 		Hufflepuff_1,
 		Ravenclaw_1,

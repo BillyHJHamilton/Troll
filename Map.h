@@ -6,6 +6,7 @@
 #include "Geometry.h"
 #include "Grid.h"
 #include "Serialize.h"
+#include "Spawn.h"
 #include "Stairs.h"
 
 #include <memory>
@@ -22,6 +23,10 @@ public:
 	void set_name(std::string&& new_name);
 
 	MapGenerator& get_generator();
+
+	void set_spawn_param(Spawn::Parameters const& new_param) { spawn_param = new_param; }
+	Spawn::Parameters const& read_spawn_param() const { return spawn_param; }
+	Spawn::Parameters& edit_spawn_param() { return spawn_param; }
 
 	Box2 get_box() const { return map_box; }
 	Box2 get_box_minus_border(int border_size) const { return map_box.minus_border(border_size); }
@@ -95,6 +100,8 @@ protected:
 
 	// List of stairs on the level.  Key is global pos for local end of the stairs.
 	std::unordered_map<Vec2,Stairs::Direction> stairs;
+
+	Spawn::Parameters spawn_param = {};
 
 	std::shared_ptr<MapGenerator> generator;
 };
