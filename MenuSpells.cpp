@@ -161,7 +161,7 @@ void MenuSpells::select_starting_spell ()
 			}
 		}
 
-		Menu::close();
 		Game::setup();
+		Menu::show_prologue();
 	}
 }

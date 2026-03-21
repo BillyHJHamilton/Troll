@@ -101,8 +101,8 @@ int View::get_z(Vec2 pos2) const
 Vec3 View::mouse_to_global_pos() const
 {
 	Vec2 const mouse_pos {
-		terminal_state(TK_MOUSE_X) / c_TileWidthFactor,	// integer division
-		terminal_state(TK_MOUSE_Y)
+		(terminal_state(TK_MOUSE_X) - viewport.min.x) / c_TileWidthFactor,	// integer division
+		terminal_state(TK_MOUSE_Y) - viewport.min.y
 	};
 
 	Vec2 const pos2 = start + mouse_pos;

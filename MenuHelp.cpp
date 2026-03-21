@@ -74,6 +74,7 @@ const char* const MenuHelp::cstr_OtherCommands =
 	"\n"
 	"  Esc           Show in-game menu\n"
 	"  X             Examine contents of target square\n"
+	"  H             Show help (this document)\n"
 	"  Ctrl (Move)   Move in a line until terrain changes or enemy appears\n"
 	"  Ctrl C        Collect nearest item\n"
 	"  Ctrl D        Move into darkness (nearest unexplored square)\n"

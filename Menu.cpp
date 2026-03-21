@@ -14,6 +14,7 @@
 #include "MenuMessages.h"
 #include "MenuName.h"
 #include "MenuPause.h"
+#include "MenuPrologue.h"
 #include "MenuSelectHouse.h"
 #include "MenuSettings.h"
 #include "MenuSpells.h"
@@ -38,6 +39,7 @@ MenuInventory s_menu_inventory;
 MenuLoad s_menu_load;
 MenuMessages s_menu_messages;
 MenuName s_menu_name;
+MenuPrologue s_menu_prologue;
 MenuSelectHouse s_menu_select_house;
 MenuSettings s_menu_settings;
 MenuSpells s_menu_spells;
@@ -192,6 +194,12 @@ void show_starting_spells()
 	set_menu(s_menu_spells);
 	s_menu_spells.show_starting_spells();
 	s_menu_load.reset_cursor();
+}
+
+void show_prologue()
+{
+	set_menu(s_menu_prologue);
+	s_menu_prologue.refresh();
 }
 
 void show_spells_known()

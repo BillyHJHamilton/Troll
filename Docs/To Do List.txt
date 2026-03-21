@@ -78,6 +78,7 @@ To Do:
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
   - Would act a lot like fog, but be penetrated by light and fire
  - Slugulus Eructo
+  - With concept of "Secret" spells, that you can't select at the start.
  - More spells from HPADS
 
 - Spells (Expanded)

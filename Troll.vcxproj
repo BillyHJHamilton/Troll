@@ -257,6 +257,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="MenuLoad.cpp" />
     <ClCompile Include="MenuMessages.cpp" />
     <ClCompile Include="MenuName.cpp" />
+    <ClCompile Include="MenuPrologue.cpp" />
     <ClCompile Include="MenuSelectHouse.cpp" />
     <ClCompile Include="MenuDocument.cpp" />
     <ClCompile Include="Gingerbread.cpp" />
@@ -323,6 +324,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="MenuLoad.h" />
     <ClInclude Include="MenuMessages.h" />
     <ClInclude Include="MenuName.h" />
+    <ClInclude Include="MenuPrologue.h" />
     <ClInclude Include="MenuSelectHouse.h" />
     <ClInclude Include="MenuDocument.h" />
     <ClInclude Include="Draw.h" />
@@ -376,7 +378,6 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt" />
     <Text Include="Docs\Creature Identity and Spawning.txt" />
-    <Text Include="Docs\Fanfic notes.txt" />
     <Text Include="Docs\FontGlyphs.txt" />
     <Text Include="Docs\Game Design Goals.txt" />
     <Text Include="Docs\Project Setup.txt" />

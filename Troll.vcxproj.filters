@@ -243,6 +243,9 @@
     <ClCompile Include="Confirm.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="MenuPrologue.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -461,6 +464,9 @@
     <ClInclude Include="Confirm.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
+    <ClInclude Include="MenuPrologue.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Docs\CodingStandard.txt">
@@ -470,9 +476,6 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Docs\Creature Identity and Spawning.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Docs\Fanfic notes.txt">
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Docs\FontGlyphs.txt">

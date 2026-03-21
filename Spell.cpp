@@ -264,29 +264,6 @@ float get_miscast_rate (Spell::Index spell, int skill_magic)
 	return mr;
 }
 
-//static Spell::Instance s_current_spell_instance;
-//
-//void create_and_bind_instance (Spell::Index spell, Creature::Handle caster)
-//{
-//	s_current_spell_instance =
-//	{
-//		Spell::get_colour(spell),
-//		Spell::get_name(spell).at(0),
-//		Spell::get_damage(spell, caster),
-//		caster.skill_magic() * Spell::get_difficulty(spell),
-//		Spell::get_accuracy(spell),
-//		Spell::get_effect_func(spell)
-//	};
-//}
-//
-//// todo - later we may have a way to create and bind a fake spell
-////        for miscasts that create an "unknown spell" effect
-//
-//Spell::Instance & get_current_instance ()
-//{
-//	return s_current_spell_instance;
-//}
-
 Spell::TempList bitset_to_temp_list(Spell::Bitset const& bitset)
 {
 	Spell::TempList out_list;

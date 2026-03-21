@@ -40,6 +40,7 @@ namespace Menu
 	void show_name_entry();
 	void show_house_selection();
 	void show_starting_spells();
+	void show_prologue();
 
 	// Other Documents
 	void show_document(std::string&& message);

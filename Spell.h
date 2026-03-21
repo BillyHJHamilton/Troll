@@ -118,9 +118,6 @@ namespace Spell
 
 	float get_miscast_rate (Spell::Index spell, int skill_magic);
 
-	//void create_and_bind_instance (Spell::Index spell, Creature::Handle caster);
-	//Spell::Instance & get_current_instance ();
-
 	TempList bitset_to_temp_list(Spell::Bitset const& bitset);
 
 	void execute_effect(Spell::Index spell_index, Spell::EffectParams params);

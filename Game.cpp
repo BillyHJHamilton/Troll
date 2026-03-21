@@ -213,7 +213,7 @@ void setup()
 	Spawn::post_world_setup();
 	Spawn::check_spawning();
 
-	Draw::add_message("Welcome to TROLL.  Press h to see controls.");
+	Draw::add_message("Welcome to TROLL.  Press H for help.");
 
 	++s_turn_number; // Advance to turn 0
 
