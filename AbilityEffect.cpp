@@ -1,5 +1,6 @@
 #include "AbilityEffect.h"
 
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
@@ -19,28 +20,43 @@ void steal_bean(EffectParams params)
 
 	if (user.valid() && target.valid())
 	{
+		Item::Handle bean = c_Invalid;
 		if (target.is_player())
 		{
 			int const bean_slot = Inventory::read().find_first_item(Item::BBBean);
 			if (bean_slot != c_Invalid)
 			{
-				// do stuff
-				Item::Handle item = Inventory::edit().pop_item(bean_slot);
-				user.push_item(item);
-
-				Draw::creature_message(user, std::format("{} {} one of {} beans!",
-					Grammar::You(user), Grammar::verbs("grab", user), Grammar::your(target)));
-			}
-			else
-			{
-				Draw::creature_message(user, std::format("{} {} {}, searching for beans.",
-					Grammar::You(user), Grammar::verbs("sniff", user), Grammar::you(target)));
+				bean = Inventory::edit().pop_item(bean_slot);
 			}
 		}
 		else
 		{
-			// Todo
-			DebugBreak();
+			if (target.peek_item().type() == Item::BBBean)
+			{
+				bean = target.pop_item();
+			}
+		}
+
+		if (bean.valid())
+		{
+			user.push_item(bean);
+
+			Draw::creature_message(user, std::format("{} {} one of {} beans!",
+				Grammar::You(user), Grammar::verbs("grab", user), Grammar::your(target)));
+		}
+		else
+		{
+			if (Random::coinflip())
+			{
+				Draw::creature_message(user, std::format("{} {} {}, searching for beans.",
+					Grammar::You(user), Grammar::verbs("sniff", user), Grammar::you(target)));
+			}
+			else
+			{
+				target.take_damage({1,Damage::Basic,Damage::Cause(user)});
+				Draw::creature_message(user, std::format("{} {} {}.",
+					Grammar::You(user), Grammar::verbs("hit", user), Grammar::you(target)));
+			}
 		}
 	}
 }

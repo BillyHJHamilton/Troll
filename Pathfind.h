@@ -14,7 +14,7 @@ namespace Pathfind
 		// Whether to allow moving over creatures.
 		bool ignore_creatures = false;
 
-		// Whether to allow moving through stairs.
+		// Whether to allow moving to a different z-level.
 		bool allow_stairs = true;
 
 		// If set, this creature will be treated as a valid move position.

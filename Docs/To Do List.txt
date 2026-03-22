@@ -60,6 +60,10 @@ To Do:
  - (Advanced) Staircases that change
  - Stronger methods to enforce internal connectivity (for "crossroads" levels)
 
+- Pathfind
+ - Could make a general DFS algorithm with a lambda for destination
+  - and reuse it for into_darkness and find_firing_position
+
 - Potions
  - Could randomize the colours - though for some (Felix Felicis) this feels wrong
 
@@ -70,9 +74,6 @@ To Do:
   - take in the grid and the "default" value
   - on save, create a temp array of positions difft from default, then save that
   - on load, load the temp array, then copy the values into the grid after filling with default
- - Maybe should add a "debug" flag to the saved files.
-  - Otherwise "Megadrill" messes up the character spells-known lists.
-  - Alternatively, include megadrill in the real game, but don't allow selecting it.
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
