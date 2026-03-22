@@ -1267,7 +1267,7 @@ float rate_ability(Creature::Handle creature, Creature::Handle target, Ability::
 			break;
 
 		case Ability::Believe:
-			return 8.0f * (1.0f - creature.hp_percent());
+			return 10.0f * (1.0f - creature.hp_percent());
 			break;
 
 		default:

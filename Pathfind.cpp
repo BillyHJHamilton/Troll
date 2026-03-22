@@ -83,8 +83,7 @@ void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 
 		Terrain::Type const t = world.get_terrain(next_pos);
 
-		if (!param.allow_stairs &&
-			(t == Terrain::UpStairs || t == Terrain::DownStairs))
+		if (!param.allow_stairs && next_pos.z != pos.z)
 		{
 			continue;
 		}

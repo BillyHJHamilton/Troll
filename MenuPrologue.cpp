@@ -74,6 +74,11 @@ Input::Result MenuPrologue::handle_input (int key)
 {
 	switch(key)
 	{
+#if _DEBUG
+		case TK_R:
+			refresh();
+			return Input::Result::Handled;
+#endif
 		case TK_ESCAPE:
 		case TK_ENTER:
 			Menu::close();
