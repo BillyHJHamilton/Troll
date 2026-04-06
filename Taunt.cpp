@@ -375,7 +375,7 @@ void init()
 		Taunt::Data{.text="narrows her deep violet eyes",
 			.presentation=Emote, .condition=Losing},
 
-		Taunt::Data{.text="Sorry, you're just not beautiful enough.",
+		Taunt::Data{.text="You're just not beautiful enough.",
 			.condition=Winning},
 		Taunt::Data{.text="You'll never defeat me!",
 			.condition=Winning},

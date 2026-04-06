@@ -227,7 +227,7 @@ void karate(EffectParams params)
 	if (user.valid() && target.valid())
 	{
 		Draw::creature_message(target, std::format("{} {} {} with {}!",
-			Grammar::You(user), Grammar::verbs("hits",user), Grammar::you(target),
+			Grammar::You(user), Grammar::verbs("hit",user), Grammar::you(target),
 			random_karate_move()));
 	}
 }
