@@ -65,11 +65,11 @@ void MenuHighScores::draw_screen ()
 
 		if (entry.ending == Score::Ending::Defeated)
 		{
-			terminal_printf_ext(Player::c_MaxNameLength + 20,y,30,1,TK_ALIGN_LEFT, "Defeated by %s.", entry.defeated_by.c_str());
+			terminal_printf_ext(Player::c_MaxNameLength + 20,y,40,1,TK_ALIGN_LEFT, "Defeated by %s.", entry.defeated_by.c_str());
 		}
 		else
 		{
-			terminal_print_ext(Player::c_MaxNameLength + 20,y,30,1,TK_ALIGN_LEFT, "Won the game!");
+			terminal_print_ext(Player::c_MaxNameLength + 20,y,40,1,TK_ALIGN_LEFT, "Won the game!");
 		}
 
 		if (row == highlight)

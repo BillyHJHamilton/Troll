@@ -141,7 +141,7 @@ void cycle (int step, bool manually)
 		targets.push_back(creature.pos());
 	}
 
-	// Don't consider features when in pure automatic mode.
+	// Don't consider features when in pure automatic mode, unless there are no creatures.
 	if (targets.empty() || manually)
 	{
 		find_visible_features(targets);

@@ -1,33 +1,21 @@
 -------------------------------------------------------------------------------
-Features I'd like for a .1 or .2 release
--------------------------------------------------------------------------------
-X High score table
- X Stretch: Damage packets and better death attribution
-- Some way to win the game (temp victory condition)
-X Show current location/dungeon level
-X AI move to better firing position, at least in simple cases
-X Correct diagonal range handling (at least for melee)
-
--------------------------------------------------------------------------------
 To Do:
 -------------------------------------------------------------------------------
 
 - Actions
- - Moving should give a small evasion boost
+ > Moving should give a small evasion boost
 
 - Bot
  - Do something more clever about tracking through rooms and getting sidetracked
- - Sidestep to find good attack position if shooting through friends
 
 - Creatures
- - Random spell selection trait for the generic students
-  - Maybe with some customization, though I'm not sure how
-  - It could be you enter a list and it culls it down to 2-3 spells, say.
-  - Or else you enter some, and it fills the rest.
+ - Gnomes should probably eat beans that they find on the ground
 
 - Features
  - Chests should really be placed as part of Map Generation, not creature spawning
  - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
+ - Features that respond to other spells: flipendo vases, ectoplasm, etc.
+   (actually, Scourge or Scourgify should clear slime, right?)
 
 - Identity
  - Support "playable" characters (play as Luna, etc)
@@ -66,6 +54,7 @@ To Do:
 
 - Potions
  - Could randomize the colours - though for some (Felix Felicis) this feels wrong
+ - Doxy venom antidote
 
 - Miscast effects
 
@@ -83,6 +72,7 @@ To Do:
  - More spells from HPADS
 
 - Spells (Expanded)
+ - Randomized spell damage?
  - Accio
   - Should show the item fly through the air.
   - Should it drag character closer at higher power?
@@ -100,6 +90,7 @@ To Do:
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?
  - Chocolate frogs (with wizard cards)
+  - Presumably chocolate gives a temporary courage boost
  - Other types (cauldron cakes, etc)
 
 - Terrain
@@ -107,7 +98,8 @@ To Do:
  - Breakable terrain?
 
 - UI
- - Add "confirm" which pauses until Y/N is pressed (or Enter, depending on type).
+ - Add version of "confirm" which pauses until Y/N is pressed.
+  - Add a way to use confirm in menus?
   - And using this, add a way to forfeit game from the in-game menu.
  - Show spell durations (and thus, read them as part of the spell effects)
  - Support mouse input in menus?
@@ -129,19 +121,9 @@ To consider:
 UX Notes from Richard
 -------------------------------------------------------------------------------
 
-+ Fumos - Unclear that you should target it.
-- Want to press '.' to skip turn.  [Won't do, I think.  I like space]
-+ Want to see spells already selected on the spell selection menu.
-+ Would like a warning or indication when low on health.
- + Could show the hp colour on the player @ icon.
-- White beans are too hard to see (true)  [Tried changing them to light grey, though it's subtle]
-+ Didn't know how to save (not mentioned in help)
 - HP versus "Stamina" is inconsistent terminology  [Feels like HP is too gamey.  Maybe "healthier"?]
 - Would be nice to see spell durations (for TA, RS, etc)
 - Confusing that alohomora doesn't fly past enemy to hit chest
-+ Can't see cursor if playing on a dark screen. - Added "bright cursor" mode
-+ Need an in-game message when save incompatible
-+ The order of messages when when an enemy kills another enemy is odd (see picture).  I would expected to get "XXX faints" as soon as it happened. If I rest with [CTRL]+[SPACE], my enemy gets one attack against me when he comes into view.
 
 -------------------------------------------------------------------------------
 Design Thoughts from Richard
@@ -159,3 +141,11 @@ Design Thoughts from Richard
   sqrt(N) instead of N.  You would probably want to increase the basse power by ~50% so
   the single-cast effect power is about the same.
 - Level 1 is too hard.
+
+-------------------------------------------------------------------------------
+Bugs / Issues
+-------------------------------------------------------------------------------
+
+- Apparently sometimes LOS is asymmetric with enemies (they can see you but you can't see them).
+- Full name not appearing in high scores for second-year Hufflepuff
+- If you automove to death (venom + ctrl space) it fails to break automove on death.
