@@ -4,9 +4,6 @@
 #include "Room.h"
 #include "Stairs.h"
 
-// NEXT STEPS:
-// - Allow horizontal connections, in addition to stairs.
-
 // The architecture is that each map owns its own "MapGenerator".
 // The generator contains metadata like where rooms are located,
 // whereas the Map layer exposes the resulting terrain and staircase table.

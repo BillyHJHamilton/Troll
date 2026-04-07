@@ -146,6 +146,12 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
-- Apparently sometimes LOS is asymmetric with enemies (they can see you but you can't see them).
-- Full name not appearing in high scores for second-year Hufflepuff
+? Apparently sometimes LOS is asymmetric with enemies (they can see you but you can't see them).
 - If you automove to death (venom + ctrl space) it fails to break automove on death.
+
+-------------------------------------------------------------------------------
+Other discussion with Richard
+-------------------------------------------------------------------------------
+
+Could try adding "creature acceleration grid", and see if it improves astar performance.
+

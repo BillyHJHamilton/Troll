@@ -436,6 +436,16 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 	{
 		brain.target_pos = brain.target.pos();
 		thoughts.clear_line_of_fire = has_clear_line_of_fire(creature, brain, thoughts);
+
+		// LOS DEBUG:
+		//if (!World::read().is_visible(creature.pos()))
+		//{
+		//	if (Debug::enabled(Debug::Bot))
+		//	{
+		//		std::cout << std::format("{} - Sees player but not visible.\n",
+		//			creature.short_name());
+		//	}
+		//}
 	}
 }
 

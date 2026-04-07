@@ -11,7 +11,7 @@
 namespace LineCache
 {
 	// Constant used to indicate a trajectory up/down stairs rather than in a
-	// horizontal direction.  Value will be this number + (int)Stairs::Direction.
+	// horizontal direction.
 	int constexpr c_StairsLine = -2;
 
 	void init();
