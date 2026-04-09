@@ -383,6 +383,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <Text Include="Docs\Project Setup.txt" />
     <Text Include="Docs\Students.txt" />
     <Text Include="Docs\To Do List.txt" />
+    <Text Include="Text.txt" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="FixedsysExcelsior302.ttf" />

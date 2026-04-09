@@ -490,6 +490,9 @@
     <Text Include="Docs\To Do List.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="Text.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Font Include="FixedsysExcelsior302.ttf">
