@@ -18,6 +18,7 @@ OBJECTS
 LANGUAGE FEATURES
 - goto considered acceptable.
 - Use const as much as possible (https://www.youtube.com/watch?v=ZWRRXP-XFvY).
+ - Exception: Don't need const on pass-by-value parameters.
 - Use constexpr as much as possible.
 - Don't throw exceptions (though the standard library may).
 - Prefer named functions to lambdas when possible.

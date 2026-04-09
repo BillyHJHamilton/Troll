@@ -10,6 +10,7 @@ To Do:
 
 - Creatures
  - Gnomes should probably eat beans that they find on the ground
+ - Can't use kick/trip/karate attacks if leg-locked
 
 - Features
  - Chests should really be placed as part of Map Generation, not creature spawning
@@ -39,7 +40,6 @@ To Do:
   - Advanced: dragon orb, bottled starlight, tempest in a bottle
 
 - Map generation
- - Show level name/number on screen
  - More advanced map layout
  - New things in map:
   - Special rooms
@@ -81,11 +81,6 @@ To Do:
   - Push characters further at higher power?
  - Finite Incantatem
   - In principle it could be targeted, if we have lingering spell effects.
-
-- Status
- - Prone
-  - And you can't dance while prone.
-  - The imp will also have a tripping attack.
 
 - Sweets
  - They need to have a purpose.  Healing?  Hunger/Sugar?
