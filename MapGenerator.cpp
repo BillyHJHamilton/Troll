@@ -912,51 +912,6 @@ bool MapGenerator::TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 jo
 	return false;
 }
 
-
-//bool MapGenerator::TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded)
-//{
-//	int constexpr c_MaxAttempts = 100;
-//	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
-//	{
-//		Vec2 roomSize = RandRoomSize();
-//		Vec2 roomPos =
-//			stairsRoom.AsStairsSuggestRandAdjoiningPositionForRoom(roomSize);
-//		Room adjoiningRoom = Room::MakeChamber(
-//			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
-//		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
-//		{
-//			m_RoomVec.push_back(adjoiningRoom);
-//			++chambersAdded;
-//			return true;
-//		}
-//	}
-//
-//	// Failed to place a landing room.
-//	// Maybe we can do a corridor?
-//	for (int r1 = 0; r1 < Util::Size(m_RoomVec); ++r1)
-//	{
-//		if (m_RoomVec[r1].IsStairs())
-//		{
-//			continue;
-//		}
-//	
-//		Room::TempList options =
-//			stairsRoom.FindPossibleJoiningCorridors(m_RoomVec[r1]);
-//				
-//		RemoveInvalidRoomsFromOptions(options, /*check_border*/ true);
-//	
-//		if (options.size() > 0)
-//		{
-//			m_RoomVec.push_back(options[0]);
-//			++ corridorsAdded;
-//			// needs to add neighbours
-//			return true;
-//		}
-//	}
-//
-//	return false;
-//}
-
 void MapGenerator::RemoveRoomFromAllNeighbourLists(int roomIndex)
 {
 	for (int r = 0; r < Util::Size(m_RoomVec); r++)

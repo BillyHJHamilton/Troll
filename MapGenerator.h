@@ -4,9 +4,6 @@
 #include "Room.h"
 #include "Stairs.h"
 
-// NEXT STEPS:
-// - Allow horizontal connections, in addition to stairs.
-
 // The architecture is that each map owns its own "MapGenerator".
 // The generator contains metadata like where rooms are located,
 // whereas the Map layer exposes the resulting terrain and staircase table.
@@ -40,8 +37,6 @@ public:
 	void SetParameters(Parameters parameters) { m_Param = parameters; }
 	void RequestConnection(int targetMapId, int numConnections);
 
-	//void AddConnectingStairsAsSeedRooms(Map const& map);
-
 	// Generates rooms and tries to join everything up.
 	void Generate();
 
@@ -50,8 +45,6 @@ public:
 
 	void AddStairsTo(MapGenerator& other, int numToAdd);
 	bool TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair);
-
-	//const std::vector<Stairs::Pair>& GetFailedStairs() const { return m_FailedStairs; }
 
 protected:
 	int FindRoomAtPos(Vec2 pos);
@@ -73,7 +66,6 @@ protected:
 	bool IsValidRoom(Room const &room, bool checkBorder);
 	bool TryAddLandingRoom(int roomIndex); // This version only does rooms
 	bool TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 joinEnd);
-	//bool TryAddLanding(Room const &stairsRoom, int& chambersAdded, int& corridorsAdded);
 	void RemoveRoomFromAllNeighbourLists(int roomIndex);
 	void RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoomIndex);
 	bool AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2);
@@ -93,7 +85,7 @@ protected:
 	std::vector<RequestedConnection> m_RequestedConnections;
 
 	// Seed rooms are provided before Generate is run.  These are presumed to be valid.
-	// Normally they will be added with AddConnectingStaircases.
+	// Normally they will be added with AddStairsTo or AddTunnelTo.
 	// If no seed rooms are added, we'll add a random chamber and make it a seed room.
 	std::vector<Room> m_RoomVec;
 	std::vector<int> m_JoinedRooms; // indices
