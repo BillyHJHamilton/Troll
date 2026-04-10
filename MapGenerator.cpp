@@ -390,7 +390,7 @@ bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
 	}
 }
 
-int MapGenerator::FindRoomAtPos(Vec2 pos)
+int MapGenerator::FindRoomAtPos(Vec2 pos) const
 {
 	for (int i = 0; i < Util::Size(m_RoomVec); i++)
 	{
@@ -750,7 +750,7 @@ void MapGenerator::AssignRoomsToRegions()
 
 // Map Gen Helper Helpers
 
-Vec2 MapGenerator::RandRoomSize()
+Vec2 MapGenerator::RandRoomSize() const
 {
 	Vec2 size{
 		Random::in_range(m_Param.MinRoomDimension, m_Param.MaxRoomDimension),
@@ -795,7 +795,7 @@ Vec2 MapGenerator::RandRoomSize()
 	return size;
 }
 
-Vec2 MapGenerator::RandRoomPos(Vec2 roomSize)
+Vec2 MapGenerator::RandRoomPos(Vec2 roomSize) const
 {
 	Box2 valid_area = m_Map.get_box();
 	valid_area.min += {m_Param.MapBorder, m_Param.MapBorder};
@@ -804,7 +804,7 @@ Vec2 MapGenerator::RandRoomPos(Vec2 roomSize)
 	return Random::in_box(valid_area);
 }
 
-Stairs::Pair MapGenerator::RandStairsPos(bool isUp)
+Stairs::Pair MapGenerator::RandStairsPos(bool isUp) const
 {
 	Stairs::Direction dir = Stairs::DownEast;
 	if (isUp)
@@ -845,7 +845,7 @@ Stairs::Pair MapGenerator::RandStairsPos(bool isUp)
 	return Stairs::Pair(stairsPos, dir);
 }
 
-Room MapGenerator::MakeRandomChamber()
+Room MapGenerator::MakeRandomChamber() const
 {
 	Box2 newRoomBox;
 	newRoomBox.size = RandRoomSize();
@@ -853,7 +853,7 @@ Room MapGenerator::MakeRandomChamber()
 	return Room::MakeChamber(newRoomBox);
 }
 
-bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder)
+bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder) const
 {
 	Box2 boundingBox = checkBorder ?
 		m_Map.get_box_minus_border(m_Param.MapBorder) :
@@ -934,7 +934,7 @@ void MapGenerator::RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoom
 	}
 }
 
-bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2)
+bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2) const
 {
 	for (int n = 0; n < m_RoomVec[roomIndex1].GetNeighbourCount(); n++)
 	{
@@ -975,7 +975,7 @@ void MapGenerator::RemoveBadlyPlacedStairsFromOptions(Room::TempList& options, B
 		), options.cend());
 }
 
-bool MapGenerator::IsBadlyPlacedStairs(Room const& newStairs, Box2 otherMapBox)
+bool MapGenerator::IsBadlyPlacedStairs(Room const& newStairs, Box2 otherMapBox) const
 {
 	if (!m_Map.contains(newStairs.GetBox()) ||
 		!otherMapBox.contains(newStairs.GetBox()))
@@ -1008,7 +1008,7 @@ bool MapGenerator::IsBadlyPlacedStairs(Room const& newStairs, Box2 otherMapBox)
 	return false;
 }
 
-bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& other_stairs)
+bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const
 {
 	Vec2 p0 = new_stairs.StairsLocalEnd();
 	Vec2 p1 = other_stairs.StairsLocalEnd();
