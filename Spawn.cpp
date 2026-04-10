@@ -172,7 +172,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 		Vec2 const pos2 = *itr;
 		Vec3 const pos3 = itr->xyz(map.get_z());
 
-		if (map.get_terrain(pos2) != Terrain::Open)
+		if (!Terrain::is_open(map.get_terrain(pos2)))
 		{
 			++num_not_open;
 			continue;
@@ -254,10 +254,10 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 
 		// We want it against a wall, with open space in front.
 		// And not blocking a hallway on either side.
-		bool const front_ok = t_front == Terrain::Open;
+		bool const front_ok = Terrain::is_open(t_front);
 		bool const back_ok = t_back == Terrain::Wall;
-		bool const left_ok = (t_l1 == Terrain::Wall || t_l2 == Terrain::Open) && t_l1 == t_l2;
-		bool const right_ok = (t_r1 == Terrain::Wall || t_r2 == Terrain::Open) && t_r1 == t_r2;
+		bool const left_ok = (t_l1 == Terrain::Wall || Terrain::is_open(t_l2)) && t_l1 == t_l2;
+		bool const right_ok = (t_r1 == Terrain::Wall || Terrain::is_open(t_r2)) && t_r1 == t_r2;
 
 		if (front_ok && back_ok && left_ok && right_ok)
 		{

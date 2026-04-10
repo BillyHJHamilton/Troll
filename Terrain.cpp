@@ -14,6 +14,7 @@ namespace Terrain
 			case Terrain::UpStairs: return Codepoint::CaretUp;
 			case Terrain::DownStairs: return Codepoint::CaretDown;
 			case Terrain::Chest: return Codepoint::Chest;
+			case Terrain::OpenAlternate: return ':';
 			default: assert(false); return '?';
 		}
 	}
@@ -27,6 +28,7 @@ namespace Terrain
 			case Terrain::UpStairs: return "stairs";
 			case Terrain::DownStairs: return "stairs";
 			case Terrain::Chest: return "chest";
+			case Terrain::OpenAlternate: return "floor";
 			default: assert(false); return "invalid terrain";
 		}
 	}
@@ -49,6 +51,7 @@ namespace Terrain
 		{
 			case Terrain::Open:
 			case Terrain::Chest:
+			case Terrain::OpenAlternate:
 				return true;
 
 			case Terrain::Wall:
@@ -60,6 +63,19 @@ namespace Terrain
 		}
 	}
 
+	bool is_open(Terrain::Type t)
+	{
+		switch (t)
+		{
+			case Terrain::Open:
+			case Terrain::OpenAlternate:
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
 	bool is_solid(Terrain::Type t)
 	{
 		switch (t)
@@ -67,6 +83,7 @@ namespace Terrain
 			case Terrain::Open:
 			case Terrain::UpStairs:
 			case Terrain::DownStairs:
+			case Terrain::OpenAlternate:
 				return false;
 
 			case Terrain::Wall:

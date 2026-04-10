@@ -37,7 +37,7 @@ namespace Game
 	bool serialize_file_type_label(ISerializer& s);
 
 	// Serializes the entire game state.
-	void try_serialize_all(ISerializer& s);
+	bool try_serialize_all(ISerializer& s);
 
 	// Redraw the screen and process input.
 	void update();

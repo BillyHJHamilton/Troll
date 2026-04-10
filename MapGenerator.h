@@ -56,6 +56,7 @@ protected:
 	void AddJoiningCorridors();
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors();
+	void AssignRoomsToRegions();
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize();
@@ -63,12 +64,18 @@ protected:
 	Stairs::Pair RandStairsPos(bool isUp);
 	Room MakeRandomChamber();
 	bool IsValidRoom(Room const &room, bool checkBorder);
-	bool TryAddLandingRoom(Room const &stairsRoom); // This version only does rooms
-	bool TryAddAdjoiningRoomForCorridor(Room const &corridorRoom, Vec2 joinEnd);
+	bool TryAddLandingRoom(int roomIndex); // This version only does rooms
+	bool TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 joinEnd);
+	void RemoveRoomFromAllNeighbourLists(int roomIndex);
+	void RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoomIndex);
+	bool AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2);
 	void RemoveInvalidRoomsFromOptions(Room::TempList &options, bool check_borders);
 	void RemoveBadlyPlacedStairsFromOptions(Room::TempList &options, Box2 otherMapBox);
 	bool IsBadlyPlacedStairs(Room const& new_stairs, Box2 otherMapBox);
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs);
+	void MakeRoomARegionParent(int roomIndex);
+
+	void PrintAllRooms() const;
 
 	struct RequestedConnection
 	{
@@ -82,6 +89,15 @@ protected:
 	// If no seed rooms are added, we'll add a random chamber and make it a seed room.
 	std::vector<Room> m_RoomVec;
 	std::vector<int> m_JoinedRooms; // indices
+
+	struct Region
+	{
+		int parent = Room::c_MainRegion;
+		std::vector<int> rooms; // indices
+
+		void serialize(ISerializer& s);
+	};
+	std::vector<Region> m_RegionVec;
 
 	Map& m_Map;
 	Parameters m_Param = {};

@@ -31,6 +31,12 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 	s.srz_int(MinFacingStairsProximity);
 }
 
+void MapGenerator::Region::serialize(ISerializer& s)
+{
+	s.srz_int(parent);
+	s.srz_vector(rooms, "rooms");
+}
+
 void MapGenerator::Serialize(ISerializer& s)
 {
 	s.srz_vector(m_RequestedConnections, "m_RequestedConnections");
@@ -39,6 +45,9 @@ void MapGenerator::Serialize(ISerializer& s)
 
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
+
+	// TODO: Uncomment when incrementing version
+	//s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
 
 	// Can't serialize this.  Should be setup during construction.
 	//Map& m_Map;
@@ -92,6 +101,12 @@ void MapGenerator::Generate()
 
 	AddExtraCorridors();
 
+	AssignRoomsToRegions();
+
+	// TODO: Add secret corridors here
+
+	//PrintAllRooms();
+
 	m_Map.fill(Terrain::Wall);
 	for (Room const & room : m_RoomVec)
 	{
@@ -134,7 +149,8 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	int num_added = 0;
 	while (num_added < numToAdd && !rooms_to_try.empty())
 	{
-		Room& room = m_RoomVec[rooms_to_try.back()];
+		int const room_index = rooms_to_try.back();
+		Room& room = m_RoomVec[room_index];
 		rooms_to_try.pop_back();
 
 		if (room.GetRoomType() == RoomType::Chamber)
@@ -159,9 +175,14 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 
 					if (success)
 					{
+						tunnel.MarkCorridorAsMapConnector();
 						m_RoomVec.push_back(tunnel);
 						added = true;
 						++num_added;
+
+						int const tunnel_index = Util::LastIndex(m_RoomVec);
+						m_RoomVec[room_index].AddNeighbour(tunnel_index);
+						m_RoomVec[tunnel_index].AddNeighbour(room_index);
 					}
 				}
 
@@ -232,6 +253,11 @@ void MapGenerator::AddStairsTo(MapGenerator& other, int numToAdd)
 				{
 					m_RoomVec.push_back(newStairs);
 					++numAdded;
+
+					int const stairs_index = Util::LastIndex(m_RoomVec);
+					m_RoomVec[r].AddNeighbour(stairs_index);
+					m_RoomVec[stairs_index].AddNeighbour(r);
+
 					success = true;
 					break; // We succeeded, so exit inner loop.
 				}
@@ -282,14 +308,16 @@ bool MapGenerator::TryReceiveTunnel(Vec2 entry_point, Axis corridor_axis)
 		other_end[corridor_axis] += dir*(length - 1);
 		Box2 box = Box2::spanning(entry_point, other_end);
 		Room corridor = Room::MakeCorridor(box, corridor_axis);
+		corridor.MarkCorridorAsMapConnector();
 
 		if (IsValidRoom(corridor, /*checkBorder*/ false))
 		{
 			m_RoomVec.push_back(corridor);
 
 			// So far so good, but can we fit a landing?
+			int const corridorRoomIndex = Util::LastIndex(m_RoomVec);
 			bool const placed_room =
-				TryAddAdjoiningRoomForCorridor(m_RoomVec.back(), other_end);
+				TryAddAdjoiningRoomForCorridor(corridorRoomIndex, other_end);
 
 			if (placed_room)
 			{
@@ -342,7 +370,8 @@ bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
 		m_RoomVec.push_back(new_stairs);
 
 		// So far so good, but can we fit a landing?
-		bool const placed_landing = TryAddLandingRoom(m_RoomVec.back());
+		int const stairsRoomIndex = Util::LastIndex(m_RoomVec);
+		bool const placed_landing = TryAddLandingRoom(stairsRoomIndex);
 
 		if (placed_landing)
 		{
@@ -382,6 +411,7 @@ void MapGenerator::PlaceFirstRoomIfNeeded()
 		// Add a random chamber as our seed room.
 		Room newRoom = MakeRandomChamber();
 		m_RoomVec.push_back(newRoom);
+		// no connections to add
 	}
 }
 
@@ -413,6 +443,9 @@ void MapGenerator::PlaceRooms()
 		{
 			++numPlaced;
 			m_RoomVec.push_back(newRoom);
+			// don't add connections
+			//  -> chambers never connect to each other
+			//  -> connections to corridors will be added with corridors
 		}
 	}
 
@@ -474,8 +507,14 @@ void MapGenerator::AddJoiningCorridors()
 					++ numAddedThisPass;
 
 					m_RoomVec.push_back(Random::from_vector(possibleCorridors));
-					m_JoinedRooms.push_back(Util::Size(m_RoomVec)-1);
+					int const corridor_index = Util::LastIndex(m_RoomVec);
+					m_JoinedRooms.push_back(corridor_index);
 					m_JoinedRooms.push_back(r1);
+
+					m_RoomVec[r0].AddNeighbour(corridor_index);
+					m_RoomVec[r1].AddNeighbour(corridor_index);
+					m_RoomVec[corridor_index].AddNeighbour(r0);
+					m_RoomVec[corridor_index].AddNeighbour(r1);
 				}
 			}
 		}
@@ -501,6 +540,10 @@ void MapGenerator::RemoveDisconnectedRooms()
 	{
 		if (!Util::Contains(m_JoinedRooms, i))
 		{
+			RemoveRoomFromAllNeighbourLists(i);
+			int const oldIndex = Util::LastIndex(m_RoomVec);
+			RenumberRoomInAllNeighbourLists(oldIndex, i);
+
 			++ deletedRooms;
 			Util::RemoveSwap(m_RoomVec, i);
 		}
@@ -512,7 +555,7 @@ void MapGenerator::RemoveDisconnectedRooms()
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Deleted disconnected rooms.\n",
+		std::cout << std::format("Deleted {} disconnected rooms.\n",
 			deletedRooms);
 	}
 }
@@ -537,8 +580,9 @@ void MapGenerator::AddExtraCorridors()
 				continue;
 			}
 
-			// Don't add extra connections to corridors.
-			if (m_RoomVec[r1].IsCorridor())
+			// Only add extra connections to chambers.
+			//  -> not to corridors or stairs
+			if (!m_RoomVec[r1].IsChamber())
 			{
 				continue;
 			}
@@ -550,19 +594,7 @@ void MapGenerator::AddExtraCorridors()
 			}
 
 			// Don't add another one the same.
-			// Sorry for this awkward extra loop. :(
-			bool alreadyJoined = false;
-			for (const Room& room : m_RoomVec)
-			{
-				if (room.IsCorridor()
-					&& room.JoinsToRoom(m_RoomVec[r0])
-					&& room.JoinsToRoom(m_RoomVec[r1]))
-				{
-					alreadyJoined = true;
-					break;
-				}
-			}
-			if (alreadyJoined)
+			if(AreRoomsAlreadyConnected(r0, r1))
 			{
 				continue;
 			}
@@ -587,6 +619,12 @@ void MapGenerator::AddExtraCorridors()
 			{
 				++ numAdded;
 				m_RoomVec.push_back(Random::from_vector(possibleCorridors));
+
+				int const corridor_index = Util::LastIndex(m_RoomVec);
+				m_RoomVec[r0].AddNeighbour(corridor_index);
+				m_RoomVec[r1].AddNeighbour(corridor_index);
+				m_RoomVec[corridor_index].AddNeighbour(r0);
+				m_RoomVec[corridor_index].AddNeighbour(r1);
 			}
 		}
 	}
@@ -594,6 +632,119 @@ void MapGenerator::AddExtraCorridors()
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << "Added " << numAdded << " extra corridors." << std::endl;
+	}
+}
+
+void MapGenerator::AssignRoomsToRegions()
+{
+	int constexpr c_NoRegion = -1;
+	int constexpr c_MultipleRegions = -2;
+
+	PerfTimer perf0("rooms to regions");
+
+	// each new region has a room and a corridor (or several of each)
+	m_RegionVec.reserve(Util::Size(m_RoomVec) / 2);
+
+	Region main_region;
+	main_region.parent = Room::c_MainRegion;  // could have a special value
+	m_RegionVec.push_back(main_region);
+
+	bool isChanged = true;
+	while (isChanged)
+	{
+		isChanged = false;
+
+		for (int r = 0; r < Util::Size(m_RoomVec); r++)
+		{
+			if (m_RoomVec[r].IsInMainRegion() &&
+			    !m_RoomVec[r].IsMapConnector())
+			{
+				int mainRegionConnectionCount = 0;
+				int currentRegion = c_NoRegion;
+				bool isOutsideConnection = false;
+				for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); n++)
+				{
+					int const other_index = m_RoomVec[r].GetNeighbours()[n];
+
+					if (m_RoomVec[other_index].IsMapConnector())
+					{
+						isOutsideConnection = true;
+						break;  // nothing connected to another map is a dead end
+					}
+
+					if (!m_RoomVec[other_index].IsInMainRegion())
+					{
+						// maybe add this room to existing region
+						//  -> if 0 regions leads off this, it becomes a new region
+						//  -> if 1 regions leads off this, join it
+						//  -> if 2 regions lead off this, it becomes a third region
+						if (currentRegion == c_NoRegion)
+						{
+							currentRegion = m_RoomVec[other_index].GetRegion();
+						}
+						else
+						{
+							currentRegion = c_MultipleRegions;
+						}
+					}
+					else
+					{
+						mainRegionConnectionCount++;
+					}
+				}
+
+				if (isOutsideConnection)
+				{
+					continue;  // nothing connected to another map is a dead end
+				}
+
+				if (mainRegionConnectionCount == 0)
+				{
+					DebugBreak("Room has no non-dead-end connections, but it wasn't removed");
+				}
+				else if (mainRegionConnectionCount == 1)
+				{
+					// this room is a dead end; add it to a region
+
+					if (currentRegion > Room::c_MainRegion)
+					{
+						// add to the existing region it is connected to
+						m_RoomVec[r].SetRegion(currentRegion);
+						m_RegionVec[currentRegion].rooms.push_back(r);
+					}
+					else // no existing region, or connects to multiple regions
+					{
+						// start a new region
+						int const newRegionIndex = Util::Size(m_RegionVec);
+
+						Region region;
+						region.parent = Room::c_MainRegion;
+						region.rooms.push_back(r);
+						m_RegionVec.push_back(region);
+
+						m_RoomVec[r].SetRegion(newRegionIndex);
+					}
+
+					MakeRoomARegionParent(r);
+
+					isChanged = true;
+				}
+			}
+		}
+	}
+
+	// add all unassigned rooms to main region
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
+	{
+		if (m_RoomVec[r].IsInMainRegion())
+		{
+			m_RegionVec[Room::c_MainRegion].rooms.push_back(r);
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Divided map into {} regions.\n", Util::Size(m_RegionVec));
 	}
 }
 
@@ -713,18 +864,24 @@ bool MapGenerator::IsValidRoom(Room const &room, bool checkBorder)
 		&& !room.AnyRoomVetoes(m_RoomVec);
 }
 
-bool MapGenerator::TryAddLandingRoom(Room const &stairsRoom)
+bool MapGenerator::TryAddLandingRoom(int stairsRoomIndex)
 {
+	// must not pass in stairsRoom by reference
+	//  -> this function adds to the vector, which could cause a re-allocate
+
 	int constexpr c_MaxAttempts = 100;
 	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
 	{
 		Vec2 roomSize = RandRoomSize();
 		Vec2 roomPos =
-			stairsRoom.AsStairsSuggestRandAdjoiningPositionForRoom(roomSize);
+			m_RoomVec[stairsRoomIndex].AsStairsSuggestRandAdjoiningPositionForRoom(roomSize);
 		Room adjoiningRoom = Room::MakeChamber(
 			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
 		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
 		{
+			int const adjoiningRoomIndex = Util::Size(m_RoomVec);
+			m_RoomVec[stairsRoomIndex].AddNeighbour(adjoiningRoomIndex);
+			adjoiningRoom.AddNeighbour(stairsRoomIndex);
 			m_RoomVec.push_back(adjoiningRoom);
 			return true;
 		}
@@ -733,23 +890,67 @@ bool MapGenerator::TryAddLandingRoom(Room const &stairsRoom)
 	return false;
 }
 
-bool MapGenerator::TryAddAdjoiningRoomForCorridor(Room const &corridorRoom, Vec2 joinEnd)
+bool MapGenerator::TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 joinEnd)
 {
+	// must not pass in corridorRoom by reference
+	//  -> this function adds to the vector, which could cause a re-allocate
+
 	int constexpr c_MaxAttempts = 100;
 	for (int attempts = 0; attempts < c_MaxAttempts; ++attempts)
 	{
 		Vec2 roomSize = RandRoomSize();
 		Vec2 roomPos =
-			corridorRoom.AsCorridorSuggestRandAdjoiningPositionForRoom(roomSize, joinEnd);
+			m_RoomVec[corridorRoomIndex].AsCorridorSuggestRandAdjoiningPositionForRoom(roomSize, joinEnd);
 		Room adjoiningRoom = Room::MakeChamber(
 			Box2(roomPos.x, roomPos.y, roomSize.x, roomSize.y));
 		if (IsValidRoom(adjoiningRoom, /*check border*/ true))
 		{
+			int const adjoiningRoomIndex = Util::Size(m_RoomVec);
+			m_RoomVec[corridorRoomIndex].AddNeighbour(adjoiningRoomIndex);
+			adjoiningRoom.AddNeighbour(corridorRoomIndex);
 			m_RoomVec.push_back(adjoiningRoom);
 			return true;
 		}
 	}
 
+	return false;
+}
+
+void MapGenerator::RemoveRoomFromAllNeighbourLists(int roomIndex)
+{
+	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	{
+		// function does nothing if not connected
+		m_RoomVec[r].RemoveNeighbour(roomIndex);
+	}
+}
+
+void MapGenerator::RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoomIndex)
+{
+	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	{
+		// function does nothing if not connected
+		m_RoomVec[r].RenumberNeighbour(oldRoomIndex, newRoomIndex);
+	}
+}
+
+bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2)
+{
+	for (int n = 0; n < m_RoomVec[roomIndex1].GetNeighbourCount(); n++)
+	{
+		int const neighbourIndex = m_RoomVec[roomIndex1].GetNeighbours()[n];
+
+		//if (!m_RoomVec[neighbourIndex].IsCorridor())
+		//	continue;  // only look for connections along corridors
+
+		for (int n2 = 0; n2 < m_RoomVec[neighbourIndex].GetNeighbourCount(); n2++)
+		{
+			if (m_RoomVec[neighbourIndex].GetNeighbours()[n2] == roomIndex2)
+			{
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
@@ -852,4 +1053,58 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 
 	// guess it's ok
 	return false;
+}
+
+void MapGenerator::MakeRoomARegionParent(int roomIndex)
+{
+	int const parentRegionIndex = m_RoomVec[roomIndex].GetRegion();
+
+	// any regions that border this one get it as a parent
+
+	for (int c = 0; c < m_RoomVec[roomIndex].GetNeighbourCount(); c++)
+	{
+		int const otherIndex = m_RoomVec[roomIndex].GetNeighbours()[c];
+		if (!m_RoomVec[otherIndex].IsInMainRegion() &&
+			m_RoomVec[otherIndex].GetRegion() != parentRegionIndex)
+		{
+			int const childRegionIndex = m_RoomVec[otherIndex].GetRegion();
+			m_RegionVec[childRegionIndex].parent = parentRegionIndex;
+		}
+	}
+}
+
+void MapGenerator::PrintAllRooms() const
+{
+	std::cout << "All rooms" << std::endl;
+	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	{
+		Box2 const box = m_RoomVec[r].GetBox();
+		Vec2 const box_max = box.min + box.size;
+		switch (m_RoomVec[r].GetRoomType())
+		{
+		case RoomType::Chamber:          std::cout << "  Chamber "  << r << ":";  break;
+		case RoomType::Corridor:         std::cout << "  Corridor " << r << ":";  break;
+		case RoomType::Stairs:           std::cout << "  Stairs "   << r << ":";  break;
+		case RoomType::IntermapCorridor: std::cout << "  Map-Corr " << r << ":";  break;
+		default:
+			std::cout << "  Unknown " << r << ":";
+			break;
+		}
+
+		std::cout << "\t  (" << box.min.x << " - " << box_max.x
+			<< ",\t" << box.min.y << " - " << box_max.y << ")";
+
+		if(m_RoomVec[r].IsInMainRegion())
+			std::cout << "  \tMain region";
+		else
+			std::cout << "  \tRegion " << m_RoomVec[r].GetRegion();
+
+		std::cout << "\t{";
+		for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); n++)
+		{
+			int const neighbour = m_RoomVec[r].GetNeighbours()[n];
+			std::cout << (n > 0 ? ", " : " ") << neighbour;
+		}
+		std::cout << " }" << std::endl;
+	}
 }
