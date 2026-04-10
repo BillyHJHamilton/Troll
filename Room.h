@@ -64,8 +64,6 @@ public:
 	Vec2 StairsRemoteEnd() const;
 	Stairs::Direction GetStairsDirection() const { return m_StairsDirection; }
 	static Axis StairsAxis(Stairs::Direction direction);
-	//static bool StairsGoUp(Stairs::Direction direction);
-	//static Stairs::Direction StairsCorrespondingDirection(Stairs::Direction direction);
 
 	// neighbours stuff
 	std::vector<int> const& GetNeighbours() const { return m_Neighbours; }
