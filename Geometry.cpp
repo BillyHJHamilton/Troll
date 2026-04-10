@@ -355,7 +355,7 @@ Box2 Box2::outer_border_box(CompassDirection edge) const
 	switch(edge)
 	{
 		case c_CompassEast:
-			return Box2{max(AXIS_X), min.y, 0, size.y};
+			return Box2{max(AXIS_X), min.y, 1, size.y};
 		case c_CompassNorth:
 			return Box2{min.x, min.y - 1, size.x, 1};
 		case c_CompassWest:

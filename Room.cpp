@@ -40,6 +40,9 @@ void Room::serialize(ISerializer& s)
 	s.srz_value(m_RoomType);
 	s.srz_value(m_StairsDirection);
 	s.srz_int(m_CorridorAxis);
+	//  ADD  <|>
+	//s.srz_int(m_Region);
+	//s.srz_vector<int>(m_Neighbours, "m_Neighbours");
 }
 
 Axis Room::CorridorAxis() const
@@ -57,6 +60,16 @@ int Room::CorridorLength() const
 	{
 		return m_Box.size.y;
 	}
+}
+
+void Room::markCorridorAsMapConnector()
+{
+	if (!IsCorridor())
+	{
+		DebugBreak("You are only supposed to use this for corridors.");
+	}
+
+	m_RoomType = RoomType::IntermapCorridor;
 }
 
 // static
@@ -99,6 +112,41 @@ Axis Room::StairsAxis(Stairs::Direction direction)
 	}
 }
 
+bool Room::IsNeighbourOf(int neighbour) const
+{
+	for (int i = 0; i < m_Neighbours.size(); i++)
+		if (m_Neighbours[i] == neighbour)
+			return true;
+	return false;
+}
+
+void Room::AddNeighbour(int neighbour)
+{
+	if (!IsNeighbourOf(neighbour))
+		m_Neighbours.push_back(neighbour);
+}
+
+void Room::RemoveNeighbour(int neighbour)
+{
+	for (int i = 0; i < m_Neighbours.size(); i++)
+		if (m_Neighbours[i] == neighbour)
+		{
+			m_Neighbours[i] = m_Neighbours.back();
+			m_Neighbours.pop_back();
+			return;  // found it!  don't search rest of list
+		}
+}
+
+void Room::RenumberNeighbour(int oldNeighbour, int newNeighbour)
+{
+	for (int i = 0; i < m_Neighbours.size(); i++)
+		if (m_Neighbours[i] == oldNeighbour)
+		{
+			m_Neighbours[i] = newNeighbour;
+			return;  // found it!  don't search rest of list
+		}
+}
+
 bool Room::VetoesRoom(Room const &newRoom) const
 {
 	Box2 const &newBox = newRoom.GetBox();
@@ -127,7 +175,9 @@ bool Room::JoinsToRoom(Room const &room) const
 	switch(m_RoomType)
 	{
 		case RoomType::Stairs: return JoinsToRoomAsStairs(room);
-		case RoomType::Corridor: return JoinsToRoomAsCorridor(room);
+		case RoomType::Corridor:
+		case RoomType::IntermapCorridor:
+			return JoinsToRoomAsCorridor(room);
 		default: return false;
 	}
 }
@@ -276,7 +326,7 @@ Vec2 Room::AsStairsSuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const
 
 Vec2 Room::AsCorridorSuggestRandAdjoiningPositionForRoom(Vec2 roomSize, Vec2 joinEnd) const
 {
-	if (m_RoomType != RoomType::Corridor)
+	if (!IsCorridor())
 	{
 		DebugBreak("You are only supposed to use this for corridors.");
 		return Vec2{0,0};
@@ -376,7 +426,14 @@ void Room::AddToMap(Map &map) const
 		return;
 	}
 
-	map.fill_box(m_Box, Terrain::Open);
+	//if (m_Region == c_MainRegion)
+	//{
+		map.fill_box(m_Box, Terrain::Open);
+	//}
+	//else
+	//{
+	//	map.fill_box(m_Box, Terrain::OpenIsolated);
+	//}
 
 	// TODO doors
 /*	if (IsCorridor() && CorridorLength() != 2 && !OneIn(3))

@@ -13,13 +13,15 @@ namespace Terrain
 		Wall,
 		UpStairs,
 		DownStairs,
-		Chest
+		Chest,
+		OpenIsolated,
 	};
 
 	int get_character(Terrain::Type t);
 	char const* get_name(Terrain::Type t);
 	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);
+	bool is_open(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	Terrain::Type swap_stairs(Terrain::Type t);
