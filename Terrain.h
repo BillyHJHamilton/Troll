@@ -14,7 +14,7 @@ namespace Terrain
 		UpStairs,
 		DownStairs,
 		Chest,
-		OpenIsolated,
+		OpenAlternate,  // used for debugging
 	};
 
 	int get_character(Terrain::Type t);

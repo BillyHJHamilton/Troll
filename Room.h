@@ -45,11 +45,11 @@ public:
 	bool IsMapConnector() const { return m_RoomType == RoomType::Stairs || m_RoomType == RoomType::IntermapCorridor; }
 	Axis CorridorAxis() const;
 	int CorridorLength() const;
-	void markCorridorAsMapConnector();
+	void MarkCorridorAsMapConnector();
 
 	bool JoinsToRoom(Room const &room) const; // Stairs and corridors only
 	bool VetoesRoom(Room const &newRoom) const;
-	Room::TempList FindPossibleJoiningCorridors(Room const &other) const;
+	Room::TempList FindPossibleJoiningCorridors(Room const & other) const;
 	Room::TempList FindPossibleJoiningCorridorsToBox(Box2 other_box) const;
 	Vec2 AsStairsSuggestRandAdjoiningPositionForRoom(Vec2 roomSize) const;
 	Vec2 AsCorridorSuggestRandAdjoiningPositionForRoom(Vec2 roomSize, Vec2 joinEnd) const;

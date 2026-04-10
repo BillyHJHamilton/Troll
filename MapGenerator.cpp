@@ -46,7 +46,7 @@ void MapGenerator::Serialize(ISerializer& s)
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
 
-	//  ADD  <|>
+	// TODO: Uncomment when incrementing version
 	//s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
 
 	// Can't serialize this.  Should be setup during construction.
@@ -103,7 +103,7 @@ void MapGenerator::Generate()
 
 	AssignRoomsToRegions();
 
-	// add secret corridors here
+	// TODO: Add secret corridors here
 
 	//PrintAllRooms();
 
@@ -149,7 +149,7 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	int num_added = 0;
 	while (num_added < numToAdd && !rooms_to_try.empty())
 	{
-		int room_index = rooms_to_try.back();
+		int const room_index = rooms_to_try.back();
 		Room& room = m_RoomVec[room_index];
 		rooms_to_try.pop_back();
 
@@ -175,12 +175,12 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 
 					if (success)
 					{
-						tunnel.markCorridorAsMapConnector();
+						tunnel.MarkCorridorAsMapConnector();
 						m_RoomVec.push_back(tunnel);
 						added = true;
 						++num_added;
 
-						int tunnel_index = Util::Size(m_RoomVec) - 1;
+						int const tunnel_index = Util::LastIndex(m_RoomVec);
 						m_RoomVec[room_index].AddNeighbour(tunnel_index);
 						m_RoomVec[tunnel_index].AddNeighbour(room_index);
 					}
@@ -254,7 +254,7 @@ void MapGenerator::AddStairsTo(MapGenerator& other, int numToAdd)
 					m_RoomVec.push_back(newStairs);
 					++numAdded;
 
-					int stairs_index = Util::Size(m_RoomVec) - 1;
+					int const stairs_index = Util::LastIndex(m_RoomVec);
 					m_RoomVec[r].AddNeighbour(stairs_index);
 					m_RoomVec[stairs_index].AddNeighbour(r);
 
@@ -308,14 +308,14 @@ bool MapGenerator::TryReceiveTunnel(Vec2 entry_point, Axis corridor_axis)
 		other_end[corridor_axis] += dir*(length - 1);
 		Box2 box = Box2::spanning(entry_point, other_end);
 		Room corridor = Room::MakeCorridor(box, corridor_axis);
-		corridor.markCorridorAsMapConnector();
+		corridor.MarkCorridorAsMapConnector();
 
 		if (IsValidRoom(corridor, /*checkBorder*/ false))
 		{
 			m_RoomVec.push_back(corridor);
 
 			// So far so good, but can we fit a landing?
-			int const corridorRoomIndex = Util::Size(m_RoomVec) - 1;
+			int const corridorRoomIndex = Util::LastIndex(m_RoomVec);
 			bool const placed_room =
 				TryAddAdjoiningRoomForCorridor(corridorRoomIndex, other_end);
 
@@ -370,7 +370,7 @@ bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
 		m_RoomVec.push_back(new_stairs);
 
 		// So far so good, but can we fit a landing?
-		int const stairsRoomIndex = Util::Size(m_RoomVec) - 1;
+		int const stairsRoomIndex = Util::LastIndex(m_RoomVec);
 		bool const placed_landing = TryAddLandingRoom(stairsRoomIndex);
 
 		if (placed_landing)
@@ -507,7 +507,7 @@ void MapGenerator::AddJoiningCorridors()
 					++ numAddedThisPass;
 
 					m_RoomVec.push_back(Random::from_vector(possibleCorridors));
-					int corridor_index = Util::Size(m_RoomVec) - 1;
+					int const corridor_index = Util::LastIndex(m_RoomVec);
 					m_JoinedRooms.push_back(corridor_index);
 					m_JoinedRooms.push_back(r1);
 
@@ -541,7 +541,7 @@ void MapGenerator::RemoveDisconnectedRooms()
 		if (!Util::Contains(m_JoinedRooms, i))
 		{
 			RemoveRoomFromAllNeighbourLists(i);
-			int oldIndex = Util::Size(m_RoomVec) - 1;
+			int const oldIndex = Util::LastIndex(m_RoomVec);
 			RenumberRoomInAllNeighbourLists(oldIndex, i);
 
 			++ deletedRooms;
@@ -620,7 +620,7 @@ void MapGenerator::AddExtraCorridors()
 				++ numAdded;
 				m_RoomVec.push_back(Random::from_vector(possibleCorridors));
 
-				int corridor_index = Util::Size(m_RoomVec) - 1;
+				int const corridor_index = Util::LastIndex(m_RoomVec);
 				m_RoomVec[r0].AddNeighbour(corridor_index);
 				m_RoomVec[r1].AddNeighbour(corridor_index);
 				m_RoomVec[corridor_index].AddNeighbour(r0);
@@ -639,6 +639,11 @@ void MapGenerator::AssignRoomsToRegions()
 {
 	int constexpr c_NoRegion = -1;
 	int constexpr c_MultipleRegions = -2;
+
+	PerfTimer perf0("rooms to regions");
+
+	// each new region has a room and a corridor (or several of each)
+	m_RegionVec.reserve(Util::Size(m_RoomVec) / 2);
 
 	Region main_region;
 	main_region.parent = Room::c_MainRegion;  // could have a special value
@@ -695,8 +700,7 @@ void MapGenerator::AssignRoomsToRegions()
 
 				if (mainRegionConnectionCount == 0)
 				{
-					std::cerr << "Room has no non-dead-end connections, "
-						<< "but it wan't removed" << std::endl;
+					DebugBreak("Room has no non-dead-end connections, but it wasn't removed");
 				}
 				else if (mainRegionConnectionCount == 1)
 				{
@@ -708,7 +712,7 @@ void MapGenerator::AssignRoomsToRegions()
 						m_RoomVec[r].SetRegion(currentRegion);
 						m_RegionVec[currentRegion].rooms.push_back(r);
 					}
-					else
+					else // no existing region, or connects to multiple regions
 					{
 						// start a new region
 						int const newRegionIndex = Util::Size(m_RegionVec);
@@ -730,7 +734,7 @@ void MapGenerator::AssignRoomsToRegions()
 	}
 
 	// add all unassigned rooms to main region
-	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 	{
 		if (m_RoomVec[r].IsInMainRegion())
 		{
@@ -932,13 +936,13 @@ void MapGenerator::RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoom
 
 bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2)
 {
-	// this returns true for stairs that connect to the same room
-
 	for (int n = 0; n < m_RoomVec[roomIndex1].GetNeighbourCount(); n++)
 	{
 		int const neighbourIndex = m_RoomVec[roomIndex1].GetNeighbours()[n];
+
 		//if (!m_RoomVec[neighbourIndex].IsCorridor())
 		//	continue;  // only look for connections along corridors
+
 		for (int n2 = 0; n2 < m_RoomVec[neighbourIndex].GetNeighbourCount(); n2++)
 		{
 			if (m_RoomVec[neighbourIndex].GetNeighbours()[n2] == roomIndex2)
@@ -948,19 +952,6 @@ bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2)
 		}
 	}
 	return false;
-
-	// older: this returns false for stairs that connect to the same room
-
-	//for (const Room& room : m_RoomVec)
-	//{
-	//	if (room.IsCorridor()
-	//		&& room.JoinsToRoom(m_RoomVec[roomIndex1])
-	//		&& room.JoinsToRoom(m_RoomVec[roomIndex2]))
-	//	{
-	//		return true;
-	//	}
-	//}
-	//return false;
 }
 
 void MapGenerator::RemoveInvalidRoomsFromOptions(Room::TempList& options, bool check_border)

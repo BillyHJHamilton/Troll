@@ -40,7 +40,7 @@ void Room::serialize(ISerializer& s)
 	s.srz_value(m_RoomType);
 	s.srz_value(m_StairsDirection);
 	s.srz_int(m_CorridorAxis);
-	//  ADD  <|>
+	// TODO: Uncomment when incrementing version
 	//s.srz_int(m_Region);
 	//s.srz_vector<int>(m_Neighbours, "m_Neighbours");
 }
@@ -62,7 +62,7 @@ int Room::CorridorLength() const
 	}
 }
 
-void Room::markCorridorAsMapConnector()
+void Room::MarkCorridorAsMapConnector()
 {
 	if (!IsCorridor())
 	{
