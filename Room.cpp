@@ -114,37 +114,47 @@ Axis Room::StairsAxis(Stairs::Direction direction)
 
 bool Room::IsNeighbourOf(int neighbour) const
 {
-	for (int i = 0; i < m_Neighbours.size(); i++)
-		if (m_Neighbours[i] == neighbour)
+	for(int i = 0; i < m_Neighbours.size(); i++)
+	{
+		if(m_Neighbours[i] == neighbour)
+		{
 			return true;
+		}
+	}
 	return false;
 }
 
 void Room::AddNeighbour(int neighbour)
 {
-	if (!IsNeighbourOf(neighbour))
+	if(!IsNeighbourOf(neighbour))
+	{
 		m_Neighbours.push_back(neighbour);
+	}
 }
 
 void Room::RemoveNeighbour(int neighbour)
 {
 	for (int i = 0; i < m_Neighbours.size(); i++)
-		if (m_Neighbours[i] == neighbour)
+	{
+		if(m_Neighbours[i] == neighbour)
 		{
 			m_Neighbours[i] = m_Neighbours.back();
 			m_Neighbours.pop_back();
 			return;  // found it!  don't search rest of list
 		}
+	}
 }
 
 void Room::RenumberNeighbour(int oldNeighbour, int newNeighbour)
 {
-	for (int i = 0; i < m_Neighbours.size(); i++)
-		if (m_Neighbours[i] == oldNeighbour)
+	for(int i = 0; i < m_Neighbours.size(); i++)
+	{
+		if(m_Neighbours[i] == oldNeighbour)
 		{
 			m_Neighbours[i] = newNeighbour;
 			return;  // found it!  don't search rest of list
 		}
+	}
 }
 
 bool Room::VetoesRoom(Room const &newRoom) const

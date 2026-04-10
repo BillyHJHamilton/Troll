@@ -1095,9 +1095,13 @@ void MapGenerator::PrintAllRooms() const
 			<< ",\t" << box.min.y << " - " << box_max.y << ")";
 
 		if(m_RoomVec[r].IsInMainRegion())
+		{
 			std::cout << "  \tMain region";
+		}
 		else
+		{
 			std::cout << "  \tRegion " << m_RoomVec[r].GetRegion();
+		}
 
 		std::cout << "\t{";
 		for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); n++)
