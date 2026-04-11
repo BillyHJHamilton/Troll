@@ -1084,20 +1084,20 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		return;
 	}
 
-	//if (m_Region == c_MainRegion)
+	//if (room.GetRegion() == Room::c_MainRegion)
 	//{
 		m_Map.fill_box(room.GetBox(), Terrain::Open);
 	//}
 	//else
 	//{
-	//	m_Map.fill_box(room.GetBox(), Terrain::OpenIsolated);
+	//	m_Map.fill_box(room.GetBox(), Terrain::OpenAlternate);
 	//}
 
-	// TODO doors
-/*	if (room.IsCorridor() && room.CorridorLength() != 2 && !OneIn(3))
+/*	// TODO doors
+	if (room.IsCorridor() && room.CorridorLength() != 2 && !Random::one_in(3))
 	{
 		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
-		m_Map.set_terrain(room.GetBox().inner_max(), MapTerrain::Door);
+		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
 	}*/
 }
 
