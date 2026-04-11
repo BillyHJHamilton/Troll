@@ -47,7 +47,7 @@ public:
 	bool TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair);
 
 protected:
-	int FindRoomAtPos(Vec2 pos);
+	int FindRoomAtPos(Vec2 pos) const;
 
 	// Map Gen Helpers
 	void PlaceFirstRoomIfNeeded();
@@ -59,20 +59,20 @@ protected:
 	void AssignRoomsToRegions();
 
 	// Map Gen Helper Helpers
-	Vec2 RandRoomSize();
-	Vec2 RandRoomPos(Vec2 roomSize);
-	Stairs::Pair RandStairsPos(bool isUp);
-	Room MakeRandomChamber();
-	bool IsValidRoom(Room const &room, bool checkBorder);
+	Vec2 RandRoomSize() const;
+	Vec2 RandRoomPos(Vec2 roomSize) const;
+	Stairs::Pair RandStairsPos(bool isUp) const;
+	Room MakeRandomChamber() const;
+	bool IsValidRoom(Room const &room, bool checkBorder) const;
 	bool TryAddLandingRoom(int roomIndex); // This version only does rooms
 	bool TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 joinEnd);
 	void RemoveRoomFromAllNeighbourLists(int roomIndex);
 	void RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoomIndex);
-	bool AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2);
+	bool AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2) const;
 	void RemoveInvalidRoomsFromOptions(Room::TempList &options, bool check_borders);
 	void RemoveBadlyPlacedStairsFromOptions(Room::TempList &options, Box2 otherMapBox);
-	bool IsBadlyPlacedStairs(Room const& new_stairs, Box2 otherMapBox);
-	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs);
+	bool IsBadlyPlacedStairs(Room const& new_stairs, Box2 otherMapBox) const;
+	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
 	void PrintAllRooms() const;
