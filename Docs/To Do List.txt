@@ -142,7 +142,6 @@ Bugs / Issues
 -------------------------------------------------------------------------------
 
 ? Apparently sometimes LOS is asymmetric with enemies (they can see you but you can't see them).
-- If you automove to death (venom + ctrl space) it fails to break automove on death.
 
 -------------------------------------------------------------------------------
 Other discussion with Richard

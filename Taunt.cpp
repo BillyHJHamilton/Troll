@@ -706,11 +706,13 @@ void say_taunt(Creature::Handle taunter, int taunt_id)
 
 			// We don't do "creature_message" because we only call this function if it's
 			// appropriate to display the message.
-			Draw::add_message(std::format("{} says, \"{}\"", Grammar::You(taunter), message));
+			Draw::add_message(std::format("{} says, \"{}\"", Grammar::You(taunter), message),
+				taunter.colour());
 		}
 		else if (taunt.presentation == Presentation::Emote)
 		{
-			Draw::add_message(std::format("{} {}.", Grammar::You(taunter), message));
+			Draw::add_message(std::format("{} {}.", Grammar::You(taunter), message),
+				taunter.colour());
 		}
 	}
 }

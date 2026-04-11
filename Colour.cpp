@@ -199,10 +199,12 @@ char const* rainbow(int x)
 		case 10:	return cstr_Cyan;
 		case 11:	return cstr_Sky;
 		case 12:	return cstr_Azure;
-		case 13:	return cstr_Blue;
-		case 14:	return cstr_Han;
-		case 15:	return cstr_Violet;
-		case 16:	return cstr_Purple;
+		// Use Light for these ones since it's a bit too dark otherwise.
+		case 13:	return cstr_LightBlue;
+		case 14:	return cstr_LightHan;
+		case 15:	return cstr_LightViolet;
+		case 16:	return cstr_LightPurple;
+		// (End of light range.)
 		case 17:	return cstr_Fuchsia;
 		case 18:	return cstr_Magenta;
 		case 19:	return cstr_Pink;
@@ -210,4 +212,4 @@ char const* rainbow(int x)
 	}
 }
 
-}
+} // namespace Colour

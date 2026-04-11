@@ -41,8 +41,9 @@ namespace Draw
 
 	struct GameMessage
 	{
-		int turn_number;
 		std::string text;
+		char const* colour = nullptr;
+		int turn_number = c_Invalid;
 	};
 
 	void init();
@@ -81,13 +82,14 @@ namespace Draw
 		~IndentScope() { reduce_message_indent(); }
 	};
 
-	void add_message(std::string&& message);
+	void add_message(std::string&& message, char const* colour = nullptr);
 
 	// Adds a message only if the creature provided is visible.
-	void creature_message(Creature::Handle creature, std::string&& message);
+	void creature_message(Creature::Handle creature, std::string&& message,
+		char const* colour = nullptr);
 
 	// Adds message only if location is visible.
-	void pos_message(Vec3 pos, std::string&& message);
+	void pos_message(Vec3 pos, std::string&& message, char const* colour = nullptr);
 
 	void print_messages(Box2 const& box);
 

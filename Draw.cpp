@@ -232,7 +232,7 @@ void reduce_message_indent()
 	--s_message_indent;
 }
 
-void add_message(std::string && message)
+void add_message(std::string && message, char const* colour)
 {
 	if (s_message_indent > 0)
 	{
@@ -241,75 +241,95 @@ void add_message(std::string && message)
 
 	if (Util::Size(s_game_messages) < c_MaxGameMessages)
 	{
-		s_game_messages.push_back({Game::get_turn_number(), message});
+		s_game_messages.push_back({
+			.text = message,
+			.colour = colour,
+			.turn_number = Game::get_turn_number()
+		});
 	}
 	else
 	{
 		// It's a circular array.
-		s_game_messages[s_next_message_id] = {Game::get_turn_number(), message};
+		s_game_messages[s_next_message_id] = {
+			.text = message,
+			.colour = colour,
+			.turn_number = Game::get_turn_number()
+		};
 		s_next_message_id = (s_next_message_id + 1) % c_MaxGameMessages;
 	}
 }
 
-void creature_message(Creature::Handle creature, std::string&& message)
+void creature_message(Creature::Handle creature, std::string&& message,	char const* colour)
 {
 	if (creature.visible())
 	{
-		add_message(std::move(message));
+		add_message(std::move(message), colour);
 	}
 }
 
-void pos_message(Vec3 pos, std::string&& message)
+void pos_message(Vec3 pos, std::string&& message, char const* colour)
 {
 	if (World::read().is_visible(pos))
 	{
-		add_message(std::move(message));
+		add_message(std::move(message), colour);
 	}
 }
 
 void print_messages(Box2 const & box)
 {
-	// We want to print as many messages as we can within the box available.
-	// To do this we will concatenate the messages to be printed into a single string.
-	// Start with most recent message and keep adding more at the beginning as long as it will fit.
-
-	int lines_left = box.size.y;
-
-	if (!s_game_messages.empty())
+	int const total_messages = get_num_recent_messages();
+	if (total_messages == 0)
 	{
-		int const num_messages = get_num_recent_messages();
-		int const newest_time = get_recent_message(0).turn_number;
+		return;
+	}
+	int const newest_time = get_recent_message(0).turn_number;
 
-		std::string combined_message;
-		for (int i = 0; i < num_messages; ++i)
+	// We want to print as many messages as we can within the box available.
+	// We will start with the most recent message and keep measuring messages and adding
+	// their height until we run out of messages or find one that won't fit.
+	int num_to_print = 0;
+	int combined_height = 0;
+	while (num_to_print < total_messages && combined_height < box.size.y)
+	{
+		GameMessage const& message = get_recent_message(num_to_print);
+		int const next_height = terminal_measure_ext(box.size.x, box.size.y,
+			message.text.c_str()).height;
+		combined_height += next_height;
+		if (combined_height <= box.size.y)
 		{
-			GameMessage& message = get_recent_message(i);
-			dimensions_t next_size = terminal_measure_ext(box.size.x, box.size.y,
-				message.text.c_str());
-			lines_left -= next_size.height;
-			if (lines_left < 0)
+			++num_to_print;
+		}
+	}
+
+	// Now that we know how many to print, print them each in reverse order (from top to bottom).
+	int print_y = box.min.y;
+	for (int i = num_to_print - 1; i >= 0; --i)
+	{
+		GameMessage const& message = get_recent_message(i);
+
+		if (message.turn_number == newest_time)
+		{
+			if (message.colour == nullptr)
 			{
-				break;
+				terminal_color(cstr_White);
 			}
 			else
 			{
-				if (message.turn_number < newest_time)
-				{
-					combined_message = std::format("[color=grey]{}[/color]\n", message.text)
-						+ combined_message;
-				}
-				else
-				{
-					combined_message = message.text + "\n" + combined_message;
-				}
-				
-				// Printing turn numbers - test only
-				// combined_message = "(" + std::to_string(itr->turn_number) + ") " + combined_message;
+				terminal_color(message.colour);
 			}
 		}
+		else
+		{
+			terminal_color(cstr_Grey);
+		}
 
-		print_in_box(box, combined_message.c_str(), TK_ALIGN_LEFT);
+		dimensions_t const dim = terminal_print_ext(box.min.x, print_y, box.size.x, box.size.y,
+			TK_ALIGN_LEFT, message.text.c_str());
+		print_y += dim.height;
 	}
+
+	// Restore default font.
+	terminal_color(cstr_White);
 }
 
 int get_num_recent_messages()
@@ -472,4 +492,4 @@ void print_visible_creature_stats(Box2 draw_area)
 	print_in_box(draw_area, creature_status_string.c_str());
 }
 
-}
+} // namespace Draw
