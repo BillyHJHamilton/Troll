@@ -51,8 +51,7 @@ void Map::serialize(ISerializer& s)
 		get_generator().Serialize(s);
 	}
 
-	// TODO: Uncomment when incrementing version
-	//suggestions.serialize(s);
+	suggestions.serialize(s);
 }
 
 void Map::set_name(std::string&& new_name)

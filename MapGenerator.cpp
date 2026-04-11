@@ -46,8 +46,7 @@ void MapGenerator::Serialize(ISerializer& s)
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
 
-	// TODO: Uncomment when incrementing version
-	//s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
+	s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
 
 	// Can't serialize this.  Should be setup during construction.
 	//Map& m_Map;

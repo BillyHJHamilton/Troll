@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Math.h"
 #include "Random.h"
+#include "Serialize.h"
 
 #include <cassert>
 
@@ -38,9 +39,8 @@ void Room::serialize(ISerializer& s)
 	s.srz_value(m_RoomType);
 	s.srz_value(m_StairsDirection);
 	s.srz_int(m_CorridorAxis);
-	// TODO: Uncomment when incrementing version
-	//s.srz_int(m_Region);
-	//s.srz_vector<int>(m_Neighbours, "m_Neighbours");
+	s.srz_int(m_Region);
+	s.srz_vector<int>(m_Neighbours, "m_Neighbours");
 }
 
 Axis Room::CorridorAxis() const
