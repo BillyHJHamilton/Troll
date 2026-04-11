@@ -353,6 +353,7 @@ void end_turn()
 
 	if (Player::is_game_over())
 	{
+		Player::stop_automove();
 		Confirm::press_enter(&Game::game_over);
 		return;
 	}
