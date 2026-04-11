@@ -111,7 +111,7 @@ void MapGenerator::Generate()
 	for (Room const & room : m_RoomVec)
 	{
 		assert(m_Map.contains(room.GetBox()));
-		room.AddToMap(m_Map);
+		AddRoomToMap(room);
 	}
 }
 
@@ -1071,6 +1071,34 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 			m_RegionVec[childRegionIndex].parent = parentRegionIndex;
 		}
 	}
+}
+
+void MapGenerator::AddRoomToMap(Room const & room) const
+{
+	// Room positions are all in global space.
+
+	// todo could probably make this better polymorphic design
+	if (room.GetRoomType() == RoomType::Stairs)
+	{
+		m_Map.add_stairs(room.StairsLocalEnd(), room.GetStairsDirection());
+		return;
+	}
+
+	//if (m_Region == c_MainRegion)
+	//{
+		m_Map.fill_box(room.GetBox(), Terrain::Open);
+	//}
+	//else
+	//{
+	//	m_Map.fill_box(room.GetBox(), Terrain::OpenIsolated);
+	//}
+
+	// TODO doors
+/*	if (room.IsCorridor() && room.CorridorLength() != 2 && !OneIn(3))
+	{
+		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
+		m_Map.set_terrain(room.GetBox().inner_max(), MapTerrain::Door);
+	}*/
 }
 
 void MapGenerator::PrintAllRooms() const

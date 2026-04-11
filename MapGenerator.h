@@ -75,6 +75,8 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
+	void AddRoomToMap(Room const & room) const;
+
 	void PrintAllRooms() const;
 
 	struct RequestedConnection
