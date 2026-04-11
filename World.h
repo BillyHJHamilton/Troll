@@ -29,6 +29,8 @@ public:
 	char const* find_map_name(Vec3 global_pos) const;
 	float find_map_difficulty(Vec3 global_pos) const;
 
+	Vec3 get_player_start() const;
+
 	Terrain::Type get_terrain(Vec3 pos) const;
 	bool is_solid(Vec3 pos) const;
 	bool permits_sight(Vec3 pos) const;

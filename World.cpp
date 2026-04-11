@@ -124,6 +124,20 @@ float World::find_map_difficulty(Vec3 pos) const
 	return 0;
 }
 
+Vec3 World::get_player_start() const
+{
+	for (BoxItr itr(read_map(0).get_box()); itr; ++itr)
+	{
+		Vec3 pos = itr->xy0();
+		if (Terrain::is_open(get_terrain(pos)))
+		{
+			return pos;
+		}
+	}
+	DebugBreak("No legal player start pos found.");
+	return Vec3{ 0, 0, 0 };
+}
+
 Terrain::Type World::get_terrain(Vec3 pos) const
 {
 	int const map_id = find_map(pos);
