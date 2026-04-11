@@ -114,9 +114,9 @@ Axis Room::StairsAxis(Stairs::Direction direction)
 
 bool Room::IsNeighbourOf(int neighbour) const
 {
-	for(int i = 0; i < m_Neighbours.size(); i++)
+	for (int i = 0; i < m_Neighbours.size(); ++i)
 	{
-		if(m_Neighbours[i] == neighbour)
+		if (m_Neighbours[i] == neighbour)
 		{
 			return true;
 		}
@@ -126,7 +126,7 @@ bool Room::IsNeighbourOf(int neighbour) const
 
 void Room::AddNeighbour(int neighbour)
 {
-	if(!IsNeighbourOf(neighbour))
+	if (!IsNeighbourOf(neighbour))
 	{
 		m_Neighbours.push_back(neighbour);
 	}
@@ -134,9 +134,9 @@ void Room::AddNeighbour(int neighbour)
 
 void Room::RemoveNeighbour(int neighbour)
 {
-	for (int i = 0; i < m_Neighbours.size(); i++)
+	for (int i = 0; i < m_Neighbours.size(); ++i)
 	{
-		if(m_Neighbours[i] == neighbour)
+		if (m_Neighbours[i] == neighbour)
 		{
 			m_Neighbours[i] = m_Neighbours.back();
 			m_Neighbours.pop_back();
@@ -147,9 +147,9 @@ void Room::RemoveNeighbour(int neighbour)
 
 void Room::RenumberNeighbour(int oldNeighbour, int newNeighbour)
 {
-	for(int i = 0; i < m_Neighbours.size(); i++)
+	for (int i = 0; i < m_Neighbours.size(); ++i)
 	{
-		if(m_Neighbours[i] == oldNeighbour)
+		if (m_Neighbours[i] == oldNeighbour)
 		{
 			m_Neighbours[i] = newNeighbour;
 			return;  // found it!  don't search rest of list
@@ -260,7 +260,7 @@ Room::TempList Room::FindPossibleJoiningCorridorsToBox(Box2 other_box) const
 	Room::TempList output;
 	output.reserve(maxPos + 1 - minPos);
 
-	for (int pos = minPos; pos <= maxPos; pos++)
+	for (int pos = minPos; pos <= maxPos; ++pos)
 	{
 		output.push_back(FindPossibleJoiningCorridorCommon(other_box, corridorAxis, pos));
 	}

@@ -392,7 +392,7 @@ bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
 
 int MapGenerator::FindRoomAtPos(Vec2 pos) const
 {
-	for (int i = 0; i < Util::Size(m_RoomVec); i++)
+	for (int i = 0; i < Util::Size(m_RoomVec); ++i)
 	{
 		if (m_RoomVec[i].GetBox().contains(pos))
 		{
@@ -468,7 +468,7 @@ void MapGenerator::AddJoiningCorridors()
 		int numAddedThisPass = 0;
 
 		// Try to join up all the rooms.
-		for (int r0 = 0; r0 < m_RoomVec.size(); r0++)
+		for (int r0 = 0; r0 < m_RoomVec.size(); ++r0)
 		{
 			// Always start from a joined room
 			if (!Util::Contains(m_JoinedRooms, r0))
@@ -476,7 +476,7 @@ void MapGenerator::AddJoiningCorridors()
 				continue;
 			}
 
-			for (int r1 = 0; r1 < Util::Size(m_RoomVec); r1++)
+			for (int r1 = 0; r1 < Util::Size(m_RoomVec); ++r1)
 			{
 				// Don't join to self
 				if (r0 == r1)
@@ -564,7 +564,7 @@ void MapGenerator::AddExtraCorridors()
 {
 	int numAdded = 0;
 	
-	for (int r0 = 0; r0 < Util::Size(m_RoomVec); r0++)
+	for (int r0 = 0; r0 < Util::Size(m_RoomVec); ++r0)
 	{
 		// Don't add extra connections to corridors.
 		if (m_RoomVec[r0].IsCorridor())
@@ -572,7 +572,7 @@ void MapGenerator::AddExtraCorridors()
 			continue;
 		}
 
-		for (int r1 = r0+1; r1 < Util::Size(m_RoomVec); r1++)
+		for (int r1 = r0+1; r1 < Util::Size(m_RoomVec); ++r1)
 		{
 			// Don't join to self
 			if (r0 == r1)
@@ -654,7 +654,7 @@ void MapGenerator::AssignRoomsToRegions()
 	{
 		isChanged = false;
 
-		for (int r = 0; r < Util::Size(m_RoomVec); r++)
+		for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 		{
 			if (m_RoomVec[r].IsInMainRegion() &&
 			    !m_RoomVec[r].IsMapConnector())
@@ -662,7 +662,7 @@ void MapGenerator::AssignRoomsToRegions()
 				int mainRegionConnectionCount = 0;
 				int currentRegion = c_NoRegion;
 				bool isOutsideConnection = false;
-				for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); n++)
+				for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); ++n)
 				{
 					int const other_index = m_RoomVec[r].GetNeighbours()[n];
 
@@ -689,7 +689,7 @@ void MapGenerator::AssignRoomsToRegions()
 					}
 					else
 					{
-						mainRegionConnectionCount++;
+						++mainRegionConnectionCount;
 					}
 				}
 
@@ -918,7 +918,7 @@ bool MapGenerator::TryAddAdjoiningRoomForCorridor(int corridorRoomIndex, Vec2 jo
 
 void MapGenerator::RemoveRoomFromAllNeighbourLists(int roomIndex)
 {
-	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 	{
 		// function does nothing if not connected
 		m_RoomVec[r].RemoveNeighbour(roomIndex);
@@ -927,7 +927,7 @@ void MapGenerator::RemoveRoomFromAllNeighbourLists(int roomIndex)
 
 void MapGenerator::RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoomIndex)
 {
-	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 	{
 		// function does nothing if not connected
 		m_RoomVec[r].RenumberNeighbour(oldRoomIndex, newRoomIndex);
@@ -936,14 +936,14 @@ void MapGenerator::RenumberRoomInAllNeighbourLists(int oldRoomIndex, int newRoom
 
 bool MapGenerator::AreRoomsAlreadyConnected(int roomIndex1, int roomIndex2) const
 {
-	for (int n = 0; n < m_RoomVec[roomIndex1].GetNeighbourCount(); n++)
+	for (int n = 0; n < m_RoomVec[roomIndex1].GetNeighbourCount(); ++n)
 	{
 		int const neighbourIndex = m_RoomVec[roomIndex1].GetNeighbours()[n];
 
 		//if (!m_RoomVec[neighbourIndex].IsCorridor())
 		//	continue;  // only look for connections along corridors
 
-		for (int n2 = 0; n2 < m_RoomVec[neighbourIndex].GetNeighbourCount(); n2++)
+		for (int n2 = 0; n2 < m_RoomVec[neighbourIndex].GetNeighbourCount(); ++n2)
 		{
 			if (m_RoomVec[neighbourIndex].GetNeighbours()[n2] == roomIndex2)
 			{
@@ -1061,7 +1061,7 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 
 	// any regions that border this one get it as a parent
 
-	for (int c = 0; c < m_RoomVec[roomIndex].GetNeighbourCount(); c++)
+	for (int c = 0; c < m_RoomVec[roomIndex].GetNeighbourCount(); ++c)
 	{
 		int const otherIndex = m_RoomVec[roomIndex].GetNeighbours()[c];
 		if (!m_RoomVec[otherIndex].IsInMainRegion() &&
@@ -1076,7 +1076,7 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 void MapGenerator::PrintAllRooms() const
 {
 	std::cout << "All rooms" << std::endl;
-	for (int r = 0; r < Util::Size(m_RoomVec); r++)
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 	{
 		Box2 const box = m_RoomVec[r].GetBox();
 		Vec2 const box_max = box.min + box.size;
@@ -1104,7 +1104,7 @@ void MapGenerator::PrintAllRooms() const
 		}
 
 		std::cout << "\t{";
-		for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); n++)
+		for (int n = 0; n < m_RoomVec[r].GetNeighbourCount(); ++n)
 		{
 			int const neighbour = m_RoomVec[r].GetNeighbours()[n];
 			std::cout << (n > 0 ? ", " : " ") << neighbour;
