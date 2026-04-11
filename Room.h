@@ -67,7 +67,7 @@ public:
 
 	// neighbours stuff
 	std::vector<int> const& GetNeighbours() const { return m_Neighbours; }
-	int GetNeighbourCount() const { return Util::Size(m_Neighbours); }
+	int GetNeighbourCount() const;
 	bool IsNeighbourOf(int neighbour) const;
 	void AddNeighbour(int neighbour);
 	void RemoveNeighbour(int neighbour);

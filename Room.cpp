@@ -112,6 +112,11 @@ Axis Room::StairsAxis(Stairs::Direction direction)
 	}
 }
 
+int Room::GetNeighbourCount() const
+{
+	return Util::Size(m_Neighbours);
+}
+
 bool Room::IsNeighbourOf(int neighbour) const
 {
 	for (int i = 0; i < m_Neighbours.size(); ++i)
