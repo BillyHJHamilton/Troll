@@ -4,9 +4,9 @@
 #include "Draw.h"
 #include "Line.h"
 #include "Map.h"
-#include "MapSuggestion.h"
 #include "PerfTimer.h"
 #include "Serialize.h"
+#include "Suggestion.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -128,10 +128,10 @@ float World::find_map_difficulty(Vec3 pos) const
 Vec3 World::get_player_start() const
 {
 	// method 1: map suggestion
-	MapSuggestion::Manager const & suggestions = read_map(0).get_suggestions();
-	if (suggestions.isAny(MapSuggestion::PlayerStart))
+	Suggestion::Manager const & suggestions = read_map(0).get_suggestions();
+	if (suggestions.isAny(Suggestion::PlayerStart))
 	{
-		Vec2 pos2 = suggestions.getByType(MapSuggestion::PlayerStart)[0].position1;
+		Vec2 pos2 = suggestions.getByType(Suggestion::PlayerStart)[0].position1;
 		return pos2.xy0();
 	}
 

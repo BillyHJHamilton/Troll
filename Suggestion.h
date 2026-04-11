@@ -3,7 +3,7 @@
 #include "Types.h"
 #include "Geometry.h"
 
-namespace MapSuggestion
+namespace Suggestion
 {
 	// Use int because used as an array index
 
@@ -14,24 +14,24 @@ namespace MapSuggestion
 		SecretPassage,  // 2 entrances
 		Pillar,
 		Desk,
-		TreasureBean,
+		Bean,
 		TreasureNormal,  // e.g. chest
 		PlayerStart,
-		EnemyWeak,  // below map difficulty
-		EnemyNormal,  // map difficulty
-		EnemyStrong,  // above map difficulty
+		EnemyWeak,      // below map difficulty
+		EnemyModerate,  // map difficulty
+		EnemyStrong,    // above map difficulty
 		Count,
 	};
 
 	enum class Genus : byte
 	{
 		Feature = 0,
-		Treasure,
+		Item,
 		Creature,
 		Unknown,
 	};
 
-	enum class WhenToSpawn : byte  // for creatures
+	enum class When : byte  // for creatures
 	{
 		Initial = 0,  // first spawns for map
 		Later,  // once during later spawns
@@ -44,13 +44,13 @@ namespace MapSuggestion
 		Vec2 position2 = {0,0};
 		Vec2 support1 = {0,0};
 		Vec2 support2 = {0,0};
-		WhenToSpawn when = WhenToSpawn::Initial;
+		When when = When::Initial;
 	};
 
-	Genus GetGenus(MapSuggestion::Type t);
-	int GetPositionCount(MapSuggestion::Type t);
-	int GetSupportCount(MapSuggestion::Type t);
-	bool isWhenToSpawn(MapSuggestion::Type t);
+	Genus GetGenus(Suggestion::Type t);
+	int GetPositionCount(Suggestion::Type t);
+	int GetSupportCount(Suggestion::Type t);
+	bool isWhen(Suggestion::Type t);
 
 	class Manager
 	{
@@ -68,7 +68,7 @@ namespace MapSuggestion
 		void Add(Type type, Vec2 position);
 		void Add(Type type, Vec2 position, Vec2 support);
 		void Add(Type type, Vec2 position1, Vec2 position2, Vec2 support1, Vec2 support2);
-		void Add(Type type, Vec2 position, WhenToSpawn when);
+		void Add(Type type, Vec2 position, When when);
 
 		void Remove(Type type, int index);
 

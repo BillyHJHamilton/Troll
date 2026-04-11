@@ -246,7 +246,7 @@
     <ClCompile Include="MenuPrologue.cpp">
       <Filter>Source Files\UI\Menus</Filter>
     </ClCompile>
-    <ClCompile Include="MapSuggestion.cpp">
+    <ClCompile Include="Suggestion.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
   </ItemGroup>
@@ -470,7 +470,7 @@
     <ClInclude Include="MenuPrologue.h">
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
-    <ClInclude Include="MapSuggestion.h">
+    <ClInclude Include="Suggestion.h">
       <Filter>Header Files\World</Filter>
     </ClInclude>
   </ItemGroup>
