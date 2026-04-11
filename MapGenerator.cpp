@@ -412,6 +412,10 @@ void MapGenerator::PlaceFirstRoomIfNeeded()
 		Room newRoom = MakeRandomChamber();
 		m_RoomVec.push_back(newRoom);
 		// no connections to add
+
+		// assume this is the start room for the player
+		Vec2 room_center = newRoom.GetBox().center();
+		m_Map.get_suggestions().Add(MapSuggestion::PlayerStart, room_center);
 	}
 }
 
@@ -1084,14 +1088,47 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		return;
 	}
 
-	//if (room.GetRegion() == Room::c_MainRegion)
-	//{
-		m_Map.fill_box(room.GetBox(), Terrain::Open);
-	//}
-	//else
+	m_Map.fill_box(room.GetBox(), Terrain::Open);
+	//if (room.GetRegion() != Room::c_MainRegion)
 	//{
 	//	m_Map.fill_box(room.GetBox(), Terrain::OpenAlternate);
 	//}
+
+	if (room.GetNeighbourCount() == 1)
+	{
+		// add treasure across the room from the entrance
+
+		Vec2 const roomCenter = room.GetBox().center();
+
+		int const neighbourIndex = room.GetNeighbours()[0];
+		Vec2 const neighbourCenter = m_RoomVec[neighbourIndex].GetBox().center();
+		Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+
+		Vec2 treasurePos = roomCenter;
+		switch (roomBackDirection.x)
+		{
+		case -1:  treasurePos.x = room.GetBox().min  .x;      break;
+		case  1:  treasurePos.x = room.GetBox().max().x - 1;  break;
+		}
+		switch (roomBackDirection.y)
+		{
+		case -1:  treasurePos.y = room.GetBox().min  .y;      break;
+		case  1:  treasurePos.y = room.GetBox().max().y - 1;  break;
+		}
+
+		m_Map.get_suggestions().Add(MapSuggestion::TreasureNormal, treasurePos);
+	}
+	else if (room.GetRegion() != Room::c_MainRegion &&
+	         room.GetNeighbourCount() >= 3)
+	{
+		// junction to several regions
+		// add a guard
+
+		Vec2 const roomCenter = room.GetBox().center();
+		m_Map.get_suggestions().Add(MapSuggestion::EnemyNormal, roomCenter,
+		                            MapSuggestion::WhenToSpawn::Initial);
+		//m_Map.set_terrain(roomCenter, Terrain::OpenAlternate);
+	}
 
 /*	// TODO doors
 	if (room.IsCorridor() && room.CorridorLength() != 2 && !Random::one_in(3))

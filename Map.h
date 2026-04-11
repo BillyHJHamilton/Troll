@@ -5,6 +5,7 @@
 #include "Cloud.h"
 #include "Geometry.h"
 #include "Grid.h"
+#include "MapSuggestion.h"
 #include "Serialize.h"
 #include "Spawn.h"
 #include "Stairs.h"
@@ -23,6 +24,9 @@ public:
 	void set_name(std::string&& new_name);
 
 	MapGenerator& get_generator();
+
+	MapSuggestion::Manager& get_suggestions() { return suggestions; }
+	MapSuggestion::Manager const& get_suggestions() const { return suggestions; }
 
 	void set_spawn_param(Spawn::Parameters const& new_param) { spawn_param = new_param; }
 	Spawn::Parameters const& read_spawn_param() const { return spawn_param; }
@@ -104,4 +108,5 @@ protected:
 	Spawn::Parameters spawn_param = {};
 
 	std::shared_ptr<MapGenerator> generator;
+	MapSuggestion::Manager suggestions;
 };

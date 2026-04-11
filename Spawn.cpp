@@ -267,18 +267,14 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 	return false;
 }
 
-// TODO: We don't really want to place chests adjacent.  This is kind of flawed in that respect.
-// TODO: Also this should really happen during map gen since it's a form of terrain.
 void find_chest_positions(const Map& map)
 {
 	s_special_positions.clear();
 
-	for (Vec2 v : s_spawn_positions)
+	for (MapSuggestion::Instance const & s :
+	     map.get_suggestions().getByType(MapSuggestion::TreasureNormal))
 	{
-		if (is_ok_chest_position(map, v))
-		{
-			s_special_positions.push_back(v);
-		}
+		s_special_positions.push_back(s.position1);
 	}
 }
 
