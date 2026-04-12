@@ -41,41 +41,6 @@ Genus GetGenus(Type t)
 	}
 }
 
-int get_position_count(Type t)
-{
-	switch (t)
-	{
-	case SecretPassage:
-		return 2;
-	default:
-		return 1;
-	}
-}
-
-int get_support_count(Type t)
-{
-	switch (t)
-	{
-	case SecretArea:
-		return 1;
-	case SecretPassage:
-		return 2;
-	default:
-		return 0;
-	}
-}
-
-bool is_when(Type t)
-{
-	switch (t)
-	{
-	case PlayerStart:
-		return false;
-	default:
-		return GetGenus(t) == Genus::Creature;
-	}
-}
-
 //-------------------------------------------------------------------------------------------------
 // Suggestion Manager
 
