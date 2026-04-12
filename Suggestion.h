@@ -51,6 +51,9 @@ namespace Suggestion
 	Genus GetGenus(Suggestion::Type t);
 	bool is_valid_type(Suggestion::Type t);
 
+	Type get_enemy_type(float map_difficulty,
+	                    float enemy_difficulty);
+
 	class Manager
 	{
 	public:

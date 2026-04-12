@@ -422,13 +422,9 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 			Creature::Type const creature_type = (Creature::Type)option.index;
 			assert(Creature::is_valid_type(creature_type));
 
-			// TODO: Make this a function
 			float const creature_difficulty = Gingerbread::read(creature_type).difficulty;
-			Suggestion::Type suggestion_type = Suggestion::EnemyModerate;
-			if (creature_difficulty <= difficulty - 1.0f)
-				suggestion_type = Suggestion::EnemyWeak;
-			else if (creature_difficulty >= difficulty + 1.0f)
-				suggestion_type = Suggestion::EnemyStrong;
+			Suggestion::Type suggestion_type =
+				Suggestion::get_enemy_type(difficulty, creature_difficulty);
 			Vec3 const pos3 = choose_spawn_position(map, suggestion_type);
 
 			Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);

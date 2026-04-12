@@ -41,6 +41,16 @@ Genus GetGenus(Type t)
 	}
 }
 
+Type get_enemy_type(float map_difficulty,
+                    float enemy_difficulty)
+{
+	if (enemy_difficulty <= map_difficulty - 1.0f)
+		return EnemyWeak;
+	if (enemy_difficulty >= map_difficulty + 1.0f)
+		return EnemyStrong;
+	return EnemyModerate;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Suggestion Manager
 
