@@ -8,6 +8,7 @@
 #include "Confirm.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Feature.h"
 #include "Gingerbread.h"
 #include "Item.h"
 #include "Input.h"
@@ -68,6 +69,7 @@ void init()
 	Creature::init();
 	Debug::init();
 	Draw::init();
+	Feature::init();
 	Gingerbread::init();
 	Item::init();
 	LineCache::init();
@@ -91,6 +93,7 @@ void clear()
 	Bot::clear();
 	Creature::clear();
 	Draw::clear();
+	Feature::clear();
 	Gingerbread::clear();
 	Input::clear();
 	Inventory::clear();
@@ -160,6 +163,7 @@ bool try_serialize_all(ISerializer& s)
 	Ability::serialize(s);
 	Bot::serialize(s);
 	Creature::serialize(s);
+	Feature::serialize(s);
 	Gingerbread::serialize(s);
 	Inventory::serialize(s);
 	Item::serialize(s);

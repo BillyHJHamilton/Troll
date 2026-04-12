@@ -60,6 +60,22 @@ namespace Util
 			return static_cast<int>(itr - vector.cbegin());
 		}
 	}
+	
+	// Search for an entry by the value of one member (the key), using "pointer to member" syntax.
+	// For example, to search for a Foo where .id==2, provide &Foo::id as the key_variable.
+	template<typename VectorItemType, typename Alc, typename ValueType, typename KeyType>
+	int FindIndexByKey(std::vector<VectorItemType,Alc> const& vector,
+		KeyType ValueType::* key_variable, KeyType key_to_find)
+	{
+		for (int i = 0; i < Util::Size(vector); ++i)
+		{
+			if (vector[i].*key_variable == key_to_find)
+			{
+				return i;
+			}
+		}
+		return c_Invalid; // key not found
+	}
 
 	template<typename VectorItemType, typename Alc, typename ValueType>
 	bool Contains(std::vector<VectorItemType,Alc> const& vector, ValueType& value)

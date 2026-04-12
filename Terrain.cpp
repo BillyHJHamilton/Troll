@@ -107,6 +107,18 @@ namespace Terrain
 		}
 	}
 
+	bool is_feature(Terrain::Type t)
+	{
+		switch(t)
+		{
+			case Terrain::Chest:
+				return true;
+			
+			default:
+				return false;
+		}
+	}
+
 	Terrain::Type swap_stairs(Terrain::Type t)
 	{
 		switch(t)

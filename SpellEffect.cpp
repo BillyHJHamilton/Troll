@@ -5,9 +5,9 @@
 #include "Creature.h"
 #include "Damage.h"
 #include "Draw.h"
+#include "Feature.h"
 #include "Grammar.h"
 #include "Inventory.h"
-#include "Pathfind.h"
 #include "Random.h"
 #include "Spell.h"
 #include "Status.h"
@@ -119,25 +119,7 @@ void alohomora(EffectParams params)
 	Terrain::Type t = World::read().get_terrain(pos);
 	if (t == Terrain::Chest)
 	{
-		Draw::pos_message(pos, "The chest bursts open!");
-		World::edit().set_terrain(pos, Terrain::Open);
-
-		// To Do: Variable treasure based on current map
-		Vec3TempList open_pos;
-		open_pos.reserve(9);
-		Pathfind::find_open_neighbours(pos, {}, open_pos);
-		open_pos.push_back(pos);
-
-		int const num_beans = Random::in_range(3,6);
-		for (int i = 0; i < num_beans; ++i)
-		{
-			Item::spawn_bbb(Random::from_vector(open_pos));
-		}
-		if (Random::coinflip())
-		{
-			Item::spawn_potion_by_level(Random::from_vector(open_pos),
-				World::read().find_map_difficulty(pos) + 1.0f);
-		}
+		Feature::open_chest(pos);
 	}
 	else
 	{

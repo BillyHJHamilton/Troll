@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "Debug.h"
+#include "Feature.h"
 #include "Game.h"
 #include "Gingerbread.h"
 #include "Map.h"
@@ -495,7 +496,7 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	while (has_special_positions() && spawned < chests_to_spawn)
 	{
 		Vec2 const pos = next_special_position();
-		map.set_terrain(pos, Terrain::Chest);
+		Feature::spawn(pos.xyz(map.get_z()), Terrain::Chest);
 		++spawned;
 	}
 
