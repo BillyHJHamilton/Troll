@@ -57,6 +57,7 @@ protected:
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors();
 	void AssignRoomsToRegions();
+	void AddAllToMap();
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize() const;
@@ -76,6 +77,7 @@ protected:
 	void MakeRoomARegionParent(int roomIndex);
 
 	void AddRoomToMap(Room const & room) const;
+	Vec2 GetPosAtRoomBack(Room const & room) const;
 
 	void PrintAllRooms() const;
 

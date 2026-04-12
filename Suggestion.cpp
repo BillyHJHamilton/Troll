@@ -75,6 +75,17 @@ void Manager::serialize(ISerializer & s)
 	}
 }
 
+int Manager::get_total_count() const
+{
+	int count = 0;
+	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
+	for (int i = Type::First; i < Type::Count; ++i)
+	{
+		count += Util::Size(m_Suggestions[i]);
+	}
+	return count;
+}
+
 int Manager::get_count(Type type) const
 {
 	assert(is_valid_type(type));

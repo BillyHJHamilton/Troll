@@ -106,12 +106,7 @@ void MapGenerator::Generate()
 
 	//PrintAllRooms();
 
-	m_Map.fill(Terrain::Wall);
-	for (Room const & room : m_RoomVec)
-	{
-		assert(m_Map.contains(room.GetBox()));
-		AddRoomToMap(room);
-	}
+	AddAllToMap();
 }
 
 void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
@@ -751,6 +746,22 @@ void MapGenerator::AssignRoomsToRegions()
 	}
 }
 
+void MapGenerator::AddAllToMap()
+{
+	m_Map.fill(Terrain::Wall);
+	for (Room const & room : m_RoomVec)
+	{
+		assert(m_Map.contains(room.GetBox()));
+		AddRoomToMap(room);
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Added all rooms to map, made {} suggestions.\n",
+			m_Map.read_suggestions().get_total_count());
+	}
+}
+
 // Map Gen Helper Helpers
 
 Vec2 MapGenerator::RandRoomSize() const
@@ -1084,6 +1095,12 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 	if (room.GetRoomType() == RoomType::Stairs)
 	{
 		m_Map.add_stairs(room.StairsLocalEnd(), room.GetStairsDirection());
+
+		// add a guard in room nearby
+		Vec2 const backwards = Stairs::joining_vector(room.GetStairsDirection());
+		Vec2 const near_foot = room.StairsLocalEnd() + backwards * 2;
+		m_Map.edit_suggestions().add_enemy_weak(near_foot);
+
 		return;
 	}
 
@@ -1097,37 +1114,72 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 	{
 		if (room.GetNeighbourCount() == 1)
 		{
+			// end room of region or 1-room attic
+
 			// add treasure across the room from the entrance
-
-			Vec2 const roomCentre = room.GetBox().centre();
-
-			int const neighbourIndex = room.GetNeighbours()[0];
-			Vec2 const neighbourCentre = m_RoomVec[neighbourIndex].GetBox().centre();
-			Vec2 const roomBackDirection = truncate_to_unit(roomCentre - neighbourCentre);
-
-			Vec2 treasurePos = roomCentre;
-			switch (roomBackDirection.x)
-			{
-			case -1:  treasurePos.x = room.GetBox().min  .x;      break;
-			case  1:  treasurePos.x = room.GetBox().max().x - 1;  break;
-			}
-			switch (roomBackDirection.y)
-			{
-			case -1:  treasurePos.y = room.GetBox().min  .y;      break;
-			case  1:  treasurePos.y = room.GetBox().max().y - 1;  break;
-			}
-
-			m_Map.edit_suggestions().add_treasure_normal(treasurePos);
+			Vec2 pos = GetPosAtRoomBack(room);
+			m_Map.edit_suggestions().add_treasure_normal(pos);
 		}
 		else if (room.GetRegion() != Room::c_MainRegion &&
 		         room.GetNeighbourCount() >= 3)
 		{
 			// junction to several regions
-			// add a guard
 
-			Vec2 const roomCentre = room.GetBox().centre();
-			m_Map.edit_suggestions().add_enemy_moderate(roomCentre);
-			//m_Map.set_terrain(roomCentre, Terrain::OpenAlternate);
+			// add a guard
+			Vec2 const roomCenter = room.GetBox().centre();
+			m_Map.edit_suggestions().add_enemy_moderate(roomCenter);
+		}
+	}
+
+	if (room.IsCorridor() &&
+		room.GetRegion() != Room::c_MainRegion &&
+		room.GetNeighbourCount() == 2)  // false for T-junctions
+	{
+		Room const & neighbour0 = m_RoomVec[room.GetNeighbours()[0]];
+		Room const & neighbour1 = m_RoomVec[room.GetNeighbours()[1]];
+
+		int const parent_region = m_RegionVec[room.GetRegion()].parent;
+		bool const is_edge_of_region_0 = neighbour0.GetRegion() == parent_region;
+		bool const is_edge_of_region_1 = neighbour1.GetRegion() == parent_region;
+
+		// the ends of the hallway aren't hard to find, but which is which?
+		Vec2 door0 = room.GetBox().min;
+		Vec2 door1 = room.GetBox().inner_max();
+		Vec2 const neighbour0_Center = neighbour0.GetBox().centre();
+		if (square_dist(neighbour0_Center, door1) <
+			square_dist(neighbour0_Center, door0))
+		{
+			Vec2 temp = door0;
+			door0 = door1;
+			door1 = temp;
+		}
+
+		// secret passage - both ends locked
+		if (is_edge_of_region_0 && is_edge_of_region_1 &&
+		    room.CorridorLength() > 2)
+		{
+			// this can't happen yet...
+			// TODO: Test when map generates secret passages
+			// TODO: Buttons for secret passages
+			m_Map.edit_suggestions().add_secret_passage(door0, door1);
+			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
+			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
+			return;
+		}
+
+		// secret area - only 1 end locked
+		if (is_edge_of_region_0)
+		{
+			// TODO: Buttons for secret areas
+			//   -> and parallel case below
+			//   -> maybe these should go through a common function
+			m_Map.edit_suggestions().add_secret_area(door0);
+			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
+		}
+		if (is_edge_of_region_1)
+		{
+			m_Map.edit_suggestions().add_secret_area(door1);
+			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
 		}
 	}
 
@@ -1137,6 +1189,52 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
 		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
 	}*/
+}
+
+Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
+{
+	Vec2 const roomCenter = room.GetBox().centre();
+
+	int const neighbourIndex = room.GetNeighbours()[0];
+	Vec2 const neighbourCenter = m_RoomVec[neighbourIndex].GetBox().centre();
+	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+
+	Vec2 result = room.GetBox().min;
+	switch (roomBackDirection.x)
+	{
+	// case -1: as initialized
+	case  0:
+		result.x = roomCenter.x;
+		if(room.GetBox().size.x % 2 == 0 &&  // size is even
+		   Random::coinflip())
+		{
+			// might choose other center-ish position
+			result.x -= 1;
+		}
+		break;
+	case  1:
+		result.x = room.GetBox().max().x - 1;
+		break;
+	}
+
+	switch (roomBackDirection.y)
+	{
+	// case -1: as initialized
+	case  0:
+		result.y = roomCenter.y;
+		if(room.GetBox().size.y % 2 == 0 &&  // size is even
+		   Random::coinflip())
+		{
+			// might choose other center-ish position
+			result.y -= 1;
+		}
+		break;
+	case  1:
+		result.y = room.GetBox().max().y - 1;
+		break;
+	}
+
+	return result;
 }
 
 void MapGenerator::PrintAllRooms() const

@@ -61,6 +61,7 @@ namespace Suggestion
 
 		void serialize(ISerializer& s);
 
+		int get_total_count() const;
 		int get_count(Type type) const;
 		bool has_any(Type type) const;
 		std::vector<Instance> const & get(Type type) const;
