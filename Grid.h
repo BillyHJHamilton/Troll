@@ -2,6 +2,8 @@
 
 #include <vector>
 
+// A 2D array implemented as a wrapper around a 1D std::vector.
+
 template<typename ValueType>
 class Grid
 {
