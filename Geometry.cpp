@@ -104,6 +104,46 @@ int chessboard(Vec2 p0, Vec2 p1)
 	return std::max(dx, dy);
 }
 
+Vec2 truncate_to_unit(Vec2 a)
+{
+	float constexpr c_Cutoff = 0.4142135623730950488016887242097f;  // tan(22.5)
+
+	if (a.x == 0 && a.y == 0)
+		return a;
+
+	// algorithm:
+	//  1. truncate vector to +- 1 along each axis
+	//    -> I use sign/signum for this
+	//  2. set small components to 0
+	//    -> small is compared to the other component
+	//    -> for angles close to cardinal directions but not quite aligned
+	//    -> the cutoff is a 22.5 degree angle, so each direction gets 1/8 of a circle
+
+	// examples:
+	//  ( 0,  0)  =>  ( 0,  0)
+	//  ( 1,  0)  =>  ( 1,  0)
+	//  (-1,  1)  =>  (-1,  1)
+	//  ( 0, -8)  =>  ( 0, -1)
+	//  ( 4, -2)  =>  ( 1, -1)  // 26.6 degrees, just past cutoff
+	//  (-5, -1)  =>  (-1,  0)
+
+	// C++ has no signum function, so I implement it as
+	//   (x > 0) - (x < 0)
+	Vec2 result = { (a.x > 0) - (a.x < 0),
+					(a.y > 0) - (a.y < 0) };
+
+	int const abs_x = abs(a.x);
+	int const abs_y = abs(a.y);
+	float const larger = (abs_x > abs_y) ? (float)(abs_x) : (float)(abs_y);
+	float const frac_x = a.x / larger;
+	float const frac_y = a.y / larger;
+	if (abs(frac_x) < c_Cutoff)
+		result.x = 0;
+	if (abs(frac_y) < c_Cutoff)
+		result.y = 0;
+	return result;
+}
+
 //------------------------------------------------------------------------------
 // Vec3
 

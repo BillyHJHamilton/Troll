@@ -126,6 +126,11 @@ inline Vec2 operator* (Vec2 lhs, int rhs)
 	return {lhs.x * rhs, lhs.y * rhs};
 }
 
+inline Vec2 operator/ (Vec2 lhs, int rhs)
+{
+	return {lhs.x / rhs, lhs.y / rhs};
+}
+
 inline Vec2 const & operator+= (Vec2 & lhs, Vec2 rhs)
 {
 	lhs.x += rhs.x;
@@ -137,6 +142,22 @@ inline Vec2 const & operator-= (Vec2 & lhs, Vec2 rhs)
 {
 	lhs.x -= rhs.x;
 	lhs.y -= rhs.y;
+	return lhs;
+}
+
+// no operator*= for int *= Vec2
+
+inline Vec2 const & operator*= (Vec2 & lhs, int rhs)
+{
+	lhs.x *= rhs;
+	lhs.y *= rhs;
+	return lhs;
+}
+
+inline Vec2 const & operator/= (Vec2 & lhs, int rhs)
+{
+	lhs.x /= rhs;
+	lhs.y /= rhs;
 	return lhs;
 }
 
@@ -175,6 +196,11 @@ inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
 {
 	return chessboard(p0,p1) == 1;
 }
+
+// Scales both components to -1, 0, or 1, preserving direction as much as possible.
+// There are only 9 possible results, all with chessboard dimension <= 1.
+// (0, 0) stays as (0, 0).
+Vec2 truncate_to_unit(Vec2 a);
 
 // Support for unordered_map<Vec2>
 namespace std
@@ -259,6 +285,11 @@ inline Vec3 operator* (Vec3 lhs, int rhs)
 	return { lhs.x * rhs, lhs.y * rhs, lhs.z * rhs };
 }
 
+inline Vec3 operator/ (Vec3 lhs, int rhs)
+{
+	return { lhs.x / rhs, lhs.y / rhs, lhs.z / rhs };
+}
+
 inline Vec3 const& operator+= (Vec3& lhs, Vec3 rhs)
 {
 	lhs.x += rhs.x;
@@ -272,6 +303,24 @@ inline Vec3 const& operator-= (Vec3& lhs, Vec3 rhs)
 	lhs.x -= rhs.x;
 	lhs.y -= rhs.y;
 	lhs.z -= rhs.z;
+	return lhs;
+}
+
+// no operator*= for int *= Vec3
+
+inline Vec3 const& operator*= (Vec3& lhs, Vec3 rhs)
+{
+	lhs.x *= rhs.x;
+	lhs.y *= rhs.y;
+	lhs.z *= rhs.z;
+	return lhs;
+}
+
+inline Vec3 const& operator/= (Vec3& lhs, Vec3 rhs)
+{
+	lhs.x /= rhs.x;
+	lhs.y /= rhs.y;
+	lhs.z /= rhs.z;
 	return lhs;
 }
 
@@ -399,6 +448,9 @@ struct Box2
 	Vec2 inner_max() const { return max() - Vec2{1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
 
+	Vec2 centre () const { return min + size / 2; }
+	int centre(Axis a) const { return min[a] + size [a] / 2; }
+
 	int area () const { return size.x * size.y; }
 
 	bool contains (Vec2 v) const;
@@ -444,6 +496,9 @@ struct Box3
 	// The last cell included inside the box.
 	Vec3 inner_max() const { return max() - Vec3{1, 1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
+
+	Vec3 centre () const { return min + size / 2; }
+	int centre(Axis a) const { return min[a] + size [a] / 2; }
 
 	bool contains(Vec3 v) const;
 	bool intersects(Box3 other) const;

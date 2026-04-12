@@ -50,6 +50,8 @@ void Map::serialize(ISerializer& s)
 	{
 		get_generator().Serialize(s);
 	}
+
+	suggestions.serialize(s);
 }
 
 void Map::set_name(std::string&& new_name)

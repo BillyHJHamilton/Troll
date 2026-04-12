@@ -6,6 +6,7 @@
 #include "Map.h"
 #include "PerfTimer.h"
 #include "Serialize.h"
+#include "Suggestion.h"
 #include "Target.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -122,6 +123,30 @@ float World::find_map_difficulty(Vec3 pos) const
 	}
 
 	return 0;
+}
+
+Vec3 World::get_player_start() const
+{
+	// method 1: map suggestion
+	Suggestion::Manager const & suggestions = read_map(0).read_suggestions();
+	if (suggestions.has_any(Suggestion::PlayerStart))
+	{
+		Vec2 pos2 = suggestions.get(Suggestion::PlayerStart)[0].position1;
+		return pos2.xy0();
+	}
+
+	// method 2: any open terrain
+	for (BoxItr itr(read_map(0).get_box()); itr; ++itr)
+	{
+		Vec3 pos = itr->xy0();
+		if (Terrain::is_open(get_terrain(pos)))
+		{
+			return pos;
+		}
+	}
+
+	DebugBreak("No legal player start pos found.");
+	return Vec3{ 0, 0, 0 };
 }
 
 Terrain::Type World::get_terrain(Vec3 pos) const

@@ -57,8 +57,6 @@ public:
 
 	bool AnyRoomVetoes(const std::vector<Room> &roomVec) const;
 
-	void AddToMap(Map &map) const;
-
 	// stairs stuff
 	Vec2 StairsLocalEnd() const;
 	Vec2 StairsRemoteEnd() const;

@@ -196,17 +196,8 @@ void setup()
 	BuildWorld();
 
 	// Now find a place for the player.
-	World const& world = World::read();
-	for (BoxItr itr(world.read_map(0).get_box()); itr; ++itr)
-	{
-		Vec3 pos = itr->xy0();
-		if (Terrain::is_open(world.get_terrain(pos)))
-		{
-			assert(Player::handle().valid());
-			Player::handle().move(pos);
-			break;
-		}
-	}
+	assert(Player::handle().valid());
+	Player::handle().move(World::read().get_player_start());
 
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 

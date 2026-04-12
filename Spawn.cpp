@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Squad.h"
+#include "Suggestion.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -80,6 +81,8 @@ int spawn_chests(Map& map, int chests_to_spawn);
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
 void spawn_squad(int squad_id, Vec3 start_pos);
+
+Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type);
 
 //-----------------------------------------------------------------------------
 // Interface
@@ -267,18 +270,19 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 	return false;
 }
 
-// TODO: We don't really want to place chests adjacent.  This is kind of flawed in that respect.
-// TODO: Also this should really happen during map gen since it's a form of terrain.
 void find_chest_positions(const Map& map)
 {
 	s_special_positions.clear();
 
-	for (Vec2 v : s_spawn_positions)
+	// TODO: What if there aren't enough suggestions?
+	//  -> could fall back on the old system
+	//  -> currently, fewer chests spawn (handled in spawn_chests)
+	//  -> should this go directly in the spawn_chests function?
+	//    -> need a new position table after spawning features anyway
+	for (Suggestion::Instance const & s :
+	     map.read_suggestions().get(Suggestion::TreasureNormal))
 	{
-		if (is_ok_chest_position(map, v))
-		{
-			s_special_positions.push_back(v);
-		}
+		s_special_positions.push_back(s.position1);
 	}
 }
 
@@ -338,6 +342,16 @@ void spawn_for_map(Map& map, History& history)
 		min_range = 2;
 	}
 
+	// all features must spawn first
+	//  -> then (re)call find_spawn_positions
+	//    -> currently not needed
+	//  -> otherwise creatures and items spawn on features
+	if (chests_to_spawn > 0)
+	{
+		find_chest_positions(map);
+		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
+	}
+
 	find_spawn_positions(map, min_range);
 
 	if (is_first_spawn)
@@ -346,12 +360,6 @@ void spawn_for_map(Map& map, History& history)
 	}
 
 	history.creatures_spawned += spawn_creatures(map, creatures_to_spawn);
-
-	if (chests_to_spawn > 0)
-	{
-		find_chest_positions(map);
-		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
-	}
 
 	if (items_to_spawn > 0)
 	{
@@ -399,8 +407,8 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 	int creatures_spawned = 0;
 	while (has_spawn_positions() && creatures_spawned < creatures_to_spawn)
 	{
-		Vec2 const pos = next_spawn_position();
-		Vec3 const pos3 = pos.xyz(map.get_z());
+		//Vec2 const pos = next_spawn_position();
+		//Vec3 const pos3 = pos.xyz(map.get_z());
 
 		Spawn::Option option = choose_spawn_option(map.get_difficulty());
 
@@ -411,8 +419,17 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 
 		else if (option.type == Option::Creature)
 		{
-			Creature::Type creature_type = (Creature::Type)option.index;
+			Creature::Type const creature_type = (Creature::Type)option.index;
 			assert(Creature::is_valid_type(creature_type));
+
+			// TODO: Make this a function
+			float const creature_difficulty = Gingerbread::read(creature_type).difficulty;
+			Suggestion::Type suggestion_type = Suggestion::EnemyModerate;
+			if (creature_difficulty <= difficulty - 1.0f)
+				suggestion_type = Suggestion::EnemyWeak;
+			else if (creature_difficulty >= difficulty + 1.0f)
+				suggestion_type = Suggestion::EnemyStrong;
+			Vec3 const pos3 = choose_spawn_position(map, suggestion_type);
 
 			Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);
 			if (Debug::enabled(Debug::Map))
@@ -427,6 +444,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 
 		else if (option.type == Option::Squad)
 		{
+			Vec3 const pos3 = choose_spawn_position(map, Suggestion::EnemyModerate);
 			spawn_squad(option.index, pos3);
 			++creatures_spawned; // That still only counts as one!
 		}
@@ -566,6 +584,45 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 		}
 	}
 
+}
+
+// Note: Must call find_spawn_positions first.
+Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type)
+{
+	// method 1: use a random map suggestion
+	/*
+	// TODO: need to validate position
+	//   -> see find_spawn_positions
+	// TODO: better way to pick a position at random
+	//   Another option if you want to iterate the list in a random order is to use
+	//   TempIntList index_list = Util::GetIndices(suggestion_list);
+	//   Random::shuffle_vector(index_list);
+	//   for (int index : index_list)
+	// TODO: need handle non-initial spawn
+	int count  = 0;
+	int chosen = -1;
+	for (int i = 0; i < map.get_suggestions().GetCount(spawn_type); ++i)
+	{
+		if (map.get_suggestions().getByType(spawn_type)[i].when == Suggestion::WhenToSpawn::Initial)
+		{
+			++count;
+			if (Random::one_in(count))  // always happens first time
+			{
+				chosen = i;
+			}
+		}
+	}
+	if (chosen >= 0)
+	{
+		Vec2 const pos = map.get_suggestions().getByType(spawn_type)[chosen].position1;
+		// TODO: need to remove suggestion
+		// TODO: need to remove from spawn positions
+		return pos.xyz(map.get_z());
+	}
+	*/
+	// method 2: any valid spawn position
+	Vec2 const pos = next_spawn_position();
+	return pos.xyz(map.get_z());
 }
 
 } // namespace Spawn

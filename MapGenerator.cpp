@@ -46,8 +46,7 @@ void MapGenerator::Serialize(ISerializer& s)
 	// Shouldn't need to save this.
 	assert(m_JoinedRooms.empty());
 
-	// TODO: Uncomment when incrementing version
-	//s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
+	s.srz_vector_advanced(m_RegionVec, "m_RegionVec");
 
 	// Can't serialize this.  Should be setup during construction.
 	//Map& m_Map;
@@ -111,7 +110,7 @@ void MapGenerator::Generate()
 	for (Room const & room : m_RoomVec)
 	{
 		assert(m_Map.contains(room.GetBox()));
-		room.AddToMap(m_Map);
+		AddRoomToMap(room);
 	}
 }
 
@@ -412,6 +411,10 @@ void MapGenerator::PlaceFirstRoomIfNeeded()
 		Room newRoom = MakeRandomChamber();
 		m_RoomVec.push_back(newRoom);
 		// no connections to add
+
+		// assume this is the start room for the player
+		Vec2 room_centre = newRoom.GetBox().centre();
+		m_Map.edit_suggestions().add_player_start(room_centre);
 	}
 }
 
@@ -1071,6 +1074,69 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 			m_RegionVec[childRegionIndex].parent = parentRegionIndex;
 		}
 	}
+}
+
+void MapGenerator::AddRoomToMap(Room const & room) const
+{
+	// Room positions are all in global space.
+
+	// todo could probably make this better polymorphic design
+	if (room.GetRoomType() == RoomType::Stairs)
+	{
+		m_Map.add_stairs(room.StairsLocalEnd(), room.GetStairsDirection());
+		return;
+	}
+
+	m_Map.fill_box(room.GetBox(), Terrain::Open);
+	//if (room.GetRegion() != Room::c_MainRegion)
+	//{
+	//	m_Map.fill_box(room.GetBox(), Terrain::OpenAlternate);
+	//}
+
+	if (room.IsChamber())
+	{
+		if (room.GetNeighbourCount() == 1)
+		{
+			// add treasure across the room from the entrance
+
+			Vec2 const roomCentre = room.GetBox().centre();
+
+			int const neighbourIndex = room.GetNeighbours()[0];
+			Vec2 const neighbourCentre = m_RoomVec[neighbourIndex].GetBox().centre();
+			Vec2 const roomBackDirection = truncate_to_unit(roomCentre - neighbourCentre);
+
+			Vec2 treasurePos = roomCentre;
+			switch (roomBackDirection.x)
+			{
+			case -1:  treasurePos.x = room.GetBox().min  .x;      break;
+			case  1:  treasurePos.x = room.GetBox().max().x - 1;  break;
+			}
+			switch (roomBackDirection.y)
+			{
+			case -1:  treasurePos.y = room.GetBox().min  .y;      break;
+			case  1:  treasurePos.y = room.GetBox().max().y - 1;  break;
+			}
+
+			m_Map.edit_suggestions().add_treasure_normal(treasurePos);
+		}
+		else if (room.GetRegion() != Room::c_MainRegion &&
+		         room.GetNeighbourCount() >= 3)
+		{
+			// junction to several regions
+			// add a guard
+
+			Vec2 const roomCentre = room.GetBox().centre();
+			m_Map.edit_suggestions().add_enemy_moderate(roomCentre);
+			//m_Map.set_terrain(roomCentre, Terrain::OpenAlternate);
+		}
+	}
+
+/*	// TODO doors
+	if (room.IsCorridor() && room.CorridorLength() != 2 && !Random::one_in(3))
+	{
+		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
+		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
+	}*/
 }
 
 void MapGenerator::PrintAllRooms() const

@@ -8,6 +8,7 @@
 #include "Serialize.h"
 #include "Spawn.h"
 #include "Stairs.h"
+#include "Suggestion.h"
 
 #include <memory>
 #include <unordered_map>
@@ -23,6 +24,9 @@ public:
 	void set_name(std::string&& new_name);
 
 	MapGenerator& get_generator();
+
+	Suggestion::Manager& edit_suggestions() { return suggestions; }
+	Suggestion::Manager const& read_suggestions() const { return suggestions; }
 
 	void set_spawn_param(Spawn::Parameters const& new_param) { spawn_param = new_param; }
 	Spawn::Parameters const& read_spawn_param() const { return spawn_param; }
@@ -104,4 +108,5 @@ protected:
 	Spawn::Parameters spawn_param = {};
 
 	std::shared_ptr<MapGenerator> generator;
+	Suggestion::Manager suggestions;
 };

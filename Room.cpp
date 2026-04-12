@@ -1,10 +1,9 @@
 #include "Room.h"
 
 #include "Debug.h"
-#include "Map.h"
 #include "Math.h"
 #include "Random.h"
-#include "Terrain.h"
+#include "Serialize.h"
 
 #include <cassert>
 
@@ -40,9 +39,8 @@ void Room::serialize(ISerializer& s)
 	s.srz_value(m_RoomType);
 	s.srz_value(m_StairsDirection);
 	s.srz_int(m_CorridorAxis);
-	// TODO: Uncomment when incrementing version
-	//s.srz_int(m_Region);
-	//s.srz_vector<int>(m_Neighbours, "m_Neighbours");
+	s.srz_int(m_Region);
+	s.srz_vector<int>(m_Neighbours, "m_Neighbours");
 }
 
 Axis Room::CorridorAxis() const
@@ -430,30 +428,3 @@ bool Room::AnyRoomVetoes(const std::vector<Room> &roomVec) const
 	return false;
 }
 
-void Room::AddToMap(Map &map) const
-{
-	// Room positions are all in global space.
-
-	// todo could probably make this better polymorphic design
-	if (m_RoomType == RoomType::Stairs)
-	{
-		map.add_stairs(StairsLocalEnd(), m_StairsDirection);
-		return;
-	}
-
-	//if (m_Region == c_MainRegion)
-	//{
-		map.fill_box(m_Box, Terrain::Open);
-	//}
-	//else
-	//{
-	//	map.fill_box(m_Box, Terrain::OpenIsolated);
-	//}
-
-	// TODO doors
-/*	if (IsCorridor() && CorridorLength() != 2 && !OneIn(3))
-	{
-		map.set_terrain(m_Box.min, Terrain::Door);
-		map.set_terrain(m_Box.inner_max(), MapTerrain::Door);
-	}*/
-}
