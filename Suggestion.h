@@ -10,15 +10,23 @@ namespace Suggestion
 	enum Type : int
 	{
 		First = 0,
-		SecretRegion = First,  // 1 entrance
-		SecretPassage,  // 2 entrances
-		Pillar,
-		Desk,
-		Bean,
+
+		// region with 1 entrance (placeholder)
+		SecretArea = First,
+
+		// region with 2 entrances (placeholder)
+		//  -> both entrances will be locked the same way
+		SecretPassage,
+
+		Pillar,  // placeholder
+		Desk,  // placeholder
+
+		Bean,  // placeholder
 		TreasureNormal,  // e.g. chest
+
 		PlayerStart,
 		EnemyWeak,      // below map difficulty
-		EnemyModerate,  // map difficulty
+		EnemyModerate,  //  near map difficulty
 		EnemyStrong,    // above map difficulty
 		Count,
 	};
@@ -31,26 +39,17 @@ namespace Suggestion
 		Unknown,
 	};
 
-	enum class When : byte  // for creatures
-	{
-		Initial = 0,  // first spawns for map
-		Later,  // once during later spawns
-		//Repeating,  // always available - for vaults
-	};
-
 	struct Instance
 	{
-		Vec2 position1 = {0,0};
-		Vec2 position2 = {0,0};
-		Vec2 support1 = {0,0};
-		Vec2 support2 = {0,0};
-		When when = When::Initial;
+		Vec2 position1 = {0, 0};
+		Vec2 position2 = {0, 0};
+		Vec2 button1 = {0, 0};
+		Vec2 button2 = {0, 0};
+		bool is_button = false;
 	};
 
 	Genus GetGenus(Suggestion::Type t);
-	int GetPositionCount(Suggestion::Type t);
-	int GetSupportCount(Suggestion::Type t);
-	bool isWhen(Suggestion::Type t);
+	bool is_valid_type(Suggestion::Type t);
 
 	class Manager
 	{
@@ -59,18 +58,22 @@ namespace Suggestion
 
 		void serialize(ISerializer& s);
 
-		int GetCount(Type type) const;
-		bool isAny(Type type) const;
-		std::vector<Instance> const & getByType(Type type) const;
+		int get_count(Type type) const;
+		bool has_any(Type type) const;
+		std::vector<Instance> const & get(Type type) const;
 
-		// add map suggestions
-		//  -> only one function is valid for each suggestion type
-		void Add(Type type, Vec2 position);
-		void Add(Type type, Vec2 position, Vec2 support);
-		void Add(Type type, Vec2 position1, Vec2 position2, Vec2 support1, Vec2 support2);
-		void Add(Type type, Vec2 position, When when);
+		void add_secret_area(Vec2 door);  // no secret areas yet
+		void add_secret_area(Vec2 door, Vec2 button);
+		void add_secret_passage(Vec2 door1, Vec2 door2);  // no secret passages yet
+		void add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2);
+		void add_treasure_normal(Vec2 position);
+		void add_player_start(Vec2 position);
+		void add_enemy_weak(Vec2 position);
+		void add_enemy_moderate(Vec2 position);
+		void add_enemy_strong(Vec2 position);
+		// TODO: Add more functions when needed
 
-		void Remove(Type type, int index);
+		void remove(Type type, int index);
 
 	private:
 		std::vector<Instance> m_Suggestions[Type::Count];

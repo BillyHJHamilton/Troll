@@ -8,13 +8,22 @@
 #include <cassert>
 #include <string>
 
+namespace Suggestion
+{
 
+//-------------------------------------------------------------------------------------------------
+// Global interface
 
-Suggestion::Genus Suggestion::GetGenus(Suggestion::Type t)
+bool is_valid_type(Suggestion::Type t)
+{
+	return t >= First && t < Count;
+}
+
+Genus GetGenus(Type t)
 {
 	switch (t)
 	{
-	case SecretRegion:
+	case SecretArea:
 	case SecretPassage:
 	case Pillar:
 	case Desk:
@@ -32,7 +41,7 @@ Suggestion::Genus Suggestion::GetGenus(Suggestion::Type t)
 	}
 }
 
-int Suggestion::GetPositionCount(Suggestion::Type t)
+int get_position_count(Type t)
 {
 	switch (t)
 	{
@@ -43,11 +52,11 @@ int Suggestion::GetPositionCount(Suggestion::Type t)
 	}
 }
 
-int Suggestion::GetSupportCount(Suggestion::Type t)
+int get_support_count(Type t)
 {
 	switch (t)
 	{
-	case SecretRegion:
+	case SecretArea:
 		return 1;
 	case SecretPassage:
 		return 2;
@@ -56,7 +65,7 @@ int Suggestion::GetSupportCount(Suggestion::Type t)
 	}
 }
 
-bool Suggestion::isWhen(Suggestion::Type t)
+bool is_when(Type t)
 {
 	switch (t)
 	{
@@ -67,11 +76,12 @@ bool Suggestion::isWhen(Suggestion::Type t)
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+// Suggestion Manager
 
-
-Suggestion::Manager::Manager()
+Manager::Manager()
 {
-	static int const c_DefaultCapacity = 0;
+	static int const c_DefaultCapacity = 10;
 
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
@@ -80,7 +90,7 @@ Suggestion::Manager::Manager()
 	}
 }
 
-void Suggestion::Manager::serialize(ISerializer & s)
+void Manager::serialize(ISerializer & s)
 {
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
@@ -90,100 +100,114 @@ void Suggestion::Manager::serialize(ISerializer & s)
 	}
 }
 
-int Suggestion::Manager::GetCount(Type type) const
+int Manager::get_count(Type type) const
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
+	assert(is_valid_type(type));
 
 	return Util::Size(m_Suggestions[type]);
 }
 
-bool Suggestion :: Manager :: isAny(Type type) const
+bool Manager :: has_any(Type type) const
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
+	assert(is_valid_type(type));
 
 	return !m_Suggestions[type].empty();
 }
 
-std::vector<Suggestion::Instance> const & Suggestion::Manager::getByType(Type type) const
+std::vector<Instance> const & Manager::get(Type type) const
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
+	assert(is_valid_type(type));
 
 	return m_Suggestions[type];
 }
 
 
-// add map suggestions
-//  -> only one function is valid for each type
-
-void Suggestion :: Manager :: Add(Type type, Vec2 position)
+void Manager :: add_secret_area(Vec2 door)
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
-	assert(GetPositionCount(type) == 1);
-	assert(GetSupportCount(type)  == 0);
-	assert(isWhen(type)           == false);
+	Instance instance =
+	{ .position1 = door,
+	  .is_button = false,
+	};
+	m_Suggestions[SecretArea].push_back(instance);
+}
 
+void Manager :: add_secret_area(Vec2 door, Vec2 button)
+{
+	Instance instance =
+	{ .position1 = door,
+	  .button1 = button,
+	  .is_button = true,
+	};
+	m_Suggestions[SecretArea].push_back(instance);
+}
+
+void Manager :: add_secret_passage(Vec2 door1, Vec2 door2)
+{
+	Instance instance =
+	{ .position1 = door1,
+	  .position2 = door2,
+	  .is_button = false,
+	};
+	m_Suggestions[SecretArea].push_back(instance);
+}
+
+void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2)
+{
+	Instance instance =
+	{ .position1 = door1,
+	  .position2 = door2,
+	  .button1 = button1,
+	  .button2 = button2,
+	  .is_button = true,
+	};
+	m_Suggestions[SecretArea].push_back(instance);
+}
+
+void Manager :: add_treasure_normal(Vec2 position)
+{
 	Instance instance =
 	{ .position1 = position,
 	};
-	m_Suggestions[type].push_back(instance);
+	m_Suggestions[TreasureNormal].push_back(instance);
 }
 
-void Suggestion :: Manager :: Add(Type type, Vec2 position, Vec2 support)
+void Manager :: add_player_start(Vec2 position)
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
-	assert(GetPositionCount(type) == 1);
-	assert(GetSupportCount(type)  == 1);
-	assert(isWhen(type)           == false);
-
 	Instance instance =
 	{ .position1 = position,
-	  .support1 = support,
 	};
-	m_Suggestions[type].push_back(instance);
+	m_Suggestions[PlayerStart].push_back(instance);
 }
 
-void Suggestion :: Manager :: Add(Type type, Vec2 position1, Vec2 position2, Vec2 support1, Vec2 support2)
+void Manager :: add_enemy_weak(Vec2 position)
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
-	assert(GetPositionCount(type) == 2);
-	assert(GetSupportCount(type)  == 2);
-	assert(isWhen(type)           == false);
-
-	Instance instance =
-	{ .position1 = position1,
-	  .position2 = position2,
-	  .support1 = support1,
-	  .support2 = support2,
-	};
-	m_Suggestions[type].push_back(instance);
-}
-
-void Suggestion :: Manager :: Add(Type type, Vec2 position, When when)
-{
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
-	assert(GetPositionCount(type) == 1);
-	assert(GetSupportCount(type)  == 0);
-	assert(isWhen(type)           == true);
-
 	Instance instance =
 	{ .position1 = position,
-	  .when      = when,
 	};
-	m_Suggestions[type].push_back(instance);
+	m_Suggestions[EnemyWeak].push_back(instance);
 }
 
-void Suggestion :: Manager :: Remove(Type type, int index)
+void Manager :: add_enemy_moderate(Vec2 position)
 {
-	assert(type >= Type::First);
-	assert(type <  Type::Count);
-	assert(index < GetCount(type));
+	Instance instance =
+	{ .position1 = position,
+	};
+	m_Suggestions[EnemyModerate].push_back(instance);
+}
+void Manager :: add_enemy_strong(Vec2 position)
+{
+	Instance instance =
+	{ .position1 = position,
+	};
+	m_Suggestions[EnemyStrong].push_back(instance);
+}
+
+void Manager :: remove(Type type, int index)
+{
+	assert(is_valid_type(type));
+	assert(index < get_count(type));
 
 	Util::RemoveSwap(m_Suggestions[type], index);
 }
+
+} // namespace Suggestion

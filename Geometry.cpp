@@ -106,7 +106,7 @@ int chessboard(Vec2 p0, Vec2 p1)
 
 Vec2 truncate_to_unit(Vec2 a)
 {
-	static float constexpr c_Cutoff = 0.4142135623730950488016887242097f;  // tan(22.5)
+	float constexpr c_Cutoff = 0.4142135623730950488016887242097f;  // tan(22.5)
 
 	if (a.x == 0 && a.y == 0)
 		return a;

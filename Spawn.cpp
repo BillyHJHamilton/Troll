@@ -274,8 +274,13 @@ void find_chest_positions(const Map& map)
 {
 	s_special_positions.clear();
 
+	// TODO: What if there aren't enough suggestions?
+	//  -> could fall back on the old system
+	//  -> currently, fewer chests spawn (handled in spawn_chests)
+	//  -> should this go directly in the spawn_chests function?
+	//    -> need a new position table after spawning features anyway
 	for (Suggestion::Instance const & s :
-	     map.get_suggestions().getByType(Suggestion::TreasureNormal))
+	     map.read_suggestions().get(Suggestion::TreasureNormal))
 	{
 		s_special_positions.push_back(s.position1);
 	}
@@ -414,10 +419,11 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 
 		else if (option.type == Option::Creature)
 		{
-			Creature::Type creature_type = (Creature::Type)option.index;
+			Creature::Type const creature_type = (Creature::Type)option.index;
 			assert(Creature::is_valid_type(creature_type));
 
-			float creature_difficulty = Gingerbread::read(creature_type).difficulty;
+			// TODO: Make this a function
+			float const creature_difficulty = Gingerbread::read(creature_type).difficulty;
 			Suggestion::Type suggestion_type = Suggestion::EnemyModerate;
 			if (creature_difficulty <= difficulty - 1.0f)
 				suggestion_type = Suggestion::EnemyWeak;
@@ -585,6 +591,14 @@ Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type)
 {
 	// method 1: use a random map suggestion
 	/*
+	// TODO: need to validate position
+	//   -> see find_spawn_positions
+	// TODO: better way to pick a position at random
+	//   Another option if you want to iterate the list in a random order is to use
+	//   TempIntList index_list = Util::GetIndices(suggestion_list);
+	//   Random::shuffle_vector(index_list);
+	//   for (int index : index_list)
+	// TODO: need handle non-initial spawn
 	int count  = 0;
 	int chosen = -1;
 	for (int i = 0; i < map.get_suggestions().GetCount(spawn_type); ++i)
@@ -592,7 +606,7 @@ Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type)
 		if (map.get_suggestions().getByType(spawn_type)[i].when == Suggestion::WhenToSpawn::Initial)
 		{
 			++count;
-			if (Random::one_in(count))
+			if (Random::one_in(count))  // always happens first time
 			{
 				chosen = i;
 			}

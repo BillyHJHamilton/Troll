@@ -197,9 +197,9 @@ inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
 	return chessboard(p0,p1) == 1;
 }
 
-// Scales both components to -1, 0, or 1, preserving direction as much as possible
-// There are only 9 possible results, all with chessboard dimension <= 1
-// (0, 0) stays as (0, 0)
+// Scales both components to -1, 0, or 1, preserving direction as much as possible.
+// There are only 9 possible results, all with chessboard dimension <= 1.
+// (0, 0) stays as (0, 0).
 Vec2 truncate_to_unit(Vec2 a);
 
 // Support for unordered_map<Vec2>
@@ -448,8 +448,8 @@ struct Box2
 	Vec2 inner_max() const { return max() - Vec2{1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
 
-	Vec2 center () const { return min + size / 2; }
-	int center(Axis a) const { return min[a] + size [a] / 2; }
+	Vec2 centre () const { return min + size / 2; }
+	int centre(Axis a) const { return min[a] + size [a] / 2; }
 
 	int area () const { return size.x * size.y; }
 
@@ -497,8 +497,8 @@ struct Box3
 	Vec3 inner_max() const { return max() - Vec3{1, 1, 1}; }
 	int inner_max(Axis a) const { return max(a) - 1; }
 
-	Vec3 center () const { return min + size / 2; }
-	int center(Axis a) const { return min[a] + size [a] / 2; }
+	Vec3 centre () const { return min + size / 2; }
+	int centre(Axis a) const { return min[a] + size [a] / 2; }
 
 	bool contains(Vec3 v) const;
 	bool intersects(Box3 other) const;

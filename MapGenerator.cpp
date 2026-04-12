@@ -413,8 +413,8 @@ void MapGenerator::PlaceFirstRoomIfNeeded()
 		// no connections to add
 
 		// assume this is the start room for the player
-		Vec2 room_center = newRoom.GetBox().center();
-		m_Map.get_suggestions().Add(Suggestion::PlayerStart, room_center);
+		Vec2 room_centre = newRoom.GetBox().centre();
+		m_Map.edit_suggestions().add_player_start(room_centre);
 	}
 }
 
@@ -1099,13 +1099,13 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		{
 			// add treasure across the room from the entrance
 
-			Vec2 const roomCenter = room.GetBox().center();
+			Vec2 const roomCentre = room.GetBox().centre();
 
 			int const neighbourIndex = room.GetNeighbours()[0];
-			Vec2 const neighbourCenter = m_RoomVec[neighbourIndex].GetBox().center();
-			Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+			Vec2 const neighbourCentre = m_RoomVec[neighbourIndex].GetBox().centre();
+			Vec2 const roomBackDirection = truncate_to_unit(roomCentre - neighbourCentre);
 
-			Vec2 treasurePos = roomCenter;
+			Vec2 treasurePos = roomCentre;
 			switch (roomBackDirection.x)
 			{
 			case -1:  treasurePos.x = room.GetBox().min  .x;      break;
@@ -1117,7 +1117,7 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 			case  1:  treasurePos.y = room.GetBox().max().y - 1;  break;
 			}
 
-			m_Map.get_suggestions().Add(Suggestion::TreasureNormal, treasurePos);
+			m_Map.edit_suggestions().add_treasure_normal(treasurePos);
 		}
 		else if (room.GetRegion() != Room::c_MainRegion &&
 		         room.GetNeighbourCount() >= 3)
@@ -1125,10 +1125,9 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 			// junction to several regions
 			// add a guard
 
-			Vec2 const roomCenter = room.GetBox().center();
-			m_Map.get_suggestions().Add(Suggestion::EnemyModerate, roomCenter,
-			                            Suggestion::When::Initial);
-			//m_Map.set_terrain(roomCenter, Terrain::OpenAlternate);
+			Vec2 const roomCentre = room.GetBox().centre();
+			m_Map.edit_suggestions().add_enemy_moderate(roomCentre);
+			//m_Map.set_terrain(roomCentre, Terrain::OpenAlternate);
 		}
 	}
 

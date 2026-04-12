@@ -15,8 +15,8 @@ enum class GameMode : byte
 namespace Game
 {
 	int constexpr c_MajorVersion = 0; // Significant milestone for promotional purposes.
-	int constexpr c_MinorVersion = 1; // Larger change which may break save compatibility.
-	int constexpr c_PatchVersion = 1; // Minor change which should preserve save compatibility.
+	int constexpr c_MinorVersion = 2; // Larger change which may break save compatibility.
+	int constexpr c_PatchVersion = 0; // Minor change which should preserve save compatibility.
 
 	struct VersionNumber
 	{

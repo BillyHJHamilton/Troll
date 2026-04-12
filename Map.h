@@ -25,8 +25,8 @@ public:
 
 	MapGenerator& get_generator();
 
-	Suggestion::Manager& get_suggestions() { return suggestions; }
-	Suggestion::Manager const& get_suggestions() const { return suggestions; }
+	Suggestion::Manager& edit_suggestions() { return suggestions; }
+	Suggestion::Manager const& read_suggestions() const { return suggestions; }
 
 	void set_spawn_param(Spawn::Parameters const& new_param) { spawn_param = new_param; }
 	Spawn::Parameters const& read_spawn_param() const { return spawn_param; }

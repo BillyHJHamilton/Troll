@@ -128,10 +128,10 @@ float World::find_map_difficulty(Vec3 pos) const
 Vec3 World::get_player_start() const
 {
 	// method 1: map suggestion
-	Suggestion::Manager const & suggestions = read_map(0).get_suggestions();
-	if (suggestions.isAny(Suggestion::PlayerStart))
+	Suggestion::Manager const & suggestions = read_map(0).read_suggestions();
+	if (suggestions.has_any(Suggestion::PlayerStart))
 	{
-		Vec2 pos2 = suggestions.getByType(Suggestion::PlayerStart)[0].position1;
+		Vec2 pos2 = suggestions.get(Suggestion::PlayerStart)[0].position1;
 		return pos2.xy0();
 	}
 
