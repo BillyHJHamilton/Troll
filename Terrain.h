@@ -17,7 +17,11 @@ namespace Terrain
 
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
+
+		Count
 	};
+
+	inline bool is_valid_type(Terrain::Type t) { return t < Count; }
 
 	int get_character(Terrain::Type t);
 	char const* get_name(Terrain::Type t);
