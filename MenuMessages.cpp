@@ -13,7 +13,8 @@ void MenuMessages::init()
 	int const num_msg = Draw::get_num_recent_messages();
 	for (int i = num_msg - 1; i >= 0; --i)
 	{
-		add_option(Draw::get_recent_message(i).text, i);
+		Draw::GameMessage const& message = Draw::get_recent_message(i);
+		add_option(message.text, i, message.colour);
 	}
 
 	reset_cursor();

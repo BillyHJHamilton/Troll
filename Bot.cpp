@@ -706,7 +706,8 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 		taunt_greeting(creature, brain, thoughts);
 		if (!thoughts.has_taunted)
 		{
-			Draw::creature_message(creature, Grammar::You(creature) + " sees you!");
+			Draw::creature_message(creature, Grammar::You(creature) + " sees you!",
+				creature.colour());
 		}
 
 		return;
