@@ -562,7 +562,8 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 		{
 			.max_cost = 5,
 			.num_to_find = Util::Size(to_spawn),
-			.allow_start = true
+			.allow_start = true,
+			.allow_visible = false
 		};
 
 		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);

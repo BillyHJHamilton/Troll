@@ -17,6 +17,9 @@ namespace Pathfind
 		// Whether to allow moving to a different z-level.
 		bool allow_stairs = true;
 
+		// Whether to allow squares visible to the player.
+		bool allow_visible = true;
+
 		// If set, this creature will be treated as a valid move position.
 		// Used when trying to pathfind onto another creature for combat.
 		Creature::Handle target_creature = Creature::None;
@@ -63,6 +66,7 @@ namespace Pathfind
 		int num_to_find = 1;
 		bool allow_start = false;
 		bool allow_stairs = false;
+		bool allow_visible = false;
 	};
 
 	// Finds spaces that are valid to move to.  Considers stairs.
