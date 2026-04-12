@@ -69,9 +69,18 @@ public:
 	template<typename ValueType>
 	void srz_array_data(ValueType* raw_data, int num);
 
+	// Serializes an array where most of the data is the default value.
+	// It first serializes the number of non-default values, then each non-default index followed by the value.
+	template<typename ValueType>
+	void srz_array_data_compress(ValueType* raw_data, ValueType default_value, int num);
+
 	// Serializes a Grid (of value type) by calling srz_grid_size, then srz_array_data.
 	template<typename ValueType>
 	void srz_grid(Grid<ValueType>& g, char const* debug_name);
+
+	// Serializes a Grid (of value type) by calling srz_grid_size, then srz_array_data_compress.
+	template<typename ValueType>
+	void srz_grid_compress(Grid<ValueType>& g, ValueType default_value, char const* debug_name);
 
 	template<typename ValueType>
 	void srz_grid_size(Grid<ValueType>& g, char const* debug_name);
@@ -135,6 +144,49 @@ void ISerializer::srz_array_data(ValueType* raw_data, int num)
 }
 
 template<typename ValueType>
+void ISerializer::srz_array_data_compress(ValueType* raw_data, ValueType default_value, int num)
+{
+	if (is_load())
+	{
+		for (int i = 0; i < num; ++i)
+		{
+			raw_data[i] = default_value;
+		}
+
+		int num_non_default = 0;
+		srz_int(num_non_default);
+
+		for (int i = 0; i < num_non_default; ++i)
+		{
+			int next_index = c_Invalid;
+			srz_int(next_index);
+			srz_value(raw_data[next_index]);
+		}
+	}
+	else
+	{
+		int num_non_default = 0;
+		for (int i = 0; i < num; ++i)
+		{
+			if (raw_data[i] != default_value)
+			{
+				++num_non_default;
+			}
+		}
+
+		srz_int(num_non_default);
+		for (int i = 0; i < num; ++i)
+		{
+			if (raw_data[i] != default_value)
+			{
+				srz_int(i);
+				srz_value(raw_data[i]);
+			}
+		}
+	}
+}
+
+template<typename ValueType>
 void ISerializer::srz_grid_size(Grid<ValueType>& g, char const* debug_name)
 {
 	if (is_load())
@@ -175,6 +227,14 @@ void ISerializer::srz_grid(Grid<ValueType>& g, char const* debug_name)
 {
 	srz_grid_size(g, debug_name);
 	srz_array_data(g.edit_data().data(), g.num());
+}
+
+template<typename ValueType>
+void ISerializer::srz_grid_compress(Grid<ValueType>& g, ValueType default_value,
+	char const* debug_name)
+{
+	srz_grid_size(g, debug_name);
+	srz_array_data_compress(g.edit_data().data(), default_value, g.num());
 }
 
 // Serialize a map with value types.
