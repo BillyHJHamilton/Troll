@@ -43,6 +43,7 @@ STYLE
 - East const.
 - Keep lines to 100 characters long.
 - If for-loop has any complex part, separate the three loop parts onto three lines.
+- Use the names read_foo and edit_foo for const/non-const getters (rather than get_foo twice).
 
 NAMING CONVENTIONS
 - TypeName (class, struct, enum, namespace)

@@ -35,8 +35,8 @@ void Map::serialize(ISerializer& s)
 
 	s.srz_grid(terrain, "map.terrain");
 	s.srz_grid(visibility, "map.visibility");
-	s.srz_grid(clouds, "map.clouds");
-	s.srz_grid(items, "map.items");
+	s.srz_grid_compress(clouds, Cloud::None, "map.clouds");
+	s.srz_grid_compress(items, (Item::Handle)c_Invalid, "map.items");
 
 	s.srz_hashmap(cloud_lifetimes, "map.cloud_lifetimes");
 	s.srz_hashmap(stairs, "map.stairs");

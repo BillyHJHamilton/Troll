@@ -81,6 +81,11 @@ void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 			continue;
 		}
 
+		if (vis == Visibility::Visible && !param.allow_visible)
+		{
+			continue;
+		}
+
 		Terrain::Type const t = world.get_terrain(next_pos);
 
 		if (!param.allow_stairs && next_pos.z != pos.z)
@@ -462,7 +467,8 @@ void find_nearest_open(Vec3 start, NearestOpenParam param, Vec3TempList& list_ou
 
 		NeighbourParam const neighbour_param
 		{
-			.allow_stairs = param.allow_stairs
+			.allow_stairs = param.allow_stairs,
+			.allow_visible = param.allow_visible
 		};
 		find_open_neighbours(here, neighbour_param, neighbours);
 		Random::shuffle_vector(neighbours);

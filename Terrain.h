@@ -10,12 +10,18 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
+		OpenAlternate,  // used for debugging
 		Wall,
 		UpStairs,
 		DownStairs,
+
+		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
-		OpenAlternate,  // used for debugging
+
+		Count
 	};
+
+	inline bool is_valid_type(Terrain::Type t) { return t < Count; }
 
 	int get_character(Terrain::Type t);
 	char const* get_name(Terrain::Type t);
@@ -24,5 +30,6 @@ namespace Terrain
 	bool is_open(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
+	bool is_feature(Terrain::Type t);
 	Terrain::Type swap_stairs(Terrain::Type t);
 }

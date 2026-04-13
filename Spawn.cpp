@@ -2,6 +2,7 @@
 
 #include "Creature.h"
 #include "Debug.h"
+#include "Feature.h"
 #include "Game.h"
 #include "Gingerbread.h"
 #include "Map.h"
@@ -491,7 +492,7 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	while (has_special_positions() && spawned < chests_to_spawn)
 	{
 		Vec2 const pos = next_special_position();
-		map.set_terrain(pos, Terrain::Chest);
+		Feature::spawn(pos.xyz(map.get_z()), Terrain::Chest);
 		++spawned;
 	}
 
@@ -558,7 +559,8 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 		{
 			.max_cost = 5,
 			.num_to_find = Util::Size(to_spawn),
-			.allow_start = true
+			.allow_start = true,
+			.allow_visible = false
 		};
 
 		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
