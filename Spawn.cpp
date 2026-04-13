@@ -81,7 +81,7 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
-int spawn_secret_areas(Map& map, int min_range_from_player, int secret_areas_to_spawn);
+int spawn_secret_areas(Map& map, int secret_areas_to_spawn);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -370,6 +370,7 @@ void spawn_for_map(Map& map, History& history)
 	int creatures_to_spawn = 1;
 	int items_to_spawn = 0;
 	int chests_to_spawn = 0;
+	int secret_areas_to_spawn = 0;
 	int min_range = param.min_range_from_player;
 
 	if (is_first_spawn)
@@ -377,6 +378,7 @@ void spawn_for_map(Map& map, History& history)
 		creatures_to_spawn = Random::in_range(param.min_creatures, param.max_creatures);
 		items_to_spawn = Random::in_range(param.min_items, param.max_items);
 		chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
+		secret_areas_to_spawn = Random::in_range(param.min_secret_areas, param.max_secret_areas);
 		min_range = 2;
 	}
 
@@ -390,10 +392,9 @@ void spawn_for_map(Map& map, History& history)
 		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
 	}
 
-	// TODO: How many secret areas to spawn?
-	if (chests_to_spawn > 0)
+	if (secret_areas_to_spawn > 0)
 	{
-		spawn_secret_areas(map, min_range, chests_to_spawn);
+		spawn_secret_areas(map, secret_areas_to_spawn);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -548,8 +549,10 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	return spawned;
 }
 
-int spawn_secret_areas(Map& map, int min_range_from_player, int secret_areas_to_spawn)
+int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 {
+	// no min range from player
+
 	const auto & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
 	Random::shuffle_vector(index_list);
@@ -561,13 +564,13 @@ int spawn_secret_areas(Map& map, int min_range_from_player, int secret_areas_to_
 		bool is_buttons_good = suggestion.is_button;
 		if (is_buttons_good)
 		{
-			if (!is_good_spawn_position(map, min_range_from_player, suggestion.button1))
+			if (!is_good_spawn_position(map, 0, suggestion.button1))
 			{
 				is_buttons_good = false;
 			}
 		}
 
-		if (is_good_spawn_position(map, min_range_from_player, suggestion.position1))
+		if (is_good_spawn_position(map, 0, suggestion.position1))
 		{
 			// TODO: Choose secret area type
 			// TODO: Flipendo switches

@@ -33,6 +33,10 @@ namespace Spawn
 		// Amount of chests to spawn.
 		int min_chests = 1;
 		int max_chests = 3;
+
+		// Amount of secret areas (1 door each) to seal off
+		int min_secret_areas = 1;
+		int max_secret_areas = 5;
 	};
 
 	// Creature spawning constants:
