@@ -468,7 +468,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 			assert(Creature::is_valid_type(creature_type));
 
 			float const creature_difficulty = Gingerbread::read(creature_type).difficulty;
-			Suggestion::Type suggestion_type =
+			Suggestion::Type const suggestion_type =
 				Suggestion::get_enemy_type(difficulty, creature_difficulty);
 			Vec3 const pos3 = choose_spawn_position(map, suggestion_type);
 
@@ -553,14 +553,14 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 {
 	// no min range from player
 
-	const auto & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
+	auto const & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
 	Random::shuffle_vector(index_list);
 
 	int spawned = 0;
 	for (int index : index_list)  // also drops out below
 	{
-		const Suggestion::Instance & suggestion = suggestions_vec[index];
+		Suggestion::Instance const & suggestion = suggestions_vec[index];
 		bool is_buttons_good = suggestion.is_button;
 		if (is_buttons_good)
 		{

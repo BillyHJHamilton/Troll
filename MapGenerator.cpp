@@ -67,7 +67,7 @@ void MapGenerator::Generate()
 	if (Debug::enabled(Debug::Map))
 	{
 		// name is not set yet, so can't print
-		std::cout << "\nGenerating level.\n";
+		std::cout << std::format("\nGenerating level: {}\n", m_Map.get_name());
 	}
 
 	PerfTimer perf0("map generate");
@@ -1206,8 +1206,8 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			if (Util::Size(posList0) > 0 &&
 			    Util::Size(posList1) > 0)
 			{
-				Vec2 button_pos0 = posList0[Random::in_range(0, Util::Size(posList0) - 1)];
-				Vec2 button_pos1 = posList1[Random::in_range(0, Util::Size(posList1) - 1)];
+				Vec2 button_pos0 = Random::from_vector(posList0);
+				Vec2 button_pos1 = Random::from_vector(posList0);
 				if (Terrain::is_open(m_Map.get_terrain(button_pos0)) &&
 				    Terrain::is_open(m_Map.get_terrain(button_pos1)))
 				{
@@ -1232,7 +1232,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			PosTempList posList = GetEmptyWallPositions(neighbour0);
 			if (Util::Size(posList) > 0)
 			{
-				Vec2 button_pos = posList[Random::in_range(0, Util::Size(posList) - 1)];
+				Vec2 button_pos = Random::from_vector(posList);
 				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
 				{
 					m_Map.edit_suggestions().add_secret_area(door0, button_pos);
@@ -1249,7 +1249,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			PosTempList posList = GetEmptyWallPositions(neighbour1);
 			if (Util::Size(posList) > 0)
 			{
-				Vec2 button_pos = posList[Random::in_range(0, Util::Size(posList) - 1)];
+				Vec2 button_pos = Random::from_vector(posList);
 				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
 				{
 					m_Map.edit_suggestions().add_secret_area(door1, button_pos);
@@ -1348,8 +1348,8 @@ MapGenerator::PosTempList MapGenerator::GetEmptyWallPositions(Room const & room)
 
 	int const x_min = room.GetBox().min.x;
 	int const y_min = room.GetBox().min.y;
-	int const x_max = room.GetBox().max(AXIS_X) - 1;
-	int const y_max = room.GetBox().max(AXIS_Y) - 1;
+	int const x_max = room.GetBox().inner_max(AXIS_X);
+	int const y_max = room.GetBox().inner_max(AXIS_Y);
 
 	// search along X sides of room
 
@@ -1423,9 +1423,8 @@ void MapGenerator::PrintAllRooms() const
 		}
 
 		Box2 const & box = m_RoomVec[r].GetBox();
-		Vec2 const box_max = box.min + box.size;
-		std::cout << "\t  (" << box.min.x << " - " << box_max.x
-			<< ",\t" << box.min.y << " - " << box_max.y << ")";
+		std::cout << "\t  (" << box.min.x << " - " << box.max(AXIS_X)
+		         << ",\t"    << box.min.y << " - " << box.max(AXIS_Y) << ")";
 
 		if(m_RoomVec[r].IsInMainRegion())
 		{
