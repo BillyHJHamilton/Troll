@@ -279,10 +279,9 @@ void find_chest_positions(const Map& map)
 	//  -> currently, fewer chests spawn (handled in spawn_chests)
 	//  -> should this go directly in the spawn_chests function?
 	//    -> need a new position table after spawning features anyway
-	for (Suggestion::Instance const & s :
-	     map.read_suggestions().get(Suggestion::TreasureNormal))
+	for (Vec2 const & pos : map.read_suggestions().get(Suggestion::TreasureNormal))
 	{
-		s_special_positions.push_back(s.position1);
+		s_special_positions.push_back(pos);
 	}
 }
 
@@ -515,14 +514,14 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 {
 	// no min range from player
 
-	auto const & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
+	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
 	Random::shuffle_vector(index_list);
 
 	int spawned = 0;
 	for (int index : index_list)  // also drops out below
 	{
-		Suggestion::Instance const & suggestion = suggestions_vec[index];
+		Suggestion::SecretAreaInstance const & suggestion = suggestions_vec[index];
 		// TODO: Handle suggestions with different fields better
 		//bool is_buttons_good = suggestion.is_button;
 		//if (is_buttons_good)
@@ -533,12 +532,12 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 		//	}
 		//}
 
-		if (is_good_spawn_position(map, 0, suggestion.position1))
+		if (is_good_spawn_position(map, 0, suggestion.door))
 		{
 			// TODO: Choose secret area type
 			//  -> specify probabilities in Spawn::Parameters
 			// TODO: Flipendo switches
-			Feature::spawn(suggestion.position1.xyz(map.get_z()), Terrain::Portrait);
+			Feature::spawn(suggestion.door.xyz(map.get_z()), Terrain::Portrait);
 
 			++spawned;
 			if (spawned >= secret_areas_to_spawn)

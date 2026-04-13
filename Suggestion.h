@@ -39,20 +39,32 @@ namespace Suggestion
 		Unknown,
 	};
 
-	struct Instance
+	struct SecretAreaInstance
 	{
-		Vec2 position1 = {0, 0};
-		Vec2 position2 = {0, 0};
-		Vec2 button1 = {0, 0};
-		Vec2 button2 = {0, 0};
-		bool is_button = false;
+		Vec2 door = {0, 0};
+		Vec2 button = {0, 0};
+		bool has_button = false;
 	};
 
-	Genus GetGenus(Suggestion::Type t);
+	struct SecretPassageInstance
+	{
+		Vec2 door1 = {0, 0};
+		Vec2 door2 = {0, 0};
+		Vec2 button1 = {0, 0};
+		Vec2 button2 = {0, 0};
+		bool has_buttons = false;
+	};
+
 	bool is_valid_type(Suggestion::Type t);
+	bool is_simple_type(Suggestion::Type t);
+	Genus get_genus(Suggestion::Type t);
 
 	Type get_enemy_type(float map_difficulty,
 	                    float enemy_difficulty);
+
+	using SimpleList = std::vector<Vec2>;
+	using SecretAreaList = std::vector<SecretAreaInstance>;
+	using SecretPassageList = std::vector<SecretPassageInstance>;
 
 	class Manager
 	{
@@ -64,7 +76,9 @@ namespace Suggestion
 		int get_total_count() const;
 		int get_count(Type type) const;
 		bool has_any(Type type) const;
-		std::vector<Instance> const & get(Type type) const;
+		SimpleList const & get(Type type) const;
+		SecretAreaList const & get_secret_areas() const { return m_secret_area_vec; }
+		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
 
 		void add_secret_area(Vec2 door);  // no secret areas yet
 		void add_secret_area(Vec2 door, Vec2 button);
@@ -80,6 +94,12 @@ namespace Suggestion
 		void remove(Type type, int index);
 
 	private:
-		std::vector<Instance> m_Suggestions[Type::Count];
+		// Suggestions types that just need a position are stored here.
+		// Types that need more data have an empty vector here.
+		SimpleList m_simple_vecs[Type::Count];
+
+		// Suggestions types that need more data have their own vectors.
+		SecretAreaList m_secret_area_vec;
+		SecretPassageList m_secret_passage_vec;
 	};
 }
