@@ -17,6 +17,7 @@ namespace Terrain
 
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
+		Portrait,
 
 		Count
 	};
@@ -31,5 +32,6 @@ namespace Terrain
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	bool is_feature(Terrain::Type t);
+	bool is_spell_target(Terrain::Type t);
 	Terrain::Type swap_stairs(Terrain::Type t);
 }

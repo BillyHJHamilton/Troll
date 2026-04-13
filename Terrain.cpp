@@ -13,6 +13,7 @@ namespace Terrain
 	uint constexpr f_Solid			= 1 << 2;	// Blocks movement and beams
 	uint constexpr f_Stairs			= 1 << 3;
 	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
+	uint constexpr f_SpellTarget	= 1 << 5;
 
 	struct Data
 	{
@@ -28,7 +29,8 @@ namespace Terrain
 		Data{"Wall",			Codepoint::SolidBlock,	f_Solid},
 		Data{"UpStairs",		Codepoint::CaretUp,		f_Stairs},
 		Data{"DownStairs",		Codepoint::CaretDown,	f_Stairs},
-		Data{"Chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature},
+		Data{"Chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature | f_SpellTarget},
+		Data{"Portrait",		Codepoint::Portrait,	f_Solid |  f_Feature | f_SpellTarget},
 	};
 
 	int get_character(Terrain::Type t)
@@ -50,6 +52,7 @@ namespace Terrain
 			case Terrain::UpStairs: return "- stairs leading up";
 			case Terrain::DownStairs: return "- stairs leading down";
 			case Terrain::Chest: return "- a locked chest";
+			case Terrain::Portrait: return "- a portrait";
 			default:
 				return std::string("- the ") + get_name(t);
 		}
@@ -83,6 +86,12 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].flags, f_Feature);
+	}
+
+	bool is_spell_target(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return Util::IsFlagSet(s_data[t].flags, f_SpellTarget);
 	}
 
 	Terrain::Type swap_stairs(Terrain::Type t)

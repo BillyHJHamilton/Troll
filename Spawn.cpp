@@ -51,6 +51,9 @@ std::vector<Vec2> s_special_positions;
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
 
+// Same checks as find_spawn_positions.
+bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
+
 // Checks whether there are still cached spawn positions available.
 // Call this before calling next_spawn_position().
 bool has_spawn_positions();
@@ -78,6 +81,7 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
+int spawn_secret_areas(Map& map, int min_range_from_player, int secret_areas_to_spawn);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -219,6 +223,39 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 	}
 }
 
+bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2)
+{
+	Vec3 const pos3 = pos2.xyz(map.get_z());
+
+	if (!Terrain::is_open(map.get_terrain(pos2)))
+	{
+		return false;
+	}
+
+	if (map.has_item(pos2))
+	{
+		return false;
+	}
+
+	if (World::read().is_visible(pos3))
+	{
+		return false;
+	}
+
+	if (Player::pos().z == map.get_z() &&
+		chessboard(Player::pos().xy(), pos2) < min_range_from_player)
+	{
+		return false;
+	}
+
+	if (Creature::creature_at_pos(pos3) != Creature::None)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool has_spawn_positions()
 {
 	return !s_spawn_positions.empty();
@@ -351,6 +388,12 @@ void spawn_for_map(Map& map, History& history)
 	{
 		find_chest_positions(map);
 		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
+	}
+
+	// TODO: How many secret areas to spawn?
+	if (chests_to_spawn > 0)
+	{
+		spawn_secret_areas(map, min_range, chests_to_spawn);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -500,6 +543,48 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	{
 		std::cout << std::format("Placed {}/{} chests.\n",
 			spawned, chests_to_spawn);
+	}
+
+	return spawned;
+}
+
+int spawn_secret_areas(Map& map, int min_range_from_player, int secret_areas_to_spawn)
+{
+	const auto & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
+	IntTempList index_list = Util::GetIndices(suggestions_vec);
+	Random::shuffle_vector(index_list);
+
+	int spawned = 0;
+	for (int index : index_list)  // also drops out below
+	{
+		const Suggestion::Instance & suggestion = suggestions_vec[index];
+		bool is_buttons_good = suggestion.is_button;
+		if (is_buttons_good)
+		{
+			if (!is_good_spawn_position(map, min_range_from_player, suggestion.button1))
+			{
+				is_buttons_good = false;
+			}
+		}
+
+		if (is_good_spawn_position(map, min_range_from_player, suggestion.position1))
+		{
+			// TODO: Choose secret area type
+			// TODO: Flipendo switches
+			Feature::spawn(suggestion.position1.xyz(map.get_z()), Terrain::Portrait);
+
+			++spawned;
+			if (spawned >= secret_areas_to_spawn)
+			{
+				break;  // placed enough, so stop looking
+			}
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {}/{} secret areas.\n",
+			spawned, secret_areas_to_spawn);
 	}
 
 	return spawned;

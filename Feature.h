@@ -15,6 +15,9 @@ namespace Feature
 	void clear();
 	void serialize(ISerializer& s);
 
+	// Check if there is a feature at a position
+	bool is_at(Vec3 pos);
+
 	// Adds a feature to the map.
 	void spawn(Vec3 pos, Terrain::Type type);
 
@@ -26,5 +29,6 @@ namespace Feature
 
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);
+	void open_portrait(Vec3 pos);
 }
 

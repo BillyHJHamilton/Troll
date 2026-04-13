@@ -36,7 +36,7 @@ bool s_manual_automatic = false; // true if player manually cycled onto current 
 
 bool is_feature_target(Vec3 pos)
 {
-	return World::read().get_terrain(pos) == Terrain::Chest;
+	return Terrain::is_spell_target(World::read().get_terrain(pos));
 }
 
 void find_visible_features(std::vector<Vec3,Scratch<Vec3>>& out_targets)
