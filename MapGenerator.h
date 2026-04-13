@@ -83,8 +83,11 @@ protected:
 	void AddChamberToMap(Room const & room) const;
 	void AddCorridorToMap(Room const & room) const;
 	Vec2 GetPosAtRoomBack(Room const & room) const;
-	PosTempList GetEmptyWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & v, Box2TempList const & boxVec);
+	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
+	PosTempList GetPlainWallPositions(Room const & room) const;
+	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
+	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
+	                                      Box2TempList const & boxVec);
 
 	void PrintAllRooms() const;
 

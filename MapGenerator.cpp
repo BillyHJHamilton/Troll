@@ -1217,8 +1217,8 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		{
 			// this can't happen yet...
 			// TODO: Test when map generates secret passages
-			PosTempList posList0 = GetEmptyWallPositions(neighbour0);
-			PosTempList posList1 = GetEmptyWallPositions(neighbour1);
+			PosTempList posList0 = GetPlainWallPositions(neighbour0);
+			PosTempList posList1 = GetPlainWallPositions(neighbour1);
 			if (Util::Size(posList0) > 0 &&
 			    Util::Size(posList1) > 0)
 			{
@@ -1251,7 +1251,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		// secret area - only 1 end locked
 		if (is_edge_of_region_0)
 		{
-			PosTempList posList = GetEmptyWallPositions(neighbour0);
+			PosTempList posList = GetPlainWallPositions(neighbour0);
 			if (Util::Size(posList) > 0)
 			{
 				Vec2 button_pos = Random::from_vector(posList);
@@ -1275,7 +1275,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		}
 		if (is_edge_of_region_1)
 		{
-			PosTempList posList = GetEmptyWallPositions(neighbour1);
+			PosTempList posList = GetPlainWallPositions(neighbour1);
 			if (Util::Size(posList) > 0)
 			{
 				Vec2 button_pos = Random::from_vector(posList);
@@ -1357,7 +1357,7 @@ Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 	return result;
 }
 
-MapGenerator::PosTempList MapGenerator::GetEmptyWallPositions(Room const & room) const
+MapGenerator::PosTempList MapGenerator::GetPositionsAlongPlainWall(Room const & room) const
 {
 	// Goal: Find all positions
 	//  1. Inside the room
@@ -1373,10 +1373,8 @@ MapGenerator::PosTempList MapGenerator::GetEmptyWallPositions(Room const & room)
 
 	for (int n = 0; n < room.GetNeighbourCount(); ++n)
 	{
-		Box2 larger = m_RoomVec[room.GetNeighbours()[n]].GetBox();
-		larger.min  -= {1, 1};
-		larger.size += {2, 2};
-		exclusion_vec.push_back(larger);
+		Box2 const larger = m_RoomVec[room.GetNeighbours()[n]].GetBox();
+		exclusion_vec.push_back(larger.plus_border(1));
 	}
 
 	// find room edges
@@ -1428,12 +1426,108 @@ MapGenerator::PosTempList MapGenerator::GetEmptyWallPositions(Room const & room)
 	return result_vec;
 }
 
+MapGenerator::PosTempList MapGenerator::GetPlainWallPositions(Room const & room) const
+{
+	// Goal: Find all positions
+	//  1. Inside the room wall
+	//  2. That are surrounded by wall on 5 sides, including 2 diagonally
+	//    -> this requires checking all rooms, not just neighbours (oh no!)
+	//
+	// This has to be a separate function from GetEmptyPositionsAlongWall.
+	//  -> The requirements are too different.
+
+	PosTempList result_vec;
+
+	// find excluded areas by corridors and stairs
+
+	Box2TempList exclusion_vec;
+
+	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
+	{
+		if (&room == &(m_RoomVec[r]))
+		{
+			continue;  // skip this room
+		}
+
+		Box2 const larger = m_RoomVec[r].GetBox();
+		exclusion_vec.push_back(larger.plus_border(1));
+	}
+
+	// find room edges
+
+	int const inside_x_min = room.GetBox().min.x;
+	int const inside_y_min = room.GetBox().min.y;
+	int const inside_x_max = room.GetBox().inner_max(AXIS_X);
+	int const inside_y_max = room.GetBox().inner_max(AXIS_Y);
+
+	// search along X sides of room
+
+	int const wall_x_min = inside_x_min - 1;
+	int const wall_x_max = inside_x_max + 1;
+
+	for (int y = inside_y_min; y <= inside_y_max; ++y)
+	{
+		// min X side
+		Vec2 pos1{ wall_x_min, y };
+		if (!isContainedByAnyInList(pos1, exclusion_vec))
+		{
+			result_vec.push_back(pos1);
+		}
+
+		// max X side
+		Vec2 pos2{ wall_x_max, y };
+		if (!isContainedByAnyInList(pos2, exclusion_vec))
+		{
+			result_vec.push_back(pos2);
+		}
+	}
+
+	// search along Y sides of room
+
+	int const wall_y_min = inside_y_min - 1;
+	int const wall_y_max = inside_y_max + 1;
+
+	for (int x = inside_x_min; x <= inside_x_max; ++x)
+	{
+		// min Y side
+		Vec2 pos1{ x, wall_y_min };
+		if (!isContainedByAnyInList(pos1, exclusion_vec))
+		{
+			result_vec.push_back(pos1);
+		}
+
+		// max Y side
+		Vec2 pos2{ x, wall_y_max };
+		if (!isContainedByAnyInList(pos2, exclusion_vec))
+		{
+			result_vec.push_back(pos2);
+		}
+	}
+
+	// done
+	return result_vec;
+}
+
 // static
 bool MapGenerator::isContainedByAnyInList(Vec2 const & v, Box2TempList const & boxVec)
 {
 	for (int e = 0; e < Util::Size(boxVec); ++e)
 	{
 		if (boxVec[e].contains(v))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+// static
+bool MapGenerator::isAnyContainedByAnyInList(PosTempList const & posVec,
+                                             Box2TempList const & boxVec)
+{
+	for (int e = 0; e < Util::Size(posVec); ++e)
+	{
+		if (isContainedByAnyInList(posVec[e], boxVec))
 		{
 			return true;
 		}
