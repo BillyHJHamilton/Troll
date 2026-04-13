@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Item.h"
+#include "Map.h"
 #include "Pathfind.h"
 #include "Random.h"
 #include "Serialize.h"
@@ -19,6 +20,7 @@ namespace Feature
 // Feature Types:
 //  - Chest - payload is Item::Handle
 //  - Portrait - no payload
+//  - FlipendoSwitch - affected is door position
 
 struct Instance
 {
@@ -26,6 +28,7 @@ struct Instance
 
 	// Parameters to be interpreted based on type of feature.
 	int payload;
+	Vec3 affected;
 };
 std::vector<Feature::Instance> s_features;
 
@@ -67,9 +70,28 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Chest:
 				init_chest(s_features.back());
 				break;
+			case Terrain::FlipendoSwitch:
+				DebugBreak("Spawn with Feature::spawn_flipendo_switch");
+				break;
 			// no initialization needed:
 			// case Terrain::Portrait:
 		}
+	}
+}
+
+void spawn_flipendo_switch(Vec3 switch_pos, Vec3 door_pos)
+{
+	if(Check(Terrain::is_feature(Terrain::FlipendoSwitch)))
+	{
+		World::edit().set_terrain(switch_pos, Terrain::FlipendoSwitch);
+		s_features.push_back({ .pos = switch_pos });
+
+		// init switch
+		s_features.back().affected = door_pos;
+
+		// add the closed door
+		int map_index = World::read().find_map(door_pos);
+		World::edit().edit_map(map_index).set_terrain(door_pos.xy(), Terrain::Wall);
 	}
 }
 
@@ -86,13 +108,15 @@ void move(Vec3 old_pos, Vec3 new_pos)
 	}
 }
 
-void remove(Vec3 pos)
+void remove(Vec3 pos, Terrain::Type new_terrain_type)
 {
+	assert(!Terrain::is_feature(new_terrain_type));
+
 	int const index = find_feature(pos);
 	if (index != c_Invalid)
 	{
 		Util::RemoveSwap(s_features, index);
-		World::edit().set_terrain(pos, Terrain::Open);
+		World::edit().set_terrain(pos, new_terrain_type);
 	}
 }
 
@@ -163,6 +187,31 @@ void open_portrait(Vec3 pos)
 	{
 		Draw::pos_message(pos, "The portrait swings open!");
 		Feature::remove(pos);
+	}
+}
+
+void activate_flipendo_switch(Vec3 pos)
+{
+	int const feature_index = find_feature(pos);
+	if (Check(feature_index != c_Invalid))
+	{
+		Feature::Instance& feature = s_features[feature_index];
+
+		if (World::read().is_visible(feature.affected))
+		{
+			Draw::pos_message(pos, "The switch flips and a door opens!");
+		}
+		else
+		{
+			Draw::pos_message(pos, "The switch flips.  What else changed?");
+		}
+
+		// remove the door
+		int map_index = World::read().find_map(feature.affected);
+		World::edit().edit_map(map_index).set_terrain(feature.affected.xy(), Terrain::Open);
+
+		// remove the switch
+		Feature::remove(pos, Terrain::Wall);
 	}
 }
 

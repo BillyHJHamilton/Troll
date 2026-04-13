@@ -54,6 +54,9 @@ void find_spawn_positions(const Map& map, int min_range_from_player);
 // checks for open map, no item or creature, out of player's sight, far from player.
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
 
+// checks for Wall terrain, out of player's sight
+bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2);
+
 // Checks whether there are still cached spawn positions available.
 // Call this before calling next_spawn_position().
 bool has_spawn_positions();
@@ -211,6 +214,23 @@ bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 con
 	}
 
 	if (Creature::creature_at_pos(pos3) != Creature::None)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2)
+{
+	Vec3 const pos3 = pos2.xyz(map.get_z());
+
+	if (map.get_terrain(pos2) != Terrain::Wall)
+	{
+		return false;
+	}
+
+	if (World::read().is_visible(pos3))
 	{
 		return false;
 	}
@@ -522,22 +542,30 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 	for (int index : index_list)  // also drops out below
 	{
 		Suggestion::SecretAreaInstance const & suggestion = suggestions_vec[index];
-		// TODO: Handle suggestions with different fields better
-		//bool is_buttons_good = suggestion.is_button;
-		//if (is_buttons_good)
-		//{
-		//	if (!is_good_spawn_position(map, 0, suggestion.button1))
-		//	{
-		//		is_buttons_good = false;
-		//	}
-		//}
+
+		bool is_button_good = suggestion.has_button;
+		if (is_button_good)
+		{
+			if (!is_good_wall_spawn_position(map, suggestion.button))
+			{
+				is_button_good = false;
+			}
+		}
 
 		if (is_good_spawn_position(map, 0, suggestion.door))
 		{
 			// TODO: Choose secret area type
 			//  -> specify probabilities in Spawn::Parameters
-			// TODO: Flipendo switches
-			Feature::spawn(suggestion.door.xyz(map.get_z()), Terrain::Portrait);
+			if (is_button_good && Random::coinflip())
+			{
+				int map_z = map.get_z();
+				Feature::spawn_flipendo_switch(suggestion.button.xyz(map_z),
+				                               suggestion.door.xyz(map_z));
+			}
+			else
+			{
+				Feature::spawn(suggestion.door.xyz(map.get_z()), Terrain::Portrait);
+			}
 
 			++spawned;
 			if (spawned >= secret_areas_to_spawn)

@@ -1223,21 +1223,17 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			    Util::Size(posList1) > 0)
 			{
 				Vec2 button_pos0 = Random::from_vector(posList0);
-				Vec2 button_pos1 = Random::from_vector(posList0);
-				if (Terrain::is_open(m_Map.get_terrain(button_pos0)) &&
-				    Terrain::is_open(m_Map.get_terrain(button_pos1)))
+				Vec2 button_pos1 = Random::from_vector(posList1);
+				m_Map.edit_suggestions().
+					add_secret_passage(door0, door1, button_pos0, button_pos1);
+				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 				{
-					m_Map.edit_suggestions().
-						add_secret_passage(door0, door1, button_pos0, button_pos1);
-					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-					{
-						m_Map.set_terrain(door0, Terrain::OpenHighlight);
-						m_Map.set_terrain(door1, Terrain::OpenHighlight);
-						m_Map.set_terrain(button_pos0, Terrain::OpenHighlight);
-						m_Map.set_terrain(button_pos1, Terrain::OpenHighlight);
-					}
-					return;
+					m_Map.set_terrain(door0, Terrain::OpenHighlight);
+					m_Map.set_terrain(door1, Terrain::OpenHighlight);
+					m_Map.set_terrain(button_pos0, Terrain::OpenHighlight);
+					m_Map.set_terrain(button_pos1, Terrain::OpenHighlight);
 				}
+				return;
 			}
 			m_Map.edit_suggestions().add_secret_passage(door0, door1);
 			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
@@ -1255,16 +1251,19 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			if (Util::Size(posList) > 0)
 			{
 				Vec2 button_pos = Random::from_vector(posList);
-				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
+
+				// What if 2 secret doors spawn buttons in the same place?
+				//  -> Currently caught in Spawn
+				//  -> 2nd door spawned will be of a buttonless type (e.g. Portrait)
+				//  -> Do we want to check for collisions here?
+
+				m_Map.edit_suggestions().add_secret_area(door0, button_pos);
+				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 				{
-					m_Map.edit_suggestions().add_secret_area(door0, button_pos);
-					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-					{
-						m_Map.set_terrain(door0, Terrain::OpenHighlight);
-						m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
-					}
-					return;
+					m_Map.set_terrain(door0, Terrain::OpenHighlight);
+					m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
 				}
+				return;
 			}
 
 			m_Map.edit_suggestions().add_secret_area(door0);
@@ -1279,16 +1278,13 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 			if (Util::Size(posList) > 0)
 			{
 				Vec2 button_pos = Random::from_vector(posList);
-				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
+				m_Map.edit_suggestions().add_secret_area(door1, button_pos);
+				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 				{
-					m_Map.edit_suggestions().add_secret_area(door1, button_pos);
-					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-					{
-						m_Map.set_terrain(door0, Terrain::OpenHighlight);
-						m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
-					}
-					return;
+					m_Map.set_terrain(door0, Terrain::OpenHighlight);
+					m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
 				}
+				return;
 			}
 			m_Map.edit_suggestions().add_secret_area(door1);
 			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
