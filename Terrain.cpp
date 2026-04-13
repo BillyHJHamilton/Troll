@@ -26,11 +26,11 @@ namespace Terrain
 	{
 		Data{"Open",			'.',					f_PermitSight | f_Open},
 		Data{"OpenAlternate",	':',					f_PermitSight | f_Open},
-		Data{"Wall",			Codepoint::SolidBlock,	f_Solid},
-		Data{"UpStairs",		Codepoint::CaretUp,		f_Stairs},
-		Data{"DownStairs",		Codepoint::CaretDown,	f_Stairs},
-		Data{"Chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature | f_SpellTarget},
-		Data{"Portrait",		Codepoint::Portrait,	f_Solid |  f_Feature | f_SpellTarget},
+		Data{"wall",			Codepoint::SolidBlock,	f_Solid},
+		Data{"up stairs",		Codepoint::CaretUp,		f_Stairs},
+		Data{"down stairs",		Codepoint::CaretDown,	f_Stairs},
+		Data{"chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature | f_SpellTarget},
+		Data{"portrait",		Codepoint::Portrait,	f_Solid |  f_Feature | f_SpellTarget},
 	};
 
 	int get_character(Terrain::Type t)
