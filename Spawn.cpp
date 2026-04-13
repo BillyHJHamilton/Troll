@@ -523,18 +523,20 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 	for (int index : index_list)  // also drops out below
 	{
 		Suggestion::Instance const & suggestion = suggestions_vec[index];
-		bool is_buttons_good = suggestion.is_button;
-		if (is_buttons_good)
-		{
-			if (!is_good_spawn_position(map, 0, suggestion.button1))
-			{
-				is_buttons_good = false;
-			}
-		}
+		// TODO: Handle suggestions with different fields better
+		//bool is_buttons_good = suggestion.is_button;
+		//if (is_buttons_good)
+		//{
+		//	if (!is_good_spawn_position(map, 0, suggestion.button1))
+		//	{
+		//		is_buttons_good = false;
+		//	}
+		//}
 
 		if (is_good_spawn_position(map, 0, suggestion.position1))
 		{
 			// TODO: Choose secret area type
+			//  -> specify probabilities in Spawn::Parameters
 			// TODO: Flipendo switches
 			Feature::spawn(suggestion.position1.xyz(map.get_z()), Terrain::Portrait);
 
