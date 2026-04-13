@@ -51,6 +51,9 @@ std::vector<Vec2> s_special_positions;
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
 
+// checks for open map, no item or creature, out of player's sight, far from player.
+bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
+
 // Checks whether there are still cached spawn positions available.
 // Call this before calling next_spawn_position().
 bool has_spawn_positions();
@@ -78,6 +81,7 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
+int spawn_secret_areas(Map& map, int secret_areas_to_spawn);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -165,58 +169,53 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 {
 	s_spawn_positions.clear();
 
-	int num_not_open = 0;
-	int num_has_item = 0;
-	int num_visible = 0;
-	int num_near_player = 0;
-	int num_creature = 0;
-
 	for (BoxItr itr(map.get_box_minus_border(1)); itr; ++itr)
 	{
 		Vec2 const pos2 = *itr;
-		Vec3 const pos3 = itr->xyz(map.get_z());
-
-		if (!Terrain::is_open(map.get_terrain(pos2)))
+		if (is_good_spawn_position(map, min_range_from_player, pos2))
 		{
-			++num_not_open;
-			continue;
+			s_spawn_positions.push_back(pos2);
 		}
-
-		if (map.has_item(pos2))
-		{
-			++num_has_item;
-			continue;
-		}
-
-		if (World::read().is_visible(pos3))
-		{
-			++num_visible;
-			continue;
-		}
-
-		if (Player::pos().z == map.get_z() &&
-			chessboard(Player::pos().xy(), pos2) < min_range_from_player)
-		{
-			++num_near_player;
-			continue;
-		}
-
-		if (Creature::creature_at_pos(pos3) != Creature::None)
-		{
-			++num_creature;
-			continue;
-		}
-
-		s_spawn_positions.push_back(pos2);
 	}
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Found {} valid spawn positions.\n"
-			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
-			Util::Size(s_spawn_positions), num_not_open, num_has_item, num_visible,
-			num_near_player, num_creature);
+		std::cout << std::format("Found {} valid spawn positions.\n",
+			Util::Size(s_spawn_positions));
 	}
+}
+
+bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2)
+{
+	Vec3 const pos3 = pos2.xyz(map.get_z());
+
+	if (!Terrain::is_open(map.get_terrain(pos2)))
+	{
+		return false;
+	}
+
+	if (map.has_item(pos2))
+	{
+		return false;
+	}
+
+	if (World::read().is_visible(pos3))
+	{
+		return false;
+	}
+
+	if (Player::pos().z == map.get_z() &&
+		chessboard(Player::pos().xy(), pos2) < min_range_from_player)
+	{
+		return false;
+	}
+
+	if (Creature::creature_at_pos(pos3) != Creature::None)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool has_spawn_positions()
@@ -333,6 +332,7 @@ void spawn_for_map(Map& map, History& history)
 	int creatures_to_spawn = 1;
 	int items_to_spawn = 0;
 	int chests_to_spawn = 0;
+	int secret_areas_to_spawn = 0;
 	int min_range = param.min_range_from_player;
 
 	if (is_first_spawn)
@@ -340,6 +340,7 @@ void spawn_for_map(Map& map, History& history)
 		creatures_to_spawn = Random::in_range(param.min_creatures, param.max_creatures);
 		items_to_spawn = Random::in_range(param.min_items, param.max_items);
 		chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
+		secret_areas_to_spawn = Random::in_range(param.min_secret_areas, param.max_secret_areas);
 		min_range = 2;
 	}
 
@@ -351,6 +352,11 @@ void spawn_for_map(Map& map, History& history)
 	{
 		find_chest_positions(map);
 		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
+	}
+
+	if (secret_areas_to_spawn > 0)
+	{
+		spawn_secret_areas(map, secret_areas_to_spawn);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -423,13 +429,9 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 			Creature::Type const creature_type = (Creature::Type)option.index;
 			assert(Creature::is_valid_type(creature_type));
 
-			// TODO: Make this a function
 			float const creature_difficulty = Gingerbread::read(creature_type).difficulty;
-			Suggestion::Type suggestion_type = Suggestion::EnemyModerate;
-			if (creature_difficulty <= difficulty - 1.0f)
-				suggestion_type = Suggestion::EnemyWeak;
-			else if (creature_difficulty >= difficulty + 1.0f)
-				suggestion_type = Suggestion::EnemyStrong;
+			Suggestion::Type const suggestion_type =
+				Suggestion::get_enemy_type(difficulty, creature_difficulty);
 			Vec3 const pos3 = choose_spawn_position(map, suggestion_type);
 
 			Creature::Handle creature = Creature::spawn_creature(creature_type, pos3);
@@ -504,6 +506,52 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	{
 		std::cout << std::format("Placed {}/{} chests.\n",
 			spawned, chests_to_spawn);
+	}
+
+	return spawned;
+}
+
+int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
+{
+	// no min range from player
+
+	auto const & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
+	IntTempList index_list = Util::GetIndices(suggestions_vec);
+	Random::shuffle_vector(index_list);
+
+	int spawned = 0;
+	for (int index : index_list)  // also drops out below
+	{
+		Suggestion::Instance const & suggestion = suggestions_vec[index];
+		// TODO: Handle suggestions with different fields better
+		//bool is_buttons_good = suggestion.is_button;
+		//if (is_buttons_good)
+		//{
+		//	if (!is_good_spawn_position(map, 0, suggestion.button1))
+		//	{
+		//		is_buttons_good = false;
+		//	}
+		//}
+
+		if (is_good_spawn_position(map, 0, suggestion.position1))
+		{
+			// TODO: Choose secret area type
+			//  -> specify probabilities in Spawn::Parameters
+			// TODO: Flipendo switches
+			Feature::spawn(suggestion.position1.xyz(map.get_z()), Terrain::Portrait);
+
+			++spawned;
+			if (spawned >= secret_areas_to_spawn)
+			{
+				break;  // placed enough, so stop looking
+			}
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {}/{} secret areas.\n",
+			spawned, secret_areas_to_spawn);
 	}
 
 	return spawned;

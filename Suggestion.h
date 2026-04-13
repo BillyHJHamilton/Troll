@@ -51,6 +51,9 @@ namespace Suggestion
 	Genus GetGenus(Suggestion::Type t);
 	bool is_valid_type(Suggestion::Type t);
 
+	Type get_enemy_type(float map_difficulty,
+	                    float enemy_difficulty);
+
 	class Manager
 	{
 	public:
@@ -58,6 +61,7 @@ namespace Suggestion
 
 		void serialize(ISerializer& s);
 
+		int get_total_count() const;
 		int get_count(Type type) const;
 		bool has_any(Type type) const;
 		std::vector<Instance> const & get(Type type) const;

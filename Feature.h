@@ -26,5 +26,6 @@ namespace Feature
 
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);
+	void open_portrait(Vec3 pos);
 }
 
