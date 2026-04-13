@@ -63,9 +63,9 @@ namespace Util
 	
 	// Search for an entry by the value of one member (the key), using "pointer to member" syntax.
 	// For example, to search for a Foo where .id==2, provide &Foo::id as the key_variable.
-	template<typename VectorItemType, typename Alc, typename ValueType, typename KeyType>
+	template<typename VectorItemType, typename Alc, typename KeyType>
 	int FindIndexByKey(std::vector<VectorItemType,Alc> const& vector,
-		KeyType ValueType::* key_variable, KeyType key_to_find)
+		KeyType VectorItemType::* key_variable, KeyType key_to_find)
 	{
 		for (int i = 0; i < Util::Size(vector); ++i)
 		{
