@@ -66,6 +66,7 @@ void MapGenerator::Generate()
 {
 	if (Debug::enabled(Debug::Map))
 	{
+		// name is not set yet, so can't print
 		std::cout << "\nGenerating level.\n";
 	}
 
@@ -748,11 +749,37 @@ void MapGenerator::AssignRoomsToRegions()
 
 void MapGenerator::AddAllToMap()
 {
+	// step 0: fill map with walls
 	m_Map.fill(Terrain::Wall);
+
+	// step 1: add chambers
 	for (Room const & room : m_RoomVec)
 	{
 		assert(m_Map.contains(room.GetBox()));
-		AddRoomToMap(room);
+		if (room.IsChamber())
+		{
+			AddChamberToMap(room);
+		}
+	}
+
+	// step 2: add stairs
+	for (Room const & room : m_RoomVec)
+	{
+		assert(m_Map.contains(room.GetBox()));
+		if (room.IsStairs())
+		{
+			AddStairsToMap(room);
+		}
+	}
+
+	// step 3: add corridors
+	for (Room const & room : m_RoomVec)
+	{
+		assert(m_Map.contains(room.GetBox()));
+		if (room.IsCorridor())
+		{
+			AddCorridorToMap(room);
+		}
 	}
 
 	if (Debug::enabled(Debug::Map))
@@ -1087,52 +1114,66 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 	}
 }
 
-void MapGenerator::AddRoomToMap(Room const & room) const
+void MapGenerator::AddStairsToMap(Room const & room) const
 {
+	if (!room.IsStairs())
+	{
+		DebugBreak("Only use MapGenerator::AddStairsToMap for stairs.");
+	}
+
 	// Room positions are all in global space.
 
 	// todo could probably make this better polymorphic design
-	if (room.GetRoomType() == RoomType::Stairs)
+	m_Map.add_stairs(room.StairsLocalEnd(), room.GetStairsDirection());
+
+	// add a guard in room nearby
+	Vec2 const backwards = Stairs::joining_vector(room.GetStairsDirection());
+	Vec2 const near_foot = room.StairsLocalEnd() + backwards * 2;
+	m_Map.edit_suggestions().add_enemy_weak(near_foot);
+}
+
+void MapGenerator::AddChamberToMap(Room const & room) const
+{
+	if (!room.IsChamber())
 	{
-		m_Map.add_stairs(room.StairsLocalEnd(), room.GetStairsDirection());
-
-		// add a guard in room nearby
-		Vec2 const backwards = Stairs::joining_vector(room.GetStairsDirection());
-		Vec2 const near_foot = room.StairsLocalEnd() + backwards * 2;
-		m_Map.edit_suggestions().add_enemy_weak(near_foot);
-
-		return;
+		DebugBreak("Only use MapGenerator::AddChamberToMap for chmabers.");
 	}
+
+	// Room positions are all in global space.
 
 	m_Map.fill_box(room.GetBox(), Terrain::Open);
-	//if (room.GetRegion() != Room::c_MainRegion)
-	//{
-	//	m_Map.fill_box(room.GetBox(), Terrain::OpenAlternate);
-	//}
 
-	if (room.IsChamber())
+	if (room.GetNeighbourCount() == 1)
 	{
-		if (room.GetNeighbourCount() == 1)
-		{
-			// end room of region or 1-room attic
+		// end room of region or 1-room attic
 
-			// add treasure across the room from the entrance
-			Vec2 pos = GetPosAtRoomBack(room);
-			m_Map.edit_suggestions().add_treasure_normal(pos);
-		}
-		else if (room.GetRegion() != Room::c_MainRegion &&
-		         room.GetNeighbourCount() >= 3)
-		{
-			// junction to several regions
+		// add treasure across the room from the entrance
+		Vec2 pos = GetPosAtRoomBack(room);
+		m_Map.edit_suggestions().add_treasure_normal(pos);
+	}
+	else if (room.GetRegion() != Room::c_MainRegion &&
+	         room.GetNeighbourCount() >= 3)
+	{
+		// junction to several regions
 
-			// add a guard
-			Vec2 const roomCenter = room.GetBox().centre();
-			m_Map.edit_suggestions().add_enemy_moderate(roomCenter);
-		}
+		// add a guard
+		Vec2 const roomCenter = room.GetBox().centre();
+		m_Map.edit_suggestions().add_enemy_moderate(roomCenter);
+	}
+}
+
+void MapGenerator::AddCorridorToMap(Room const & room) const
+{
+	if (!room.IsCorridor())
+	{
+		DebugBreak("Only use MapGenerator::AddCorridorToMap for corridors.");
 	}
 
-	if (room.IsCorridor() &&
-		room.GetRegion() != Room::c_MainRegion &&
+	// Room positions are all in global space.
+
+	m_Map.fill_box(room.GetBox(), Terrain::Open);
+
+	if (room.GetRegion() != Room::c_MainRegion &&
 		room.GetNeighbourCount() == 2)  // false for T-junctions
 	{
 		Room const & neighbour0 = m_RoomVec[room.GetNeighbours()[0]];
@@ -1160,7 +1201,25 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		{
 			// this can't happen yet...
 			// TODO: Test when map generates secret passages
-			// TODO: Buttons for secret passages
+			PosTempList posList0 = GetEmptyWallPositions(neighbour0);
+			PosTempList posList1 = GetEmptyWallPositions(neighbour1);
+			if (Util::Size(posList0) > 0 &&
+			    Util::Size(posList1) > 0)
+			{
+				Vec2 button_pos0 = posList0[Random::in_range(0, Util::Size(posList0) - 1)];
+				Vec2 button_pos1 = posList1[Random::in_range(0, Util::Size(posList1) - 1)];
+				if (Terrain::is_open(m_Map.get_terrain(button_pos0)) &&
+				    Terrain::is_open(m_Map.get_terrain(button_pos1)))
+				{
+					m_Map.edit_suggestions().
+						add_secret_passage(door0, door1, button_pos0, button_pos1);
+					//m_Map.set_terrain(door0, Terrain::OpenAlternate);
+					//m_Map.set_terrain(door1, Terrain::OpenAlternate);
+					//m_Map.set_terrain(button_pos0, Terrain::OpenAlternate);
+					//m_Map.set_terrain(button_pos1, Terrain::OpenAlternate);
+					return;
+				}
+			}
 			m_Map.edit_suggestions().add_secret_passage(door0, door1);
 			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
 			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
@@ -1170,21 +1229,42 @@ void MapGenerator::AddRoomToMap(Room const & room) const
 		// secret area - only 1 end locked
 		if (is_edge_of_region_0)
 		{
-			// TODO: Buttons for secret areas
-			//   -> and parallel case below
-			//   -> maybe these should go through a common function
+			PosTempList posList = GetEmptyWallPositions(neighbour0);
+			if (Util::Size(posList) > 0)
+			{
+				Vec2 button_pos = posList[Random::in_range(0, Util::Size(posList) - 1)];
+				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
+				{
+					m_Map.edit_suggestions().add_secret_area(door0, button_pos);
+					//m_Map.set_terrain(door0, Terrain::OpenAlternate);
+					//m_Map.set_terrain(button_pos, Terrain::OpenAlternate);
+					return;
+				}
+			}
 			m_Map.edit_suggestions().add_secret_area(door0);
 			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
 		}
 		if (is_edge_of_region_1)
 		{
+			PosTempList posList = GetEmptyWallPositions(neighbour1);
+			if (Util::Size(posList) > 0)
+			{
+				Vec2 button_pos = posList[Random::in_range(0, Util::Size(posList) - 1)];
+				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
+				{
+					m_Map.edit_suggestions().add_secret_area(door1, button_pos);
+					//m_Map.set_terrain(door1, Terrain::OpenAlternate);
+					//m_Map.set_terrain(button_pos, Terrain::OpenAlternate);
+					return;
+				}
+			}
 			m_Map.edit_suggestions().add_secret_area(door1);
 			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
 		}
 	}
 
 /*	// TODO doors
-	if (room.IsCorridor() && room.CorridorLength() != 2 && !Random::one_in(3))
+	if (room.CorridorLength() != 2 && !Random::one_in(3))
 	{
 		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
 		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
@@ -1198,6 +1278,11 @@ Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 	int const neighbourIndex = room.GetNeighbours()[0];
 	Vec2 const neighbourCenter = m_RoomVec[neighbourIndex].GetBox().centre();
 	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+
+	// both components of roomBackDirection are -1, 0, or 1
+	//  -> never (0, 0), so 8 possibilities
+	// if 2 non-zero components: place in corner
+	// if 1 zon-zero components: place at middle of wall
 
 	Vec2 result = room.GetBox().min;
 	switch (roomBackDirection.x)
@@ -1235,6 +1320,90 @@ Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 	}
 
 	return result;
+}
+
+MapGenerator::PosTempList MapGenerator::GetEmptyWallPositions(Room const & room) const
+{
+	// Goal: Find all positions
+	//  1. Inside the room
+	//  2. Along any wall
+	//  3. Not in a corner
+	//  4. Not by an attached corridor or stairs (including diagonally)
+
+	PosTempList result_vec;
+
+	// find excluded areas by corridors and stairs
+
+	Box2TempList exclusion_vec;
+
+	for (int n = 0; n < room.GetNeighbourCount(); ++n)
+	{
+		Box2 larger = m_RoomVec[room.GetNeighbours()[n]].GetBox();
+		larger.min  -= {1, 1};
+		larger.size += {2, 2};
+		exclusion_vec.push_back(larger);
+	}
+
+	// find room edges
+
+	int const x_min = room.GetBox().min.x;
+	int const y_min = room.GetBox().min.y;
+	int const x_max = room.GetBox().max(AXIS_X) - 1;
+	int const y_max = room.GetBox().max(AXIS_Y) - 1;
+
+	// search along X sides of room
+
+	for (int y = y_min + 1; y < y_max; ++y)
+	{
+		// min X side
+		Vec2 pos1{ x_min, y };
+		if (!isContainedByAnyInList(pos1, exclusion_vec))
+		{
+			result_vec.push_back(pos1);
+		}
+
+		// max X side
+		Vec2 pos2{ x_max, y };
+		if (!isContainedByAnyInList(pos2, exclusion_vec))
+		{
+			result_vec.push_back(pos2);
+		}
+	}
+
+	// search along Y sides of room
+
+	for (int x = x_min + 1; x < x_max; ++x)
+	{
+		// min Y side
+		Vec2 pos1{ x, y_min };
+		if (!isContainedByAnyInList(pos1, exclusion_vec))
+		{
+			result_vec.push_back(pos1);
+		}
+
+		// max Y side
+		Vec2 pos2{ x, y_max };
+		if (!isContainedByAnyInList(pos2, exclusion_vec))
+		{
+			result_vec.push_back(pos2);
+		}
+	}
+
+	// done
+	return result_vec;
+}
+
+// static
+bool MapGenerator::isContainedByAnyInList(Vec2 const & v, Box2TempList const & boxVec)
+{
+	for (int e = 0; e < Util::Size(boxVec); ++e)
+	{
+		if (boxVec[e].contains(v))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void MapGenerator::PrintAllRooms() const
