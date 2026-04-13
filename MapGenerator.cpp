@@ -1411,8 +1411,6 @@ void MapGenerator::PrintAllRooms() const
 	std::cout << "All rooms" << std::endl;
 	for (int r = 0; r < Util::Size(m_RoomVec); ++r)
 	{
-		Box2 const box = m_RoomVec[r].GetBox();
-		Vec2 const box_max = box.min + box.size;
 		switch (m_RoomVec[r].GetRoomType())
 		{
 		case RoomType::Chamber:          std::cout << "  Chamber "  << r << ":";  break;
@@ -1424,6 +1422,8 @@ void MapGenerator::PrintAllRooms() const
 			break;
 		}
 
+		Box2 const & box = m_RoomVec[r].GetBox();
+		Vec2 const box_max = box.min + box.size;
 		std::cout << "\t  (" << box.min.x << " - " << box_max.x
 			<< ",\t" << box.min.y << " - " << box_max.y << ")";
 
