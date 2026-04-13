@@ -51,7 +51,7 @@ std::vector<Vec2> s_special_positions;
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
 
-// Same checks as find_spawn_positions.
+// checks for open map, no item or creature, out of player's sight, far from player.
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
 
 // Checks whether there are still cached spawn positions available.
@@ -169,57 +169,19 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 {
 	s_spawn_positions.clear();
 
-	int num_not_open = 0;
-	int num_has_item = 0;
-	int num_visible = 0;
-	int num_near_player = 0;
-	int num_creature = 0;
-
 	for (BoxItr itr(map.get_box_minus_border(1)); itr; ++itr)
 	{
 		Vec2 const pos2 = *itr;
-		Vec3 const pos3 = itr->xyz(map.get_z());
-
-		if (!Terrain::is_open(map.get_terrain(pos2)))
+		if (is_good_spawn_position(map, min_range_from_player, pos2))
 		{
-			++num_not_open;
-			continue;
+			s_spawn_positions.push_back(pos2);
 		}
-
-		if (map.has_item(pos2))
-		{
-			++num_has_item;
-			continue;
-		}
-
-		if (World::read().is_visible(pos3))
-		{
-			++num_visible;
-			continue;
-		}
-
-		if (Player::pos().z == map.get_z() &&
-			chessboard(Player::pos().xy(), pos2) < min_range_from_player)
-		{
-			++num_near_player;
-			continue;
-		}
-
-		if (Creature::creature_at_pos(pos3) != Creature::None)
-		{
-			++num_creature;
-			continue;
-		}
-
-		s_spawn_positions.push_back(pos2);
 	}
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Found {} valid spawn positions.\n"
-			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
-			Util::Size(s_spawn_positions), num_not_open, num_has_item, num_visible,
-			num_near_player, num_creature);
+		std::cout << std::format("Found {} valid spawn positions.\n",
+			Util::Size(s_spawn_positions));
 	}
 }
 
