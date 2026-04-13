@@ -10,7 +10,7 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
-		OpenAlternate,  // used for debugging
+		OpenHighlight,  // used for debugging
 		Wall,
 		UpStairs,
 		DownStairs,
@@ -34,4 +34,13 @@ namespace Terrain
 	bool is_feature(Terrain::Type t);
 	bool is_spell_target(Terrain::Type t);
 	Terrain::Type swap_stairs(Terrain::Type t);
+
+	enum class HighlightType : byte
+	{
+		None = 0,
+		Regions,
+		Suggestions,
+	};
+
+	constexpr HighlightType c_HighlightType = HighlightType::None;
 }

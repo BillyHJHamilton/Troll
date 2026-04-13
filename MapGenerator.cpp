@@ -1141,7 +1141,15 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 
 	// Room positions are all in global space.
 
-	m_Map.fill_box(room.GetBox(), Terrain::Open);
+	if (Terrain::c_HighlightType == Terrain::HighlightType::Regions &&
+	    !room.IsInMainRegion())
+	{
+		m_Map.fill_box(room.GetBox(), Terrain::OpenHighlight);
+	}
+	else
+	{
+		m_Map.fill_box(room.GetBox(), Terrain::Open);
+	}
 
 	if (room.GetNeighbourCount() == 1)
 	{
@@ -1171,7 +1179,15 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 
 	// Room positions are all in global space.
 
-	m_Map.fill_box(room.GetBox(), Terrain::Open);
+	if (Terrain::c_HighlightType == Terrain::HighlightType::Regions &&
+	    !room.IsInMainRegion())
+	{
+		m_Map.fill_box(room.GetBox(), Terrain::OpenHighlight);
+	}
+	else
+	{
+		m_Map.fill_box(room.GetBox(), Terrain::Open);
+	}
 
 	if (room.GetRegion() != Room::c_MainRegion &&
 		room.GetNeighbourCount() == 2)  // false for T-junctions
@@ -1213,16 +1229,22 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 				{
 					m_Map.edit_suggestions().
 						add_secret_passage(door0, door1, button_pos0, button_pos1);
-					//m_Map.set_terrain(door0, Terrain::OpenAlternate);
-					//m_Map.set_terrain(door1, Terrain::OpenAlternate);
-					//m_Map.set_terrain(button_pos0, Terrain::OpenAlternate);
-					//m_Map.set_terrain(button_pos1, Terrain::OpenAlternate);
+					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+					{
+						m_Map.set_terrain(door0, Terrain::OpenHighlight);
+						m_Map.set_terrain(door1, Terrain::OpenHighlight);
+						m_Map.set_terrain(button_pos0, Terrain::OpenHighlight);
+						m_Map.set_terrain(button_pos1, Terrain::OpenHighlight);
+					}
 					return;
 				}
 			}
 			m_Map.edit_suggestions().add_secret_passage(door0, door1);
-			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
-			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
+			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+			{
+				m_Map.set_terrain(door0, Terrain::OpenHighlight);
+				m_Map.set_terrain(door1, Terrain::OpenHighlight);
+			}
 			return;
 		}
 
@@ -1236,13 +1258,20 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
 				{
 					m_Map.edit_suggestions().add_secret_area(door0, button_pos);
-					//m_Map.set_terrain(door0, Terrain::OpenAlternate);
-					//m_Map.set_terrain(button_pos, Terrain::OpenAlternate);
+					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+					{
+						m_Map.set_terrain(door0, Terrain::OpenHighlight);
+						m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
+					}
 					return;
 				}
 			}
+
 			m_Map.edit_suggestions().add_secret_area(door0);
-			//m_Map.set_terrain(door0, Terrain::OpenAlternate);
+			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+			{
+				m_Map.set_terrain(door0, Terrain::OpenHighlight);
+			}
 		}
 		if (is_edge_of_region_1)
 		{
@@ -1253,13 +1282,19 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 				if (Terrain::is_open(m_Map.get_terrain(button_pos)))
 				{
 					m_Map.edit_suggestions().add_secret_area(door1, button_pos);
-					//m_Map.set_terrain(door1, Terrain::OpenAlternate);
-					//m_Map.set_terrain(button_pos, Terrain::OpenAlternate);
+					if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+					{
+						m_Map.set_terrain(door0, Terrain::OpenHighlight);
+						m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
+					}
 					return;
 				}
 			}
 			m_Map.edit_suggestions().add_secret_area(door1);
-			//m_Map.set_terrain(door1, Terrain::OpenAlternate);
+			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+			{
+				m_Map.set_terrain(door0, Terrain::OpenHighlight);
+			}
 		}
 	}
 

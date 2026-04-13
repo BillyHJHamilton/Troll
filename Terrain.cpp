@@ -24,8 +24,9 @@ namespace Terrain
 
 	Terrain::Data const s_data[] = 
 	{
+		// Remember: these names are used by look_describe for spell messages
 		Data{"Open",			'.',					f_PermitSight | f_Open},
-		Data{"OpenAlternate",	':',					f_PermitSight | f_Open},
+		Data{"OpenHighlight",	':',					f_PermitSight | f_Open},
 		Data{"wall",			Codepoint::SolidBlock,	f_Solid},
 		Data{"up stairs",		Codepoint::CaretUp,		f_Stairs},
 		Data{"down stairs",		Codepoint::CaretDown,	f_Stairs},
