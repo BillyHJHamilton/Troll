@@ -32,7 +32,7 @@ std::vector<Feature::Instance> s_features;
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
-int find_feature(Vec3 pos);
+int find_feature(const Vec3 & pos);
 
 void init_chest(Feature::Instance& feature);
 
@@ -54,12 +54,12 @@ void serialize(ISerializer& s)
 	s.srz_vector(s_features, "Feature::s_chests");
 }
 
-bool is_at(Vec3 pos)
+bool is_at(const Vec3 & pos)
 {
 	return find_feature(pos) != c_Invalid;
 }
 
-void spawn(Vec3 pos, Terrain::Type type)
+void spawn(const Vec3 & pos, Terrain::Type type)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
@@ -78,7 +78,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 	}
 }
 
-void move(Vec3 old_pos, Vec3 new_pos)
+void move(const Vec3 & old_pos, const Vec3 & new_pos)
 {
 	int const index = find_feature(old_pos);
 	if (index != c_Invalid)
@@ -91,7 +91,7 @@ void move(Vec3 old_pos, Vec3 new_pos)
 	}
 }
 
-void remove(Vec3 pos)
+void remove(const Vec3 & pos)
 {
 	int const index = find_feature(pos);
 	if (index != c_Invalid)
@@ -104,7 +104,7 @@ void remove(Vec3 pos)
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
 
-int find_feature(Vec3 pos)
+int find_feature(const Vec3 & pos)
 {
 	return Util::FindIndexByKey(s_features, &Feature::Instance::pos, pos);
 }
@@ -137,7 +137,7 @@ void init_chest(Feature::Instance& feature)
 	feature.payload = (int)top;
 }
 
-void open_chest(Vec3 pos)
+void open_chest(const Vec3 & pos)
 {
 	int const feature_index = find_feature(pos);
 	if (Check(feature_index != c_Invalid))
@@ -161,7 +161,7 @@ void open_chest(Vec3 pos)
 	}
 }
 
-void open_portrait(Vec3 pos)
+void open_portrait(const Vec3 & pos)
 {
 	int const feature_index = find_feature(pos);
 	if (Check(feature_index != c_Invalid))
