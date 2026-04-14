@@ -10,7 +10,7 @@
 #include "Menu.h"
 #include "Player.h"
 #include "Stairs.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "VectorUtil.h"
 #include "Visibility.h"
 #include "World.h"

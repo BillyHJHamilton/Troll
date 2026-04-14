@@ -15,7 +15,7 @@
 #include "Player.h"
 #include "Spawn.h"
 #include "Spell.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "World.h"
 
 #include <cassert>

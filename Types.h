@@ -27,7 +27,6 @@ enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
 enum class RoomType : int;
-enum class TargetMode : byte;
 enum class Visibility : byte;
 
 namespace Ability

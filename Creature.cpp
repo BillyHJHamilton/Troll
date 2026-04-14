@@ -25,7 +25,7 @@
 #include "Spell.h"
 #include "Squad.h"
 #include "Status.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "VectorUtil.h"
 #include "World.h"
 

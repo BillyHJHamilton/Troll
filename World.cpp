@@ -7,7 +7,7 @@
 #include "PerfTimer.h"
 #include "Serialize.h"
 #include "Suggestion.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "Visibility.h"

@@ -147,7 +147,7 @@
     <ClCompile Include="Status.cpp">
       <Filter>Source Files\Magic</Filter>
     </ClCompile>
-    <ClCompile Include="Target.cpp">
+    <ClCompile Include="Crosshair.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="BertieBotts.cpp">
@@ -249,6 +249,9 @@
     <ClCompile Include="Suggestion.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
+    <ClCompile Include="Feature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -341,7 +344,7 @@
     <ClInclude Include="VectorUtil.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Target.h">
+    <ClInclude Include="Crosshair.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="MiscastCategory.h">
@@ -472,6 +475,9 @@
     </ClInclude>
     <ClInclude Include="Suggestion.h">
       <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Feature.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

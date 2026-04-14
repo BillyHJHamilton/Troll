@@ -7,7 +7,7 @@
 #include "MapUtil.h"
 #include "MapGenerator.h"
 #include "Random.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "Terrain.h"
 #include "Visibility.h"
 

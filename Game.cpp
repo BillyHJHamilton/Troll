@@ -6,6 +6,7 @@
 #include "BuildWorld.h"
 #include "Config.h"
 #include "Confirm.h"
+#include "Crosshair.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Feature.h"
@@ -29,7 +30,6 @@
 #include "Stairs.h"
 #include "Status.h"
 #include "Squad.h"
-#include "Target.h"
 #include "Taunt.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -92,6 +92,7 @@ void clear()
 	Ability::clear();
 	Bot::clear();
 	Creature::clear();
+	Crosshair::clear();
 	Draw::clear();
 	Feature::clear();
 	Gingerbread::clear();
@@ -103,7 +104,6 @@ void clear()
 	Score::clear();
 	Spawn::clear();
 	Squad::clear();
-	Crosshair::clear();
 	Taunt::clear();
 	World::clear();
 
@@ -175,10 +175,10 @@ bool try_serialize_all(ISerializer& s)
 	if (s.is_load())
 	{
 		// A few things we just shrug and reset.
+		Crosshair::clear();
 		Draw::clear();
 		Input::clear();
 		Menu::clear();
-		Crosshair::clear();
 
 		s_game_mode = GameMode::Normal;
 		Draw::add_message("Welcome back.");

@@ -16,7 +16,7 @@
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Status.h"
-#include "Target.h"
+#include "Crosshair.h"
 #include "Terrain.h"
 #include "World.h"
 
