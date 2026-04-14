@@ -126,6 +126,11 @@ namespace Status
 	enum Index : int;
 }
 
+namespace Target
+{
+	enum Type : byte;
+}
+
 namespace Terrain
 {
 	enum Type : byte;

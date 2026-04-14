@@ -12,6 +12,7 @@
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Stairs.h"
+#include "Target.h"
 #include "Terrain.h"
 #include "World.h"
 
@@ -85,10 +86,13 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	const World& world = World::read();
 
 	uint flags = f_None;
-	if (Spell::get_target_type(spell) == Spell::TargetType::Tile)
-	{
-		Util::SetFlag(flags, f_StopOnTarget);
-	}
+
+	// TODO: Target flags ...
+	//if (Spell::get_target_type(spell) == Target::Tile)
+	//{
+	//	Util::SetFlag(flags, f_StopOnTarget);
+	//}
+
 	if (caster_aimed)
 	{
 		Util::SetFlag(flags, f_CasterAimed);
@@ -133,13 +137,13 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 	char const* colour = cstr_White;
 	int codepoint = '*';
 
-	if (Ability::target_type(ability) == Ability::TargetType::Melee)
+	if (Ability::target_type(ability) == Target::Type::Melee)
 	{
 		ability_range = 2;
 		beam_type = Type::Melee;
 		noun = caster.short_name();
 	}
-	else if (Ability::target_type(ability) == Ability::TargetType::Projectile)
+	else if (Ability::target_type(ability) == Target::Beam)
 	{
 		Ability::ProjectileData const proj = Ability::get_projectile(ability);
 		noun = proj.noun;
