@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace Target
+namespace Crosshair
 {
 
 enum class TargetMode : byte
@@ -345,7 +345,7 @@ char const* colour(Visibility visibility, bool is_wall)
 
 void draw (Draw::View view)
 {
-	if (Target::is_valid())
+	if (Crosshair::is_valid())
 	{
 		Vec3 const pos = get_pos().value();
 		if (view.contains_global_pos(pos))
@@ -354,7 +354,7 @@ void draw (Draw::View view)
 			bool const is_wall = World::read().get_terrain(pos) == Terrain::Wall;
 
 			bool draw = true;
-			char const* draw_colour = Target::colour(vis, is_wall);
+			char const* draw_colour = Crosshair::colour(vis, is_wall);
 			int codepoint = Codepoint::OpenCursor;
 
 			if (vis == Visibility::Visible)

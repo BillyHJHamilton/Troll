@@ -44,13 +44,13 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 
 void player_look_at()
 {
-	if (!Target::is_valid())
+	if (!Crosshair::is_valid())
 	{
 		Draw::add_message("Target a tile, then press 'x' to look.");
 		return;
 	}
 
-	Vec3 const pos = Target::get_pos().value();
+	Vec3 const pos = Crosshair::get_pos().value();
 
 	if (!World::read().is_visible(pos))
 	{
@@ -141,7 +141,7 @@ bool player_try_cast_spell (Spell::Index spell)
 		return false;
 	}
 
-	std::optional<Vec3> target_pos = Target::get_pos();
+	std::optional<Vec3> target_pos = Crosshair::get_pos();
 	Spell::TargetType target_type = Spell::get_target_type(spell);
 
 	if (target_type == Spell::TargetType::Self)

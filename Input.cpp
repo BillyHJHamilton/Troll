@@ -137,7 +137,7 @@ Input::Result handle_next_input ()
 		Vec3 const mouse_pos = view.mouse_to_global_pos();
 		if (view.contains_global_pos(mouse_pos))
 		{
-			Target::set_to(mouse_pos);
+			Crosshair::set_to(mouse_pos);
 		}
 		return Result::Handled;
 	}
@@ -184,12 +184,12 @@ Input::Result handle_next_input ()
 		if (key == (TK_TAB | TK_KEY_RELEASED) &&
 			terminal_check(TK_CONTROL))
 		{
-			Target::snap_to_player();
+			Crosshair::snap_to_player();
 			return Result::Handled;
 		}
 		else if (key == TK_TAB && !terminal_check(TK_CONTROL))
 		{
-			Target::cycle(1, /*manually*/ true);
+			Crosshair::cycle(1, /*manually*/ true);
 			return Result::Handled;
 		}
 
@@ -230,9 +230,9 @@ Input::Result handle_next_input ()
 		// Go to (target location)
 		if (key == TK_G && terminal_check(TK_CONTROL))
 		{
-			if (Target::is_valid())
+			if (Crosshair::is_valid())
 			{
-				Player::start_pathfind(Target::get_pos().value());
+				Player::start_pathfind(Crosshair::get_pos().value());
 			}
 			return Result::StartAutomate;
 		}
@@ -316,7 +316,7 @@ Input::Result handle_next_input ()
 	{
 		if (key == TK_TAB)
 		{
-			Target::cycle(-1, /*manually*/ true);
+			Crosshair::cycle(-1, /*manually*/ true);
 			return Result::Handled;
 		}
 
@@ -330,7 +330,7 @@ Input::Result handle_next_input ()
 		if (is_directional(key))
 		{
 			Vec2 const vec = c_Compass[parse_directional(key)];
-			Target::move(vec);
+			Crosshair::move(vec);
 			return Result::Handled;
 		}
 

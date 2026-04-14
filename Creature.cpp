@@ -1041,9 +1041,9 @@ void draw_creature (Creature::Handle creature, Draw::View const & view)
 		int const code = Gingerbread::read(type).codepoint;
 		char const * creature_colour = creature.colour();
 
-		if (Target::is_target(creature))
+		if (Crosshair::is_target(creature))
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, Target::colour());
+			Draw::draw_tile_bg(code, pos.xy(), view, creature_colour, Crosshair::colour());
 		}
 		else
 		{

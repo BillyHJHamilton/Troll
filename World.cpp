@@ -650,10 +650,10 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 			}
 		}
 
-		const bool highlight_target = Target::is_target(pos) && v == Visibility::Visible;
+		const bool highlight_target = Crosshair::is_target(pos) && v == Visibility::Visible;
 		if (highlight_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), Target::colour());
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), Crosshair::colour());
 		}
 		else
 		{

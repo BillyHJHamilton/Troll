@@ -373,7 +373,7 @@ void update_screen()
 	draw_creature(Creature::Player, view);
 
 	Creature::draw_visible_creatures(view);
-	Target::draw(view);
+	Crosshair::draw(view);
 
 	// restore default font for printing text
 	terminal_font("");
@@ -435,12 +435,12 @@ const char* get_hp_colour(Creature::Handle creature)
 
 void format_creature_stats(std::stringstream& ss, Creature::Handle creature)
 {
-	if (Target::is_target(creature))
+	if (Crosshair::is_target(creature))
 	{
-		ss << "[bkcolor=" << Target::colour() << "]";
+		ss << "[bkcolor=" << Crosshair::colour() << "]";
 	}
 	ss << std::left << std::setw(16) << creature.short_name();
-	if (Target::is_target(creature))
+	if (Crosshair::is_target(creature))
 	{
 		ss << "[/bkcolor]";
 	}

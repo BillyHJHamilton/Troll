@@ -103,7 +103,7 @@ void clear()
 	Score::clear();
 	Spawn::clear();
 	Squad::clear();
-	Target::clear();
+	Crosshair::clear();
 	Taunt::clear();
 	World::clear();
 
@@ -178,7 +178,7 @@ bool try_serialize_all(ISerializer& s)
 		Draw::clear();
 		Input::clear();
 		Menu::clear();
-		Target::clear();
+		Crosshair::clear();
 
 		s_game_mode = GameMode::Normal;
 		Draw::add_message("Welcome back.");
@@ -224,7 +224,7 @@ void update()
 	{
 		World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 		Creature::update_visible_creatures();
-		Target::update();
+		Crosshair::update();
 	}
 
 	Draw::draw_screen();

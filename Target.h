@@ -5,7 +5,7 @@
 
 #include <optional>
 
-namespace Target
+namespace Crosshair
 {
 	void clear();
 
