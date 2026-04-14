@@ -3,7 +3,7 @@ To Do:
 -------------------------------------------------------------------------------
 
 - Actions
- > Moving should give a small evasion boost
+ - Moving should give a small evasion boost
 
 - Bot
  - Do something more clever about tracking through rooms and getting sidetracked
@@ -57,12 +57,6 @@ To Do:
  - Doxy venom antidote
 
 - Miscast effects
-
-- Serialization
- - srz_sparse_grid - for clouds and items
-  - take in the grid and the "default" value
-  - on save, create a temp array of positions difft from default, then save that
-  - on load, load the temp array, then copy the values into the grid after filling with default
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
@@ -141,17 +135,6 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
-- Accio doesn't give you item from the floor properly.
-- Ctrl-Enter opens inventory when you run out - should print message saying
-  you don't have any more of that item.
-
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?
   They can see you but you can't see them. - Doesn't seem to reproduce.
-
--------------------------------------------------------------------------------
-Other discussion with Richard
--------------------------------------------------------------------------------
-
-Could try adding "creature acceleration grid", and see if it improves astar performance.
-

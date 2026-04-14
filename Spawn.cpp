@@ -44,7 +44,19 @@ std::vector<Vec2> s_spawn_positions;
 // Valid positions for treasure chests.  A subset of spawn positions.
 std::vector<Vec2> s_special_positions;
 
-//-----------------------------------------------------------------------------
+// List of possible problems with a spawn point (for debug).
+enum class Problem : int
+{
+	None,	// No problem, i.e., it's good.
+	NotOpen,
+	HasItem,
+	Visible,
+	NearPlayer,
+	HasCreature,
+	Count
+};
+
+//-------------------------------------------------------------------------------------------------
 // Helper declarations
 
 // Caches a list of open spawn positions for the map.
@@ -53,6 +65,8 @@ void find_spawn_positions(const Map& map, int min_range_from_player);
 
 // checks for open map, no item or creature, out of player's sight, far from player.
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
+Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
+	Vec2 const & pos2);
 
 // Checks whether there are still cached spawn positions available.
 // Call this before calling next_spawn_position().
@@ -169,10 +183,15 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 {
 	s_spawn_positions.clear();
 
+	int debug_counts[(int)Problem::Count] = {0,0,0,0,0,0};
+
 	for (BoxItr itr(map.get_box_minus_border(1)); itr; ++itr)
 	{
 		Vec2 const pos2 = *itr;
-		if (is_good_spawn_position(map, min_range_from_player, pos2))
+		Spawn::Problem const problem = problem_with_spawn_position(map,
+			min_range_from_player, pos2);
+		++debug_counts[(int)problem];
+		if (problem == Problem::None)
 		{
 			s_spawn_positions.push_back(pos2);
 		}
@@ -180,42 +199,51 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Found {} valid spawn positions.\n",
-			Util::Size(s_spawn_positions));
+		std::cout << std::format("Found {} valid spawn positions.\n"
+			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
+			debug_counts[(int)Problem::None], debug_counts[(int)Problem::NotOpen],
+			debug_counts[(int)Problem::HasItem], debug_counts[(int)Problem::Visible],
+			debug_counts[(int)Problem::NearPlayer], debug_counts[(int)Problem::HasCreature]);
 	}
 }
 
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2)
 {
+	return problem_with_spawn_position(map, min_range_from_player, pos2) == Problem::None;
+}
+
+Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
+	Vec2 const & pos2)
+{
 	Vec3 const pos3 = pos2.xyz(map.get_z());
 
 	if (!Terrain::is_open(map.get_terrain(pos2)))
 	{
-		return false;
+		return Problem::NotOpen;
 	}
 
 	if (map.has_item(pos2))
 	{
-		return false;
+		return Problem::HasItem;
 	}
 
 	if (World::read().is_visible(pos3))
 	{
-		return false;
+		return Problem::Visible;
 	}
 
 	if (Player::pos().z == map.get_z() &&
 		chessboard(Player::pos().xy(), pos2) < min_range_from_player)
 	{
-		return false;
+		return Problem::NearPlayer;
 	}
 
 	if (Creature::creature_at_pos(pos3) != Creature::None)
 	{
-		return false;
+		return Problem::HasCreature;
 	}
 
-	return true;
+	return Problem::None; // It's fine.
 }
 
 bool has_spawn_positions()
