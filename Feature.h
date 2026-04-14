@@ -18,8 +18,12 @@ namespace Feature
 	// Adds a feature to the map.
 	void spawn(Vec3 pos, Terrain::Type type);
 
-	// Adds a feature to the map.
+	// Adds a flipendo switch attached to a single door
 	void spawn_flipendo_switch(Vec3 switch_pos, Vec3 door_pos);
+
+	// Adds a pair of flipendo switches, both attached to the same two doors
+	void spawn_flipendo_switch_pair(Vec3 switch1_pos, Vec3 door1_pos,
+	                                Vec3 switch2_pos, Vec3 door2_pos);
 
 	// Move feature, leaving behind open terrain and stomping terrain at new position.
 	void move(Vec3 old_pos, Vec3 new_pos);

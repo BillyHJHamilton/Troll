@@ -99,11 +99,11 @@ void MapGenerator::Generate()
 		}
 	}
 
-	AddExtraCorridors();
+	AddExtraCorridors(3, /* is secret passages */ false);
 
 	AssignRoomsToRegions();
 
-	// TODO: Add secret corridors here
+	AddExtraCorridors(2, /* is secret passages */ true);
 
 	//PrintAllRooms();
 
@@ -559,7 +559,7 @@ void MapGenerator::RemoveDisconnectedRooms()
 	}
 }
 
-void MapGenerator::AddExtraCorridors()
+void MapGenerator::AddExtraCorridors(int chance, bool isSecretPassages)
 {
 	int numAdded = 0;
 	
@@ -587,7 +587,7 @@ void MapGenerator::AddExtraCorridors()
 			}
 
 			// Only a chance of adding extra corridors.
-			if (!Random::one_in(3))
+			if (!Random::one_in(chance))
 			{
 				continue;
 			}
@@ -624,13 +624,33 @@ void MapGenerator::AddExtraCorridors()
 				m_RoomVec[r1].AddNeighbour(corridor_index);
 				m_RoomVec[corridor_index].AddNeighbour(r0);
 				m_RoomVec[corridor_index].AddNeighbour(r1);
+
+				if (isSecretPassages)
+				{
+					// each secret passage is its own region
+					int const newRegionIndex = Util::Size(m_RegionVec);
+
+					Region region;
+					region.parent = Room::c_SecretPassage;  // special value, has 2 parents
+					region.rooms.push_back(corridor_index);
+					m_RegionVec.push_back(region);
+
+					m_RoomVec[corridor_index].SetRegion(newRegionIndex);
+				}
 			}
 		}
 	}
 	
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << "Added " << numAdded << " extra corridors." << std::endl;
+		if (isSecretPassages)
+		{
+			std::cout << "Added " << numAdded << " secret passages." << std::endl;
+		}
+		else
+		{
+			std::cout << "Added " << numAdded << " extra corridors." << std::endl;
+		}
 	}
 }
 
@@ -645,7 +665,7 @@ void MapGenerator::AssignRoomsToRegions()
 	m_RegionVec.reserve(Util::Size(m_RoomVec) / 2);
 
 	Region main_region;
-	main_region.parent = Room::c_MainRegion;  // could have a special value
+	main_region.parent = Room::c_NoRegion;
 	m_RegionVec.push_back(main_region);
 
 	bool isChanged = true;
@@ -1195,10 +1215,6 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		Room const & neighbour0 = m_RoomVec[room.GetNeighbours()[0]];
 		Room const & neighbour1 = m_RoomVec[room.GetNeighbours()[1]];
 
-		int const parent_region = m_RegionVec[room.GetRegion()].parent;
-		bool const is_edge_of_region_0 = neighbour0.GetRegion() == parent_region;
-		bool const is_edge_of_region_1 = neighbour1.GetRegion() == parent_region;
-
 		// the ends of the hallway aren't hard to find, but which is which?
 		Vec2 door0 = room.GetBox().min;
 		Vec2 door1 = room.GetBox().inner_max();
@@ -1212,85 +1228,23 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		}
 
 		// secret passage - both ends locked
-		if (is_edge_of_region_0 && is_edge_of_region_1 &&
-		    room.CorridorLength() > 2)
+		int const parent_region = m_RegionVec[room.GetRegion()].parent;
+		if (parent_region == Room::c_SecretPassage)
 		{
-			// this can't happen yet...
-			// TODO: Test when map generates secret passages
-			PosTempList posList0 = GetPlainWallPositions(neighbour0);
-			PosTempList posList1 = GetPlainWallPositions(neighbour1);
-			if (Util::Size(posList0) > 0 &&
-			    Util::Size(posList1) > 0)
-			{
-				Vec2 button_pos0 = Random::from_vector(posList0);
-				Vec2 button_pos1 = Random::from_vector(posList1);
-				m_Map.edit_suggestions().
-					add_secret_passage(door0, door1, button_pos0, button_pos1);
-				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-				{
-					m_Map.set_terrain(door0, Terrain::OpenHighlight);
-					m_Map.set_terrain(door1, Terrain::OpenHighlight);
-					m_Map.set_terrain(button_pos0, Terrain::OpenHighlight);
-					m_Map.set_terrain(button_pos1, Terrain::OpenHighlight);
-				}
-				return;
-			}
-			m_Map.edit_suggestions().add_secret_passage(door0, door1);
-			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-			{
-				m_Map.set_terrain(door0, Terrain::OpenHighlight);
-				m_Map.set_terrain(door1, Terrain::OpenHighlight);
-			}
+			AddSecretPassageSuggestions(room, neighbour0, door0, neighbour1, door1);
 			return;
 		}
 
 		// secret area - only 1 end locked
-		if (is_edge_of_region_0)
+		if (neighbour0.GetRegion() == parent_region)
 		{
-			PosTempList posList = GetPlainWallPositions(neighbour0);
-			if (Util::Size(posList) > 0)
-			{
-				Vec2 button_pos = Random::from_vector(posList);
-
-				// What if 2 secret doors spawn buttons in the same place?
-				//  -> Currently caught in Spawn
-				//  -> 2nd door spawned will be of a buttonless type (e.g. Portrait)
-				//  -> Do we want to check for collisions here?
-
-				m_Map.edit_suggestions().add_secret_area(door0, button_pos);
-				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-				{
-					m_Map.set_terrain(door0, Terrain::OpenHighlight);
-					m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
-				}
-				return;
-			}
-
-			m_Map.edit_suggestions().add_secret_area(door0);
-			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-			{
-				m_Map.set_terrain(door0, Terrain::OpenHighlight);
-			}
+			AddSecretAreaSuggestions(room, neighbour0, door0);
+			return;
 		}
-		if (is_edge_of_region_1)
+		else if (neighbour1.GetRegion() == parent_region)
 		{
-			PosTempList posList = GetPlainWallPositions(neighbour1);
-			if (Util::Size(posList) > 0)
-			{
-				Vec2 button_pos = Random::from_vector(posList);
-				m_Map.edit_suggestions().add_secret_area(door1, button_pos);
-				if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-				{
-					m_Map.set_terrain(door0, Terrain::OpenHighlight);
-					m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
-				}
-				return;
-			}
-			m_Map.edit_suggestions().add_secret_area(door1);
-			if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
-			{
-				m_Map.set_terrain(door0, Terrain::OpenHighlight);
-			}
+			AddSecretAreaSuggestions(room, neighbour1, door1);
+			return;
 		}
 	}
 
@@ -1300,6 +1254,79 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
 		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
 	}*/
+}
+
+void MapGenerator::AddSecretPassageSuggestions(Room const & room,
+                                               Room const & neighbour0, Vec2 const & door0,
+                                               Room const & neighbour1, Vec2 const & door1) const
+{
+	if (room.CorridorLength() < 2)
+	{
+		// no room for more than a closed door
+		m_Map.edit_suggestions().add_secret_area(door0);
+		return;
+	}
+
+	PosTempList posList0 = GetPlainWallPositions(neighbour0);
+	PosTempList posList1 = GetPlainWallPositions(neighbour1);
+	if (Util::Size(posList0) > 0 &&
+		Util::Size(posList1) > 0)
+	{
+		// add with buttons
+
+		Vec2 button_pos0 = Random::from_vector(posList0);
+		Vec2 button_pos1 = Random::from_vector(posList1);
+		m_Map.edit_suggestions().add_secret_passage(door0, door1, button_pos0, button_pos1);
+
+		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+		{
+			m_Map.set_terrain(door0, Terrain::OpenHighlight);
+			m_Map.set_terrain(door1, Terrain::OpenHighlight);
+			m_Map.set_terrain(button_pos0, Terrain::OpenHighlight);
+			m_Map.set_terrain(button_pos1, Terrain::OpenHighlight);
+		}
+	}
+	else
+	{
+		// add without buttons
+
+		m_Map.edit_suggestions().add_secret_passage(door0, door1);
+
+		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+		{
+			m_Map.set_terrain(door0, Terrain::OpenHighlight);
+			m_Map.set_terrain(door1, Terrain::OpenHighlight);
+		}
+	}
+}
+
+void MapGenerator::AddSecretAreaSuggestions(Room const & room,
+                                            Room const & neighbour, Vec2 const & door) const
+{
+	PosTempList posList = GetPlainWallPositions(neighbour);
+	if (Util::Size(posList) > 0)
+	{
+		Vec2 button_pos = Random::from_vector(posList);
+
+		// What if 2 secret doors spawn buttons in the same place?
+		//  -> Currently caught in Spawn
+		//  -> 2nd door spawned will be of a buttonless type (e.g. Portrait)
+		//  -> Do we want to check for collisions here?
+
+		m_Map.edit_suggestions().add_secret_area(door, button_pos);
+		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+		{
+			m_Map.set_terrain(door, Terrain::OpenHighlight);
+			m_Map.set_terrain(button_pos, Terrain::OpenHighlight);
+		}
+		return;
+	}
+
+	m_Map.edit_suggestions().add_secret_area(door);
+	if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+	{
+		m_Map.set_terrain(door, Terrain::OpenHighlight);
+	}
 }
 
 Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
@@ -1554,6 +1581,10 @@ void MapGenerator::PrintAllRooms() const
 		if(m_RoomVec[r].IsInMainRegion())
 		{
 			std::cout << "  \tMain region";
+		}
+		else if(m_RegionVec[m_RoomVec[r].GetRegion()].parent == Room::c_SecretPassage)
+		{
+			std::cout << "  \tSecret passage";
 		}
 		else
 		{

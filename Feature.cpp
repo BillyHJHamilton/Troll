@@ -19,8 +19,10 @@ namespace Feature
 
 // Feature Types:
 //  - Chest - payload is Item::Handle
-//  - Portrait - no payload
+//  - Portrait - no variables
 //  - FlipendoSwitch - affected is door position
+//                   - also_activate is another switch that should activate with it
+//                     - connect these in a ring
 
 struct Instance
 {
@@ -29,6 +31,7 @@ struct Instance
 	// Parameters to be interpreted based on type of feature.
 	int payload;
 	Vec3 affected;
+	Vec3 also_activate;
 };
 std::vector<Feature::Instance> s_features;
 
@@ -81,18 +84,38 @@ void spawn(Vec3 pos, Terrain::Type type)
 
 void spawn_flipendo_switch(Vec3 switch_pos, Vec3 door_pos)
 {
-	if(Check(Terrain::is_feature(Terrain::FlipendoSwitch)))
-	{
-		World::edit().set_terrain(switch_pos, Terrain::FlipendoSwitch);
-		s_features.push_back({ .pos = switch_pos });
+	World::edit().set_terrain(switch_pos, Terrain::FlipendoSwitch);
+	s_features.push_back({ .pos = switch_pos });
 
-		// init switch
-		s_features.back().affected = door_pos;
+	// init switch
+	s_features.back().affected = door_pos;
+	s_features.back().also_activate = switch_pos;  // no other switch here
 
-		// add the closed door
-		int map_index = World::read().find_map(door_pos);
-		World::edit().edit_map(map_index).set_terrain(door_pos.xy(), Terrain::Wall);
-	}
+	// add the closed door
+	int map_index = World::read().find_map(door_pos);
+	World::edit().edit_map(map_index).set_terrain(door_pos.xy(), Terrain::Wall);
+}
+
+void spawn_flipendo_switch_pair(Vec3 switch1_pos, Vec3 door1_pos,
+                                Vec3 switch2_pos, Vec3 door2_pos)
+{
+	// first switch
+	World::edit().set_terrain(switch1_pos, Terrain::FlipendoSwitch);
+	s_features.push_back({ .pos = switch1_pos });
+	s_features.back().affected = door1_pos;
+	s_features.back().also_activate = switch2_pos;
+
+	// second switch
+	World::edit().set_terrain(switch2_pos, Terrain::FlipendoSwitch);
+	s_features.push_back({ .pos = switch2_pos });
+	s_features.back().affected = door2_pos;
+	s_features.back().also_activate = switch1_pos;
+
+	// add the closed doors
+	int map_index1 = World::read().find_map(door1_pos);
+	World::edit().edit_map(map_index1).set_terrain(door1_pos.xy(), Terrain::Wall);
+	int map_index2 = World::read().find_map(door2_pos);
+	World::edit().edit_map(map_index2).set_terrain(door2_pos.xy(), Terrain::Wall);
 }
 
 void move(Vec3 old_pos, Vec3 new_pos)
@@ -197,21 +220,36 @@ void activate_flipendo_switch(Vec3 pos)
 	{
 		Feature::Instance& feature = s_features[feature_index];
 
-		if (World::read().is_visible(feature.affected))
+		bool is_switch_visible = World::read().is_visible(pos);
+		bool is_door_visible = World::read().is_visible(feature.affected);
+		if (is_switch_visible && is_door_visible)
 		{
-			Draw::pos_message(pos, "The switch flips and a door opens!");
+			Draw::pos_message(pos, "The switch flips and a nearby wall slides open!");
 		}
-		else
+		else if (is_switch_visible)
 		{
-			Draw::pos_message(pos, "The switch flips.  What else changed?");
+			Draw::pos_message(pos, "The switch flips.  What else happened?");
+		}
+		else if (is_door_visible)
+		{
+			// requires the switch to be activated remotely
+			Draw::pos_message(pos, "A nearby wall slides open!");
 		}
 
 		// remove the door
 		int map_index = World::read().find_map(feature.affected);
 		World::edit().edit_map(map_index).set_terrain(feature.affected.xy(), Terrain::Open);
 
-		// remove the switch
+		// remove this switch and activate the next one (if any)
+		//  -> they are linked in a circle, so we MUST remove first
+		Vec3 also_pos = feature.also_activate;
 		Feature::remove(pos, Terrain::Wall);
+
+		if (find_feature(also_pos) != c_Invalid)
+		{
+			// if there is a associated switch
+			activate_flipendo_switch(also_pos);
+		}
 	}
 }
 

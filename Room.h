@@ -19,7 +19,10 @@ class Room
 public:
 	using TempList = std::vector<Room,Scratch<Room>>;
 
-	static int constexpr c_MainRegion = 0;
+	// these are mostly used by MapGenerator
+	static int constexpr c_MainRegion = 0;  // must be 0, needed in this file
+	static int constexpr c_NoRegion = -1;
+	static int constexpr c_SecretPassage = -2;  // region is a secret passage
 
 protected:
 	// Constructors to produce different room types.  Use the named versions below.

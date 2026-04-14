@@ -85,6 +85,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
 int spawn_secret_areas(Map& map, int secret_areas_to_spawn);
+int spawn_secret_passages(Map& map);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -377,6 +378,7 @@ void spawn_for_map(Map& map, History& history)
 	{
 		spawn_secret_areas(map, secret_areas_to_spawn);
 	}
+	spawn_secret_passages(map);
 
 	find_spawn_positions(map, min_range);
 
@@ -543,6 +545,11 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 	{
 		Suggestion::SecretAreaInstance const & suggestion = suggestions_vec[index];
 
+		if (!is_good_spawn_position(map, 0, suggestion.door))
+		{
+			continue;
+		}
+
 		bool is_button_good = suggestion.has_button;
 		if (is_button_good)
 		{
@@ -552,33 +559,88 @@ int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
 			}
 		}
 
-		if (is_good_spawn_position(map, 0, suggestion.door))
+		// TODO: Choose secret area type
+		//  -> specify probabilities in Spawn::Parameters
+		//  -> should go through a common function also called by spawn_secret_passages 
+		if (is_button_good && Random::coinflip())
 		{
-			// TODO: Choose secret area type
-			//  -> specify probabilities in Spawn::Parameters
-			if (is_button_good && Random::coinflip())
-			{
-				int map_z = map.get_z();
-				Feature::spawn_flipendo_switch(suggestion.button.xyz(map_z),
-				                               suggestion.door.xyz(map_z));
-			}
-			else
-			{
-				Feature::spawn(suggestion.door.xyz(map.get_z()), Terrain::Portrait);
-			}
+			int map_z = map.get_z();
+			Feature::spawn_flipendo_switch(suggestion.button.xyz(map_z),
+			                               suggestion.door  .xyz(map_z));
+		}
+		else
+		{
+			Feature::spawn(suggestion.door.xyz(map.get_z()), Terrain::Portrait);
+		}
 
-			++spawned;
-			if (spawned >= secret_areas_to_spawn)
-			{
-				break;  // placed enough, so stop looking
-			}
+		++spawned;
+		if (spawned >= secret_areas_to_spawn)
+		{
+			break;  // placed enough, so stop looking
 		}
 	}
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Placed {}/{} secret areas.\n",
+		std::cout << std::format("Hid {}/{} secret areas.\n",
 			spawned, secret_areas_to_spawn);
+	}
+
+	return spawned;
+}
+
+// Similar to spawn_secret_areas, but there are 2 of everything
+// It always closes off as many secret passages as possible (no maximum)
+int spawn_secret_passages(Map& map)
+{
+	// no min range from player
+
+	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
+	IntTempList index_list = Util::GetIndices(suggestions_vec);
+	Random::shuffle_vector(index_list);
+
+	int spawned = 0;
+	for (int index : index_list)  // does not drop out below
+	{
+		Suggestion::SecretPassageInstance const & suggestion = suggestions_vec[index];
+
+		if (!is_good_spawn_position(map, 0, suggestion.door1) ||
+		    !is_good_spawn_position(map, 0, suggestion.door2))
+		{
+			continue;
+		}
+
+		bool are_buttons_good = suggestion.has_buttons;
+		if (are_buttons_good)
+		{
+			if (!is_good_wall_spawn_position(map, suggestion.button1) ||
+			    !is_good_wall_spawn_position(map, suggestion.button2))
+			{
+				are_buttons_good = false;
+			}
+		}
+
+		if (are_buttons_good && Random::coinflip())
+		{
+			int map_z = map.get_z();
+			Feature::spawn_flipendo_switch_pair(suggestion.button1.xyz(map_z),
+			                                    suggestion.door1  .xyz(map_z),
+			                                    suggestion.button2.xyz(map_z),
+			                                    suggestion.door2  .xyz(map_z));
+		}
+		else
+		{
+			// open separately
+			Feature::spawn(suggestion.door1.xyz(map.get_z()), Terrain::Portrait);
+			Feature::spawn(suggestion.door2.xyz(map.get_z()), Terrain::Portrait);
+		}
+
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Hid {} secret passages.\n", spawned);
 	}
 
 	return spawned;
