@@ -85,18 +85,13 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	int const spell_range = Spell::get_range(spell);
 	const World& world = World::read();
 
-	uint flags = f_None;
-
-	// TODO: Target flags ...
-	//if (Spell::get_target_type(spell) == Target::Tile)
-	//{
-	//	Util::SetFlag(flags, f_StopOnTarget);
-	//}
-
+	uint beam_flags = f_None;
 	if (caster_aimed)
 	{
-		Util::SetFlag(flags, f_CasterAimed);
+		Util::SetFlag(beam_flags, f_CasterAimed);
 	}
+	
+	uint const target_flags = Spell::get_target_flags(spell);
 
 	return Beam::Data
 	{
@@ -117,7 +112,8 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 		.damage_type = Spell::damage_type(spell),
 		.damage = Spell::get_damage(spell, caster),
 		.spell_power = Spell::get_power(spell, caster),
-		.flags = flags,
+		.beam_flags = beam_flags,
+		.target_flags = target_flags,
 		.done = false
 	};
 }
@@ -170,7 +166,8 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.damage_type = Ability::damage_type(ability),
 		.damage = Ability::get_damage(ability),
 		.spell_power = 0, // not a spell
-		.flags = flags,
+		.beam_flags = flags,
+		.target_flags = f_None, // None for now
 		.done = false
 	};
 }
@@ -264,7 +261,7 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 		test_for_impact(beam, line_itr);
 
 		if (!beam.done && beam.pos == beam.target_pos
-			&& Util::IsFlagSet(beam.flags, f_StopOnTarget))
+			&& Util::IsFlagSet(beam.target_flags, Target::f_Midair))
 		{
 			detonate_in_midair(beam, line_itr);
 			beam.done = true;
@@ -291,7 +288,7 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 			beam.noun, Terrain::get_name(t)));
 		beam.done = true;
 
-		if (Util::IsFlagSet(beam.flags, f_StopOnTarget))
+		if (Terrain::is_matching_target(t, beam.target_flags))
 		{
 			detonate_in_midair(beam, line);
 		}
@@ -345,7 +342,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 	// Range falloff
 	int const range_accuracy = accuracy_at_range(beam.base_accuracy, beam.start_pos, beam.pos);
 
-	if (beam.caster == Creature::None || !Util::IsFlagSet(beam.flags, f_CasterAimed))
+	if (beam.caster == Creature::None || !Util::IsFlagSet(beam.beam_flags, f_CasterAimed))
 	{
 		// if not aimed by caster, don't factor in caster's accuracy.
 		caster_accuracy_factor = 100;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+
 #include "Scratch.h"
 
 #include <bitset>
@@ -77,8 +78,9 @@ namespace Spell
 		int range;
 
 		EffectFunc effect_func;
-		Target::Type target_type;
 		Miscast::Category miscast_category;
+		Target::Type target_type;
+		uint target_flags;
 	};
 
 	// A spell that has been cast.
@@ -106,6 +108,7 @@ namespace Spell
 	Damage::Packet damage_packet (Spell::Index spell_index, Creature::Handle caster);
 	int get_power (Spell::Index spell_index, Creature::Handle caster);
 	Target::Type get_target_type (Spell::Index spell_index);
+	uint get_target_flags(Spell::Index spell_index);
 	bool has_accuracy (Spell::Index spell_index);
 	int get_accuracy (Spell::Index spell_index);
 	int get_range (Spell::Index spell_index);
