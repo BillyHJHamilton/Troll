@@ -141,7 +141,13 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
-? Apparently sometimes LOS is asymmetric with enemies (they can see you but you can't see them).
+- Accio doesn't give you item from the floor properly.
+- Ctrl-Enter opens inventory when you run out - should print message saying
+  you don't have any more of that item.
+
+Maybe:
+- Apparently sometimes LOS is asymmetric with enemies?
+  They can see you but you can't see them. - Doesn't seem to reproduce.
 
 -------------------------------------------------------------------------------
 Other discussion with Richard
