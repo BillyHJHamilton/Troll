@@ -1,0 +1,15 @@
+
+	Bitset make_bitset(Spell::Index spell)
+	{
+		Bitset b;
+		b.set(spell, true);
+		return b;
+	}
+
+	template<class ... Packed>
+	Bitset make_bitset(Spell::Index spell, Packed... more_spells)
+	{
+		Bitset b = make_bitset(more_spells...);
+		b.set((const size_t)spell, true);
+		return b;
+	}
