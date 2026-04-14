@@ -23,7 +23,6 @@ namespace Beam
 
 	// Beam flags
 	uint constexpr f_CasterAimed	= 1 << 0;
-	uint constexpr f_StopOnTarget	= 1 << 1;
 
 	struct Data
 	{
@@ -44,7 +43,8 @@ namespace Beam
 		Damage::Type damage_type;
 		int damage;
 		int spell_power;
-		uint flags;
+		uint beam_flags;
+		uint target_flags;
 		bool done;
 	};
 

@@ -2,6 +2,7 @@
 
 #include "BitFlag.h"
 #include "Codepoint.h"
+#include "Target.h"
 
 #include <cassert>
 
@@ -13,25 +14,27 @@ namespace Terrain
 	uint constexpr f_Solid			= 1 << 2;	// Blocks movement and beams
 	uint constexpr f_Stairs			= 1 << 3;
 	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
-	uint constexpr f_SpellTarget	= 1 << 5;
 
 	struct Data
 	{
 		char const* name;
 		int codepoint;
-		int flags = f_None;
+		int terrain_flags = f_None;
+		int target_flags = f_None;
 	};
 
 	Terrain::Data const s_data[] = 
 	{
-		// Remember: these names are used by look_describe for spell messages
-		Data{"Open",			'.',					f_PermitSight | f_Open},
-		Data{"OpenHighlight",	':',					f_PermitSight | f_Open},
-		Data{"wall",			Codepoint::SolidBlock,	f_Solid},
-		Data{"up stairs",		Codepoint::CaretUp,		f_Stairs},
-		Data{"down stairs",		Codepoint::CaretDown,	f_Stairs},
-		Data{"chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature | f_SpellTarget},
-		Data{"portrait",		Codepoint::Portrait,	f_Solid |  f_Feature | f_SpellTarget},
+		// Remember: These names are used by look_describe and for spell messages.
+
+		//	 Name				Codepoint				Terrain flags							Target flags
+		Data{"Open",			'.',					f_PermitSight | f_Open,					f_None},
+		Data{"OpenHighlight",	':',					f_PermitSight | f_Open,					f_None},
+		Data{"wall",			Codepoint::SolidBlock,	f_Solid,								f_None},
+		Data{"up stairs",		Codepoint::CaretUp,		f_Stairs,								f_None},
+		Data{"down stairs",		Codepoint::CaretDown,	f_Stairs,								f_None},
+		Data{"chest",			Codepoint::Chest,		f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"portrait",		Codepoint::Portrait,	f_Solid |  f_Feature,					Target::f_Alohomora},
 	};
 
 	int get_character(Terrain::Type t)
@@ -62,37 +65,37 @@ namespace Terrain
 	bool permits_sight(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_PermitSight);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_PermitSight);
 	}
 
 	bool is_open(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_Open);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_Open);
 	}
 
 	bool is_solid(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_Solid);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_Solid);
 	}
 
 	bool is_stairs(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_Stairs);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_Stairs);
 	}
 
 	bool is_feature(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_Feature);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_Feature);
 	}
 
-	bool is_spell_target(Terrain::Type t)
+	bool is_matching_target(Terrain::Type t, uint target_flags)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].flags, f_SpellTarget);
+		return (s_data[t].target_flags & target_flags) != 0;
 	}
 
 	Terrain::Type swap_stairs(Terrain::Type t)
