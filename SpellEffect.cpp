@@ -399,7 +399,7 @@ void accio (EffectParams params)
 
 	if (!summon_item.valid())
 	{
-		Item::Handle summon_item = World::edit().pop_item(pos);
+		summon_item = World::edit().pop_item(pos);
 	}
 
 	if (summon_item.valid())
@@ -413,7 +413,7 @@ void accio (EffectParams params)
 			caster.push_item(summon_item);
 		}
 
-		Draw::creature_message(target, std::format("Whoosh!  {} got {}!",
+		Draw::creature_message(caster, std::format("Whoosh!  {} got {}!",
 			Grammar::You(caster), summon_item.name()));
 		return;
 	}
