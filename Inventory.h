@@ -24,6 +24,8 @@ public:
 	// Returns c_Invalid if we have no more of that item.
 	int find_most_recently_used() const;
 
+	bool has_recent_type() const;
+
 	void add_item (Item::Handle item);
 	void use_item (int slot);
 	void remove_item (int slot); // removes entire slot

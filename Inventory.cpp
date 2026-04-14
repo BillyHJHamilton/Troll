@@ -92,7 +92,7 @@ int Inventory::find_first_item(Item::Type type) const
 
 int Inventory::find_most_recently_used() const
 {
-	if (recent_type == Item::None)
+	if (!has_recent_type())
 	{
 		return c_Invalid;
 	}
@@ -116,6 +116,11 @@ int Inventory::find_most_recently_used() const
 	}
 
 	return c_Invalid;
+}
+
+bool Inventory::has_recent_type() const
+{
+	return recent_type != Item::None;
 }
 
 void Inventory::add_item (Item::Handle new_item)

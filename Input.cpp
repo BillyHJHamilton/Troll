@@ -265,15 +265,28 @@ Input::Result handle_next_input ()
 		{
 			if (terminal_check(TK_CONTROL))
 			{
-				int const slot = Inventory::read().find_most_recently_used();
-				if (slot != c_Invalid)
+				if (!Inventory::read().has_recent_type())
 				{
-					Action::player_use_item(slot);
-					return Result::Handled;
+					Draw::add_message("No recently used item.");
+				}
+				else
+				{
+					int const slot = Inventory::read().find_most_recently_used();
+					if (slot != c_Invalid)
+					{
+						Action::player_use_item(slot);
+						return Result::Handled;
+					}
+					else
+					{
+						Draw::add_message("You don't have any more of the last item used.");
+					}
 				}
 			}
-
-			Menu::show_inventory();
+			else
+			{
+				Menu::show_inventory();
+			}
 			return Result::Handled;
 		}
 
