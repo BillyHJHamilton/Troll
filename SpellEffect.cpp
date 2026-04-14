@@ -121,6 +121,10 @@ void alohomora(EffectParams params)
 	{
 		Feature::open_chest(pos);
 	}
+	else if (t == Terrain::Portrait)
+	{
+		Feature::open_portrait(pos);
+	}
 	else
 	{
 		Draw::pos_message(pos, "It has no effect.");

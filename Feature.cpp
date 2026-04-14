@@ -18,6 +18,7 @@ namespace Feature
 
 // Feature Types:
 //  - Chest - payload is Item::Handle
+//  - Portrait - no payload
 
 struct Instance
 {
@@ -66,6 +67,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Chest:
 				init_chest(s_features.back());
 				break;
+			// no initialization needed:
+			// case Terrain::Portrait:
 		}
 	}
 }
@@ -149,6 +152,16 @@ void open_chest(Vec3 pos)
 			World::edit().add_item(Random::from_vector(open_pos), next_item);
 		}
 
+		Feature::remove(pos);
+	}
+}
+
+void open_portrait(Vec3 pos)
+{
+	int const feature_index = find_feature(pos);
+	if (Check(feature_index != c_Invalid))
+	{
+		Draw::pos_message(pos, "The portrait swings open!");
 		Feature::remove(pos);
 	}
 }

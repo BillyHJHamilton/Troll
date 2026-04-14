@@ -5,6 +5,7 @@ MEMORY MANAGEMENT
 - When possible, allocate storage at program startup.
 - Use RAII when applicable (if a class needs to manage a resource).
 - Use char const* instead of std::string if it isn't dynamic.
+- Pass Vec2, Vec3, Box2, Box3 by value instead of const reference.
 
 OBJECTS
 - Use "struct" for POD and "class" for things with constructors, etc.

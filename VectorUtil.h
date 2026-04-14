@@ -268,7 +268,7 @@ namespace Util
 	
 	// Get a list of the indices in another vector.
 	template<typename VectorItemType, typename Alc>
-	IntTempList GetIndices(std::vector<VectorItemType,Alc>& v)
+	IntTempList GetIndices(const std::vector<VectorItemType,Alc>& v)
 	{
 		IntTempList t;
 		FillAscending(t, Size(v), 0);

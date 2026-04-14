@@ -47,6 +47,9 @@ public:
 	bool TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair);
 
 protected:
+	using PosTempList = std::vector<Vec2,Scratch<Vec2>>;
+	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
+
 	int FindRoomAtPos(Vec2 pos) const;
 
 	// Map Gen Helpers
@@ -57,6 +60,7 @@ protected:
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors();
 	void AssignRoomsToRegions();
+	void AddAllToMap();
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize() const;
@@ -75,7 +79,15 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
-	void AddRoomToMap(Room const & room) const;
+	void AddStairsToMap(Room const & room) const;
+	void AddChamberToMap(Room const & room) const;
+	void AddCorridorToMap(Room const & room) const;
+	Vec2 GetPosAtRoomBack(Room const & room) const;
+	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
+	PosTempList GetPlainWallPositions(Room const & room) const;
+	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
+	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
+	                                      Box2TempList const & boxVec);
 
 	void PrintAllRooms() const;
 
