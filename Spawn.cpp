@@ -68,6 +68,9 @@ bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 con
 Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
 	Vec2 const & pos2);
 
+// checks for Wall terrain, out of player's sight
+bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2);
+
 // Checks whether there are still cached spawn positions available.
 // Call this before calling next_spawn_position().
 bool has_spawn_positions();
@@ -95,7 +98,14 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
-int spawn_secret_areas(Map& map, int secret_areas_to_spawn);
+int spawn_secret_areas(Map& map);
+int spawn_secret_passages(Map& map);
+
+// Constructs a vector with the door weights.
+// Some door types can be excluded from the vector.
+IntTempList reviseDoorWeights(Parameters const & param,
+                              bool allow_none, bool allow_button);
+bool requires_button(Spawn::Door type);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -246,6 +256,23 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 	return Problem::None; // It's fine.
 }
 
+bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2)
+{
+	Vec3 const pos3 = pos2.xyz(map.get_z());
+
+	if (map.get_terrain(pos2) != Terrain::Wall)
+	{
+		return false;
+	}
+
+	if (World::read().is_visible(pos3))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool has_spawn_positions()
 {
 	return !s_spawn_positions.empty();
@@ -307,10 +334,9 @@ void find_chest_positions(const Map& map)
 	//  -> currently, fewer chests spawn (handled in spawn_chests)
 	//  -> should this go directly in the spawn_chests function?
 	//    -> need a new position table after spawning features anyway
-	for (Suggestion::Instance const & s :
-	     map.read_suggestions().get(Suggestion::TreasureNormal))
+	for (Vec2 const & pos : map.read_suggestions().get(Suggestion::TreasureNormal))
 	{
-		s_special_positions.push_back(s.position1);
+		s_special_positions.push_back(pos);
 	}
 }
 
@@ -360,7 +386,6 @@ void spawn_for_map(Map& map, History& history)
 	int creatures_to_spawn = 1;
 	int items_to_spawn = 0;
 	int chests_to_spawn = 0;
-	int secret_areas_to_spawn = 0;
 	int min_range = param.min_range_from_player;
 
 	if (is_first_spawn)
@@ -368,7 +393,6 @@ void spawn_for_map(Map& map, History& history)
 		creatures_to_spawn = Random::in_range(param.min_creatures, param.max_creatures);
 		items_to_spawn = Random::in_range(param.min_items, param.max_items);
 		chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
-		secret_areas_to_spawn = Random::in_range(param.min_secret_areas, param.max_secret_areas);
 		min_range = 2;
 	}
 
@@ -382,9 +406,10 @@ void spawn_for_map(Map& map, History& history)
 		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
 	}
 
-	if (secret_areas_to_spawn > 0)
+	if (is_first_spawn)
 	{
-		spawn_secret_areas(map, secret_areas_to_spawn);
+		spawn_secret_areas(map);
+		spawn_secret_passages(map);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -539,50 +564,197 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	return spawned;
 }
 
-int spawn_secret_areas(Map& map, int secret_areas_to_spawn)
+int spawn_secret_areas(Map& map)
 {
 	// no min range from player
 
-	auto const & suggestions_vec = map.read_suggestions().get(Suggestion::SecretArea);
+	Spawn::Parameters const& param = map.read_spawn_param();
+	IntTempList buttoned_weights   = reviseDoorWeights(param, true, true);  // do we allow:
+	IntTempList buttonless_weights = reviseDoorWeights(param, true, false); // None, buttons
+
+	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
 	Random::shuffle_vector(index_list);
 
 	int spawned = 0;
-	for (int index : index_list)  // also drops out below
+	for (int index : index_list)
 	{
-		Suggestion::Instance const & suggestion = suggestions_vec[index];
-		// TODO: Handle suggestions with different fields better
-		//bool is_buttons_good = suggestion.is_button;
-		//if (is_buttons_good)
-		//{
-		//	if (!is_good_spawn_position(map, 0, suggestion.button1))
-		//	{
-		//		is_buttons_good = false;
-		//	}
-		//}
+		Suggestion::SecretAreaInstance const & suggestion = suggestions_vec[index];
 
-		if (is_good_spawn_position(map, 0, suggestion.position1))
+		if (!is_good_spawn_position(map, 0, suggestion.door))
 		{
-			// TODO: Choose secret area type
-			//  -> specify probabilities in Spawn::Parameters
-			// TODO: Flipendo switches
-			Feature::spawn(suggestion.position1.xyz(map.get_z()), Terrain::Portrait);
+			continue;
+		}
 
-			++spawned;
-			if (spawned >= secret_areas_to_spawn)
+		// choose the type of door
+
+		bool is_button_good = suggestion.has_button;
+		if (is_button_good)
+		{
+			if (!is_good_wall_spawn_position(map, suggestion.button))
 			{
-				break;  // placed enough, so stop looking
+				is_button_good = false;
 			}
+		}
+
+		Door type = Door::None;
+		if (is_button_good)
+		{
+			type = (Door)(Random::weighted_index(buttoned_weights));
+		}
+		else
+		{
+			type = (Door)(Random::weighted_index(buttonless_weights));
+		}
+
+		// finally add the door
+
+		int map_z = map.get_z();
+		switch(type)
+		{
+		case Door::Portrait:
+			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
+			++spawned;
+			break;
+		case Door::FlipendoButton:
+			assert(is_button_good);
+			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
+			                               suggestion.door  .xyz(map_z));
+			++spawned;
+			break;
 		}
 	}
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Placed {}/{} secret areas.\n",
-			spawned, secret_areas_to_spawn);
+		std::cout << std::format("Hid {} of {} possible secret areas.\n",
+			spawned, Util::Size(index_list));
 	}
 
 	return spawned;
+}
+
+// Similar to spawn_secret_areas, but there are 2 of everything
+int spawn_secret_passages(Map& map)
+{
+	// no min range from player
+
+	Spawn::Parameters const& param = map.read_spawn_param();
+
+	// we don;t allow None doors: secret passages are secret
+	IntTempList buttoned_weights   = reviseDoorWeights(param, false, true);  // do we allow:
+	IntTempList buttonless_weights = reviseDoorWeights(param, false, false); // None, buttons
+
+	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
+	IntTempList index_list = Util::GetIndices(suggestions_vec);
+	Random::shuffle_vector(index_list);
+
+	int spawned = 0;
+	for (int index : index_list)
+	{
+		Suggestion::SecretPassageInstance const & suggestion = suggestions_vec[index];
+
+		if (!is_good_spawn_position(map, 0, suggestion.door1) ||
+		    !is_good_spawn_position(map, 0, suggestion.door2))
+		{
+			continue;
+		}
+
+		bool are_buttons_good = suggestion.has_buttons;
+		if (are_buttons_good)
+		{
+			if (!is_good_wall_spawn_position(map, suggestion.button1) ||
+			    !is_good_wall_spawn_position(map, suggestion.button2))
+			{
+				are_buttons_good = false;
+			}
+		}
+
+		Door type = Door::None;
+		if (are_buttons_good)
+		{
+			type = (Door)(Random::weighted_index(buttoned_weights));
+		}
+		else
+		{
+			type = (Door)(Random::weighted_index(buttonless_weights));
+		}
+
+		// finally add the door
+
+		int map_z = map.get_z();
+		switch(type)
+		{
+		case Door::Portrait:
+			// just put a portrait at each end
+			Feature::spawn(suggestion.door1.xyz(map_z), Terrain::Portrait);
+			if (suggestion.door1 != suggestion.door2)
+			{
+				Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
+			}
+			++spawned;
+			break;
+		case Door::FlipendoButton:
+			assert(are_buttons_good);
+			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
+			                                    suggestion.door1  .xyz(map_z),
+			                                    suggestion.button2.xyz(map_z),
+			                                    suggestion.door2  .xyz(map_z));
+			++spawned;
+			break;
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Hid {} of {} secret passages.\n",
+			spawned, Util::Size(index_list));
+	}
+
+	return spawned;
+}
+
+IntTempList reviseDoorWeights(Parameters const & param,
+                              bool allow_none, bool allow_button)
+{
+	IntTempList revised_weights((int)(Door::Count), 0);  // count, value
+	int sum = 0;
+
+	for (int i = 0; i < Util::Size(revised_weights); ++i)
+	{
+		int weight = param.door_weights[i];
+
+		if (!allow_none && i == (int)(Door::None))
+		{
+			continue;
+		}
+		if (!allow_button && requires_button((Spawn::Door)(i)))
+		{
+			continue;
+		}
+
+		revised_weights[i] = weight;
+		sum += weight;
+	}
+
+	if (sum == 0)
+	{
+		// default to Portraits (always valid)
+		revised_weights[(int)(Door::Portrait)] = 1;
+	}
+
+	return revised_weights;
+}
+
+bool requires_button(Spawn::Door type)
+{
+	switch (type)
+	{
+	case Spawn::Door::FlipendoButton:
+		return true;
+	default:
+		return false;
+	}
 }
 
 Spawn::Option choose_spawn_option(float target_difficulty)

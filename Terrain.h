@@ -18,6 +18,7 @@ namespace Terrain
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
 		Portrait,
+		FlipendoButton,  // door starts as Wall
 
 		Count
 	};
