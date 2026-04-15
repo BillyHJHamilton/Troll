@@ -225,7 +225,17 @@ void activate_flipendo_button(Vec3 pos)
 		Feature::Instance& feature = s_features[feature_index];
 
 		bool is_button_visible = World::read().is_visible(pos);
-		bool is_door_visible = World::read().is_visible(feature.affected);
+
+		// remove the door if needed
+		//  -> if the passage has length 1, the other switch might have removed it already
+		bool is_door_visible = false;
+		int map_index = World::read().find_map(feature.affected);
+		if (World::read().read_map(map_index).get_terrain(feature.affected.xy()) == Terrain::Wall)
+		{
+			is_door_visible = World::read().is_visible(feature.affected);
+			World::edit().edit_map(map_index).set_terrain(feature.affected.xy(), Terrain::Open);
+		}
+
 		if (is_button_visible && is_door_visible)
 		{
 			Draw::pos_message(pos, "The button flips and a nearby wall slides open!");
@@ -240,18 +250,13 @@ void activate_flipendo_button(Vec3 pos)
 			Draw::pos_message(pos, "A nearby wall slides open!");
 		}
 
-		// remove the door
-		int map_index = World::read().find_map(feature.affected);
-		World::edit().edit_map(map_index).set_terrain(feature.affected.xy(), Terrain::Open);
-
 		// remove this button and activate the next one (if any)
 		//  -> they are linked in a circle, so we MUST remove first
 		Vec3 also_pos = feature.also_activate;
 		Feature::remove(pos, Terrain::Wall);
 
-		if (find_feature(also_pos) != c_Invalid)
+		if (find_feature(also_pos) != c_Invalid)  // is another button
 		{
-			// if there is a linked button, activate that one too
 			activate_flipendo_button(also_pos);
 		}
 	}

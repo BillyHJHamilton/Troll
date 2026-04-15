@@ -658,9 +658,12 @@ int spawn_secret_passages(Map& map)
 		switch(type)
 		{
 		case Door::Portrait:
-			// open separately
+			// just put a portrait at each end
 			Feature::spawn(suggestion.door1.xyz(map_z), Terrain::Portrait);
-			Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
+			if (suggestion.door1 != suggestion.door2)
+			{
+				Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
+			}
 			++spawned;
 			break;
 		case Door::FlipendoButton:

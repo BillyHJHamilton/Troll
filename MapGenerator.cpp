@@ -1260,13 +1260,6 @@ void MapGenerator::AddSecretPassageSuggestions(Room const & room,
                                                Room const & neighbour0, Vec2 const & door0,
                                                Room const & neighbour1, Vec2 const & door1) const
 {
-	if (room.CorridorLength() < 2)
-	{
-		// no room for more than a closed door
-		m_Map.edit_suggestions().add_secret_area(door0);
-		return;
-	}
-
 	PosTempList posList0 = GetPlainWallPositions(neighbour0);
 	PosTempList posList1 = GetPlainWallPositions(neighbour1);
 	if (Util::Size(posList0) > 0 &&
