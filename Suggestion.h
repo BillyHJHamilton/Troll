@@ -28,6 +28,8 @@ namespace Suggestion
 		EnemyWeak,      // below map difficulty
 		EnemyModerate,  //  near map difficulty
 		EnemyStrong,    // above map difficulty
+		Boss,	// possible boss starting positions
+
 		Count,
 	};
 
@@ -80,15 +82,16 @@ namespace Suggestion
 		SecretAreaList const & get_secret_areas() const { return m_secret_area_vec; }
 		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
 
-		void add_secret_area(Vec2 door);  // no secret areas yet
+		void add_secret_area(Vec2 door);
 		void add_secret_area(Vec2 door, Vec2 button);
-		void add_secret_passage(Vec2 door1, Vec2 door2);  // no secret passages yet
+		void add_secret_passage(Vec2 door1, Vec2 door2);
 		void add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2);
 		void add_treasure_normal(Vec2 position);
 		void add_player_start(Vec2 position);
 		void add_enemy_weak(Vec2 position);
 		void add_enemy_moderate(Vec2 position);
 		void add_enemy_strong(Vec2 position);
+		void add_boss(Vec2 position);
 		// TODO: Add more functions when needed
 
 		void remove(Type type, int index);

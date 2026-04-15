@@ -102,6 +102,8 @@ int spawn_chests(Map& map, int chests_to_spawn);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 
+Vec2 find_boss_spawn_position(Map const& map);
+
 // Constructs a vector with the door weights.
 // Some door types can be excluded from the vector.
 IntTempList reviseDoorWeights(Parameters const & param,
@@ -450,8 +452,8 @@ int spawn_boss(Map const& map)
 
 	if (Creature::is_valid_type(boss_type) && has_spawn_positions())
 	{
-		Vec2 const pos = next_spawn_position();
-		Vec3 const pos3 = pos.xyz(map.get_z());
+		Vec2 const pos2 = find_boss_spawn_position(map);
+		Vec3 const pos3 = pos2.xyz(map.get_z());
 
 		Creature::Handle creature = Creature::spawn_creature(boss_type, pos3);
 		if (Debug::enabled(Debug::Map))
@@ -465,6 +467,26 @@ int spawn_boss(Map const& map)
 	}
 
 	return 0;
+}
+
+Vec2 find_boss_spawn_position(Map const & map)
+{
+	// first try recommend spawn positions (random order)
+
+	auto const & suggestions_vec = map.read_suggestions().get(Suggestion::Boss);
+	IntTempList index_list = Util::GetIndices(suggestions_vec);
+	Random::shuffle_vector(index_list);
+
+	for (int index : index_list)
+	{
+		if (is_good_spawn_position(map, 0, suggestions_vec[index]))
+		{
+			return suggestions_vec[index];
+		}
+	}
+
+	// fallback: spawn where a normal monster could be
+	return next_spawn_position();
 }
 
 // Note: Must call find_spawn_positions first.

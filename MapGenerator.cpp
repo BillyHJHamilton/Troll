@@ -1171,6 +1171,18 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		m_Map.fill_box(room.GetBox(), Terrain::Open);
 	}
 
+	if (room.GetRegion() == Room::c_MainRegion)
+	{
+		// boss should spawn in main region
+		Vec2 const roomCenter = room.GetBox().centre();
+		m_Map.edit_suggestions().add_boss(roomCenter);
+
+		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
+		{
+			m_Map.set_terrain(roomCenter, Terrain::OpenHighlight);
+		}
+	}
+
 	if (room.GetNeighbourCount() == 1)
 	{
 		// end room of region or 1-room attic

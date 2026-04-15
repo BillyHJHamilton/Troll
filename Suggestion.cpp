@@ -201,9 +201,15 @@ void Manager :: add_enemy_moderate(Vec2 position)
 {
 	m_simple_vecs[EnemyModerate].push_back(position);
 }
+
 void Manager :: add_enemy_strong(Vec2 position)
 {
 	m_simple_vecs[EnemyStrong].push_back(position);
+}
+
+void Manager :: add_boss(Vec2 position)
+{
+	m_simple_vecs[Boss].push_back(position);
 }
 
 void Manager :: remove(Type type, int index)
