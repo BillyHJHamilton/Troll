@@ -121,7 +121,13 @@ void flipendo (EffectParams params)
 		flipendo_vs_creature(params);
 	}
 
-	// TODO: flipendo_vs_feature!
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::FlipendoButton:
+		Feature::activate_flipendo_button(pos);
+		break;
+	}
 }
 
 void alohomora(EffectParams params)
@@ -134,9 +140,6 @@ void alohomora(EffectParams params)
 		break;
 	case Terrain::Portrait:
 		Feature::open_portrait(pos);
-		break;
-	case Terrain::FlipendoButton:
-		Feature::activate_flipendo_button(pos);
 		break;
 	default:
 		Draw::pos_message(pos, "It has no effect.");
