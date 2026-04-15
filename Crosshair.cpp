@@ -36,10 +36,10 @@ bool s_manual_automatic = false; // true if player manually cycled onto current 
 
 bool is_feature_target(Vec3 pos)
 {
-	Terrain::Type terrain = World::read().get_terrain(pos);
+	Terrain::Type const terrain = World::read().get_terrain(pos);
 	for (int i = 0; i < Spell::Count; ++i)
 	{
-		Spell::Index spell = (Spell::Index)i;
+		Spell::Index const spell = (Spell::Index)i;
 		if (Player::handle().knows_spell(spell) &&
 			Terrain::is_matching_target(terrain, Spell::get_target_flags(spell)))
 		{

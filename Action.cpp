@@ -367,11 +367,11 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	Draw::draw_screen();
 
 	Target::Type target_type = Ability::target_type(ability);
-	if (target_type == Target::Type::Melee)
+	if (target_type == Target::Melee)
 	{
 		Beam::shoot_ability(ability, user, target_pos, line_id);
 	}
-	else if (target_type == Target::Type::Self)
+	else if (target_type == Target::Self)
 	{
 		Spell::EffectParams params
 		{
