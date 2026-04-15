@@ -1231,6 +1231,13 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		int const parent_region = m_RegionVec[room.GetRegion()].parent;
 		if (parent_region == Room::c_SecretPassage)
 		{
+			// don't spawn anything in the passage itself
+			//  -> ends must be floor, so doors can spawn
+			//  -> it's OK if things spawn in the door spots after the passage is open
+			m_Map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
+			m_Map.set_terrain(door0, Terrain::Open);
+			m_Map.set_terrain(door1, Terrain::Open);
+
 			AddSecretPassageSuggestions(room, neighbour0, door0, neighbour1, door1);
 			return;
 		}

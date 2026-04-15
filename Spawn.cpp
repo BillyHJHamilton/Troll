@@ -49,6 +49,7 @@ enum class Problem : int
 {
 	None,	// No problem, i.e., it's good.
 	NotOpen,
+	NoSpawn,
 	HasItem,
 	Visible,
 	NearPlayer,
@@ -63,7 +64,7 @@ enum class Problem : int
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
 
-// checks for open map, no item or creature, out of player's sight, far from player.
+// checks for open map, no item or creature, out of player's sight, far from player, no spawn.
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
 Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
 	Vec2 const & pos2);
@@ -210,8 +211,9 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Found {} valid spawn positions.\n"
-			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
-			debug_counts[(int)Problem::None], debug_counts[(int)Problem::NotOpen],
+			" + {} not open, {} no spawn, {} item, {} visible, {} near player, {} creature.\n",
+			debug_counts[(int)Problem::None],
+			debug_counts[(int)Problem::NotOpen], debug_counts[(int)Problem::NoSpawn],
 			debug_counts[(int)Problem::HasItem], debug_counts[(int)Problem::Visible],
 			debug_counts[(int)Problem::NearPlayer], debug_counts[(int)Problem::HasCreature]);
 	}
@@ -230,6 +232,11 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 	if (!Terrain::is_open(map.get_terrain(pos2)))
 	{
 		return Problem::NotOpen;
+	}
+
+	if (Terrain::is_no_spawn(map.get_terrain(pos2)))
+	{
+		return Problem::NoSpawn;
 	}
 
 	if (map.has_item(pos2))

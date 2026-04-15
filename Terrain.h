@@ -10,6 +10,7 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
+		OpenNoSpawn,
 		OpenHighlight,  // used for debugging
 		Wall,
 		UpStairs,
@@ -32,6 +33,7 @@ namespace Terrain
 	bool is_open(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
+	bool is_no_spawn(Terrain::Type t);
 	bool is_feature(Terrain::Type t);
 	bool is_matching_target(Terrain::Type t, uint target_flags);
 	Terrain::Type swap_stairs(Terrain::Type t);

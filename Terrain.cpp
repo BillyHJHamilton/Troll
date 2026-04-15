@@ -13,7 +13,8 @@ namespace Terrain
 	uint constexpr f_Open			= 1 << 1;	// Valid for spawning creatures and features
 	uint constexpr f_Solid			= 1 << 2;	// Blocks movement and beams
 	uint constexpr f_Stairs			= 1 << 3;
-	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
+	uint constexpr f_NoSpawn		= 1 << 4;	// Don't spawn creatures or objects here
+	uint constexpr f_Feature		= 1 << 5;	// Has extra data in Feature module
 
 	struct Data
 	{
@@ -27,15 +28,16 @@ namespace Terrain
 	{
 		// Remember: These names are used by look_describe and for spell messages.
 
-		//	 Name				Codepoint					Terrain flags							Target flags
-		Data{"Open",			'.',						f_PermitSight | f_Open,					f_None},
-		Data{"OpenHighlight",	':',						f_PermitSight | f_Open,					f_None},
-		Data{"wall",			Codepoint::SolidBlock,		f_Solid,								f_None},
-		Data{"up stairs",		Codepoint::CaretUp,			f_Stairs,								f_None},
-		Data{"down stairs",		Codepoint::CaretDown,		f_Stairs,								f_None},
-		Data{"chest",			Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
-		Data{"portrait",		Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
-		Data{"button",			Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
+		//	 Name					Codepoint					Terrain flags							Target flags
+		Data{"floor",				'.',						f_PermitSight | f_Open,					f_None},
+		Data{"floor (no spawn)",	'.',						f_PermitSight | f_Open | f_NoSpawn,		f_None},
+		Data{"floor (highlight)",	':',						f_PermitSight | f_Open,					f_None},
+		Data{"wall",				Codepoint::SolidBlock,		f_Solid,								f_None},
+		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
+		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
+		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
+		Data{"button",				Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
 	};
 
 	int get_character(Terrain::Type t)
@@ -86,6 +88,12 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_Stairs);
+	}
+
+	bool is_no_spawn(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_NoSpawn);
 	}
 
 	bool is_feature(Terrain::Type t)
