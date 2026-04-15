@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Player.h"
 #include "Spell.h"
+#include "Target.h"
 #include "VectorUtil.h"
 
 #include "BearLibTerminal.h"
@@ -109,7 +110,7 @@ void MenuSpells::draw_selected_spell ()
 	float const base_success = 100.0f - Spell::get_miscast_rate(s, Player::handle().skill_magic());
 	int const damage = Spell::get_damage(s, Player::handle());
 	int const range = Spell::get_range(s);
-	Spell::TargetType target_type = Spell::get_target_type(s);
+	Target::Type const target_type = Spell::get_target_type(s);
 
 	std::stringstream ss;
 	ss << Spell::get_name(s) << "\n\n";
@@ -117,7 +118,7 @@ void MenuSpells::draw_selected_spell ()
 		<< std::setw(3) << std::left << Spell::get_difficulty(s)
 		<< " (" << std::fixed << std::setprecision(0) << base_success << "% successful)\n";
 
-	if (target_type == Spell::TargetType::Creature)
+	if (target_type == Target::Beam || target_type == Target::Melee)
 	{
 		ss << std::setw(13) << std::left << "Accuracy:" << Spell::get_accuracy(s) << "\n";
 	}

@@ -3,6 +3,7 @@
 #include "Ability.h"
 #include "Beam.h"
 #include "Creature.h"
+#include "Crosshair.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
@@ -16,7 +17,7 @@
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Status.h"
-#include "Crosshair.h"
+#include "Target.h"
 #include "Terrain.h"
 #include "World.h"
 
@@ -142,9 +143,9 @@ bool player_try_cast_spell (Spell::Index spell)
 	}
 
 	std::optional<Vec3> target_pos = Crosshair::get_pos();
-	Spell::TargetType target_type = Spell::get_target_type(spell);
+	Target::Type target_type = Spell::get_target_type(spell);
 
-	if (target_type == Spell::TargetType::Self)
+	if (target_type == Target::Self)
 	{
 		try_cast_spell(spell, Creature::Player, Player::pos(), c_Invalid);
 		Player::set_acted(true);
@@ -183,7 +184,7 @@ bool player_try_cast_spell (Spell::Index spell)
 			return false;
 		}
 
-		if (target_type == Spell::TargetType::Sight)
+		if (target_type == Target::Sight)
 		{
 			// Don't actually use the line - it's a sight-targed spell.
 			// This will make the spell automatically affect the target square.
@@ -365,12 +366,12 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 	// Update the screen in case we'll do animation for the ability
 	Draw::draw_screen();
 
-	Ability::TargetType target_type = Ability::target_type(ability);
-	if (target_type == Ability::TargetType::Melee)
+	Target::Type target_type = Ability::target_type(ability);
+	if (target_type == Target::Melee)
 	{
 		Beam::shoot_ability(ability, user, target_pos, line_id);
 	}
-	else if (target_type == Ability::TargetType::Self)
+	else if (target_type == Target::Self)
 	{
 		Spell::EffectParams params
 		{
@@ -392,7 +393,7 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 			user.take_damage(dmg);
 		}
 	}
-	else if (target_type == Ability::TargetType::Projectile)
+	else if (target_type == Target::Beam)
 	{
 		Ability::ProjectileData proj = Ability::get_projectile(ability);
 		Draw::creature_message(user, std::format("{} {} a {}!",
@@ -489,7 +490,7 @@ void do_successful_cast (Creature::Handle caster, Spell::Index spell, Vec3 targe
 		+ Spell::get_name(spell) + "!");
 	Draw::IndentScope indent;
 
-	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
+	if (Spell::get_target_type(spell) == Target::Self)
 	{
 		Spell::EffectParams params
 		{

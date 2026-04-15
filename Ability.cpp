@@ -7,6 +7,7 @@
 #include "MapUtil.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Target.h"
 
 #include <array>
 
@@ -22,16 +23,16 @@ struct CooldownEntry
 std::vector<CooldownEntry> s_cooldowns;
 
 static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
-{	//								Damage Type		Dmg	Acc	Rng	Cooldn	TargetType				EffectFunc
-	/* StealBean */	Ability::Data{	Damage::None,	0,	80,	1,	0,0,	TargetType::Melee,		&steal_bean },
-	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	TargetType::Self,		&eat_bean },
-	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	TargetType::Melee,		&headbutt },
-	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	TargetType::Projectile,	&fire_gob_hit},
-	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	TargetType::Melee,		&doxy_bite },
-	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	TargetType::Melee,		&trip_kick },
-	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	TargetType::Melee,		&scratch },
-	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,7,	TargetType::Self,		&believe },
-	/* Karate */	Ability::Data{	Damage::Basic,	8,	70,	1,	1,2,	TargetType::Melee,		&karate },
+{	//								Damage Type		Dmg	Acc	Rng	Cooldn	TargetType		EffectFunc
+	/* StealBean */	Ability::Data{	Damage::None,	0,	80,	1,	0,0,	Target::Melee,	&steal_bean },
+	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	Target::Self,	&eat_bean },
+	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	Target::Melee,	&headbutt },
+	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	Target::Beam,	&fire_gob_hit},
+	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	Target::Melee,	&doxy_bite },
+	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	Target::Melee,	&trip_kick },
+	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	Target::Melee,	&scratch },
+	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,7,	Target::Self,	&believe },
+	/* Karate */	Ability::Data{	Damage::Basic,	8,	70,	1,	1,2,	Target::Melee,	&karate },
 };
 
 static std::unordered_map<Ability::Index,Ability::ProjectileData> s_projectiles;
@@ -75,7 +76,7 @@ Damage::Type damage_type(Ability::Index index)
 	return s_ability_list.at(index).damage_type;
 }
 
-TargetType target_type(Ability::Index index)
+Target::Type target_type(Ability::Index index)
 {
 	assert(is_valid(index));
 	return s_ability_list.at(index).target_type;
@@ -106,13 +107,14 @@ bool in_range (Ability::Index index, Vec3 origin, Vec3 target)
 
 	switch (target_type(index))
 	{
-		case TargetType::Self:
+		case Target::Self:
 			return true;
 
-		case TargetType::Melee:
+		case Target::Melee:
 			return chessboard_adjacent(origin.xy(), target.xy());
 
-		case TargetType::Projectile:
+		case Target::Beam:
+		case Target::Sight:
 			return range_2d(origin, target, get_range(index));
 
 		default:
@@ -129,7 +131,7 @@ Spell::EffectFunc get_effect_func (Ability::Index index)
 
 ProjectileData get_projectile(Ability::Index index)
 {
-	assert(is_valid(index) && target_type(index) == TargetType::Projectile);
+	assert(is_valid(index) && target_type(index) == Target::Beam);
 	return s_projectiles.at(index);
 }
 

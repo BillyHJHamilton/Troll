@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+
 #include "Creature.h"
 #include "Damage.h"
 #include "Geometry.h"
@@ -23,20 +24,6 @@ namespace Ability
 		Count,
 	};
 
-	// Clearly there's conceptual overlap between Spell and Ability code here.
-	// We may merge things later on, but for now keeping it separate.
-	enum class TargetType : byte
-	{
-		Self,		// Ability that affects the user
-		Melee,		// Ability that hits a creature in an adjacent tile
-		Projectile,	// Ability that shoots a projectile beam at the target
-
-		//Creature, // Beam that continues until it hits a creature
-		//Tile,     // Beam that stops at the target tile
-		//Sight,    // Affects a tile without firing a beam
-		//Self      // Ability that only affects the user
-	};
-
 	struct Data
 	{
 		Damage::Type damage_type = (Damage::Type)0;
@@ -48,7 +35,7 @@ namespace Ability
 		int cooldown_min = 0;
 		int cooldown_max = 0;
 
-		Ability::TargetType target_type = TargetType::Self;
+		Target::Type target_type = (Target::Type)0;
 
 		// I guess for now I'll just use the spell effect code, though.
 		Spell::EffectFunc effect_func = nullptr;
@@ -75,7 +62,7 @@ namespace Ability
 	bool is_damaging(Ability::Index index);
 	Damage::Type damage_type(Ability::Index index);
 
-	TargetType target_type(Ability::Index index);
+	Target::Type target_type(Ability::Index index);
 	bool has_accuracy (Ability::Index index);
 	int get_accuracy (Ability::Index index);
 	int get_range (Ability::Index index);

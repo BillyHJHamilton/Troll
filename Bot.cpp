@@ -18,6 +18,7 @@
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
+#include "Target.h"
 #include "Taunt.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -380,7 +381,7 @@ void update_attack_ranges(Creature::Handle creature, Brain& brain)
 
 		for (Spell::Index spell : creature.spells_known())
 		{
-			if (Spell::get_target_type(spell) != Spell::TargetType::Self)
+			if (Spell::get_target_type(spell) != Target::Self)
 			{
 				int const range = Spell::get_range(spell);
 				brain.all_attack_range = std::min(range, brain.all_attack_range);
@@ -396,8 +397,8 @@ void update_attack_ranges(Creature::Handle creature, Brain& brain)
 
 		for (Ability::Index ability : creature.ability_list())
 		{
-			Ability::TargetType const target_type = Ability::target_type(ability);
-			if (target_type != Ability::TargetType::Self)
+			Target::Type const target_type = Ability::target_type(ability);
+			if (target_type != Target::Type::Self)
 			{
 				int const range = Ability::get_range(ability);
 				brain.all_attack_range = std::min(range, brain.all_attack_range);
@@ -1071,7 +1072,7 @@ void use_spell (Creature::Handle creature, Brain& brain, Thoughts& thoughts, Spe
 {
 	PerfTimer perf0("use_spell");
 
-	if (Spell::get_target_type(spell) == Spell::TargetType::Self)
+	if (Spell::get_target_type(spell) == Target::Self)
 	{
 		Action::try_cast_spell(spell, creature, creature.pos(), c_Invalid);
 	}
@@ -1239,8 +1240,8 @@ void use_ability(Creature::Handle creature, Brain& brain, Thoughts& thoughts, Ab
 {
 	PerfTimer perf0("use_ability");
 
-	Ability::TargetType const target_type = Ability::target_type(ability);
-	if (target_type == Ability::TargetType::Self)
+	Target::Type const target_type = Ability::target_type(ability);
+	if (target_type == Target::Type::Self)
 	{
 		Action::try_use_ability(ability, creature, creature.pos(), c_Invalid);
 	}

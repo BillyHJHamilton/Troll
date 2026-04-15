@@ -33,7 +33,8 @@ void vermillious (EffectParams params)
 		Grammar::You_are(target)));
 }
 
-void flipendo (EffectParams params)
+// helper function
+void flipendo_vs_creature (EffectParams const & params)
 {
 	Creature::Handle const caster = params.caster;
 	Creature::Handle target = params.target;
@@ -111,6 +112,16 @@ void flipendo (EffectParams params)
 		Draw::draw_screen();
 		Draw::anim_delay();
 	}
+}
+
+void flipendo (EffectParams params)
+{
+	if (params.target.valid())
+	{
+		flipendo_vs_creature(params);
+	}
+
+	// TODO: flipendo_vs_feature!
 }
 
 void alohomora(EffectParams params)
