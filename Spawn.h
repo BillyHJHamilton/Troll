@@ -6,6 +6,14 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
+	enum class Door : int
+	{
+		None,	// door starts open
+		Portrait,
+		FlipendoSwitch,	// hit the switch to open the door
+		Count,
+	};
+
 	struct Parameters
 	{
 		// One of this creature must be spawned.
@@ -35,8 +43,8 @@ namespace Spawn
 		int max_chests = 3;
 
 		// Amount of secret areas (1 door each) to seal off
-		int min_secret_areas = 1;
-		int max_secret_areas = 5;
+		std::vector<Door> door_types  = { Door::Portrait };
+		std::vector<int> door_weights = { 1 };
 	};
 
 	// Creature spawning constants:

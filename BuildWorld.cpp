@@ -85,6 +85,7 @@ void BuildWorld()
 
 	//world.edit_map(dungeon_id).get_generator().Generate();
 
+	// set spawn parameters
 	world.edit_map(7).set_spawn_param({
 		.boss = Creature::MarySue,
 		.min_creatures = 9,
@@ -95,4 +96,21 @@ void BuildWorld()
 		.min_chests = 5,
 		.max_chests = 7,
 	});
+
+	for (int z = 0; z <= c_MaxZ; ++z)
+	{
+		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
+		param.door_types =
+		{
+			Spawn::Door::None,
+			Spawn::Door::Portrait,
+			Spawn::Door::FlipendoSwitch,
+		};
+		param.door_weights =
+		{
+			c_MaxZ * 2 - z,
+			c_MaxZ,
+			z,
+		};
+	}
 }
