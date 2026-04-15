@@ -87,6 +87,10 @@ int spawn_chests(Map& map, int chests_to_spawn);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 
+// Constructs a vector with the door weights.
+// Some door types can be excluded from the vector.
+IntTempList reviseDoorWeights(Parameters const & param,
+                              bool allow_none, bool allow_button);
 bool requires_button(Spawn::Door type);
 
 // Decides on a creature or squad to spawn.
@@ -537,31 +541,8 @@ int spawn_secret_areas(Map& map)
 	// no min range from player
 
 	Spawn::Parameters const& param = map.read_spawn_param();
-
-	// pre-calculate shorter list of door types for when we can't place a button
-	assert(Util::Size(param.door_types) > 0);
-	std::vector<Door> buttonless_types;
-	std::vector<int> buttonless_weights;
-	buttonless_types.reserve(Util::Size(param.door_types));
-	buttonless_weights.reserve(Util::Size(param.door_types));
-	for (int i = 0; i < Util::Size(param.door_types); ++i)
-	{
-		if (param.door_weights[i] <= 0)
-		{
-			continue;
-		}
-		if (!requires_button(param.door_types[i]))
-		{
-			buttonless_types  .push_back(param.door_types  [i]);
-			buttonless_weights.push_back(param.door_weights[i]);
-		}
-	}
-	// if no buttonless door types, use open hallways
-	if (Util::Size(buttonless_types) == 0)
-	{
-		buttonless_types  .push_back(Door::None);
-		buttonless_weights.push_back(1);
-	}
+	IntTempList buttoned_weights   = reviseDoorWeights(param, true, true);  // do we allow:
+	IntTempList buttonless_weights = reviseDoorWeights(param, true, false); // None, buttons
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -591,15 +572,11 @@ int spawn_secret_areas(Map& map)
 		Door type = Door::None;
 		if (is_button_good)
 		{
-			// all types are valid, use full list
-			int const r = Random::weighted_index(param.door_weights);
-			type = param.door_types.at(r);
+			type = (Door)(Random::weighted_index(buttoned_weights));
 		}
 		else
 		{
-			// can't place button, use shorter list
-			int const r = Random::weighted_index(buttonless_weights);
-			type = buttonless_types.at(r);
+			type = (Door)(Random::weighted_index(buttonless_weights));
 		}
 
 		// finally add the door
@@ -630,53 +607,15 @@ int spawn_secret_areas(Map& map)
 }
 
 // Similar to spawn_secret_areas, but there are 2 of everything
-// It always closes off as many secret passages as possible (no maximum)
 int spawn_secret_passages(Map& map)
 {
 	// no min range from player
 
 	Spawn::Parameters const& param = map.read_spawn_param();
 
-	// pre-calculate shorter list of door types without None
-	//  -> for when we can and cannot place a button
-	std::vector<Door> buttoned_types;
-	std::vector<int> buttoned_weights;
-	std::vector<Door> buttonless_types;
-	std::vector<int> buttonless_weights;
-	buttoned_types.reserve(Util::Size(param.door_types));
-	buttoned_weights.reserve(Util::Size(param.door_types));
-	buttonless_types.reserve(Util::Size(param.door_types));
-	buttonless_weights.reserve(Util::Size(param.door_types));
-	for (int i = 0; i < Util::Size(param.door_types); ++i)
-	{
-		if (param.door_types[i] == Door::None)
-		{
-			continue;  // secret passages must be secret
-		}
-		if (param.door_weights[i] <= 0)
-		{
-			continue;
-		}
-
-		buttoned_types  .push_back(param.door_types  [i]);
-		buttoned_weights.push_back(param.door_weights[i]);
-		if (!requires_button(param.door_types[i]))
-		{
-			buttonless_types  .push_back(param.door_types  [i]);
-			buttonless_weights.push_back(param.door_weights[i]);
-		}
-	}
-	// if no valid door types, use portraits
-	if (Util::Size(buttoned_types) == 0)
-	{
-		buttoned_types  .push_back(Door::Portrait);
-		buttoned_weights.push_back(1);
-	}
-	if (Util::Size(buttonless_types) == 0)
-	{
-		buttonless_types  .push_back(Door::Portrait);
-		buttonless_weights.push_back(1);
-	}
+	// we don;t allow None doors: secret passages are secret
+	IntTempList buttoned_weights   = reviseDoorWeights(param, false, true);  // do we allow:
+	IntTempList buttonless_weights = reviseDoorWeights(param, false, false); // None, buttons
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -706,15 +645,11 @@ int spawn_secret_passages(Map& map)
 		Door type = Door::None;
 		if (are_buttons_good)
 		{
-			// buttons work, use longer list
-			int const r = Random::weighted_index(buttoned_weights);
-			type = buttoned_types.at(r);
+			type = (Door)(Random::weighted_index(buttoned_weights));
 		}
 		else
 		{
-			// can't place buttons, use shorter list
-			int const r = Random::weighted_index(buttonless_weights);
-			type = buttonless_types.at(r);
+			type = (Door)(Random::weighted_index(buttonless_weights));
 		}
 
 		// finally add the door
@@ -746,6 +681,38 @@ int spawn_secret_passages(Map& map)
 	}
 
 	return spawned;
+}
+
+IntTempList reviseDoorWeights(Parameters const & param,
+                              bool allow_none, bool allow_button)
+{
+	IntTempList revised_weights((int)(Door::Count), 0);  // count, value
+	int sum = 0;
+
+	for (int i = 0; i < Util::Size(revised_weights); ++i)
+	{
+		int weight = param.door_weights[i];
+
+		if (!allow_none && i == (int)(Door::None))
+		{
+			continue;
+		}
+		if (!allow_button && requires_button((Spawn::Door)(i)))
+		{
+			continue;
+		}
+
+		revised_weights[i] = weight;
+		sum += weight;
+	}
+
+	if (sum == 0)
+	{
+		// default to Portraits (always valid)
+		revised_weights[(int)(Door::Portrait)] = 1;
+	}
+
+	return revised_weights;
 }
 
 bool requires_button(Spawn::Door type)

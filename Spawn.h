@@ -8,7 +8,7 @@ namespace Spawn
 {
 	enum class Door : int
 	{
-		None,	// door starts open
+		None,
 		Portrait,
 		FlipendoButton,	// hit the button to open the door
 		Count,
@@ -43,8 +43,7 @@ namespace Spawn
 		int max_chests = 3;
 
 		// Amount of secret areas (1 door each) to seal off
-		std::vector<Door> door_types  = { Door::Portrait };
-		std::vector<int> door_weights = { 1 };
+		int door_weights[(int)(Door::Count)] = { 1 };  // None: 1, all others: 0
 	};
 
 	// Creature spawning constants:

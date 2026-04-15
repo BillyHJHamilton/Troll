@@ -100,17 +100,8 @@ void BuildWorld()
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
 		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
-		param.door_types =
-		{
-			Spawn::Door::None,
-			Spawn::Door::Portrait,
-			Spawn::Door::FlipendoButton,
-		};
-		param.door_weights =
-		{
-			c_MaxZ * 2 - z,
-			c_MaxZ,
-			z,
-		};
+		param.door_weights[(int)(Spawn::Door::None          )] = c_MaxZ * 2 - z;
+		param.door_weights[(int)(Spawn::Door::Portrait      )] = c_MaxZ;
+		param.door_weights[(int)(Spawn::Door::FlipendoButton)] = z;
 	}
 }

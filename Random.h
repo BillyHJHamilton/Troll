@@ -17,6 +17,7 @@ namespace Random
 	int index (int size);
 	int weighted_index(const std::vector<int> &weights);
 	int weighted_index(const std::vector<float> &weights);
+	int weighted_index(const IntTempList &weights);
 	int weighted_index(const FloatTempList &weights);
 	bool coinflip ();
 	bool one_in (int x);
