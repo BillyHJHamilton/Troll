@@ -87,7 +87,7 @@ int spawn_chests(Map& map, int chests_to_spawn);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 
-bool requires_switch(Spawn::Door type);
+bool requires_button(Spawn::Door type);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -538,29 +538,29 @@ int spawn_secret_areas(Map& map)
 
 	Spawn::Parameters const& param = map.read_spawn_param();
 
-	// pre-calculate shorter list of door types for when we can't place a switch
+	// pre-calculate shorter list of door types for when we can't place a button
 	assert(Util::Size(param.door_types) > 0);
-	std::vector<Door> switchless_types;
-	std::vector<int> switchless_weights;
-	switchless_types.reserve(Util::Size(param.door_types));
-	switchless_weights.reserve(Util::Size(param.door_types));
+	std::vector<Door> buttonless_types;
+	std::vector<int> buttonless_weights;
+	buttonless_types.reserve(Util::Size(param.door_types));
+	buttonless_weights.reserve(Util::Size(param.door_types));
 	for (int i = 0; i < Util::Size(param.door_types); ++i)
 	{
 		if (param.door_weights[i] <= 0)
 		{
 			continue;
 		}
-		if (!requires_switch(param.door_types[i]))
+		if (!requires_button(param.door_types[i]))
 		{
-			switchless_types  .push_back(param.door_types  [i]);
-			switchless_weights.push_back(param.door_weights[i]);
+			buttonless_types  .push_back(param.door_types  [i]);
+			buttonless_weights.push_back(param.door_weights[i]);
 		}
 	}
-	// if no switchless door types, use open hallways
-	if (Util::Size(switchless_types) == 0)
+	// if no buttonless door types, use open hallways
+	if (Util::Size(buttonless_types) == 0)
 	{
-		switchless_types  .push_back(Door::None);
-		switchless_weights.push_back(1);
+		buttonless_types  .push_back(Door::None);
+		buttonless_weights.push_back(1);
 	}
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
@@ -597,9 +597,9 @@ int spawn_secret_areas(Map& map)
 		}
 		else
 		{
-			// can't place switch, use shorter list
-			int const r = Random::weighted_index(switchless_weights);
-			type = switchless_types.at(r);
+			// can't place button, use shorter list
+			int const r = Random::weighted_index(buttonless_weights);
+			type = buttonless_types.at(r);
 		}
 
 		// finally add the door
@@ -611,9 +611,9 @@ int spawn_secret_areas(Map& map)
 			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
 			++spawned;
 			break;
-		case Door::FlipendoSwitch:
+		case Door::FlipendoButton:
 			assert(is_button_good);
-			Feature::spawn_flipendo_switch(suggestion.button.xyz(map_z),
+			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
 			                               suggestion.door  .xyz(map_z));
 			++spawned;
 			break;
@@ -638,15 +638,15 @@ int spawn_secret_passages(Map& map)
 	Spawn::Parameters const& param = map.read_spawn_param();
 
 	// pre-calculate shorter list of door types without None
-	//  -> for when we can and cannot place a switch
-	std::vector<Door> switch_types;
-	std::vector<int> switch_weights;
-	std::vector<Door> switchless_types;
-	std::vector<int> switchless_weights;
-	switch_types.reserve(Util::Size(param.door_types));
-	switch_weights.reserve(Util::Size(param.door_types));
-	switchless_types.reserve(Util::Size(param.door_types));
-	switchless_weights.reserve(Util::Size(param.door_types));
+	//  -> for when we can and cannot place a button
+	std::vector<Door> buttoned_types;
+	std::vector<int> buttoned_weights;
+	std::vector<Door> buttonless_types;
+	std::vector<int> buttonless_weights;
+	buttoned_types.reserve(Util::Size(param.door_types));
+	buttoned_weights.reserve(Util::Size(param.door_types));
+	buttonless_types.reserve(Util::Size(param.door_types));
+	buttonless_weights.reserve(Util::Size(param.door_types));
 	for (int i = 0; i < Util::Size(param.door_types); ++i)
 	{
 		if (param.door_types[i] == Door::None)
@@ -658,24 +658,24 @@ int spawn_secret_passages(Map& map)
 			continue;
 		}
 
-		switch_types  .push_back(param.door_types  [i]);
-		switch_weights.push_back(param.door_weights[i]);
-		if (!requires_switch(param.door_types[i]))
+		buttoned_types  .push_back(param.door_types  [i]);
+		buttoned_weights.push_back(param.door_weights[i]);
+		if (!requires_button(param.door_types[i]))
 		{
-			switchless_types  .push_back(param.door_types  [i]);
-			switchless_weights.push_back(param.door_weights[i]);
+			buttonless_types  .push_back(param.door_types  [i]);
+			buttonless_weights.push_back(param.door_weights[i]);
 		}
 	}
-	// if no door types, use portraits
-	if (Util::Size(switch_types) == 0)
+	// if no valid door types, use portraits
+	if (Util::Size(buttoned_types) == 0)
 	{
-		switch_types  .push_back(Door::Portrait);
-		switch_weights.push_back(1);
+		buttoned_types  .push_back(Door::Portrait);
+		buttoned_weights.push_back(1);
 	}
-	if (Util::Size(switchless_types) == 0)
+	if (Util::Size(buttonless_types) == 0)
 	{
-		switchless_types  .push_back(Door::Portrait);
-		switchless_weights.push_back(1);
+		buttonless_types  .push_back(Door::Portrait);
+		buttonless_weights.push_back(1);
 	}
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
@@ -706,15 +706,15 @@ int spawn_secret_passages(Map& map)
 		Door type = Door::None;
 		if (are_buttons_good)
 		{
-			// can't place switch, use longer list
-			int const r = Random::weighted_index(switch_weights);
-			type = switch_types.at(r);
+			// buttons work, use longer list
+			int const r = Random::weighted_index(buttoned_weights);
+			type = buttoned_types.at(r);
 		}
 		else
 		{
-			// can't place switch, use shorter list
-			int const r = Random::weighted_index(switchless_weights);
-			type = switchless_types.at(r);
+			// can't place buttons, use shorter list
+			int const r = Random::weighted_index(buttonless_weights);
+			type = buttonless_types.at(r);
 		}
 
 		// finally add the door
@@ -728,9 +728,9 @@ int spawn_secret_passages(Map& map)
 			Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
 			++spawned;
 			break;
-		case Door::FlipendoSwitch:
+		case Door::FlipendoButton:
 			assert(are_buttons_good);
-			Feature::spawn_flipendo_switch_pair(suggestion.button1.xyz(map_z),
+			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
 			                                    suggestion.door1  .xyz(map_z),
 			                                    suggestion.button2.xyz(map_z),
 			                                    suggestion.door2  .xyz(map_z));
@@ -748,11 +748,11 @@ int spawn_secret_passages(Map& map)
 	return spawned;
 }
 
-bool requires_switch(Spawn::Door type)
+bool requires_button(Spawn::Door type)
 {
 	switch (type)
 	{
-	case Spawn::Door::FlipendoSwitch:
+	case Spawn::Door::FlipendoButton:
 		return true;
 	default:
 		return false;

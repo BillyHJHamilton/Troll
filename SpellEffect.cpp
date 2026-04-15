@@ -124,8 +124,8 @@ void alohomora(EffectParams params)
 	case Terrain::Portrait:
 		Feature::open_portrait(pos);
 		break;
-	case Terrain::FlipendoSwitch:
-		Feature::activate_flipendo_switch(pos);
+	case Terrain::FlipendoButton:
+		Feature::activate_flipendo_button(pos);
 		break;
 	default:
 		Draw::pos_message(pos, "It has no effect.");

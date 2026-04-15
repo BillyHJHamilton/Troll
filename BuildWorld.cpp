@@ -104,7 +104,7 @@ void BuildWorld()
 		{
 			Spawn::Door::None,
 			Spawn::Door::Portrait,
-			Spawn::Door::FlipendoSwitch,
+			Spawn::Door::FlipendoButton,
 		};
 		param.door_weights =
 		{

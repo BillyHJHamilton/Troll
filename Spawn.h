@@ -10,7 +10,7 @@ namespace Spawn
 	{
 		None,	// door starts open
 		Portrait,
-		FlipendoSwitch,	// hit the switch to open the door
+		FlipendoButton,	// hit the button to open the door
 		Count,
 	};
 

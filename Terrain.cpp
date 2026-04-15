@@ -32,7 +32,7 @@ namespace Terrain
 		Data{"down stairs",		Codepoint::CaretDown,		f_Stairs},
 		Data{"chest",			Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature | f_SpellTarget},
 		Data{"portrait",		Codepoint::Portrait,		f_Solid |  f_Feature | f_SpellTarget},
-		Data{"switch",			Codepoint::FlipendoSwitch,	f_Solid |  f_Feature | f_SpellTarget},
+		Data{"button",			Codepoint::FlipendoButton,	f_Solid |  f_Feature | f_SpellTarget},
 	};
 
 	int get_character(Terrain::Type t)
@@ -55,7 +55,7 @@ namespace Terrain
 			case Terrain::DownStairs: return "- stairs leading down";
 			case Terrain::Chest: return "- a locked chest";
 			case Terrain::Portrait: return "- a portrait";
-			case Terrain::FlipendoSwitch: return "- a switch on the wall";
+			case Terrain::FlipendoButton: return "- a button on the wall";
 			default:
 				return std::string("- the ") + get_name(t);
 		}
