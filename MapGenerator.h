@@ -58,7 +58,7 @@ protected:
 	void PlaceRooms();
 	void AddJoiningCorridors();
 	void RemoveDisconnectedRooms();
-	void AddExtraCorridors();
+	void AddExtraCorridors(int chance, bool isSecretPassages);
 	void AssignRoomsToRegions();
 	void AddAllToMap();
 
@@ -82,6 +82,11 @@ protected:
 	void AddStairsToMap(Room const & room) const;
 	void AddChamberToMap(Room const & room) const;
 	void AddCorridorToMap(Room const & room) const;
+	void AddSecretPassageSuggestions(Room const & room,
+	                                 Room const & neighbour0, Vec2 const & door0,
+	                                 Room const & neighbour1, Vec2 const & door1) const;
+	void AddSecretAreaSuggestions(Room const & room,
+	                              Room const & neighbour, Vec2 const & door) const;
 	Vec2 GetPosAtRoomBack(Room const & room) const;
 	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
 	PosTempList GetPlainWallPositions(Room const & room) const;
@@ -106,7 +111,7 @@ protected:
 
 	struct Region
 	{
-		int parent = Room::c_MainRegion;
+		int parent = Room::c_NoRegion;
 		std::vector<int> rooms; // indices
 
 		void serialize(ISerializer& s);

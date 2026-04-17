@@ -55,15 +55,17 @@ int weighted_index(const std::vector<int> &weights)
 	int sum = 0;
 	for (int w : weights)
 	{
+		assert(w >= 0);
 		sum += w;
 	}
+	assert(sum > 0);
 
 	const int roll = Random::in_range(0, sum-1);
 	int x = roll;
 
 	for (int i = 0; i < (int)weights.size(); i++)
 	{
-		assert(weights[i] > 0);
+		assert(weights[i] >= 0);
 		x -= weights[i];
 		if (x < 0)
 			return i;
@@ -101,6 +103,38 @@ int weighted_index(const std::vector<float> &weights)
 	std::cerr << "RandomNumbers - weighted_index (int) failed to resolve." << std::endl;
 	std::cerr << "Contents of weight vector: ";
 	for (float w : weights)
+	{
+		std::cerr << w;
+	}
+	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
+	return 0;
+}
+
+// Copy-pasted from the above
+int weighted_index(const IntTempList &weights)
+{
+	assert(weights.size() > 0);
+	int sum = 0;
+	for (int w : weights)
+	{
+		assert(w >= 0);
+		sum += w;
+	}
+	assert(sum > 0);
+
+	const int roll = Random::in_range(0, sum-1);
+	int x = roll;
+
+	for (int i = 0; i < (int)weights.size(); i++)
+	{
+		assert(weights[i] >= 0);
+		x -= weights[i];
+		if (x < 0)
+			return i;
+	}
+	std::cerr << "RandomNumbers - weighted_index (int) failed to resolve." << std::endl;
+	std::cerr << "Contents of weight vector: ";
+	for (int w : weights)
 	{
 		std::cerr << w;
 	}

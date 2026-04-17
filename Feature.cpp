@@ -19,6 +19,8 @@ namespace Feature
 // Feature Types:
 //  - Chest - payload is Item::Handle
 //  - Portrait - no payload
+//  - FlipendoButton - payload is which trigger id it activates
+//  - SlidingWall - payload is which trigger id it responds to
 
 struct Instance
 {
@@ -29,12 +31,19 @@ struct Instance
 };
 std::vector<Feature::Instance> s_features;
 
+int s_next_trigger_id = 0;
+
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
 int find_feature(Vec3 pos);
 
 void init_chest(Feature::Instance& feature);
+
+void trigger_all(int trigger);
+void trigger_flipendo_button(Feature::Instance & feature);
+void trigger_sliding_wall(Feature::Instance & feature);
+void trigger_portcullis(Feature::Instance & feature);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -47,11 +56,13 @@ void init()
 void clear()
 {
 	s_features.clear();
+	s_next_trigger_id = 0;
 }
 
 void serialize(ISerializer& s)
 {
 	s.srz_vector(s_features, "Feature::s_chests");
+	s.srz_int(s_next_trigger_id);
 }
 
 void spawn(Vec3 pos, Terrain::Type type)
@@ -67,10 +78,76 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Chest:
 				init_chest(s_features.back());
 				break;
-			// no initialization needed:
+			// special initialization
+			case Terrain::FlipendoButton:
+			case Terrain::SlidingWall:
+				DebugBreak("Spawn with special spawn functions");
+				break;
+			// no initialization needed
 			// case Terrain::Portrait:
 		}
 	}
+}
+
+void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
+                           Terrain::Type door_type)
+{
+	// it doesn't matter which order we add these
+	//  -> they get rearranged in the array anyway
+
+	// add the button
+	World::edit().set_terrain(button_pos, Terrain::FlipendoButton);
+	s_features.push_back({
+		.pos = button_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// add the closed door
+	World::edit().set_terrain(door_pos, door_type);
+	s_features.push_back({
+		.pos = door_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// finished setting up this trigger
+	++s_next_trigger_id;
+}
+
+void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
+                                Vec3 button2_pos, Vec3 door2_pos,
+                                Terrain::Type door_type)
+{
+	// it doesn't matter which order we add these
+	//  -> they get rearranged in the array anyway
+
+	// add the buttons
+	World::edit().set_terrain(button1_pos, Terrain::FlipendoButton);
+	s_features.push_back({
+		.pos = button1_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	World::edit().set_terrain(button2_pos, Terrain::FlipendoButton);
+	s_features.push_back({
+		.pos = button2_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// add the closed doors
+	World::edit().set_terrain(door1_pos, door_type);
+	s_features.push_back({
+		.pos = door1_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	World::edit().set_terrain(door2_pos, door_type);
+	s_features.push_back({
+		.pos = door2_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// finished setting up this trigger
+	++s_next_trigger_id;
 }
 
 void move(Vec3 old_pos, Vec3 new_pos)
@@ -86,13 +163,15 @@ void move(Vec3 old_pos, Vec3 new_pos)
 	}
 }
 
-void remove(Vec3 pos)
+void remove(Vec3 pos, Terrain::Type new_terrain_type)
 {
+	assert(!Terrain::is_feature(new_terrain_type));
+
 	int const index = find_feature(pos);
 	if (index != c_Invalid)
 	{
 		Util::RemoveSwap(s_features, index);
-		World::edit().set_terrain(pos, Terrain::Open);
+		World::edit().set_terrain(pos, new_terrain_type);
 	}
 }
 
@@ -164,6 +243,67 @@ void open_portrait(Vec3 pos)
 		Draw::pos_message(pos, "The portrait swings open!");
 		Feature::remove(pos);
 	}
+}
+
+void activate_flipendo_button(Vec3 pos)
+{
+	int const feature_index = find_feature(pos);
+	if (Check(feature_index != c_Invalid))
+	{
+		// only print a message for the one button we cast on
+		//  -> others on the same trigger flip silently
+		Draw::pos_message(pos, "The button flips.");
+
+		// this Feature is removed when it triggers itself
+		trigger_all(s_features[feature_index].payload);
+	}
+}
+
+void trigger_all(int trigger)
+{
+	// search backwards so indexes stay consistant
+	for (int i = Util::Size(s_features) - 1; i >= 0; --i)
+	{
+		if (s_features[i].payload != trigger)
+		{
+			continue;
+		}
+
+		// should each Feature know its type?
+		//  -> pro: faster, avoids awkward lookup
+		//  -> con: redundant data, could get out of sync
+
+		Terrain::Type feature_type = World::read().get_terrain(s_features[i].pos);
+		switch (feature_type)
+		{
+		case Terrain::FlipendoButton:
+			trigger_flipendo_button(s_features[i]);
+			break;
+		case Terrain::SlidingWall:
+			trigger_sliding_wall(s_features[i]);
+			break;
+		case Terrain::Portcullis:
+			trigger_portcullis(s_features[i]);
+			break;
+		}
+	}
+}
+
+void trigger_flipendo_button(Feature::Instance & feature)
+{
+	Feature::remove(feature.pos, Terrain::Wall);
+}
+
+void trigger_sliding_wall(Feature::Instance & feature)
+{
+	Draw::pos_message(feature.pos, "A wall slides open!");
+	Feature::remove(feature.pos);
+}
+
+void trigger_portcullis(Feature::Instance & feature)
+{
+	Draw::pos_message(feature.pos, "A portcullis opens!");
+	Feature::remove(feature.pos);
 }
 
 } // namespace Feature

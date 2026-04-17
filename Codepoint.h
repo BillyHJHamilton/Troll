@@ -25,7 +25,7 @@ namespace Codepoint
 	// These ones are in decimal for simplicity.
 	int constexpr OpenCursor = 12337; // 0x3031
 	int constexpr Chest = 12338;
-	int constexpr FlipendoSwitch = 12339;
+	int constexpr FlipendoButton = 12339;
 	int constexpr Portrait = 12340;
 	int constexpr CaretDown = 12341;
 	int constexpr CaretUp = 12342;

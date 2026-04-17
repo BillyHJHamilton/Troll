@@ -19,12 +19,10 @@ bool is_valid_type(Suggestion::Type t)
 	return t >= First && t < Count;
 }
 
-Genus GetGenus(Type t)
+Genus get_genus(Type t)
 {
 	switch (t)
 	{
-	case SecretArea:
-	case SecretPassage:
 	case Pillar:
 	case Desk:
 		return Genus::Feature;
@@ -56,13 +54,16 @@ Type get_enemy_type(float map_difficulty,
 
 Manager::Manager()
 {
-	static int const c_DefaultCapacity = 10;
+	int constexpr c_DefaultCapacity = 10;
 
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
 	{
-		m_Suggestions[i].reserve(c_DefaultCapacity);
+		m_simple_vecs[i].reserve(c_DefaultCapacity);
 	}
+
+	m_secret_area_vec.reserve(c_DefaultCapacity);
+	m_secret_passage_vec.reserve(c_DefaultCapacity);
 }
 
 void Manager::serialize(ISerializer & s)
@@ -70,19 +71,27 @@ void Manager::serialize(ISerializer & s)
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
 	{
-		s.srz_vector(m_Suggestions[i], "m_Suggestions[i]");
-		//s.srz_vector(m_Suggestions[i], "m_Suggestions[" + std::to_string(i) + "]");
+		s.srz_vector(m_simple_vecs[i], "m_simple_vecs[i]");
+		//s.srz_vector(m_simple_vecs[i], "m_simple_vecs[" + std::to_string(i) + "]");
 	}
+
+	s.srz_vector(m_secret_area_vec, "m_secret_area_vec");
+	s.srz_vector(m_secret_passage_vec, "m_secret_passage_vec");
 }
 
 int Manager::get_total_count() const
 {
 	int count = 0;
+
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
 	{
-		count += Util::Size(m_Suggestions[i]);
+		count += Util::Size(m_simple_vecs[i]);
 	}
+
+	count += Util::Size(m_secret_area_vec);
+	count += Util::Size(m_secret_passage_vec);
+
 	return count;
 }
 
@@ -90,102 +99,91 @@ int Manager::get_count(Type type) const
 {
 	assert(is_valid_type(type));
 
-	return Util::Size(m_Suggestions[type]);
+	return Util::Size(m_simple_vecs[type]);
 }
 
-bool Manager :: has_any(Type type) const
+int Manager::get_count_secret_areas() const
 {
-	assert(is_valid_type(type));
-
-	return !m_Suggestions[type].empty();
+	return Util::Size(m_secret_area_vec);
 }
 
-std::vector<Instance> const & Manager::get(Type type) const
+int Manager::get_count_secret_passages() const
 {
-	assert(is_valid_type(type));
-
-	return m_Suggestions[type];
+	return Util::Size(m_secret_passage_vec);
 }
 
-
-void Manager :: add_secret_area(Vec2 door)
+SimpleList const & Manager::get(Type type) const
 {
-	Instance instance =
-	{ .position1 = door,
-	  .is_button = false,
-	};
-	m_Suggestions[SecretArea].push_back(instance);
-}
-
-void Manager :: add_secret_area(Vec2 door, Vec2 button)
-{
-	Instance instance =
-	{ .position1 = door,
-	  .button1 = button,
-	  .is_button = true,
-	};
-	m_Suggestions[SecretArea].push_back(instance);
-}
-
-void Manager :: add_secret_passage(Vec2 door1, Vec2 door2)
-{
-	Instance instance =
-	{ .position1 = door1,
-	  .position2 = door2,
-	  .is_button = false,
-	};
-	m_Suggestions[SecretArea].push_back(instance);
-}
-
-void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2)
-{
-	Instance instance =
-	{ .position1 = door1,
-	  .position2 = door2,
-	  .button1 = button1,
-	  .button2 = button2,
-	  .is_button = true,
-	};
-	m_Suggestions[SecretArea].push_back(instance);
+	return m_simple_vecs[type];
 }
 
 void Manager :: add_treasure_normal(Vec2 position)
 {
-	Instance instance =
-	{ .position1 = position,
-	};
-	m_Suggestions[TreasureNormal].push_back(instance);
+	m_simple_vecs[TreasureNormal].push_back(position);
 }
 
 void Manager :: add_player_start(Vec2 position)
 {
-	Instance instance =
-	{ .position1 = position,
-	};
-	m_Suggestions[PlayerStart].push_back(instance);
+	m_simple_vecs[PlayerStart].push_back(position);
 }
 
 void Manager :: add_enemy_weak(Vec2 position)
 {
-	Instance instance =
-	{ .position1 = position,
-	};
-	m_Suggestions[EnemyWeak].push_back(instance);
+	m_simple_vecs[EnemyWeak].push_back(position);
 }
 
 void Manager :: add_enemy_moderate(Vec2 position)
 {
-	Instance instance =
-	{ .position1 = position,
-	};
-	m_Suggestions[EnemyModerate].push_back(instance);
+	m_simple_vecs[EnemyModerate].push_back(position);
 }
+
 void Manager :: add_enemy_strong(Vec2 position)
 {
-	Instance instance =
-	{ .position1 = position,
+	m_simple_vecs[EnemyStrong].push_back(position);
+}
+
+void Manager :: add_boss(Vec2 position)
+{
+	m_simple_vecs[Boss].push_back(position);
+}
+
+void Manager :: add_secret_area(Vec2 door)
+{
+	SecretAreaInstance instance =
+	{ .door = door,
 	};
-	m_Suggestions[EnemyStrong].push_back(instance);
+	m_secret_area_vec.push_back(instance);
+}
+
+void Manager :: add_secret_area(Vec2 door, Vec2 button)
+{
+	SecretAreaInstance instance =
+	{ .door = door,
+	  .button = button,
+	  .has_button = true,
+	};
+	m_secret_area_vec.push_back(instance);
+}
+
+void Manager :: add_secret_passage(Vec2 door1, Vec2 door2)
+{
+	SecretPassageInstance instance =
+	{ .door1 = door1,
+	  .door2 = door2,
+	};
+	m_secret_passage_vec.push_back(instance);
+}
+
+void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2)
+{
+	SecretPassageInstance instance =
+	{ .door1 = door1,
+	  .door2 = door2,
+	  .button1 = button1,
+	  .button2 = button2,
+	  .has_buttons = true,
+	};
+	m_secret_passage_vec.push_back(instance);
 }
 
 void Manager :: remove(Type type, int index)
@@ -193,7 +191,21 @@ void Manager :: remove(Type type, int index)
 	assert(is_valid_type(type));
 	assert(index < get_count(type));
 
-	Util::RemoveSwap(m_Suggestions[type], index);
+	Util::RemoveSwap(m_simple_vecs[type], index);
+}
+
+void Manager :: remove_secret_area(int index)
+{
+	assert(index < get_count_secret_areas());
+
+	Util::RemoveSwap(m_secret_area_vec, index);
+}
+
+void Manager :: remove_secret_passage(int index)
+{
+	assert(index < get_count_secret_passages());
+
+	Util::RemoveSwap(m_secret_passage_vec, index);
 }
 
 } // namespace Suggestion

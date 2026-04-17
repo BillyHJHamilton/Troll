@@ -10,6 +10,7 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
+		OpenNoSpawn,
 		OpenHighlight,  // used for debugging
 		Wall,
 		UpStairs,
@@ -18,6 +19,9 @@ namespace Terrain
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
 		Portrait,
+		FlipendoButton,
+		SlidingWall,
+		Portcullis,
 
 		Count
 	};
@@ -28,7 +32,7 @@ namespace Terrain
 	char const* get_name(Terrain::Type t);
 	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);
-	bool is_open(Terrain::Type t);
+	bool is_can_spawn(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	bool is_feature(Terrain::Type t);

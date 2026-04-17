@@ -129,9 +129,9 @@ Vec3 World::get_player_start() const
 {
 	// method 1: map suggestion
 	Suggestion::Manager const & suggestions = read_map(0).read_suggestions();
-	if (suggestions.has_any(Suggestion::PlayerStart))
+	if (suggestions.get_count(Suggestion::PlayerStart) > 0)
 	{
-		Vec2 pos2 = suggestions.get(Suggestion::PlayerStart)[0].position1;
+		Vec2 pos2 = suggestions.get(Suggestion::PlayerStart)[0];
 		return pos2.xy0();
 	}
 
@@ -139,7 +139,7 @@ Vec3 World::get_player_start() const
 	for (BoxItr itr(read_map(0).get_box()); itr; ++itr)
 	{
 		Vec3 pos = itr->xy0();
-		if (Terrain::is_open(get_terrain(pos)))
+		if (Terrain::is_can_spawn(get_terrain(pos)))
 		{
 			return pos;
 		}
