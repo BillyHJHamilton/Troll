@@ -10,11 +10,10 @@ namespace Terrain
 {
 	// Terrain flags
 	uint constexpr f_PermitSight	= 1 << 0;
-	uint constexpr f_Open			= 1 << 1;	// Valid for spawning creatures and features
+	uint constexpr f_CanSpawn		= 1 << 1;	// Valid for spawning creatures and features
 	uint constexpr f_Solid			= 1 << 2;	// Blocks movement and beams
 	uint constexpr f_Stairs			= 1 << 3;
-	uint constexpr f_NoSpawn		= 1 << 4;	// Don't spawn creatures or objects here
-	uint constexpr f_Feature		= 1 << 5;	// Has extra data in Feature module
+	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
 
 	struct Data
 	{
@@ -29,9 +28,9 @@ namespace Terrain
 		// Remember: These names are used by look_describe and for spell messages.
 
 		//	 Name					Codepoint					Terrain flags							Target flags
-		Data{"floor",				'.',						f_PermitSight | f_Open,					f_None},
-		Data{"floor (no spawn)",	'.',						f_PermitSight | f_Open | f_NoSpawn,		f_None},
-		Data{"floor (highlight)",	':',						f_PermitSight | f_Open,					f_None},
+		Data{"floor",				'.',						f_PermitSight | f_CanSpawn,				f_None},
+		Data{"floor (no spawn)",	'.',						f_PermitSight,							f_None},
+		Data{"floor (highlight)",	':',						f_PermitSight | f_CanSpawn,				f_None},
 		Data{"wall",				Codepoint::SolidBlock,		f_Solid,								f_None},
 		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
@@ -72,10 +71,10 @@ namespace Terrain
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_PermitSight);
 	}
 
-	bool is_open(Terrain::Type t)
+	bool is_can_spawn(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].terrain_flags, f_Open);
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_CanSpawn);
 	}
 
 	bool is_solid(Terrain::Type t)
@@ -88,12 +87,6 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_Stairs);
-	}
-
-	bool is_no_spawn(Terrain::Type t)
-	{
-		assert(is_valid_type(t));
-		return Util::IsFlagSet(s_data[t].terrain_flags, f_NoSpawn);
 	}
 
 	bool is_feature(Terrain::Type t)

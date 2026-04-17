@@ -3,7 +3,6 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Item.h"
-#include "Map.h"
 #include "Pathfind.h"
 #include "Random.h"
 #include "Serialize.h"
@@ -85,16 +84,16 @@ void spawn(Vec3 pos, Terrain::Type type)
 
 void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos)
 {
+	// add button
 	World::edit().set_terrain(button_pos, Terrain::FlipendoButton);
-	s_features.push_back({ .pos = button_pos });
-
-	// init button
-	s_features.back().affected = door_pos;
-	s_features.back().also_activate = button_pos;  // links to itself: circle of 1
+	s_features.push_back({
+		.pos = button_pos,
+		.affected = door_pos,
+		.also_activate = button_pos,
+		});
 
 	// add the closed door
-	int map_index = World::read().find_map(door_pos);
-	World::edit().edit_map(map_index).set_terrain(door_pos.xy(), Terrain::Wall);
+	World::edit().set_terrain(door_pos, Terrain::Wall);
 }
 
 void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
@@ -105,21 +104,23 @@ void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
 
 	// first button
 	World::edit().set_terrain(button1_pos, Terrain::FlipendoButton);
-	s_features.push_back({ .pos = button1_pos });
-	s_features.back().affected = door1_pos;
-	s_features.back().also_activate = button2_pos;
+	s_features.push_back({
+		.pos = button1_pos,
+		.affected = door1_pos,
+		.also_activate = button2_pos,
+		});
 
 	// second button
 	World::edit().set_terrain(button2_pos, Terrain::FlipendoButton);
-	s_features.push_back({ .pos = button2_pos });
-	s_features.back().affected = door2_pos;
-	s_features.back().also_activate = button1_pos;
+	s_features.push_back({
+		.pos = button1_pos,
+		.affected = door1_pos,
+		.also_activate = button2_pos,
+		});
 
 	// add the closed doors
-	int map_index1 = World::read().find_map(door1_pos);
-	World::edit().edit_map(map_index1).set_terrain(door1_pos.xy(), Terrain::Wall);
-	int map_index2 = World::read().find_map(door2_pos);
-	World::edit().edit_map(map_index2).set_terrain(door2_pos.xy(), Terrain::Wall);
+	World::edit().set_terrain(door1_pos, Terrain::Wall);
+	World::edit().set_terrain(door2_pos, Terrain::Wall);
 }
 
 void move(Vec3 old_pos, Vec3 new_pos)
@@ -229,11 +230,10 @@ void activate_flipendo_button(Vec3 pos)
 		// remove the door if needed
 		//  -> if the passage has length 1, the other switch might have removed it already
 		bool is_door_visible = false;
-		int map_index = World::read().find_map(feature.affected);
-		if (World::read().read_map(map_index).get_terrain(feature.affected.xy()) == Terrain::Wall)
+		if (World::read().get_terrain(feature.affected) == Terrain::Wall)
 		{
 			is_door_visible = World::read().is_visible(feature.affected);
-			World::edit().edit_map(map_index).set_terrain(feature.affected.xy(), Terrain::Open);
+			World::edit().set_terrain(feature.affected, Terrain::Open);
 		}
 
 		if (is_button_visible && is_door_visible)

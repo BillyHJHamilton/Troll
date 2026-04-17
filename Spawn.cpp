@@ -49,7 +49,6 @@ enum class Problem : int
 {
 	None,	// No problem, i.e., it's good.
 	NotOpen,
-	NoSpawn,
 	HasItem,
 	Visible,
 	NearPlayer,
@@ -106,9 +105,12 @@ Vec2 find_boss_spawn_position(Map const& map);
 
 // Constructs a vector with the door weights.
 // Some door types can be excluded from the vector.
-IntTempList reviseDoorWeights(Parameters const & param,
-                              bool allow_none, bool allow_button);
-bool requires_button(Spawn::Door type);
+IntTempList revise_door_weights(Parameters const & param,
+                                bool allow_none, bool allow_button);
+bool requires_button(Spawn::DoorType type);
+DoorType choose_door_type(bool is_button_good,
+                          IntTempList const & buttoned_weights,
+                          IntTempList const & buttonless_weights);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -213,9 +215,8 @@ void find_spawn_positions(const Map& map, int min_range_from_player)
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Found {} valid spawn positions.\n"
-			" + {} not open, {} no spawn, {} item, {} visible, {} near player, {} creature.\n",
-			debug_counts[(int)Problem::None],
-			debug_counts[(int)Problem::NotOpen], debug_counts[(int)Problem::NoSpawn],
+			" + {} not open, {} with item, {} visible, {} near player, {} with creature.\n",
+			debug_counts[(int)Problem::None], debug_counts[(int)Problem::NotOpen],
 			debug_counts[(int)Problem::HasItem], debug_counts[(int)Problem::Visible],
 			debug_counts[(int)Problem::NearPlayer], debug_counts[(int)Problem::HasCreature]);
 	}
@@ -231,14 +232,9 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 {
 	Vec3 const pos3 = pos2.xyz(map.get_z());
 
-	if (!Terrain::is_open(map.get_terrain(pos2)))
+	if (!Terrain::is_can_spawn(map.get_terrain(pos2)))
 	{
 		return Problem::NotOpen;
-	}
-
-	if (Terrain::is_no_spawn(map.get_terrain(pos2)))
-	{
-		return Problem::NoSpawn;
 	}
 
 	if (map.has_item(pos2))
@@ -321,10 +317,10 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 
 		// We want it against a wall, with open space in front.
 		// And not blocking a hallway on either side.
-		bool const front_ok = Terrain::is_open(t_front);
+		bool const front_ok = Terrain::is_can_spawn(t_front);
 		bool const back_ok = t_back == Terrain::Wall;
-		bool const left_ok = (t_l1 == Terrain::Wall || Terrain::is_open(t_l2)) && t_l1 == t_l2;
-		bool const right_ok = (t_r1 == Terrain::Wall || Terrain::is_open(t_r2)) && t_r1 == t_r2;
+		bool const left_ok = (t_l1 == Terrain::Wall || Terrain::is_can_spawn(t_l2)) && t_l1 == t_l2;
+		bool const right_ok = (t_r1 == Terrain::Wall || Terrain::is_can_spawn(t_r2)) && t_r1 == t_r2;
 
 		if (front_ok && back_ok && left_ok && right_ok)
 		{
@@ -598,8 +594,8 @@ int spawn_secret_areas(Map& map)
 	// no min range from player
 
 	Spawn::Parameters const& param = map.read_spawn_param();
-	IntTempList buttoned_weights   = reviseDoorWeights(param, true, true);  // do we allow:
-	IntTempList buttonless_weights = reviseDoorWeights(param, true, false); // None, buttons
+	IntTempList buttoned_weights   = revise_door_weights(param, true, true);  // do we allow:
+	IntTempList buttonless_weights = revise_door_weights(param, true, false); // None, buttons
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -626,26 +622,18 @@ int spawn_secret_areas(Map& map)
 			}
 		}
 
-		Door type = Door::None;
-		if (is_button_good)
-		{
-			type = (Door)(Random::weighted_index(buttoned_weights));
-		}
-		else
-		{
-			type = (Door)(Random::weighted_index(buttonless_weights));
-		}
+		DoorType type = choose_door_type(is_button_good, buttoned_weights, buttonless_weights);
 
 		// finally add the door
 
 		int map_z = map.get_z();
 		switch(type)
 		{
-		case Door::Portrait:
+		case DoorType::Portrait:
 			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
 			++spawned;
 			break;
-		case Door::FlipendoButton:
+		case DoorType::FlipendoButton:
 			assert(is_button_good);
 			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
 			                               suggestion.door  .xyz(map_z));
@@ -671,8 +659,8 @@ int spawn_secret_passages(Map& map)
 	Spawn::Parameters const& param = map.read_spawn_param();
 
 	// we don;t allow None doors: secret passages are secret
-	IntTempList buttoned_weights   = reviseDoorWeights(param, false, true);  // do we allow:
-	IntTempList buttonless_weights = reviseDoorWeights(param, false, false); // None, buttons
+	IntTempList buttoned_weights   = revise_door_weights(param, false, true);  // do we allow:
+	IntTempList buttonless_weights = revise_door_weights(param, false, false); // None, buttons
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -699,22 +687,14 @@ int spawn_secret_passages(Map& map)
 			}
 		}
 
-		Door type = Door::None;
-		if (are_buttons_good)
-		{
-			type = (Door)(Random::weighted_index(buttoned_weights));
-		}
-		else
-		{
-			type = (Door)(Random::weighted_index(buttonless_weights));
-		}
+		DoorType type = choose_door_type(are_buttons_good, buttoned_weights, buttonless_weights);
 
 		// finally add the door
 
 		int map_z = map.get_z();
 		switch(type)
 		{
-		case Door::Portrait:
+		case DoorType::Portrait:
 			// just put a portrait at each end
 			Feature::spawn(suggestion.door1.xyz(map_z), Terrain::Portrait);
 			if (suggestion.door1 != suggestion.door2)
@@ -723,7 +703,7 @@ int spawn_secret_passages(Map& map)
 			}
 			++spawned;
 			break;
-		case Door::FlipendoButton:
+		case DoorType::FlipendoButton:
 			assert(are_buttons_good);
 			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
 			                                    suggestion.door1  .xyz(map_z),
@@ -743,21 +723,21 @@ int spawn_secret_passages(Map& map)
 	return spawned;
 }
 
-IntTempList reviseDoorWeights(Parameters const & param,
-                              bool allow_none, bool allow_button)
+IntTempList revise_door_weights(Parameters const & param,
+                                bool allow_none, bool allow_button)
 {
-	IntTempList revised_weights((int)(Door::Count), 0);  // count, value
+	IntTempList revised_weights((int)(DoorType::Count), 0);  // count, value
 	int sum = 0;
 
 	for (int i = 0; i < Util::Size(revised_weights); ++i)
 	{
 		int weight = param.door_weights[i];
 
-		if (!allow_none && i == (int)(Door::None))
+		if (!allow_none && i == (int)(DoorType::None))
 		{
 			continue;
 		}
-		if (!allow_button && requires_button((Spawn::Door)(i)))
+		if (!allow_button && requires_button((DoorType)(i)))
 		{
 			continue;
 		}
@@ -769,20 +749,34 @@ IntTempList reviseDoorWeights(Parameters const & param,
 	if (sum == 0)
 	{
 		// default to Portraits (always valid)
-		revised_weights[(int)(Door::Portrait)] = 1;
+		revised_weights[(int)(DoorType::Portrait)] = 1;
 	}
 
 	return revised_weights;
 }
 
-bool requires_button(Spawn::Door type)
+bool requires_button(Spawn::DoorType type)
 {
 	switch (type)
 	{
-	case Spawn::Door::FlipendoButton:
+	case Spawn::DoorType::FlipendoButton:
 		return true;
 	default:
 		return false;
+	}
+}
+
+DoorType choose_door_type(bool is_button_good,
+                          IntTempList const & buttoned_weights,
+                          IntTempList const & buttonless_weights)
+{
+	if (is_button_good)
+	{
+		return (DoorType)(Random::weighted_index(buttoned_weights));
+	}
+	else
+	{
+		return (DoorType)(Random::weighted_index(buttonless_weights));
 	}
 }
 

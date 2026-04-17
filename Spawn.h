@@ -6,7 +6,7 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
-	enum class Door : int
+	enum class DoorType : int
 	{
 		None,
 		Portrait,
@@ -43,7 +43,7 @@ namespace Spawn
 		int max_chests = 3;
 
 		// Amount of secret areas (1 door each) to seal off
-		int door_weights[(int)(Door::Count)] = { 1 };  // None: 1, all others: 0
+		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
 	};
 
 	// Creature spawning constants:

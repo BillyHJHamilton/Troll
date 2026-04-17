@@ -68,7 +68,7 @@ Type get_enemy_type(float map_difficulty,
 
 Manager::Manager()
 {
-	static int const c_DefaultCapacity = 10;
+	int constexpr c_DefaultCapacity = 10;
 
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
