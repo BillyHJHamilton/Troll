@@ -11,8 +11,8 @@ namespace Suggestion
 	{
 		First = 0,
 
-		Pillar,  // placeholder
-		Desk,  // placeholder
+		Desk,
+		Torch,
 
 		Bean,  // placeholder
 		TreasureNormal,  // e.g. chest
@@ -76,6 +76,8 @@ namespace Suggestion
 		SecretAreaList const & get_secret_areas() const { return m_secret_area_vec; }
 		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
 
+		void add_desk(Vec2 position);
+		void add_torch(Vec2 position);
 		void add_treasure_normal(Vec2 position);
 		void add_player_start(Vec2 position);
 		void add_enemy_weak(Vec2 position);

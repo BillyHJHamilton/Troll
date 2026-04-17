@@ -34,10 +34,12 @@ namespace Feature
 	void remove(Vec3 pos, Terrain::Type new_terrain_type);
 
 	// Remove feature and replace with open terrain.
-	void remove(Vec3 pos) { remove(pos, Terrain::Open); }
+	void remove(Vec3 pos);
 
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);
+	void damage_desk(Vec3 pos, int damage);
+	void light_torch(Vec3 pos);
 	void open_portrait(Vec3 pos);
 	void activate_flipendo_button(Vec3 pos);
 }

@@ -23,8 +23,8 @@ Genus get_genus(Type t)
 {
 	switch (t)
 	{
-	case Pillar:
 	case Desk:
+	case Torch:
 		return Genus::Feature;
 	case Bean:
 	case TreasureNormal:
@@ -115,6 +115,16 @@ int Manager::get_count_secret_passages() const
 SimpleList const & Manager::get(Type type) const
 {
 	return m_simple_vecs[type];
+}
+
+void Manager :: add_desk(Vec2 position)
+{
+	m_simple_vecs[Desk].push_back(position);
+}
+
+void Manager :: add_torch(Vec2 position)
+{
+	m_simple_vecs[Torch].push_back(position);
 }
 
 void Manager :: add_treasure_normal(Vec2 position)

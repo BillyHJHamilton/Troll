@@ -18,6 +18,9 @@ namespace Terrain
 
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
+		Desk,
+		TorchUnlit,
+		TorchLit,
 		Portrait,
 		FlipendoButton,
 		SlidingWall,

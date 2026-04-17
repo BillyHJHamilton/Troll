@@ -98,6 +98,8 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
+int spawn_simple(Map & map, Suggestion::Type suggestion_type,
+                 Terrain::Type terrain_type, char const * cstr_name);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 
@@ -405,16 +407,18 @@ void spawn_for_map(Map& map, History& history)
 	//  -> then (re)call find_spawn_positions
 	//    -> currently not needed
 	//  -> otherwise creatures and items spawn on features
-	if (chests_to_spawn > 0)
-	{
-		find_chest_positions(map);
-		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
-	}
-
 	if (is_first_spawn)
 	{
 		spawn_secret_areas(map);
 		spawn_secret_passages(map);
+		spawn_simple(map, Suggestion::Desk,  Terrain::Desk,       "desks");
+		spawn_simple(map, Suggestion::Torch, Terrain::TorchUnlit, "torches");
+	}
+
+	if (chests_to_spawn > 0)
+	{
+		find_chest_positions(map);
+		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -584,6 +588,30 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	{
 		std::cout << std::format("Placed {}/{} chests.\n",
 			spawned, chests_to_spawn);
+	}
+
+	return spawned;
+}
+
+int spawn_simple(Map & map, Suggestion::Type suggestion_type,
+                 Terrain::Type terrain_type, char const * cstr_name)
+{
+	int spawned = 0;
+	for (Vec2 suggestion : map.read_suggestions().get(suggestion_type))
+	{
+		if (!is_good_spawn_position(map, 0, suggestion))
+		{
+			continue;
+		}
+
+		Feature::spawn(suggestion.xyz(map.get_z()), terrain_type);
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible {}.\n",
+			spawned, map.read_suggestions().get_count(suggestion_type), cstr_name);
 	}
 
 	return spawned;

@@ -18,13 +18,22 @@ namespace Feature
 
 // Feature Types:
 //  - Chest - payload is Item::Handle
+//  - Desk - payload is health
+//  - TorchUnlit - no payload
+//  - TorchLit - no payload
 //  - Portrait - no payload
 //  - FlipendoButton - payload is which trigger id it activates
+//                   - it also turns into a wall on that trigger
 //  - SlidingWall - payload is which trigger id it responds to
+//  - Portcullis - payload is which trigger id it responds to
 
 struct Instance
 {
 	Vec3 pos;
+
+	// should each Feature know its type?
+	//  -> pro: faster, avoids awkward lookup
+	//  -> con: redundant data, could get out of sync
 
 	// Parameters to be interpreted based on type of feature.
 	int payload;
@@ -39,6 +48,7 @@ int s_next_trigger_id = 0;
 int find_feature(Vec3 pos);
 
 void init_chest(Feature::Instance& feature);
+void init_desk(Feature::Instance& feature);
 
 void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
@@ -78,6 +88,9 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Chest:
 				init_chest(s_features.back());
 				break;
+			case Terrain::Desk:
+				init_desk(s_features.back());
+				break;
 			// special initialization
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
@@ -85,6 +98,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 				break;
 			// no initialization needed
 			// case Terrain::Portrait:
+			// case Terrain::TorchUnlit:
+			// case Terrain::TorchLit:
 		}
 	}
 }
@@ -175,6 +190,11 @@ void remove(Vec3 pos, Terrain::Type new_terrain_type)
 	}
 }
 
+void remove(Vec3 pos)
+{
+	remove(pos, Terrain::Open);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
 
@@ -235,6 +255,40 @@ void open_chest(Vec3 pos)
 	}
 }
 
+void init_desk(Feature::Instance& feature)
+{
+	feature.payload = Random::in_range(2, 5);
+}
+
+void damage_desk(Vec3 pos, int damage)
+{
+	int const feature_index = find_feature(pos);
+	if (Check(feature_index != c_Invalid))
+	{
+		Feature::Instance& feature = s_features[feature_index];
+		feature.payload -= damage;
+		if (feature.payload <= 0)
+		{
+			Draw::pos_message(pos, "The desk is destroyed!");
+			Feature::remove(pos);
+		}
+		else
+		{
+			Draw::pos_message(pos, "The desk is damaged.");
+		}
+	}
+}
+
+void light_torch(Vec3 pos)
+{
+	int const feature_index = find_feature(pos);
+	if (Check(feature_index != c_Invalid))
+	{
+		Draw::pos_message(pos, "The torch burst into flames!");
+		World::edit().set_terrain(pos, Terrain::TorchLit);
+	}
+}
+
 void open_portrait(Vec3 pos)
 {
 	int const feature_index = find_feature(pos);
@@ -268,10 +322,6 @@ void trigger_all(int trigger)
 		{
 			continue;
 		}
-
-		// should each Feature know its type?
-		//  -> pro: faster, avoids awkward lookup
-		//  -> con: redundant data, could get out of sync
 
 		Terrain::Type feature_type = World::read().get_terrain(s_features[i].pos);
 		switch (feature_type)

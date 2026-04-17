@@ -27,10 +27,23 @@ namespace Spell
 
 void vermillious (EffectParams params)
 {
-	Creature::Handle const target = params.target;
+	if (params.target.valid())
+	{
+		// vermillious vs creature
+		Creature::Handle const target = params.target;
 
-	Draw::creature_message(target, std::format("{0} showed in sparks!",
-		Grammar::You_are(target)));
+		Draw::creature_message(target, std::format("{0} showed in sparks!",
+			Grammar::You_are(target)));
+	}
+
+	// vermillious vs feature
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::TorchUnlit:
+		Feature::light_torch(pos);
+		break;
+	}
 }
 
 // helper function
@@ -121,6 +134,7 @@ void flipendo (EffectParams params)
 		flipendo_vs_creature(params);
 	}
 
+	// flipendo vs feature
 	Vec3 const pos = params.target_pos;
 	switch(World::read().get_terrain(pos))
 	{
@@ -303,31 +317,44 @@ void mimblewimble (EffectParams params)
 
 void lacarnum_inflamare (EffectParams params)
 {
-	Creature::Handle caster = params.caster;
-	Creature::Handle target = params.target;
-
-	if (target.has_tag(Creature::Tag::Immune_Clothes))
+	if (params.target.valid())
 	{
-		Draw::creature_message(target, std::format("{} burned!",
-			Grammar::You_are(target)));
+		// lacarnum inflamare vs creature
+		Creature::Handle caster = params.caster;
+		Creature::Handle target = params.target;
 
-		Damage::Packet const dmg
+		if (target.has_tag(Creature::Tag::Immune_Clothes))
 		{
-			.amount = Random::in_range(1,3),
-			.type = Damage::Fire,
-			.cause = Damage::Cause(caster)
-		};
-		target.take_damage(dmg);
-	}
-	else
-	{
-		char const* fmt = target.has_status(Status::Burning) ?
-			"{0} clothes are burning in more places!" :
-			"{0} clothes burst into flames!";
-		std::string s1 = Grammar::Your(target);
-		Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
+			Draw::creature_message(target, std::format("{} burned!",
+				Grammar::You_are(target)));
 
-		target.inflict_status(Status::Burning, 5);
+			Damage::Packet const dmg
+			{
+				.amount = Random::in_range(1,3),
+				.type = Damage::Fire,
+				.cause = Damage::Cause(caster)
+			};
+			target.take_damage(dmg);
+		}
+		else
+		{
+			char const * fmt = target.has_status(Status::Burning) ?
+				"{0} clothes are burning in more places!" :
+				"{0} clothes burst into flames!";
+			std::string s1 = Grammar::Your(target);
+			Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
+
+			target.inflict_status(Status::Burning, 5);
+		}
+	}
+
+	// lacarnum inflamare vs feature
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::TorchUnlit:
+		Feature::light_torch(pos);
+		break;
 	}
 }
 

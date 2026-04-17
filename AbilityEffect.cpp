@@ -4,9 +4,12 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Feature.h"
 #include "Inventory.h"
 #include "Random.h"
 #include "Status.h"
+#include "Terrain.h"
+#include "World.h"
 
 #include <format>
 
@@ -95,11 +98,25 @@ void headbutt(EffectParams params)
 
 void fire_gob_hit(EffectParams params)
 {
-	Creature::Handle const target = params.target;
-	if (Check(target.valid()))
+	if (params.target.valid())
 	{
-		Draw::creature_message(target, std::format("{} burned!",
-			Grammar::You_are(target)));
+		// fire gob vs creature
+
+		Creature::Handle const target = params.target;
+		if (Check(target.valid()))
+		{
+			Draw::creature_message(target, std::format("{} burned!",
+				Grammar::You_are(target)));
+		}
+	}
+
+	// fire gob vs feature
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::TorchUnlit:
+		Feature::light_torch(pos);
+		break;
 	}
 }
 

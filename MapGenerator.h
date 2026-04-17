@@ -82,6 +82,8 @@ protected:
 	void AddStairsToMap(Room const & room) const;
 	void AddChamberToMap(Room const & room) const;
 	void AddCorridorToMap(Room const & room) const;
+	void AddDeskRoomSuggestions(Room const & room) const;
+	void AddTorchRoomSuggestions(Room const & room) const;
 	void AddSecretPassageSuggestions(Room const & room,
 	                                 Room const & neighbour0, Vec2 const & door0,
 	                                 Room const & neighbour1, Vec2 const & door1) const;

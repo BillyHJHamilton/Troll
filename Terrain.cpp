@@ -35,10 +35,13 @@ namespace Terrain
 		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
 		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"desk",				Codepoint::BoxEmpty,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"torch",				Codepoint::TorchUnlit,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire}, // unlit
+		Data{"torch",				Codepoint::TorchLit,		f_PermitSight | f_Solid | f_Feature,	f_None}, // lit
 		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
 		Data{"button",				Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
 		Data{"wall",				Codepoint::SolidBlock,		f_Solid |  f_Feature,					f_None}, // sliding wall
-		Data{"portcullis",			'#',						f_PermitSight | f_Solid |  f_Feature,	f_None},
+		Data{"portcullis",			'#',						f_PermitSight | f_Solid | f_Feature,	f_None},
 	};
 
 	int get_character(Terrain::Type t)
