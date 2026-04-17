@@ -129,7 +129,7 @@ Vec3 World::get_player_start() const
 {
 	// method 1: map suggestion
 	Suggestion::Manager const & suggestions = read_map(0).read_suggestions();
-	if (suggestions.has_any(Suggestion::PlayerStart))
+	if (suggestions.get_count(Suggestion::PlayerStart) > 0)
 	{
 		Vec2 pos2 = suggestions.get(Suggestion::PlayerStart)[0];
 		return pos2.xy0();

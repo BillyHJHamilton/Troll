@@ -19,24 +19,10 @@ bool is_valid_type(Suggestion::Type t)
 	return t >= First && t < Count;
 }
 
-bool is_simple_type(Suggestion::Type t)
-{
-	switch (t)
-	{
-	case SecretArea:
-	case SecretPassage:
-		return false;
-	default:
-		return is_valid_type(t);
-	}
-}
-
 Genus get_genus(Type t)
 {
 	switch (t)
 	{
-	case SecretArea:
-	case SecretPassage:
 	case Pillar:
 	case Desk:
 		return Genus::Feature;
@@ -73,11 +59,7 @@ Manager::Manager()
 	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
 	for (int i = Type::First; i < Type::Count; ++i)
 	{
-		if (is_simple_type((Type)(i)))
-		{
-			m_simple_vecs[i].reserve(c_DefaultCapacity);
-		}
-		// else vector is not used
+		m_simple_vecs[i].reserve(c_DefaultCapacity);
 	}
 
 	m_secret_area_vec.reserve(c_DefaultCapacity);
@@ -117,30 +99,52 @@ int Manager::get_count(Type type) const
 {
 	assert(is_valid_type(type));
 
-	switch (type)
-	{
-	case SecretArea:
-		return Util::Size(m_secret_area_vec);
-	case SecretPassage:
-		return Util::Size(m_secret_passage_vec);
-	default:
-		assert(is_simple_type(type));
-		return Util::Size(m_simple_vecs[type]);
-	}
+	return Util::Size(m_simple_vecs[type]);
 }
 
-bool Manager :: has_any(Type type) const
+int Manager::get_count_secret_areas() const
 {
-	assert(is_valid_type(type));
+	return Util::Size(m_secret_area_vec);
+}
 
-	return get_count(type) > 0;
+int Manager::get_count_secret_passages() const
+{
+	return Util::Size(m_secret_passage_vec);
 }
 
 SimpleList const & Manager::get(Type type) const
 {
-	assert(is_simple_type(type));
-
 	return m_simple_vecs[type];
+}
+
+void Manager :: add_treasure_normal(Vec2 position)
+{
+	m_simple_vecs[TreasureNormal].push_back(position);
+}
+
+void Manager :: add_player_start(Vec2 position)
+{
+	m_simple_vecs[PlayerStart].push_back(position);
+}
+
+void Manager :: add_enemy_weak(Vec2 position)
+{
+	m_simple_vecs[EnemyWeak].push_back(position);
+}
+
+void Manager :: add_enemy_moderate(Vec2 position)
+{
+	m_simple_vecs[EnemyModerate].push_back(position);
+}
+
+void Manager :: add_enemy_strong(Vec2 position)
+{
+	m_simple_vecs[EnemyStrong].push_back(position);
+}
+
+void Manager :: add_boss(Vec2 position)
+{
+	m_simple_vecs[Boss].push_back(position);
 }
 
 void Manager :: add_secret_area(Vec2 door)
@@ -182,51 +186,26 @@ void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 bu
 	m_secret_passage_vec.push_back(instance);
 }
 
-void Manager :: add_treasure_normal(Vec2 position)
-{
-	m_simple_vecs[TreasureNormal].push_back(position);
-}
-
-void Manager :: add_player_start(Vec2 position)
-{
-	m_simple_vecs[PlayerStart].push_back(position);
-}
-
-void Manager :: add_enemy_weak(Vec2 position)
-{
-	m_simple_vecs[EnemyWeak].push_back(position);
-}
-
-void Manager :: add_enemy_moderate(Vec2 position)
-{
-	m_simple_vecs[EnemyModerate].push_back(position);
-}
-
-void Manager :: add_enemy_strong(Vec2 position)
-{
-	m_simple_vecs[EnemyStrong].push_back(position);
-}
-
-void Manager :: add_boss(Vec2 position)
-{
-	m_simple_vecs[Boss].push_back(position);
-}
-
 void Manager :: remove(Type type, int index)
 {
 	assert(is_valid_type(type));
 	assert(index < get_count(type));
 
-	switch (type)
-	{
-	case SecretArea:
-		Util::RemoveSwap(m_secret_area_vec, index);
-	case SecretPassage:
-		Util::RemoveSwap(m_secret_passage_vec, index);
-	default:
-		assert(is_simple_type(type));
-		Util::RemoveSwap(m_simple_vecs[type], index);
-	}
+	Util::RemoveSwap(m_simple_vecs[type], index);
+}
+
+void Manager :: remove_secret_area(int index)
+{
+	assert(index < get_count_secret_areas());
+
+	Util::RemoveSwap(m_secret_area_vec, index);
+}
+
+void Manager :: remove_secret_passage(int index)
+{
+	assert(index < get_count_secret_passages());
+
+	Util::RemoveSwap(m_secret_passage_vec, index);
 }
 
 } // namespace Suggestion
