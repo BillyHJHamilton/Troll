@@ -1,5 +1,6 @@
 #include "AbilityEffect.h"
 
+#include "Ability.h"
 #include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -8,8 +9,6 @@
 #include "Inventory.h"
 #include "Random.h"
 #include "Status.h"
-#include "Terrain.h"
-#include "World.h"
 
 #include <format>
 
@@ -111,13 +110,7 @@ void fire_gob_hit(EffectParams params)
 	}
 
 	// fire gob vs feature
-	Vec3 const pos = params.target_pos;
-	switch(World::read().get_terrain(pos))
-	{
-	case Terrain::TorchUnlit:
-		Feature::light_torch(pos);
-		break;
-	}
+	Feature::hit_by_fire(params.target_pos, Ability::get_damage(Ability::ShootFire));
 }
 
 void doxy_bite(EffectParams params)
@@ -244,7 +237,7 @@ void karate(EffectParams params)
 	if (user.valid() && target.valid())
 	{
 		Draw::creature_message(target, std::format("{} {} {} with {}!",
-			Grammar::You(user), Grammar::verbs("hit",user), Grammar::you(target),
+			Grammar::You(user), Grammar::verbs("hit", user), Grammar::you(target),
 			random_karate_move()));
 	}
 }

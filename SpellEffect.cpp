@@ -37,13 +37,7 @@ void vermillious (EffectParams params)
 	}
 
 	// vermillious vs feature
-	Vec3 const pos = params.target_pos;
-	switch(World::read().get_terrain(pos))
-	{
-	case Terrain::TorchUnlit:
-		Feature::light_torch(pos);
-		break;
-	}
+	Feature::hit_by_fire(params.target_pos, Spell::get_damage(Spell::Vermillious, params.caster));
 }
 
 // helper function
@@ -138,6 +132,9 @@ void flipendo (EffectParams params)
 	Vec3 const pos = params.target_pos;
 	switch(World::read().get_terrain(pos))
 	{
+	case Terrain::Desk:
+		Feature::damage(pos, Spell::get_damage(Spell::Flipendo, params.caster), Damage::Basic);
+		break;
 	case Terrain::FlipendoButton:
 		Feature::activate_flipendo_button(pos);
 		break;
@@ -349,13 +346,7 @@ void lacarnum_inflamare (EffectParams params)
 	}
 
 	// lacarnum inflamare vs feature
-	Vec3 const pos = params.target_pos;
-	switch(World::read().get_terrain(pos))
-	{
-	case Terrain::TorchUnlit:
-		Feature::light_torch(pos);
-		break;
-	}
+	Feature::hit_by_fire(params.target_pos, Random::in_range(1,3));
 }
 
 void furnunculus (EffectParams params)

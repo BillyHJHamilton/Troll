@@ -147,6 +147,8 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		codepoint = proj.codepoint;
 	}
 
+	uint const target_flags = Ability::get_target_flags(ability);
+
 	return Beam::Data
 	{
 		.start_pos = caster.pos(),
@@ -167,7 +169,7 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.damage = Ability::get_damage(ability),
 		.spell_power = 0, // not a spell
 		.beam_flags = flags,
-		.target_flags = f_None, // None for now
+		.target_flags = target_flags,
 		.done = false
 	};
 }

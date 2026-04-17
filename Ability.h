@@ -35,10 +35,11 @@ namespace Ability
 		int cooldown_min = 0;
 		int cooldown_max = 0;
 
-		Target::Type target_type = (Target::Type)0;
-
 		// I guess for now I'll just use the spell effect code, though.
 		Spell::EffectFunc effect_func = nullptr;
+
+		Target::Type target_type = (Target::Type)0;
+		uint target_flags = 0;
 	};
 
 	struct ProjectileData
@@ -63,6 +64,7 @@ namespace Ability
 	Damage::Type damage_type(Ability::Index index);
 
 	Target::Type target_type(Ability::Index index);
+	uint get_target_flags(Ability::Index index);
 	bool has_accuracy (Ability::Index index);
 	int get_accuracy (Ability::Index index);
 	int get_range (Ability::Index index);

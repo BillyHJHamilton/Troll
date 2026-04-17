@@ -1199,7 +1199,7 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		{
 			AddDeskRoomSuggestions(room);
 		}
-		if (Random::one_in(4))
+		else if (Random::one_in(4))
 		{
 			AddTorchRoomSuggestions(room);
 		}
@@ -1298,18 +1298,18 @@ void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
 		return;  // room is too small for desks
 	}
 
-	int aisle_x = -1;
+	int aisle_x = desk_area.min.x - 1;  // outside room (no aisle)
 	if (desk_area.size.x >= 5 &&
-		desk_area.size.x % 2 != 0)  // is a center line
+		desk_area.size.x % 2 != 0)  // there is a center line
 	{
-		aisle_x = desk_area.size.x / 2;  // integer division
+		aisle_x = desk_area.min.x + desk_area.size.x / 2;  // integer division
 	}
 
-	int aisle_y = -1;
+	int aisle_y = desk_area.min.y - 1;  // outside room (no aisle)
 	if (desk_area.size.y >= 5 &&
-		desk_area.size.y % 2 != 0)  // is a center line
+		desk_area.size.y % 2 != 0)  // there is a center line
 	{
-		aisle_y = desk_area.size.y / 2;  // integer division
+		aisle_y = desk_area.min.y + desk_area.size.y / 2;  // integer division
 	}
 
 	for (int x = desk_area.min.x; x < desk_area.max().x; ++x)

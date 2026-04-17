@@ -36,10 +36,12 @@ namespace Feature
 	// Remove feature and replace with open terrain.
 	void remove(Vec3 pos);
 
+	// Semi-specific functions:
+	void hit_by_fire(Vec3 pos, int damage_amount);
+	void damage(Vec3 pos, int damage_amount, Damage::Type damage_type);
+
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);
-	void damage_desk(Vec3 pos, int damage);
-	void light_torch(Vec3 pos);
 	void open_portrait(Vec3 pos);
 	void activate_flipendo_button(Vec3 pos);
 }

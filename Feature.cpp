@@ -1,5 +1,6 @@
 #include "Feature.h"
 
+#include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Item.h"
@@ -49,6 +50,11 @@ int find_feature(Vec3 pos);
 
 void init_chest(Feature::Instance& feature);
 void init_desk(Feature::Instance& feature);
+
+int damage_resistance_wood(int damage_amount, Damage::Type damage_type);
+
+void damage_desk(Vec3 pos, int damage_amount, Damage::Type damage_type);
+void light_torch(Vec3 pos);
 
 void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
@@ -204,6 +210,48 @@ int find_feature(Vec3 pos)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Semi-specific functions
+
+void hit_by_fire(Vec3 pos, int damage_amount)
+{
+	switch (World::read().get_terrain(pos))
+	{
+	case Terrain::TorchUnlit:
+		light_torch(pos);
+		break;
+	default:
+		damage(pos, damage_amount, Damage::Type::Fire);
+		break;
+	}
+}
+
+void damage(Vec3 pos, int damage_amount, Damage::Type damage_type)
+{
+	switch (World::read().get_terrain(pos))
+	{
+	case Terrain::Desk:
+		damage_desk(pos, damage_amount, damage_type);
+		break;
+	}
+}
+
+int damage_resistance_wood(int damage_amount, Damage::Type damage_type)
+{
+	switch (damage_type)
+	{
+	case Damage::Basic:
+		return damage_amount;
+	case Damage::Fire:
+		return damage_amount * 2;
+	case Damage::Acid:
+		return 0;
+	default:
+		DebugBreak("Missing damage type in damage_resistance_wood");
+		return 0;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 // Feature-specific functions
 
 void init_chest(Feature::Instance& feature)
@@ -257,16 +305,18 @@ void open_chest(Vec3 pos)
 
 void init_desk(Feature::Instance& feature)
 {
-	feature.payload = Random::in_range(2, 5);
+	feature.payload = Random::in_range(3, 8);  // health
 }
 
-void damage_desk(Vec3 pos, int damage)
+void damage_desk(Vec3 pos, int damage_amount, Damage::Type damage_type)
 {
 	int const feature_index = find_feature(pos);
 	if (Check(feature_index != c_Invalid))
 	{
 		Feature::Instance& feature = s_features[feature_index];
-		feature.payload -= damage;
+		int const damage_adjusted = damage_resistance_wood(damage_amount, damage_type);
+		feature.payload -= damage_adjusted;
+
 		if (feature.payload <= 0)
 		{
 			Draw::pos_message(pos, "The desk is destroyed!");
@@ -274,7 +324,17 @@ void damage_desk(Vec3 pos, int damage)
 		}
 		else
 		{
-			Draw::pos_message(pos, "The desk is damaged.");
+			switch (damage_type)
+			{
+			case Damage::Basic:
+				Draw::pos_message(pos, "The desk is damaged.");
+				break;
+			case Damage::Fire:
+				Draw::pos_message(pos, "The desk is burned.");
+				break;
+			// print nothing (immune)
+			//case Damage::Acid:
+			}
 		}
 	}
 }
