@@ -165,16 +165,31 @@ void Manager :: add_secret_area(Vec2 door)
 	m_secret_area_vec.push_back(instance);
 }
 
-void Manager :: add_secret_area(Vec2 door, Vec2 button)
+void Manager :: add_secret_area(Vec2 door, Vec2 button, Vec2 torch)
 {
 	SecretAreaInstance instance =
 	{ .door = door,
 	  .button = button,
-	  .has_button = true,
+	  .torch1 = torch,
+	  .trigger_types = TriggerTypes::ButtonOr1Torch,
 	};
 	m_secret_area_vec.push_back(instance);
 }
 
+void Manager :: add_secret_area(Vec2 door, Vec2 button,
+                                Vec2 torch1, Vec2 torch2, Vec2 torch3, Vec2 torch4)
+{
+	SecretAreaInstance instance =
+	{ .door = door,
+	  .button = button,
+	  .torch1 = torch1,
+	  .torch2 = torch2,
+	  .torch3 = torch3,
+	  .torch4 = torch4,
+	  .trigger_types = TriggerTypes::ButtonOr4Torches,
+	};
+	m_secret_area_vec.push_back(instance);
+}
 void Manager :: add_secret_passage(Vec2 door1, Vec2 door2)
 {
 	SecretPassageInstance instance =

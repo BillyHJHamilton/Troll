@@ -12,6 +12,8 @@ namespace Spawn
 		Portrait,
 		FlipendoOpensWall,
 		FlipendoOpensPortcullis,
+		TorchesOpensWall,
+		TorchesOpensPortcullis,
 		Count,
 	};
 

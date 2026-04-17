@@ -41,11 +41,22 @@ namespace Suggestion
 	Type get_enemy_type(float map_difficulty,
 	                    float enemy_difficulty);
 
+	enum class TriggerTypes : byte
+	{
+		None = 0,
+		ButtonOr1Torch,
+		ButtonOr4Torches,
+	};
+
 	struct SecretAreaInstance
 	{
 		Vec2 door = {0, 0};
 		Vec2 button = {0, 0};
-		bool has_button = false;
+		Vec2 torch1 = {0, 0};
+		Vec2 torch2 = {0, 0};
+		Vec2 torch3 = {0, 0};
+		Vec2 torch4 = {0, 0};
+		TriggerTypes trigger_types = TriggerTypes::None;
 	};
 
 	struct SecretPassageInstance
@@ -87,7 +98,9 @@ namespace Suggestion
 		// TODO: Add more functions when needed
 
 		void add_secret_area(Vec2 door);
-		void add_secret_area(Vec2 door, Vec2 button);
+		void add_secret_area(Vec2 door, Vec2 button, Vec2 torch);
+		void add_secret_area(Vec2 door, Vec2 button,
+		                     Vec2 torch1, Vec2 torch2, Vec2 torch3, Vec2 torch4);
 		void add_secret_passage(Vec2 door1, Vec2 door2);
 		void add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2);
 

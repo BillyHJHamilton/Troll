@@ -59,6 +59,9 @@ enum class Problem : int
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
+
+Terrain::Type get_terrain_for_door_type(DoorType door_type);
+
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
@@ -108,8 +111,9 @@ Vec2 find_boss_spawn_position(Map const& map);
 // Constructs a vector with the door weights.
 // Some door types can be excluded from the vector.
 IntTempList revise_door_weights(Parameters const & param,
-                                bool allow_none, bool allow_button);
+                                bool allow_none, bool allow_button, bool allow_torches);
 bool requires_button(Spawn::DoorType type);
+bool requires_torch(Spawn::DoorType type);
 DoorType choose_door_type(bool is_button_good,
                           IntTempList const & buttoned_weights,
                           IntTempList const & buttonless_weights);
@@ -193,6 +197,23 @@ float probability_factor (float difficulty, float target_difficulty)
 
 //-----------------------------------------------------------------------------
 // Helper Implementations
+
+Terrain::Type get_terrain_for_door_type(DoorType door_type)
+{
+	switch (door_type)
+	{
+	case DoorType::Portrait:
+		return Terrain::Portrait;
+	case DoorType::FlipendoOpensWall:
+	case DoorType::TorchesOpensWall:
+		return Terrain::SlidingWall;
+	case DoorType::FlipendoOpensPortcullis:
+	case DoorType::TorchesOpensPortcullis:
+		return Terrain::Portcullis;
+	default:
+		return Terrain::Open;
+	}
+}
 
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
@@ -622,8 +643,13 @@ int spawn_secret_areas(Map& map)
 	// no min range from player
 
 	Spawn::Parameters const& param = map.read_spawn_param();
-	IntTempList buttoned_weights   = revise_door_weights(param, true, true);  // do we allow:
-	IntTempList buttonless_weights = revise_door_weights(param, true, false); // None, buttons
+
+	// bool parameters: Do we allow:
+	//  - None?     Yes
+	//  - Buttons?  It depends...
+	//  - Torches?  Yes
+	IntTempList buttoned_weights   = revise_door_weights(param, true, true,  true);
+	IntTempList buttonless_weights = revise_door_weights(param, true, false, true);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -641,38 +667,65 @@ int spawn_secret_areas(Map& map)
 
 		// choose the type of door
 
-		bool is_button_good = suggestion.has_button;
-		if (is_button_good)
+		bool is_trigger_good = false;
+		switch (suggestion.trigger_types)
 		{
-			if (!is_good_wall_spawn_position(map, suggestion.button))
+		case Suggestion::TriggerTypes::ButtonOr1Torch:
+			if (is_good_wall_spawn_position(map, suggestion.button) &&
+				is_good_spawn_position(map, 0, suggestion.torch1))
 			{
-				is_button_good = false;
+				is_trigger_good = true;
 			}
+			break;
+		case Suggestion::TriggerTypes::ButtonOr4Torches:
+			if (is_good_wall_spawn_position(map, suggestion.button) &&
+				is_good_spawn_position(map, 0, suggestion.torch1) &&
+				is_good_spawn_position(map, 0, suggestion.torch2) &&
+				is_good_spawn_position(map, 0, suggestion.torch3) &&
+				is_good_spawn_position(map, 0, suggestion.torch4))
+			{
+				is_trigger_good = true;
+			}
+			break;
 		}
 
-		DoorType type = choose_door_type(is_button_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(is_trigger_good, buttoned_weights, buttonless_weights);
+		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
 
 		int map_z = map.get_z();
-		switch(type)
+		switch(door_type)
 		{
 		case DoorType::Portrait:
-			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
+			Feature::spawn(suggestion.door.xyz(map_z), door_terrain);
 			++spawned;
 			break;
+
 		case DoorType::FlipendoOpensWall:
-			assert(is_button_good);
+		case DoorType::FlipendoOpensPortcullis:
+			assert(is_trigger_good);
 			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
-			                               suggestion.door  .xyz(map_z),
-			                               Terrain::SlidingWall);
+			                               suggestion.door  .xyz(map_z), door_terrain);
 			++spawned;
 			break;
-		case DoorType::FlipendoOpensPortcullis:
-			assert(is_button_good);
-			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
-			                               suggestion.door  .xyz(map_z),
-			                               Terrain::Portcullis);
+
+		case DoorType::TorchesOpensWall:
+		case DoorType::TorchesOpensPortcullis:
+			assert(is_trigger_good);
+			if(suggestion.trigger_types == Suggestion::TriggerTypes::ButtonOr1Torch)
+			{
+				Feature::spawn_torch1_door(suggestion.torch1.xyz(map_z),
+				                           suggestion.door  .xyz(map_z), door_terrain);
+			}
+			else if(suggestion.trigger_types == Suggestion::TriggerTypes::ButtonOr4Torches)
+			{
+				Feature::spawn_torch4_door(suggestion.torch1.xyz(map_z),
+				                           suggestion.torch2.xyz(map_z),
+				                           suggestion.torch3.xyz(map_z),
+				                           suggestion.torch4.xyz(map_z),
+				                           suggestion.door  .xyz(map_z), door_terrain);
+			}
 			++spawned;
 			break;
 		}
@@ -694,9 +747,12 @@ int spawn_secret_passages(Map& map)
 
 	Spawn::Parameters const& param = map.read_spawn_param();
 
-	// we don;t allow None doors: secret passages are secret
-	IntTempList buttoned_weights   = revise_door_weights(param, false, true);  // do we allow:
-	IntTempList buttonless_weights = revise_door_weights(param, false, false); // None, buttons
+	// bool parameters: Do we allow:
+	//  - None?     No, secret passages are secret
+	//  - Buttons?  It depends...
+	//  - Torches?  No, doesn't work with needing to extinguish all torches in a set
+	IntTempList buttoned_weights   = revise_door_weights(param, false, true,  false);
+	IntTempList buttonless_weights = revise_door_weights(param, false, false, false);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -723,38 +779,31 @@ int spawn_secret_passages(Map& map)
 			}
 		}
 
-		DoorType type = choose_door_type(are_buttons_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(are_buttons_good, buttoned_weights, buttonless_weights);
+		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
 
 		int map_z = map.get_z();
-		switch(type)
+		switch(door_type)
 		{
 		case DoorType::Portrait:
 			// just put a portrait at each end
-			Feature::spawn(suggestion.door1.xyz(map_z), Terrain::Portrait);
+			Feature::spawn(suggestion.door1.xyz(map_z), door_terrain);
 			if (suggestion.door1 != suggestion.door2)
 			{
-				Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
+				Feature::spawn(suggestion.door2.xyz(map_z), door_terrain);
 			}
 			++spawned;
 			break;
 		case DoorType::FlipendoOpensWall:
-			assert(are_buttons_good);
-			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
-			                                    suggestion.door1  .xyz(map_z),
-			                                    suggestion.button2.xyz(map_z),
-			                                    suggestion.door2  .xyz(map_z),
-			                                    Terrain::SlidingWall);
-			++spawned;
-			break;
 		case DoorType::FlipendoOpensPortcullis:
 			assert(are_buttons_good);
 			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
 			                                    suggestion.door1  .xyz(map_z),
 			                                    suggestion.button2.xyz(map_z),
 			                                    suggestion.door2  .xyz(map_z),
-			                                    Terrain::Portcullis);
+			                                    door_terrain);
 			++spawned;
 			break;
 		}
@@ -770,7 +819,7 @@ int spawn_secret_passages(Map& map)
 }
 
 IntTempList revise_door_weights(Parameters const & param,
-                                bool allow_none, bool allow_button)
+                                bool allow_none, bool allow_button, bool allow_torches)
 {
 	IntTempList revised_weights((int)(DoorType::Count), 0);  // count, value
 	int sum = 0;
@@ -784,6 +833,10 @@ IntTempList revise_door_weights(Parameters const & param,
 			continue;
 		}
 		if (!allow_button && requires_button((DoorType)(i)))
+		{
+			continue;
+		}
+		if (!allow_torches && requires_torch((DoorType)(i)))
 		{
 			continue;
 		}
@@ -807,6 +860,18 @@ bool requires_button(Spawn::DoorType type)
 	{
 	case Spawn::DoorType::FlipendoOpensWall:
 	case Spawn::DoorType::FlipendoOpensPortcullis:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool requires_torch(Spawn::DoorType type)
+{
+	switch (type)
+	{
+	case Spawn::DoorType::TorchesOpensWall:
+	case Spawn::DoorType::TorchesOpensPortcullis:
 		return true;
 	default:
 		return false;

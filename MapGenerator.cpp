@@ -1201,7 +1201,7 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		}
 		else if (Random::one_in(4))
 		{
-			AddTorchRoomSuggestions(room);
+			AddCosmeticTorchRoomSuggestions(room);
 		}
 
 		if (room.GetRegion() != Room::c_MainRegion &&
@@ -1329,33 +1329,12 @@ void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
 	}
 }
 
-void MapGenerator::AddTorchRoomSuggestions(Room const & room) const
+void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
 {
-	if (room.GetBox().size.x >= 5 &&
-		room.GetBox().size.y >= 5)
+	PosTempList positions =	GetTorchPositions(room);
+	for (Vec2 pos : positions)
 	{
-		// 4 torches in corners
-		Vec2 const pos_min = room.GetBox().min         + Vec2{ 1, 1 };
-		Vec2 const pos_max = room.GetBox().inner_max() - Vec2{ 1, 1 };
-		m_Map.edit_suggestions().add_torch(Vec2{ pos_min.x, pos_min.y });
-		m_Map.edit_suggestions().add_torch(Vec2{ pos_min.x, pos_max.y });
-		m_Map.edit_suggestions().add_torch(Vec2{ pos_max.x, pos_min.y });
-		m_Map.edit_suggestions().add_torch(Vec2{ pos_max.x, pos_max.y });
-	}
-	else if (room.GetBox().size.x % 2 != 0 &&
-	         room.GetBox().size.y % 2 != 0)
-	{
-		// 1 torch in center
-		m_Map.edit_suggestions().add_torch(room.GetBox().centre());
-	}
-	else
-	{
-		// 1 torch along the wall
-		PosTempList possible = GetPositionsAlongPlainWall(room);
-		if (Util::Size(possible) > 0)
-		{
-			m_Map.edit_suggestions().add_torch(Random::from_vector(possible));
-		}
+		m_Map.edit_suggestions().add_torch(pos);
 	}
 }
 
@@ -1399,17 +1378,33 @@ void MapGenerator::AddSecretPassageSuggestions(Room const & room,
 void MapGenerator::AddSecretAreaSuggestions(Room const & room,
                                             Room const & neighbour, Vec2 const & door) const
 {
-	PosTempList posList = GetPlainWallPositions(neighbour);
-	if (Util::Size(posList) > 0)
+	PosTempList button_pos_list = GetPlainWallPositions(neighbour);
+	PosTempList torch_pos_list  = GetTorchPositions(neighbour);
+
+	if (Util::Size(button_pos_list) > 0 &&
+		Util::Size(torch_pos_list) > 0)
 	{
-		Vec2 button_pos = Random::from_vector(posList);
+		Vec2 button_pos = Random::from_vector(button_pos_list);
 
 		// What if 2 secret doors spawn buttons in the same place?
 		//  -> Currently caught in Spawn
 		//  -> 2nd door spawned will be of a buttonless type (e.g. Portrait)
 		//  -> Do we want to check for collisions here?
 
-		m_Map.edit_suggestions().add_secret_area(door, button_pos);
+		// TODO: pass torch positions as vector?
+		//  -> 2 torches in a set (3xN rooms)
+		//  -> And farther along, so we can do any number?
+		if (Util::Size(torch_pos_list) == 1)
+		{
+			m_Map.edit_suggestions().add_secret_area(door, button_pos, torch_pos_list[0]);
+		}
+		else
+		{
+			assert(Util::Size(torch_pos_list) == 4);
+			m_Map.edit_suggestions().add_secret_area(door, button_pos,
+				torch_pos_list[0], torch_pos_list[1], torch_pos_list[2], torch_pos_list[3]);
+		}
+
 		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 		{
 			m_Map.set_terrain(door, Terrain::OpenHighlight);
@@ -1471,6 +1466,40 @@ Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 	case  1:
 		result.y = room.GetBox().max().y - 1;
 		break;
+	}
+
+	return result;
+}
+
+MapGenerator::PosTempList MapGenerator::GetTorchPositions(Room const & room) const
+{
+	PosTempList result;
+
+	if (room.GetBox().size.x >= 5 &&
+		room.GetBox().size.y >= 5)
+	{
+		// 4 torches in corners
+		Vec2 const pos_min = room.GetBox().min         + Vec2{ 1, 1 };
+		Vec2 const pos_max = room.GetBox().inner_max() - Vec2{ 1, 1 };
+		result.push_back(Vec2{ pos_min.x, pos_min.y });
+		result.push_back(Vec2{ pos_min.x, pos_max.y });
+		result.push_back(Vec2{ pos_max.x, pos_min.y });
+		result.push_back(Vec2{ pos_max.x, pos_max.y });
+	}
+	else if (room.GetBox().size.x % 2 != 0 &&
+	         room.GetBox().size.y % 2 != 0)
+	{
+		// 1 torch in center
+		result.push_back(room.GetBox().centre());
+	}
+	else
+	{
+		// 1 torch along the wall
+		PosTempList possible = GetPositionsAlongPlainWall(room);
+		if (Util::Size(possible) > 0)
+		{
+			result.push_back(Random::from_vector(possible));
+		}
 	}
 
 	return result;

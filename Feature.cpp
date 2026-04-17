@@ -21,7 +21,8 @@ namespace Feature
 //  - Chest - payload is Item::Handle
 //  - Desk - payload is health
 //  - TorchUnlit - no payload
-//  - TorchLit - no payload
+//  - TorchLit - payload is which trigger id it activates
+// 	           - trigger only activates when the last torch with that trigger is lit
 //  - Portrait - no payload
 //  - FlipendoButton - payload is which trigger id it activates
 //                   - it also turns into a wall on that trigger
@@ -42,6 +43,7 @@ struct Instance
 std::vector<Feature::Instance> s_features;
 
 int s_next_trigger_id = 0;
+int constexpr c_NoTrigger = -1;
 
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
@@ -55,6 +57,7 @@ int damage_resistance_wood(int damage_amount, Damage::Type damage_type);
 
 void damage_desk(Vec3 pos, int damage_amount, Damage::Type damage_type);
 void light_torch(Vec3 pos);
+bool is_any_unlit_torch_with_trigger(int trigger);
 
 void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
@@ -97,6 +100,9 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(s_features.back());
 				break;
+			case Terrain::TorchUnlit:  // cosmetic torch
+				s_features.back().payload = c_NoTrigger;
+				break;
 			// special initialization
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
@@ -104,10 +110,67 @@ void spawn(Vec3 pos, Terrain::Type type)
 				break;
 			// no initialization needed
 			// case Terrain::Portrait:
-			// case Terrain::TorchUnlit:
 			// case Terrain::TorchLit:
 		}
 	}
+}
+
+void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
+                       Terrain::Type door_type)
+{
+	// add the torch
+	World::edit().set_terrain(torch_pos, Terrain::TorchUnlit);
+	s_features.push_back({
+		.pos = torch_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// add the closed door
+	World::edit().set_terrain(door_pos, door_type);
+	s_features.push_back({
+		.pos = door_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// finished setting up this trigger
+	++s_next_trigger_id;
+}
+
+void spawn_torch4_door(Vec3 torch1_pos, Vec3 torch2_pos, Vec3 torch3_pos, Vec3 torch4_pos,
+                       Vec3 door_pos, Terrain::Type door_type)
+{
+	// add the torches
+	World::edit().set_terrain(torch1_pos, Terrain::TorchUnlit);
+	s_features.push_back({
+		.pos = torch1_pos,
+		.payload = s_next_trigger_id,
+		});
+	World::edit().set_terrain(torch2_pos, Terrain::TorchUnlit);
+	s_features.push_back({
+		.pos = torch2_pos,
+		.payload = s_next_trigger_id,
+		});
+	World::edit().set_terrain(torch3_pos, Terrain::TorchUnlit);
+	s_features.push_back({
+		.pos = torch3_pos,
+		.payload = s_next_trigger_id,
+		});
+	World::edit().set_terrain(torch4_pos, Terrain::TorchUnlit);
+	s_features.push_back({
+		.pos = torch4_pos,
+		.payload = s_next_trigger_id,
+		});
+	// TODO: add_feature_internal
+
+	// add the closed door
+	World::edit().set_terrain(door_pos, door_type);
+	s_features.push_back({
+		.pos = door_pos,
+		.payload = s_next_trigger_id,
+		});
+
+	// finished setting up this trigger
+	++s_next_trigger_id;
 }
 
 void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
@@ -346,7 +409,26 @@ void light_torch(Vec3 pos)
 	{
 		Draw::pos_message(pos, "The torch burst into flames!");
 		World::edit().set_terrain(pos, Terrain::TorchLit);
+
+		int trigger = s_features[feature_index].payload;
+		if (!is_any_unlit_torch_with_trigger(trigger))
+		{
+			trigger_all(trigger);
+		}
 	}
+}
+
+bool is_any_unlit_torch_with_trigger(int trigger)
+{
+	for (Feature::Instance feature : s_features)
+	{
+		if (feature.payload == trigger &&
+			World::read().get_terrain(feature.pos) == Terrain::TorchUnlit)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void open_portrait(Vec3 pos)
@@ -375,6 +457,11 @@ void activate_flipendo_button(Vec3 pos)
 
 void trigger_all(int trigger)
 {
+	if (trigger == c_NoTrigger)
+	{
+		return;
+	}
+
 	// search backwards so indexes stay consistant
 	for (int i = Util::Size(s_features) - 1; i >= 0; --i)
 	{
