@@ -633,10 +633,18 @@ int spawn_secret_areas(Map& map)
 			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
 			++spawned;
 			break;
-		case DoorType::FlipendoButton:
+		case DoorType::FlipendoOpensWall:
 			assert(is_button_good);
 			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
-			                               suggestion.door  .xyz(map_z));
+			                               suggestion.door  .xyz(map_z),
+			                               Terrain::SlidingWall);
+			++spawned;
+			break;
+		case DoorType::FlipendoOpensPortcullis:
+			assert(is_button_good);
+			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
+			                               suggestion.door  .xyz(map_z),
+			                               Terrain::Portcullis);
 			++spawned;
 			break;
 		}
@@ -703,12 +711,22 @@ int spawn_secret_passages(Map& map)
 			}
 			++spawned;
 			break;
-		case DoorType::FlipendoButton:
+		case DoorType::FlipendoOpensWall:
 			assert(are_buttons_good);
 			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
 			                                    suggestion.door1  .xyz(map_z),
 			                                    suggestion.button2.xyz(map_z),
-			                                    suggestion.door2  .xyz(map_z));
+			                                    suggestion.door2  .xyz(map_z),
+			                                    Terrain::SlidingWall);
+			++spawned;
+			break;
+		case DoorType::FlipendoOpensPortcullis:
+			assert(are_buttons_good);
+			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
+			                                    suggestion.door1  .xyz(map_z),
+			                                    suggestion.button2.xyz(map_z),
+			                                    suggestion.door2  .xyz(map_z),
+			                                    Terrain::Portcullis);
 			++spawned;
 			break;
 		}
@@ -759,7 +777,8 @@ bool requires_button(Spawn::DoorType type)
 {
 	switch (type)
 	{
-	case Spawn::DoorType::FlipendoButton:
+	case Spawn::DoorType::FlipendoOpensWall:
+	case Spawn::DoorType::FlipendoOpensPortcullis:
 		return true;
 	default:
 		return false;

@@ -43,6 +43,7 @@ void init_chest(Feature::Instance& feature);
 void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
 void trigger_sliding_wall(Feature::Instance & feature);
+void trigger_portcullis(Feature::Instance & feature);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -88,7 +89,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 	}
 }
 
-void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos)
+void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
+                           Terrain::Type door_type)
 {
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
@@ -101,7 +103,7 @@ void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos)
 		});
 
 	// add the closed door
-	World::edit().set_terrain(door_pos, Terrain::SlidingWall);
+	World::edit().set_terrain(door_pos, door_type);
 	s_features.push_back({
 		.pos = door_pos,
 		.payload = s_next_trigger_id,
@@ -112,7 +114,8 @@ void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos)
 }
 
 void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
-                                Vec3 button2_pos, Vec3 door2_pos)
+                                Vec3 button2_pos, Vec3 door2_pos,
+                                Terrain::Type door_type)
 {
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
@@ -131,13 +134,13 @@ void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
 		});
 
 	// add the closed doors
-	World::edit().set_terrain(door1_pos, Terrain::SlidingWall);
+	World::edit().set_terrain(door1_pos, door_type);
 	s_features.push_back({
 		.pos = door1_pos,
 		.payload = s_next_trigger_id,
 		});
 
-	World::edit().set_terrain(door2_pos, Terrain::SlidingWall);
+	World::edit().set_terrain(door2_pos, door_type);
 	s_features.push_back({
 		.pos = door2_pos,
 		.payload = s_next_trigger_id,
@@ -279,6 +282,9 @@ void trigger_all(int trigger)
 		case Terrain::SlidingWall:
 			trigger_sliding_wall(s_features[i]);
 			break;
+		case Terrain::Portcullis:
+			trigger_portcullis(s_features[i]);
+			break;
 		}
 	}
 }
@@ -291,6 +297,12 @@ void trigger_flipendo_button(Feature::Instance & feature)
 void trigger_sliding_wall(Feature::Instance & feature)
 {
 	Draw::pos_message(feature.pos, "A wall slides open!");
+	Feature::remove(feature.pos);
+}
+
+void trigger_portcullis(Feature::Instance & feature)
+{
+	Draw::pos_message(feature.pos, "A portcullis opens!");
 	Feature::remove(feature.pos);
 }
 

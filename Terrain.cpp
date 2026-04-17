@@ -38,6 +38,7 @@ namespace Terrain
 		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
 		Data{"button",				Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
 		Data{"wall",				Codepoint::SolidBlock,		f_Solid |  f_Feature,					f_None}, // sliding wall
+		Data{"portcullis",			'#',						f_PermitSight | f_Solid |  f_Feature,	f_None},
 	};
 
 	int get_character(Terrain::Type t)

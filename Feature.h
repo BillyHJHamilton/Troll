@@ -19,11 +19,13 @@ namespace Feature
 	void spawn(Vec3 pos, Terrain::Type type);
 
 	// Adds a flipendo button attached to a single door
-	void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos);
+	void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
+	                           Terrain::Type door_type);
 
 	// Adds a pair of flipendo buttons, both attached to the same two doors
 	void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
-	                                Vec3 button2_pos, Vec3 door2_pos);
+	                                Vec3 button2_pos, Vec3 door2_pos,
+	                                Terrain::Type door_type);
 
 	// Move feature, leaving behind open terrain and stomping terrain at new position.
 	void move(Vec3 old_pos, Vec3 new_pos);

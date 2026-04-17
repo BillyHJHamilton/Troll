@@ -21,6 +21,7 @@ namespace Terrain
 		Portrait,
 		FlipendoButton,
 		SlidingWall,
+		Portcullis,
 
 		Count
 	};

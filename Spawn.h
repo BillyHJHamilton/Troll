@@ -10,7 +10,8 @@ namespace Spawn
 	{
 		None,
 		Portrait,
-		FlipendoButton,	// hit the button to open the door
+		FlipendoOpensWall,
+		FlipendoOpensPortcullis,
 		Count,
 	};
 
