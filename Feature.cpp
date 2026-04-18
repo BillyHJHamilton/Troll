@@ -20,9 +20,9 @@ namespace Feature
 // Feature Types:
 //  - Chest - payload is Item::Handle
 //  - Desk - payload is health
-//  - TorchUnlit - no payload
-//  - TorchLit - payload is which trigger id it activates
-// 	           - trigger only activates when the last torch with that trigger is lit
+//  - TorchUnlit - payload is which trigger id it activates
+// 	             - trigger only activates when the last torch with that trigger is lit
+//  - TorchLit - no payload
 //  - Portrait - no payload
 //  - FlipendoButton - payload is which trigger id it activates
 //                   - it also turns into a wall on that trigger
@@ -49,6 +49,7 @@ int constexpr c_NoTrigger = -1;
 // Helper declarations
 
 int find_feature(Vec3 pos);
+void add_feature_internal(Vec3 pos, Terrain::Type terrain, int payload);
 
 void init_chest(Feature::Instance& feature);
 void init_desk(Feature::Instance& feature);
@@ -100,7 +101,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(s_features.back());
 				break;
-			case Terrain::TorchUnlit:  // cosmetic torch
+			case Terrain::TorchUnlit:  // cosmetic torches
+			case Terrain::TorchLit:
 				s_features.back().payload = c_NoTrigger;
 				break;
 			// special initialization
@@ -118,19 +120,11 @@ void spawn(Vec3 pos, Terrain::Type type)
 void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
                        Terrain::Type door_type)
 {
-	// add the torch
-	World::edit().set_terrain(torch_pos, Terrain::TorchUnlit);
-	s_features.push_back({
-		.pos = torch_pos,
-		.payload = s_next_trigger_id,
-		});
+	// it doesn't matter which order we add these
+	//  -> they get rearranged in the array anyway
 
-	// add the closed door
-	World::edit().set_terrain(door_pos, door_type);
-	s_features.push_back({
-		.pos = door_pos,
-		.payload = s_next_trigger_id,
-		});
+	add_feature_internal(torch_pos, Terrain::TorchUnlit, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -139,35 +133,14 @@ void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
 void spawn_torch4_door(Vec3 torch1_pos, Vec3 torch2_pos, Vec3 torch3_pos, Vec3 torch4_pos,
                        Vec3 door_pos, Terrain::Type door_type)
 {
-	// add the torches
-	World::edit().set_terrain(torch1_pos, Terrain::TorchUnlit);
-	s_features.push_back({
-		.pos = torch1_pos,
-		.payload = s_next_trigger_id,
-		});
-	World::edit().set_terrain(torch2_pos, Terrain::TorchUnlit);
-	s_features.push_back({
-		.pos = torch2_pos,
-		.payload = s_next_trigger_id,
-		});
-	World::edit().set_terrain(torch3_pos, Terrain::TorchUnlit);
-	s_features.push_back({
-		.pos = torch3_pos,
-		.payload = s_next_trigger_id,
-		});
-	World::edit().set_terrain(torch4_pos, Terrain::TorchUnlit);
-	s_features.push_back({
-		.pos = torch4_pos,
-		.payload = s_next_trigger_id,
-		});
-	// TODO: add_feature_internal
+	// it doesn't matter which order we add these
+	//  -> they get rearranged in the array anyway
 
-	// add the closed door
-	World::edit().set_terrain(door_pos, door_type);
-	s_features.push_back({
-		.pos = door_pos,
-		.payload = s_next_trigger_id,
-		});
+	add_feature_internal(torch1_pos, Terrain::TorchUnlit, s_next_trigger_id);
+	add_feature_internal(torch2_pos, Terrain::TorchUnlit, s_next_trigger_id);
+	add_feature_internal(torch3_pos, Terrain::TorchUnlit, s_next_trigger_id);
+	add_feature_internal(torch4_pos, Terrain::TorchUnlit, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -179,19 +152,8 @@ void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	// add the button
-	World::edit().set_terrain(button_pos, Terrain::FlipendoButton);
-	s_features.push_back({
-		.pos = button_pos,
-		.payload = s_next_trigger_id,
-		});
-
-	// add the closed door
-	World::edit().set_terrain(door_pos, door_type);
-	s_features.push_back({
-		.pos = door_pos,
-		.payload = s_next_trigger_id,
-		});
+	add_feature_internal(button_pos, Terrain::FlipendoButton, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -204,31 +166,10 @@ void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	// add the buttons
-	World::edit().set_terrain(button1_pos, Terrain::FlipendoButton);
-	s_features.push_back({
-		.pos = button1_pos,
-		.payload = s_next_trigger_id,
-		});
-
-	World::edit().set_terrain(button2_pos, Terrain::FlipendoButton);
-	s_features.push_back({
-		.pos = button2_pos,
-		.payload = s_next_trigger_id,
-		});
-
-	// add the closed doors
-	World::edit().set_terrain(door1_pos, door_type);
-	s_features.push_back({
-		.pos = door1_pos,
-		.payload = s_next_trigger_id,
-		});
-
-	World::edit().set_terrain(door2_pos, door_type);
-	s_features.push_back({
-		.pos = door2_pos,
-		.payload = s_next_trigger_id,
-		});
+	add_feature_internal(button1_pos, Terrain::FlipendoButton, s_next_trigger_id);
+	add_feature_internal(button2_pos, Terrain::FlipendoButton, s_next_trigger_id);
+	add_feature_internal(door1_pos, door_type, s_next_trigger_id);
+	add_feature_internal(door2_pos, door_type, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -270,6 +211,15 @@ void remove(Vec3 pos)
 int find_feature(Vec3 pos)
 {
 	return Util::FindIndexByKey(s_features, &Feature::Instance::pos, pos);
+}
+
+void add_feature_internal(Vec3 pos, Terrain::Type terrain, int payload)
+{
+	World::edit().set_terrain(pos, terrain);
+	s_features.push_back({
+		.pos = pos,
+		.payload = payload,
+		});
 }
 
 //-------------------------------------------------------------------------------------------------

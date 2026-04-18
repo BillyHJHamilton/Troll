@@ -102,9 +102,9 @@ void BuildWorld()
 		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
 		param.door_weights[(int)(Spawn::DoorType::None                   )] = c_MaxZ * 8 - z * 4;
 		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z;
+		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z + 100;
+		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z + 100;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = z + 100;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z + 100;
 	}
 }

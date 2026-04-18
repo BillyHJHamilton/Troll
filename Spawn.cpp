@@ -647,9 +647,9 @@ int spawn_secret_areas(Map& map)
 	// bool parameters: Do we allow:
 	//  - None?     Yes
 	//  - Buttons?  It depends...
-	//  - Torches?  Yes
-	IntTempList buttoned_weights   = revise_door_weights(param, true, true,  true);
-	IntTempList buttonless_weights = revise_door_weights(param, true, false, true);
+	//  - Torches?  It depends...
+	IntTempList triggered_weights   = revise_door_weights(param, true, true,  true);
+	IntTempList triggerless_weights = revise_door_weights(param, true, false, false);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -689,7 +689,7 @@ int spawn_secret_areas(Map& map)
 			break;
 		}
 
-		DoorType door_type = choose_door_type(is_trigger_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(is_trigger_good, triggered_weights, triggerless_weights);
 		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
@@ -751,8 +751,8 @@ int spawn_secret_passages(Map& map)
 	//  - None?     No, secret passages are secret
 	//  - Buttons?  It depends...
 	//  - Torches?  No, doesn't work with needing to extinguish all torches in a set
-	IntTempList buttoned_weights   = revise_door_weights(param, false, true,  false);
-	IntTempList buttonless_weights = revise_door_weights(param, false, false, false);
+	IntTempList triggered_weights   = revise_door_weights(param, false, true,  false);
+	IntTempList triggerless_weights = revise_door_weights(param, false, false, false);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -779,7 +779,7 @@ int spawn_secret_passages(Map& map)
 			}
 		}
 
-		DoorType door_type = choose_door_type(are_buttons_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(are_buttons_good, triggered_weights, triggerless_weights);
 		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
