@@ -24,7 +24,7 @@ Genus get_genus(Type t)
 	switch (t)
 	{
 	case CosmeticTorch:
-	case Armor:
+	case Armour:
 		return Genus::Feature;
 	case Bean:
 	case TreasureNormal:
@@ -123,6 +123,11 @@ int Manager::get_count_desk_blocks() const
 SimpleList const & Manager::get(Type type) const
 {
 	return m_simple_vecs[type];
+}
+
+void Manager :: add_armour(Vec2 position)
+{
+	m_simple_vecs[Armour].push_back(position);
 }
 
 void Manager :: add_cosmetic_torch(Vec2 position)

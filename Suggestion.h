@@ -11,7 +11,7 @@ namespace Suggestion
 	{
 		First = 0,
 
-		Armor,  // placeholder
+		Armour,
 		CosmeticTorch,  // doesn't trigger anything
 
 		Bean,  // placeholder
@@ -90,6 +90,7 @@ namespace Suggestion
 		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
 		Box2List const & get_desk_blocks() const { return m_desk_block_vec; }
 
+		void add_armour(Vec2 position);
 		void add_cosmetic_torch(Vec2 position);
 		void add_treasure_normal(Vec2 position);
 		void add_player_start(Vec2 position);
@@ -97,7 +98,6 @@ namespace Suggestion
 		void add_enemy_moderate(Vec2 position);
 		void add_enemy_strong(Vec2 position);
 		void add_boss(Vec2 position);
-		// TODO: Add more functions when needed
 
 		void add_secret_area(Vec2 door);
 		void add_secret_area(Vec2 door, Vec2 button, Vec2 torch);

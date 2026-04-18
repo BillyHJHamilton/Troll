@@ -35,4 +35,5 @@ namespace Codepoint
 	int constexpr TorchLit = 12344;
 	int constexpr Desk1 = 12345;
 	int constexpr Desk2 = 12346;
+	int constexpr Armour = 12347;
 }

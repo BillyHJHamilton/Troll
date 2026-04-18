@@ -1195,13 +1195,19 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 	{
 		// special room types
 		// TODO: Remove these when we have vaults?
-		if (Random::one_in(5))
+		switch(Random::in_range(0, 10))
 		{
+		case 0:
+		case 1:
 			AddDeskRoomSuggestions(room);
-		}
-		else if (Random::one_in(6))
-		{
+			break;
+		case 2:
+		case 3:
+			AddArmourRoomSuggestions(room);
+			break;
+		case 4:
 			AddCosmeticTorchRoomSuggestions(room);
+			break;
 		}
 
 		if (room.GetRegion() != Room::c_MainRegion &&
@@ -1350,6 +1356,15 @@ void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
 	for (Vec2 pos : positions)
 	{
 		m_Map.edit_suggestions().add_cosmetic_torch(pos);
+	}
+}
+
+void MapGenerator::AddArmourRoomSuggestions(Room const & room) const
+{
+	PosTempList positions =	GetPositionsAlongPlainWall(room);
+	for (Vec2 pos : positions)
+	{
+		m_Map.edit_suggestions().add_armour(pos);
 	}
 }
 

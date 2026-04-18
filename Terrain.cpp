@@ -36,6 +36,7 @@ namespace Terrain
 		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
 		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"armour",				Codepoint::Armour,			f_PermitSight | f_Solid | f_Feature,	f_None},
 		Data{"desk",				Codepoint::Desk1,			f_PermitSight | f_Solid | f_Feature | f_NoAutotarget,	Target::f_Fire | Target::f_Flipendo},
 		Data{"torch",				Codepoint::TorchUnlit,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire}, // unlit
 		Data{"torch",				Codepoint::TorchLit,		f_PermitSight | f_Solid | f_Feature,	f_None}, // lit
@@ -61,13 +62,20 @@ namespace Terrain
 	{
 		switch (t)
 		{
+			case Terrain::Open:
+			case Terrain::OpenNoSpawn:
+			case Terrain::OpenHighlight:
+				return "- the floor";
+			case Terrain::Wall:
+			case Terrain::SlidingWall:
+				return "- the floor";
 			case Terrain::UpStairs: return "- stairs leading up";
 			case Terrain::DownStairs: return "- stairs leading down";
 			case Terrain::Chest: return "- a locked chest";
-			case Terrain::Portrait: return "- a portrait";
+			case Terrain::Armour: return "- a suit of armour";
 			case Terrain::FlipendoButton: return "- a button on the wall";
 			default:
-				return std::string("- the ") + get_name(t);
+				return std::string("- a ") + get_name(t);
 		}
 	}
 

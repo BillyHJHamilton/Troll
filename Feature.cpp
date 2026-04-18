@@ -101,18 +101,19 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(s_features.back());
 				break;
-			case Terrain::TorchUnlit:  // cosmetic torches
+			case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			case Terrain::TorchLit:
 				s_features.back().payload = c_NoTrigger;
 				break;
 			// special initialization
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
+			case Terrain::Portcullis:
 				DebugBreak("Spawn with special spawn functions");
 				break;
 			// no initialization needed
+			// case Terrain::Armour:
 			// case Terrain::Portrait:
-			// case Terrain::TorchLit:
 		}
 	}
 }

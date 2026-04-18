@@ -449,10 +449,13 @@ void spawn_for_map(Map& map, History& history)
 	//  -> otherwise creatures and items spawn on features
 	if (is_first_spawn)
 	{
+		// do we want some (or all) of these to appear in player sight?
+
 		spawn_secret_areas(map);
 		spawn_secret_passages(map);
 		spawn_desks(map);
 		spawn_simple(map, Suggestion::CosmeticTorch, Terrain::TorchUnlit, "torches");
+		spawn_simple(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
 	}
 
 	if (chests_to_spawn > 0)

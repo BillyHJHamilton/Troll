@@ -85,6 +85,7 @@ protected:
 	void AddCorridorToMap(Room const & room) const;
 	void AddDeskRoomSuggestions(Room const & room) const;
 	void AddCosmeticTorchRoomSuggestions(Room const & room) const;
+	void AddArmourRoomSuggestions(Room const & room) const;
 	void AddSecretPassageSuggestions(Room const & room,
 	                                 Room const & neighbour0, Vec2 const & door0,
 	                                 Room const & neighbour1, Vec2 const & door1) const;
