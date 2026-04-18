@@ -11,8 +11,8 @@ namespace Suggestion
 	{
 		First = 0,
 
-		Desk,
-		Torch,
+		Armor,  // placeholder
+		CosmeticTorch,  // doesn't trigger anything
 
 		Bean,  // placeholder
 		TreasureNormal,  // e.g. chest
@@ -27,7 +27,7 @@ namespace Suggestion
 	};
 	// secret areas and secret passages are handles separately
 
-	enum class Genus : byte
+	enum class Genus : byte  // remove these?
 	{
 		Feature = 0,
 		Item,
@@ -71,6 +71,7 @@ namespace Suggestion
 	using SimpleList = std::vector<Vec2>;
 	using SecretAreaList = std::vector<SecretAreaInstance>;
 	using SecretPassageList = std::vector<SecretPassageInstance>;
+	using Box2List = std::vector<Box2>;
 
 	class Manager
 	{
@@ -83,12 +84,13 @@ namespace Suggestion
 		int get_count(Type type) const;
 		int get_count_secret_areas() const;
 		int get_count_secret_passages() const;
+		int get_count_desk_blocks() const;
 		SimpleList const & get(Type type) const;
 		SecretAreaList const & get_secret_areas() const { return m_secret_area_vec; }
 		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
+		Box2List const & get_desk_blocks() const { return m_desk_block_vec; }
 
-		void add_desk(Vec2 position);
-		void add_torch(Vec2 position);
+		void add_cosmetic_torch(Vec2 position);
 		void add_treasure_normal(Vec2 position);
 		void add_player_start(Vec2 position);
 		void add_enemy_weak(Vec2 position);
@@ -101,12 +103,16 @@ namespace Suggestion
 		void add_secret_area(Vec2 door, Vec2 button, Vec2 torch);
 		void add_secret_area(Vec2 door, Vec2 button,
 		                     Vec2 torch1, Vec2 torch2, Vec2 torch3, Vec2 torch4);
+
 		void add_secret_passage(Vec2 door1, Vec2 door2);
 		void add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2);
+
+		void add_desk_block(Box2 block);
 
 		void remove(Type type, int index);
 		void remove_secret_area(int index);
 		void remove_secret_passage(int index);
+		void remove_desk_block(int index);
 
 	private:
 		// Suggestions types that just need a position.
@@ -115,5 +121,6 @@ namespace Suggestion
 		// Suggestions types that need more data have their own vectors.
 		SecretAreaList m_secret_area_vec;
 		SecretPassageList m_secret_passage_vec;
+		Box2List m_desk_block_vec;
 	};
 }

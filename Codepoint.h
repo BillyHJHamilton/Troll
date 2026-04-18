@@ -33,4 +33,6 @@ namespace Codepoint
 	int constexpr CaretUp = 12342;
 	int constexpr TorchUnlit = 12343;
 	int constexpr TorchLit = 12344;
+	int constexpr Desk1 = 12345;
+	int constexpr Desk2 = 12346;
 }

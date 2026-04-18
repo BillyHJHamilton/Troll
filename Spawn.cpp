@@ -70,6 +70,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player);
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
 Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
 	Vec2 const & pos2);
+bool is_good_spawn_area(Map const & map, int min_range_from_player, Box2 const & box2);
 
 // checks for Wall terrain, out of player's sight
 bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2);
@@ -105,6 +106,7 @@ int spawn_simple(Map & map, Suggestion::Type suggestion_type,
                  Terrain::Type terrain_type, char const * cstr_name);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
+int spawn_desks(Map& map);
 
 Vec2 find_boss_spawn_position(Map const& map);
 
@@ -284,6 +286,23 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 	return Problem::None; // It's fine.
 }
 
+bool is_good_spawn_area(Map const & map, int min_range_from_player, Box2 const & box2)
+{
+	int const max_x = box2.max(AXIS_X);
+	int const max_y = box2.max(AXIS_Y);
+	for (int x = box2.min.x; x < max_x; ++x)
+	{
+		for (int y = box2.min.y; y < max_y; ++y)
+		{
+			if (!is_good_spawn_position(map, min_range_from_player, Vec2{ x, y }))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2)
 {
 	Vec3 const pos3 = pos2.xyz(map.get_z());
@@ -432,8 +451,8 @@ void spawn_for_map(Map& map, History& history)
 	{
 		spawn_secret_areas(map);
 		spawn_secret_passages(map);
-		spawn_simple(map, Suggestion::Desk,  Terrain::Desk,       "desks");
-		spawn_simple(map, Suggestion::Torch, Terrain::TorchUnlit, "torches");
+		spawn_desks(map);
+		spawn_simple(map, Suggestion::CosmeticTorch, Terrain::TorchUnlit, "torches");
 	}
 
 	if (chests_to_spawn > 0)
@@ -617,6 +636,7 @@ int spawn_chests(Map& map, int chests_to_spawn)
 int spawn_simple(Map & map, Suggestion::Type suggestion_type,
                  Terrain::Type terrain_type, char const * cstr_name)
 {
+	// not randomized order
 	int spawned = 0;
 	for (Vec2 suggestion : map.read_suggestions().get(suggestion_type))
 	{
@@ -694,7 +714,7 @@ int spawn_secret_areas(Map& map)
 
 		// finally add the door
 
-		int map_z = map.get_z();
+		int const map_z = map.get_z();
 		switch(door_type)
 		{
 		case DoorType::Portrait:
@@ -784,7 +804,7 @@ int spawn_secret_passages(Map& map)
 
 		// finally add the door
 
-		int map_z = map.get_z();
+		int const map_z = map.get_z();
 		switch(door_type)
 		{
 		case DoorType::Portrait:
@@ -813,6 +833,45 @@ int spawn_secret_passages(Map& map)
 	{
 		std::cout << std::format("Hid {} of {} secret passages.\n",
 			spawned, Util::Size(index_list));
+	}
+
+	return spawned;
+}
+
+int spawn_desks(Map& map)
+{
+	// no min range from player
+
+	Spawn::Parameters const& param = map.read_spawn_param();
+
+	// not randomized order
+	int spawned = 0;
+	for (Box2 const & suggestion : map.read_suggestions().get_desk_blocks())
+	{
+		if (!is_good_spawn_area(map, 0, suggestion))
+		{
+			continue;
+		}
+
+		int const map_z = map.get_z();
+
+		// block includes outside border of clear cells
+		int const max_x = suggestion.inner_max(AXIS_X);
+		int const max_y = suggestion.inner_max(AXIS_Y);
+		for (int x = suggestion.min.x + 1; x < max_x; ++x)
+		{
+			for (int y = suggestion.min.y + 1; y < max_y; ++y)
+			{
+				Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
+			}
+		}
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible desk blocks.\n",
+			spawned, map.read_suggestions().get_count_desk_blocks());
 	}
 
 	return spawned;

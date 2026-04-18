@@ -1199,7 +1199,7 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		{
 			AddDeskRoomSuggestions(room);
 		}
-		else if (Random::one_in(4))
+		else if (Random::one_in(6))
 		{
 			AddCosmeticTorchRoomSuggestions(room);
 		}
@@ -1291,40 +1291,55 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 
 void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
 {
-	Box2 const desk_area = room.GetBox().minus_border(1);
-	if (desk_area.size.x < 2 ||
-		desk_area.size.y < 2)
+	int const  min_x = room.GetBox().min.x;
+	int const  min_y = room.GetBox().min.y;
+	int const size_x = room.GetBox().size.x;
+	int const size_y = room.GetBox().size.y;
+	int const  max_x = room.GetBox().max(AXIS_X);
+	int const  max_y = room.GetBox().max(AXIS_Y);
+
+	if (size_x < 4 || size_y < 4)
 	{
 		return;  // room is too small for desks
 	}
 
-	int aisle_x = desk_area.min.x - 1;  // outside room (no aisle)
-	if (desk_area.size.x >= 5 &&
-		desk_area.size.x % 2 != 0)  // there is a center line
-	{
-		aisle_x = desk_area.min.x + desk_area.size.x / 2;  // integer division
-	}
+	bool is_aisle_x = size_x >= 7 && size_x % 2 != 0;
+	bool is_aisle_y = size_y >= 7 && size_y % 2 != 0;
 
-	int aisle_y = desk_area.min.y - 1;  // outside room (no aisle)
-	if (desk_area.size.y >= 5 &&
-		desk_area.size.y % 2 != 0)  // there is a center line
+	if (is_aisle_x)
 	{
-		aisle_y = desk_area.min.y + desk_area.size.y / 2;  // integer division
-	}
+		int half_x = (size_x + 1) / 2;
+		int min2_x = min_x + half_x - 1;
 
-	for (int x = desk_area.min.x; x < desk_area.max().x; ++x)
-	{
-		if (x == aisle_x)
+		if (is_aisle_y)
 		{
-			continue;
+			int half_y = (size_y + 1) / 2;
+			int min2_y = min_y + half_y - 1;
+
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x,  min_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min2_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x,  min_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min2_y, half_x, half_y });
 		}
-		for (int y = desk_area.min.y; y < desk_area.max().y; ++y)
+		else
 		{
-			if (y == aisle_y)
-			{
-				continue;
-			}
-			m_Map.edit_suggestions().add_desk(Vec2{ x, y });
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min_y, half_x, size_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min_y, half_x, size_y });
+		}
+	}
+	else
+	{
+		if (is_aisle_y)
+		{
+			int half_y = (size_y + 1) / 2;
+			int min2_y = min_y + half_y - 1;
+
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x,  min_y, size_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min2_y, size_x, half_y });
+		}
+		else
+		{
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min_y, size_x, size_y });
 		}
 	}
 }
@@ -1334,7 +1349,7 @@ void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
 	PosTempList positions =	GetTorchPositions(room);
 	for (Vec2 pos : positions)
 	{
-		m_Map.edit_suggestions().add_torch(pos);
+		m_Map.edit_suggestions().add_cosmetic_torch(pos);
 	}
 }
 

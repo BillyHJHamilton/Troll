@@ -36,7 +36,7 @@ namespace Terrain
 		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
 		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
-		Data{"desk",				Codepoint::BoxEmpty,		f_PermitSight | f_Solid | f_Feature | f_NoAutotarget,	Target::f_Fire | Target::f_Flipendo},
+		Data{"desk",				Codepoint::Desk1,			f_PermitSight | f_Solid | f_Feature | f_NoAutotarget,	Target::f_Fire | Target::f_Flipendo},
 		Data{"torch",				Codepoint::TorchUnlit,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire}, // unlit
 		Data{"torch",				Codepoint::TorchLit,		f_PermitSight | f_Solid | f_Feature,	f_None}, // lit
 		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},

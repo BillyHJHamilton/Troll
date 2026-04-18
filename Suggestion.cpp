@@ -23,8 +23,8 @@ Genus get_genus(Type t)
 {
 	switch (t)
 	{
-	case Desk:
-	case Torch:
+	case CosmeticTorch:
+	case Armor:
 		return Genus::Feature;
 	case Bean:
 	case TreasureNormal:
@@ -64,6 +64,7 @@ Manager::Manager()
 
 	m_secret_area_vec.reserve(c_DefaultCapacity);
 	m_secret_passage_vec.reserve(c_DefaultCapacity);
+	m_desk_block_vec.reserve(c_DefaultCapacity);
 }
 
 void Manager::serialize(ISerializer & s)
@@ -77,6 +78,7 @@ void Manager::serialize(ISerializer & s)
 
 	s.srz_vector(m_secret_area_vec, "m_secret_area_vec");
 	s.srz_vector(m_secret_passage_vec, "m_secret_passage_vec");
+	s.srz_vector(m_desk_block_vec, "m_desk_block_vec");
 }
 
 int Manager::get_total_count() const
@@ -91,6 +93,7 @@ int Manager::get_total_count() const
 
 	count += Util::Size(m_secret_area_vec);
 	count += Util::Size(m_secret_passage_vec);
+	count += Util::Size(m_desk_block_vec);
 
 	return count;
 }
@@ -112,19 +115,19 @@ int Manager::get_count_secret_passages() const
 	return Util::Size(m_secret_passage_vec);
 }
 
+int Manager::get_count_desk_blocks() const
+{
+	return Util::Size(m_desk_block_vec);
+}
+
 SimpleList const & Manager::get(Type type) const
 {
 	return m_simple_vecs[type];
 }
 
-void Manager :: add_desk(Vec2 position)
+void Manager :: add_cosmetic_torch(Vec2 position)
 {
-	m_simple_vecs[Desk].push_back(position);
-}
-
-void Manager :: add_torch(Vec2 position)
-{
-	m_simple_vecs[Torch].push_back(position);
+	m_simple_vecs[CosmeticTorch].push_back(position);
 }
 
 void Manager :: add_treasure_normal(Vec2 position)
@@ -211,6 +214,11 @@ void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 bu
 	m_secret_passage_vec.push_back(instance);
 }
 
+void Manager :: add_desk_block(Box2 block)
+{
+	m_desk_block_vec.push_back(block);
+}
+
 void Manager :: remove(Type type, int index)
 {
 	assert(is_valid_type(type));
@@ -231,6 +239,13 @@ void Manager :: remove_secret_passage(int index)
 	assert(index < get_count_secret_passages());
 
 	Util::RemoveSwap(m_secret_passage_vec, index);
+}
+
+void Manager :: remove_desk_block(int index)
+{
+	assert(index < get_count_desk_blocks());
+
+	Util::RemoveSwap(m_desk_block_vec, index);
 }
 
 } // namespace Suggestion

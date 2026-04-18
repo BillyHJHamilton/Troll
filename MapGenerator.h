@@ -49,6 +49,7 @@ public:
 protected:
 	using PosTempList = std::vector<Vec2,Scratch<Vec2>>;
 	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
+	// should these be in VectorUtil.h?
 
 	int FindRoomAtPos(Vec2 pos) const;
 
