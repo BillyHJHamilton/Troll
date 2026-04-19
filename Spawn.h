@@ -47,6 +47,9 @@ namespace Spawn
 
 		// Amount of secret areas (1 door each) to seal off
 		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+
+		// Fraction of cosmetic torches (no triggers) that start lit
+		int percent_torches_lit = 50;
 	};
 
 	// Creature spawning constants:

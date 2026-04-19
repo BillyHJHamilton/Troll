@@ -104,7 +104,8 @@ void BuildWorld()
 		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
 		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
 		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
+		param.percent_torches_lit = 80 - z * 10;
 	}
 }

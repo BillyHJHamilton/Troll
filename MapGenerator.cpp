@@ -1352,10 +1352,14 @@ void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
 
 void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
 {
+	// all torches in the room have the same random value
+	//  -> this will be compared as chosen < desired, so 100 is impossible
+	int random_percent = Random::in_range(0, 99);
+
 	PosTempList positions =	GetTorchPositions(room);
 	for (Vec2 pos : positions)
 	{
-		m_Map.edit_suggestions().add_cosmetic_torch(pos);
+		m_Map.edit_suggestions().add_cosmetic_torch(pos, random_percent);
 	}
 }
 

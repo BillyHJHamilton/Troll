@@ -107,6 +107,7 @@ int spawn_simple(Map & map, Suggestion::Type suggestion_type,
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 int spawn_desks(Map& map);
+int spawn_cosmetic_torches(Map & map);
 
 Vec2 find_boss_spawn_position(Map const& map);
 
@@ -454,7 +455,7 @@ void spawn_for_map(Map& map, History& history)
 		spawn_secret_areas(map);
 		spawn_secret_passages(map);
 		spawn_desks(map);
-		spawn_simple(map, Suggestion::CosmeticTorch, Terrain::TorchUnlit, "torches");
+		spawn_cosmetic_torches(map);
 		spawn_simple(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
 	}
 
@@ -845,8 +846,6 @@ int spawn_desks(Map& map)
 {
 	// no min range from player
 
-	Spawn::Parameters const& param = map.read_spawn_param();
-
 	// not randomized order
 	int spawned = 0;
 	for (Box2 const & suggestion : map.read_suggestions().get_desk_blocks())
@@ -874,6 +873,41 @@ int spawn_desks(Map& map)
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Spawned {} of {} possible desk blocks.\n",
+			spawned, map.read_suggestions().get_count_desk_blocks());
+	}
+
+	return spawned;
+}
+
+int spawn_cosmetic_torches(Map& map)
+{
+	// no min range from player
+
+	Spawn::Parameters const& param = map.read_spawn_param();
+
+	// not randomized order
+	int spawned = 0;
+	for (Suggestion::CosmeticTorchInstance const & suggestion :
+		map.read_suggestions().get_cosmetic_torches())
+	{
+		if (!is_good_spawn_position(map, 0, suggestion.position))
+		{
+			continue;
+		}
+
+		std::cout << std::format("Is torch lit?  {} < {}\n",
+			suggestion.random_percent, param.percent_torches_lit);
+		bool is_lit = suggestion.random_percent < param.percent_torches_lit;
+		Terrain::Type torch_type = is_lit ? Terrain::TorchLit : Terrain::TorchUnlit;
+
+		int const map_z = map.get_z();
+		Feature::spawn(suggestion.position.xyz(map.get_z()), torch_type);
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible cosmetic torches.\n",
 			spawned, map.read_suggestions().get_count_desk_blocks());
 	}
 
