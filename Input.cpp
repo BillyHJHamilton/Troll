@@ -386,7 +386,13 @@ bool is_quitting()
 
 void request_quit()
 {
-	// First, save the game if a save file is open.
+	// In case we halted on the death confirm, advance past it.
+	if (Game::get_mode() == GameMode::Confirm)
+	{
+		Confirm::handle_input(TK_ENTER);
+	}
+
+	// Save the game if a save file is open.
 	Game::save();
 
 	s_quit_flag = true;
