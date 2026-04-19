@@ -3,9 +3,9 @@
 #include "Input.h"
 
 #include "Action.h"
-#include "BertieBotts.h" // test
 #include "Bot.h"
 #include "Confirm.h"
+#include "Crosshair.h"
 #include "Draw.h"
 #include "Game.h"
 #include "Geometry.h"
@@ -15,7 +15,6 @@
 #include "Player.h"
 #include "Spawn.h"
 #include "Spell.h"
-#include "Crosshair.h"
 #include "World.h"
 
 #include <cassert>
@@ -237,16 +236,6 @@ Input::Result handle_next_input ()
 			return Result::StartAutomate;
 		}
 
-		// Bean test
-		//if (key == TK_B)
-		//{
-		//	int const flavour = BertieBotts::random_flavour();
-		//	Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
-		//		+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
-		//
-		//	return Result::Handled;
-		//}
-
 #if _DEBUG
 		if (key == TK_D)
 		{
@@ -397,7 +386,13 @@ bool is_quitting()
 
 void request_quit()
 {
-	// First, save the game if a save file is open.
+	// In case we halted on the death confirm, advance past it.
+	if (Game::get_mode() == GameMode::Confirm)
+	{
+		Confirm::handle_input(TK_ENTER);
+	}
+
+	// Save the game if a save file is open.
 	Game::save();
 
 	s_quit_flag = true;

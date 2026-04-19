@@ -412,35 +412,7 @@ void World::update_visibility(Vec3 viewer, int vision_radius)
 		}
 	}
 
-	// EDIT: Unfortunately this approach causes asymmetric LOS.
-	// TODO Implement the new RSPCVT algorithm.
-	// Check LOS along every line in the cache
-	//int const num_lines = LineCache::get_num();
-	//for (int line_id = 0; line_id < num_lines; ++line_id)
-	//{
-	//	LineCache::Itr3D itr(viewer, line_id);
-	//	++itr; // skip start pos
-	//	for (;
-	//		itr && within_range(viewer, *itr, vision_radius);
-	//		++itr)
-	//	{
-	//		set_visibility(*itr, Visibility::Visible);
-
-	//		Terrain::Type t = get_terrain(*itr);
-	//		if (!Terrain::permits_sight(t))
-	//		{
-	//			break;
-	//		}
-	//	}
-	//}
-
 	add_stairs_visibility(viewer);
-
-	// Hack to add visibility on walls that "should" be visible.
-	wall_visibility_hack(viewer, AXIS_X, 1);
-	wall_visibility_hack(viewer, AXIS_X, -1);
-	wall_visibility_hack(viewer, AXIS_Y, 1);
-	wall_visibility_hack(viewer, AXIS_Y, -1);
 }
 
 void World::add_stairs_visibility(Vec3 viewer)
@@ -450,55 +422,6 @@ void World::add_stairs_visibility(Vec3 viewer)
 	{
 		Vec3 const stairs_pos = viewer + Stairs::relative_move(dir);
 		set_visibility(stairs_pos, Visibility::Visible);
-	}
-}
-
-void World::wall_visibility_hack(Vec3 viewer, Axis a, int sign)
-{
-	int constexpr c_MinDist = 3;
-	int constexpr c_MaxDist = 8;
-	for (int r = c_MinDist; r <= c_MaxDist; ++r)
-	{
-		Vec3 const open_pos = viewer.adjusted(a, r*sign);
-
-		if (is_visible(open_pos))
-		{
-			Axis const other_axis = get_other_axis(a);
-			Vec3 const p1 = open_pos.adjusted(other_axis, 1);
-			Vec3 const p2 = open_pos.adjusted(other_axis, 2);
-			Vec3 const m1 = open_pos.adjusted(other_axis, -1);
-			Vec3 const m2 = open_pos.adjusted(other_axis, -2);
-
-			if (is_visible(p1))
-			{
-				if (r >= 5 &&
-					is_visible(p2.adjusted(a, -1*sign)) &&
-					!permits_sight(p2) &&
-					is_solid(p2))
-				{
-					set_visibility(p2, Visibility::Visible);
-				}
-			}
-			else if (!permits_sight(p1) && is_solid(p1))
-			{
-				set_visibility(p1, Visibility::Visible);
-			}
-			
-			if (is_visible(m1))
-			{
-				if (r >= 5 &&
-					is_visible(m2.adjusted(a, -1*sign)) &&
-					!permits_sight(m2) &&
-					is_solid(m2))
-				{
-					set_visibility(m2, Visibility::Visible);
-				}
-			}
-			else if (!permits_sight(m1) && is_solid(m1))
-			{
-				set_visibility(m1, Visibility::Visible);
-			}
-		}
 	}
 }
 
@@ -546,6 +469,17 @@ int World::get_los(Vec3 start, Vec3 end, int range) const
 	for (int line_id : lines)
 	{
 		if (has_los_on_line(start, end, line_id, range))
+		{
+			return line_id;
+		}
+	}
+
+	// Allow testing asymmetric line if the target is a solid block.
+	if (World::is_solid(end))
+	{
+		int const line_id = LineCache::get_asymmetric_line(start.xy(), end.xy());
+		if (line_id != c_Invalid &&
+			has_los_on_line(start, end, line_id, range))
 		{
 			return line_id;
 		}
