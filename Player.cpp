@@ -3,6 +3,7 @@
 
 #include "Action.h"
 #include "Bot.h"
+#include "Colour.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -293,6 +294,21 @@ int get_sugar_bonus ()
 	float const sugar = read_data().sugar;
 	float const adjusted = (sugar - 50.0f) / 4.0f;
 	return Math::RoundToInt(adjusted);
+}
+
+char const* get_sugar_colour ()
+{
+	int const sugar_int = Math::RoundToInt(read_data().sugar);
+	return (sugar_int >= 90) ? cstr_Green :
+		(sugar_int >= 80) ? cstr_LightGreen :
+		(sugar_int >= 70) ? cstr_LighterGreen :
+		(sugar_int >= 60) ? cstr_LightestGreen :
+		(sugar_int >= 50) ? cstr_White :
+		(sugar_int >= 40) ? cstr_LightestOrange :
+		(sugar_int >= 30) ? cstr_LighterFlame:
+		(sugar_int >= 20) ? cstr_LighterRed :
+		(sugar_int >= 10) ? cstr_LightRed :
+		cstr_Red;
 }
 
 void tick_sugar ()

@@ -461,12 +461,13 @@ void print_player_stats(Box2 draw_area)
 	std::stringstream ss;
 
 	int const sugar_int = Math::RoundToInt(Player::get_sugar());
-	//char const* sugar_colour = Player::get_sugar_colour();
+	char const* sugar_colour = Player::get_sugar_colour();
 
 	ss << "Level  " << Player::current_level() << std::endl;
 	ss << "XP     " << Player::current_xp() << " / "
 	   << Player::next_xp_threshold() << std::endl;
-	ss << "Sugar  " << sugar_int << " %" << std::endl;
+	ss << "Sugar  [color=" << sugar_colour << "]"
+		<< sugar_int << " %" << "[/color]" << std::endl;
 	//ss << "Magic  " << Player::handle().skill_magic() << std::endl;
 	ss << std::endl;
 

@@ -54,6 +54,7 @@ namespace Player
 	bool has_acted ();
 	float get_sugar ();
 	int get_sugar_bonus ();
+	char const* get_sugar_colour ();
 	Spell::Index get_recent_miscast ();
 	bool is_game_over ();
 	Score::Ending get_ending ();
