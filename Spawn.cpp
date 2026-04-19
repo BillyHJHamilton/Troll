@@ -289,8 +289,8 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 
 bool is_good_spawn_area(Map const & map, int min_range_from_player, Box2 const & box2)
 {
-	int const max_x = box2.max(AXIS_X);
-	int const max_y = box2.max(AXIS_Y);
+	int const max_x = box2.max(c_AxisX);
+	int const max_y = box2.max(c_AxisY);
 	for (int x = box2.min.x; x < max_x; ++x)
 	{
 		for (int y = box2.min.y; y < max_y; ++y)
@@ -858,8 +858,8 @@ int spawn_desks(Map& map)
 		int const map_z = map.get_z();
 
 		// block includes outside border of clear cells
-		int const max_x = suggestion.inner_max(AXIS_X);
-		int const max_y = suggestion.inner_max(AXIS_Y);
+		int const max_x = suggestion.inner_max(c_AxisX);
+		int const max_y = suggestion.inner_max(c_AxisY);
 		for (int x = suggestion.min.x + 1; x < max_x; ++x)
 		{
 			for (int y = suggestion.min.y + 1; y < max_y; ++y)

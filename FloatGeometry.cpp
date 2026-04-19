@@ -8,7 +8,7 @@ FloatLineItr::FloatLineItr(FloatVec2 start, FloatVec2 end)
 	if (!Check(end != start))
 	{
 		steps_left = 0;
-		long_axis = AXIS_X;
+		long_axis = c_AxisX;
 		long_sign = 0;
 		slope = 0.0f;
 		return;
@@ -20,14 +20,14 @@ FloatLineItr::FloatLineItr(FloatVec2 start, FloatVec2 end)
 	if (abs(dx) > abs(dy))
 	{
 		steps_left = Math::RoundToInt(abs(dx));
-		long_axis = AXIS_X;
+		long_axis = c_AxisX;
 		long_sign = Math::Sign(dx);
 		slope = dy/abs(dx);
 	}
 	else
 	{
 		steps_left = Math::RoundToInt(abs(dy));
-		long_axis = AXIS_Y;
+		long_axis = c_AxisY;
 		long_sign = Math::Sign(dy);
 		slope = dx/abs(dy);
 	}

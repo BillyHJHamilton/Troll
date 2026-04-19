@@ -130,7 +130,7 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	}
 
 	Axis const join_axis = (adjacent_edge == c_CompassEast || adjacent_edge == c_CompassWest) ?
-		AXIS_X : AXIS_Y;
+		c_AxisX : c_AxisY;
 
 	// Establish the area we are trying to link to.
 	Box2 border_box = my_box.outer_border_box(adjacent_edge);
@@ -1301,8 +1301,8 @@ void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
 	int const  min_y = room.GetBox().min.y;
 	int const size_x = room.GetBox().size.x;
 	int const size_y = room.GetBox().size.y;
-	int const  max_x = room.GetBox().max(AXIS_X);
-	int const  max_y = room.GetBox().max(AXIS_Y);
+	int const  max_x = room.GetBox().max(c_AxisX);
+	int const  max_y = room.GetBox().max(c_AxisY);
 
 	if (size_x < 4 || size_y < 4)
 	{
@@ -1568,8 +1568,8 @@ MapGenerator::PosTempList MapGenerator::GetPositionsAlongPlainWall(Room const & 
 
 	int const x_min = room.GetBox().min.x;
 	int const y_min = room.GetBox().min.y;
-	int const x_max = room.GetBox().inner_max(AXIS_X);
-	int const y_max = room.GetBox().inner_max(AXIS_Y);
+	int const x_max = room.GetBox().inner_max(c_AxisX);
+	int const y_max = room.GetBox().inner_max(c_AxisY);
 
 	// search along X sides of room
 
@@ -1644,8 +1644,8 @@ MapGenerator::PosTempList MapGenerator::GetPlainWallPositions(Room const & room)
 
 	int const inside_x_min = room.GetBox().min.x;
 	int const inside_y_min = room.GetBox().min.y;
-	int const inside_x_max = room.GetBox().inner_max(AXIS_X);
-	int const inside_y_max = room.GetBox().inner_max(AXIS_Y);
+	int const inside_x_max = room.GetBox().inner_max(c_AxisX);
+	int const inside_y_max = room.GetBox().inner_max(c_AxisY);
 
 	// search along X sides of room
 
@@ -1739,8 +1739,8 @@ void MapGenerator::PrintAllRooms() const
 		}
 
 		Box2 const & box = m_RoomVec[r].GetBox();
-		std::cout << "\t  (" << box.min.x << " - " << box.max(AXIS_X)
-		         << ",\t"    << box.min.y << " - " << box.max(AXIS_Y) << ")";
+		std::cout << "\t  (" << box.min.x << " - " << box.max(c_AxisX)
+		         << ",\t"    << box.min.y << " - " << box.max(c_AxisY) << ")";
 
 		if(m_RoomVec[r].IsInMainRegion())
 		{

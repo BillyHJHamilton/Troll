@@ -90,7 +90,7 @@ private:
 	RoomType m_RoomType;
 
 	Stairs::Direction m_StairsDirection = Stairs::None;
-	Axis m_CorridorAxis = AXIS_X;
+	Axis m_CorridorAxis = c_AxisX;
 
 	int m_Region = c_MainRegion;
 	std::vector<int> m_Neighbours; // indices of other rooms

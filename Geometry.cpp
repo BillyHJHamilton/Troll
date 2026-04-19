@@ -108,11 +108,11 @@ Axis get_long_axis(Vec2 v)
 {
 	if (abs(v.x) >= abs(v.y))
 	{
-		return AXIS_X;
+		return c_AxisX;
 	}
 	else
 	{
-		return AXIS_Y;
+		return c_AxisY;
 	}
 }
 
@@ -294,19 +294,19 @@ Box2 Box2::intersection (Box2 other) const
 
 CompassDirection Box2::adjacent_edge (Box2 other) const
 {
-	if (other.min.x == max(AXIS_X) && overlaps_on_axis(other, AXIS_Y))
+	if (other.min.x == max(c_AxisX) && overlaps_on_axis(other, c_AxisY))
 	{
 		return c_CompassEast;
 	}
-	else if (other.max(AXIS_X) == min.x && overlaps_on_axis(other, AXIS_Y))
+	else if (other.max(c_AxisX) == min.x && overlaps_on_axis(other, c_AxisY))
 	{
 		return c_CompassWest;
 	}
-	else if (other.max(AXIS_Y) == min.y && overlaps_on_axis(other, AXIS_X))
+	else if (other.max(c_AxisY) == min.y && overlaps_on_axis(other, c_AxisX))
 	{
 		return c_CompassNorth;
 	}
-	else if (other.min.y == max(AXIS_Y) && overlaps_on_axis(other, AXIS_X))
+	else if (other.min.y == max(c_AxisY) && overlaps_on_axis(other, c_AxisX))
 	{
 		return c_CompassSouth;
 	}
@@ -353,13 +353,13 @@ Vec2 Box2::snap_to_inner_border(Vec2 v, CompassDirection edge) const
 	switch(edge)
 	{
 		case c_CompassEast:
-			return Vec2{inner_max(AXIS_X), v.y};
+			return Vec2{inner_max(c_AxisX), v.y};
 		case c_CompassNorth:
 			return Vec2{v.x, min.y};
 		case c_CompassWest:
 			return Vec2{min.x, v.y};
 		case c_CompassSouth:
-			return Vec2{v.x, inner_max(AXIS_Y)};
+			return Vec2{v.x, inner_max(c_AxisY)};
 		default:
 			DebugBreak();
 			return v;
@@ -371,13 +371,13 @@ Vec2 Box2::snap_to_outer_border(Vec2 v, CompassDirection edge) const
 	switch(edge)
 	{
 		case c_CompassEast:
-			return Vec2{max(AXIS_X), v.y};
+			return Vec2{max(c_AxisX), v.y};
 		case c_CompassNorth:
 			return Vec2{v.x, min.y - 1};
 		case c_CompassWest:
 			return Vec2{min.x - 1, v.y};
 		case c_CompassSouth:
-			return Vec2{v.x, max(AXIS_Y)};
+			return Vec2{v.x, max(c_AxisY)};
 		default:
 			DebugBreak();
 			return v;
@@ -389,13 +389,13 @@ Box2 Box2::inner_border_box(CompassDirection edge) const
 	switch(edge)
 	{
 		case c_CompassEast:
-			return Box2{inner_max(AXIS_X), min.y, 0, size.y};
+			return Box2{inner_max(c_AxisX), min.y, 0, size.y};
 		case c_CompassNorth:
 			return Box2{min.x, min.y, size.x, 1};
 		case c_CompassWest:
 			return Box2{min.x, min.y, 1, size.y};
 		case c_CompassSouth:
-			return Box2{min.x, inner_max(AXIS_Y), size.x, 1};
+			return Box2{min.x, inner_max(c_AxisY), size.x, 1};
 		default:
 			DebugBreak();
 			return *this;
@@ -407,13 +407,13 @@ Box2 Box2::outer_border_box(CompassDirection edge) const
 	switch(edge)
 	{
 		case c_CompassEast:
-			return Box2{max(AXIS_X), min.y, 1, size.y};
+			return Box2{max(c_AxisX), min.y, 1, size.y};
 		case c_CompassNorth:
 			return Box2{min.x, min.y - 1, size.x, 1};
 		case c_CompassWest:
 			return Box2{min.x - 1, min.y, 1, size.y};
 		case c_CompassSouth:
-			return Box2{min.x, max(AXIS_Y), size.x, 1};
+			return Box2{min.x, max(c_AxisY), size.x, 1};
 		default:
 			DebugBreak();
 			return *this;
@@ -480,7 +480,7 @@ BoxItr::BoxItr (Box2 box)
 void BoxItr::advance ()
 {
 	++ current.x;
-	if (current.x >= box.max(AXIS_X))
+	if (current.x >= box.max(c_AxisX))
 	{
 		current.x = box.min.x;
 		++ current.y;
@@ -489,7 +489,7 @@ void BoxItr::advance ()
 
 bool BoxItr::finished () const
 {
-	return current.y >= box.max(AXIS_Y);
+	return current.y >= box.max(c_AxisY);
 }
 
 BoxItr begin(Box2 b)
@@ -500,6 +500,6 @@ BoxItr begin(Box2 b)
 BoxItr end(Box2 box)
 {
 	BoxItr end_itr(box);
-	end_itr.current.y = box.max(AXIS_Y);
+	end_itr.current.y = box.max(c_AxisY);
 	return end_itr;
 }
