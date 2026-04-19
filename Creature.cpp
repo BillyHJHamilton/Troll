@@ -842,6 +842,11 @@ void Handle::update_derived_stats ()
 		ds.evasion += 12;
 	}
 
+	if (is_player())
+	{
+		ds.evasion += Player::get_sugar_bonus();
+		ds.accuracy += Player::get_sugar_bonus();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

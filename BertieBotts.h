@@ -12,7 +12,7 @@ namespace BertieBotts
 	std::string get_name_capitalized(int flavour);
 
 	// Not currently in use
-	//int random_heal_amount(int flavour);
+	int random_sugar_amount(int flavour);
 
 	std::string eat_message(int flavour);
 }

@@ -318,7 +318,8 @@ UseResult Handle::use_bbbean()
 {
 	Draw::add_message("You eat a bean.  " + BertieBotts::eat_message(flavour()));
 
-	//Player::handle().heal_hp(BertieBotts::random_heal_amount(flavour()));
+	int const amount = BertieBotts::random_sugar_amount(flavour());
+	Player::gain_sugar(amount);
 
 	return UseResult::Consumed;
 }

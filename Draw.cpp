@@ -7,6 +7,7 @@
 #include "Gingerbread.h"
 #include "Input.h"
 #include "Map.h"
+#include "Math.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Stairs.h"
@@ -459,10 +460,14 @@ void print_player_stats(Box2 draw_area)
 {
 	std::stringstream ss;
 
+	int const sugar_int = Math::RoundToInt(Player::get_sugar());
+	//char const* sugar_colour = Player::get_sugar_colour();
+
 	ss << "Level  " << Player::current_level() << std::endl;
 	ss << "XP     " << Player::current_xp() << " / "
 	   << Player::next_xp_threshold() << std::endl;
-	ss << "Magic  " << Player::handle().skill_magic() << std::endl;
+	ss << "Sugar  " << sugar_int << " %" << std::endl;
+	//ss << "Magic  " << Player::handle().skill_magic() << std::endl;
 	ss << std::endl;
 
 	format_creature_stats(ss, Creature::Player);
