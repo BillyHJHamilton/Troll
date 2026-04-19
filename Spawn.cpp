@@ -102,8 +102,8 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
-int spawn_simple(Map & map, Suggestion::Type suggestion_type,
-                 Terrain::Type terrain_type, char const * cstr_name);
+int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
+                         Terrain::Type terrain_type, char const * name);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
 int spawn_desks(Map& map);
@@ -456,7 +456,7 @@ void spawn_for_map(Map& map, History& history)
 		spawn_secret_passages(map);
 		spawn_desks(map);
 		spawn_cosmetic_torches(map);
-		spawn_simple(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
+		spawn_simple_feature(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
 	}
 
 	if (chests_to_spawn > 0)
@@ -637,8 +637,8 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	return spawned;
 }
 
-int spawn_simple(Map & map, Suggestion::Type suggestion_type,
-                 Terrain::Type terrain_type, char const * cstr_name)
+int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
+                         Terrain::Type terrain_type, char const* name)
 {
 	// not randomized order
 	int spawned = 0;
@@ -656,7 +656,7 @@ int spawn_simple(Map & map, Suggestion::Type suggestion_type,
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Spawned {} of {} possible {}.\n",
-			spawned, map.read_suggestions().get_count(suggestion_type), cstr_name);
+			spawned, map.read_suggestions().get_count(suggestion_type), name);
 	}
 
 	return spawned;

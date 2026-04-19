@@ -1365,10 +1365,15 @@ void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
 
 void MapGenerator::AddArmourRoomSuggestions(Room const & room) const
 {
+	// TODO: Armour flanking doorways sometimes
+
 	PosTempList positions =	GetPositionsAlongPlainWall(room);
 	for (Vec2 pos : positions)
 	{
-		m_Map.edit_suggestions().add_armour(pos);
+		if ((pos.x + pos.y) % 2 == 0)  // every other space
+		{
+			m_Map.edit_suggestions().add_armour(pos);
+		}
 	}
 }
 

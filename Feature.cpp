@@ -19,7 +19,7 @@ namespace Feature
 
 // Feature Types:
 //  - Chest - payload is Item::Handle
-//  - Desk - payload is health
+//  - Desk - no payload
 //  - TorchUnlit - payload is which trigger id it activates
 // 	             - trigger only activates when the last torch with that trigger is lit
 //  - TorchLit - no payload
@@ -32,10 +32,7 @@ namespace Feature
 struct Instance
 {
 	Vec3 pos;
-
-	// should each Feature know its type?
-	//  -> pro: faster, avoids awkward lookup
-	//  -> con: redundant data, could get out of sync
+	int hp;
 
 	// Parameters to be interpreted based on type of feature.
 	int payload;
@@ -43,20 +40,42 @@ struct Instance
 std::vector<Feature::Instance> s_features;
 
 int s_next_trigger_id = 0;
-int constexpr c_NoTrigger = -1;
+
+enum class Material
+{
+	Stone,
+	Metal,
+	Wood,
+	Count,
+};
+
+// TODO: Proper resistance table for Features
+//  -> initialize at game start
+//  -> replace get_resistance funciton
+//Grid<float> s_resistances = Grid<float>((int)(Material::Count), Damage::Type::Count, 1.0f);
+// //
+// Could use std::unordered_map from the terrain type to material
+//  -> most terrains won't need an entry.
+float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =
+{
+	//	Basic	ToLife	Fire	Acid
+	{	0.0f,	0.0f,	0.0f,	0.0f,	},	// Stone
+	{	0.0f,	0.0f,	0.0f,	1.0f,	},	// Metal
+	{	1.0f,	0.0f,	2.0f,	0.0f,	},	// Wood
+};
 
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
 int find_feature(Vec3 pos);
-void add_feature_internal(Vec3 pos, Terrain::Type terrain, int payload);
+void add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
 
 void init_chest(Feature::Instance& feature);
 void init_desk(Feature::Instance& feature);
 
-int damage_resistance_wood(int damage_amount, Damage::Type damage_type);
+void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
+                  Material const material, std::string const name);
 
-void damage_desk(Vec3 pos, int damage_amount, Damage::Type damage_type);
 void light_torch(Vec3 pos);
 bool is_any_unlit_torch_with_trigger(int trigger);
 
@@ -89,8 +108,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
-		World::edit().set_terrain(pos, type);
-		s_features.push_back({ .pos = pos });
+		add_feature_internal(pos, type, c_Invalid, c_Invalid);
 
 		// Feature-specific initialization.
 		switch (type)
@@ -103,7 +121,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 				break;
 			case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			case Terrain::TorchLit:
-				s_features.back().payload = c_NoTrigger;
+				s_features.back().payload = c_Invalid;
 				break;
 			// special initialization
 			case Terrain::FlipendoButton:
@@ -124,8 +142,8 @@ void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	add_feature_internal(torch_pos, Terrain::TorchUnlit, s_next_trigger_id);
-	add_feature_internal(door_pos, door_type, s_next_trigger_id);
+	add_feature_internal(torch_pos, Terrain::TorchUnlit, c_Invalid, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, c_Invalid, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -137,11 +155,11 @@ void spawn_torch4_door(Vec3 torch1_pos, Vec3 torch2_pos, Vec3 torch3_pos, Vec3 t
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	add_feature_internal(torch1_pos, Terrain::TorchUnlit, s_next_trigger_id);
-	add_feature_internal(torch2_pos, Terrain::TorchUnlit, s_next_trigger_id);
-	add_feature_internal(torch3_pos, Terrain::TorchUnlit, s_next_trigger_id);
-	add_feature_internal(torch4_pos, Terrain::TorchUnlit, s_next_trigger_id);
-	add_feature_internal(door_pos, door_type, s_next_trigger_id);
+	add_feature_internal(torch1_pos, Terrain::TorchUnlit, c_Invalid, s_next_trigger_id);
+	add_feature_internal(torch2_pos, Terrain::TorchUnlit, c_Invalid, s_next_trigger_id);
+	add_feature_internal(torch3_pos, Terrain::TorchUnlit, c_Invalid, s_next_trigger_id);
+	add_feature_internal(torch4_pos, Terrain::TorchUnlit, c_Invalid, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, c_Invalid, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -153,8 +171,8 @@ void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	add_feature_internal(button_pos, Terrain::FlipendoButton, s_next_trigger_id);
-	add_feature_internal(door_pos, door_type, s_next_trigger_id);
+	add_feature_internal(button_pos, Terrain::FlipendoButton, c_Invalid, s_next_trigger_id);
+	add_feature_internal(door_pos, door_type, c_Invalid, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -167,10 +185,10 @@ void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
 	// it doesn't matter which order we add these
 	//  -> they get rearranged in the array anyway
 
-	add_feature_internal(button1_pos, Terrain::FlipendoButton, s_next_trigger_id);
-	add_feature_internal(button2_pos, Terrain::FlipendoButton, s_next_trigger_id);
-	add_feature_internal(door1_pos, door_type, s_next_trigger_id);
-	add_feature_internal(door2_pos, door_type, s_next_trigger_id);
+	add_feature_internal(button1_pos, Terrain::FlipendoButton, c_Invalid, s_next_trigger_id);
+	add_feature_internal(button2_pos, Terrain::FlipendoButton, c_Invalid, s_next_trigger_id);
+	add_feature_internal(door1_pos, door_type, c_Invalid, s_next_trigger_id);
+	add_feature_internal(door2_pos, door_type, c_Invalid, s_next_trigger_id);
 
 	// finished setting up this trigger
 	++s_next_trigger_id;
@@ -214,11 +232,12 @@ int find_feature(Vec3 pos)
 	return Util::FindIndexByKey(s_features, &Feature::Instance::pos, pos);
 }
 
-void add_feature_internal(Vec3 pos, Terrain::Type terrain, int payload)
+void add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
 {
 	World::edit().set_terrain(pos, terrain);
 	s_features.push_back({
 		.pos = pos,
+		.hp = hp,
 		.payload = payload,
 		});
 }
@@ -226,42 +245,19 @@ void add_feature_internal(Vec3 pos, Terrain::Type terrain, int payload)
 //-------------------------------------------------------------------------------------------------
 // Semi-specific functions
 
-void hit_by_fire(Vec3 pos, int damage_amount)
-{
-	switch (World::read().get_terrain(pos))
-	{
-	case Terrain::TorchUnlit:
-		light_torch(pos);
-		break;
-	default:
-		damage(pos, damage_amount, Damage::Type::Fire);
-		break;
-	}
-}
-
-void damage(Vec3 pos, int damage_amount, Damage::Type damage_type)
+void damage(Vec3 pos, Damage::Packet const& damage_packet)
 {
 	switch (World::read().get_terrain(pos))
 	{
 	case Terrain::Desk:
-		damage_desk(pos, damage_amount, damage_type);
+		damage_basic(pos, damage_packet, Material::Wood, "desk");
 		break;
-	}
-}
-
-int damage_resistance_wood(int damage_amount, Damage::Type damage_type)
-{
-	switch (damage_type)
-	{
-	case Damage::Basic:
-		return damage_amount;
-	case Damage::Fire:
-		return damage_amount * 2;
-	case Damage::Acid:
-		return 0;
-	default:
-		DebugBreak("Missing damage type in damage_resistance_wood");
-		return 0;
+	case Terrain::TorchUnlit:
+		if (damage_packet.type == Damage::Type::Fire)
+		{
+			light_torch(pos);
+		}
+		break;
 	}
 }
 
@@ -319,36 +315,49 @@ void open_chest(Vec3 pos)
 
 void init_desk(Feature::Instance& feature)
 {
-	feature.payload = Random::in_range(3, 8);  // health
+	feature.hp = Random::in_range(3, 8);  // health
 }
 
-void damage_desk(Vec3 pos, int damage_amount, Damage::Type damage_type)
+void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
+                  Material const material, std::string const name)
 {
 	int const feature_index = find_feature(pos);
 	if (Check(feature_index != c_Invalid))
 	{
-		Feature::Instance& feature = s_features[feature_index];
-		int const damage_adjusted = damage_resistance_wood(damage_amount, damage_type);
-		feature.payload -= damage_adjusted;
+		float const resistance =
+			c_Resistances[(int)(Material::Wood)][damage_packet.type];
+		int const damage_adjusted = (int)(damage_packet.amount * resistance);
 
-		if (feature.payload <= 0)
+		Feature::Instance& feature = s_features[feature_index];
+		feature.hp -= damage_adjusted;
+
+		if (feature.hp <= 0)
 		{
-			Draw::pos_message(pos, "The desk is destroyed!");
+			Draw::pos_message(pos, "The " + name + " is destroyed!");
 			Feature::remove(pos);
+		}
+		else if(damage_adjusted > 0)
+		{
+			switch (damage_packet.type)
+			{
+			case Damage::Basic:
+				Draw::pos_message(pos, "The " + name + " is damaged.");
+				break;
+			case Damage::ToLife:
+				Draw::pos_message(pos, "The " + name + " is damaged biologically.");
+				Draw::pos_message(pos, "This should be impossible.");
+				break;
+			case Damage::Fire:
+				Draw::pos_message(pos, "The " + name + " is burned.");
+				break;
+			case Damage::Acid:
+				Draw::pos_message(pos, "The " + name + " is burned by acid.");
+				break;
+			}
 		}
 		else
 		{
-			switch (damage_type)
-			{
-			case Damage::Basic:
-				Draw::pos_message(pos, "The desk is damaged.");
-				break;
-			case Damage::Fire:
-				Draw::pos_message(pos, "The desk is burned.");
-				break;
-			// print nothing (immune)
-			//case Damage::Acid:
-			}
+			Draw::pos_message(pos, "The " + name + " is not affected.");
 		}
 	}
 }
@@ -358,7 +367,7 @@ void light_torch(Vec3 pos)
 	int const feature_index = find_feature(pos);
 	if (Check(feature_index != c_Invalid))
 	{
-		Draw::pos_message(pos, "The torch burst into flames!");
+		Draw::pos_message(pos, "The torch bursts into flames!");
 		World::edit().set_terrain(pos, Terrain::TorchLit);
 
 		int trigger = s_features[feature_index].payload;
@@ -371,7 +380,7 @@ void light_torch(Vec3 pos)
 
 bool is_any_unlit_torch_with_trigger(int trigger)
 {
-	for (Feature::Instance feature : s_features)
+	for (const Feature::Instance & feature : s_features)
 	{
 		if (feature.payload == trigger &&
 			World::read().get_terrain(feature.pos) == Terrain::TorchUnlit)
@@ -398,7 +407,7 @@ void activate_flipendo_button(Vec3 pos)
 	if (Check(feature_index != c_Invalid))
 	{
 		// only print a message for the one button we cast on
-		//  -> others on the same trigger flip silently
+		//  -> other buttons on the same trigger flip silently
 		Draw::pos_message(pos, "The button flips.");
 
 		// this Feature is removed when it triggers itself
@@ -408,7 +417,7 @@ void activate_flipendo_button(Vec3 pos)
 
 void trigger_all(int trigger)
 {
-	if (trigger == c_NoTrigger)
+	if (trigger == c_Invalid)
 	{
 		return;
 	}

@@ -45,8 +45,7 @@ namespace Feature
 	void remove(Vec3 pos);
 
 	// Semi-specific functions:
-	void hit_by_fire(Vec3 pos, int damage_amount);
-	void damage(Vec3 pos, int damage_amount, Damage::Type damage_type);
+	void damage(Vec3 pos, Damage::Packet const& damage_packet);
 
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);

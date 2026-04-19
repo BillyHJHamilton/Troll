@@ -6,6 +6,8 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
+	// TODO: Split into doors and triggers
+	//  -> portrait has no trigger, but hopefully others mix-and-match
 	enum class DoorType : int
 	{
 		None,

@@ -108,9 +108,6 @@ void fire_gob_hit(EffectParams params)
 				Grammar::You_are(target)));
 		}
 	}
-
-	// fire gob vs feature
-	Feature::hit_by_fire(params.target_pos, Ability::get_damage(Ability::ShootFire));
 }
 
 void doxy_bite(EffectParams params)

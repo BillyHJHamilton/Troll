@@ -29,7 +29,7 @@ static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
 	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	&eat_bean,		Target::Self,	f_None },
 	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	&headbutt,		Target::Melee,	f_None },
 	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	&fire_gob_hit,	Target::Beam,	Target::f_Fire },
-	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	&doxy_bite,		Target::Melee,	f_None },
+	/* DoxyBite */	Ability::Data{	Damage::ToLife,	1,	75,	1,	1,1,	&doxy_bite,		Target::Melee,	f_None },
 	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	&trip_kick,		Target::Melee,	f_None },
 	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	&scratch,		Target::Melee,	f_None },
 	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,7,	&believe,		Target::Self,	f_None },
