@@ -6,12 +6,16 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
+	// TODO: Split into doors and triggers
+	//  -> portrait has no trigger, but hopefully others mix-and-match
 	enum class DoorType : int
 	{
 		None,
 		Portrait,
 		FlipendoOpensWall,
 		FlipendoOpensPortcullis,
+		TorchesOpensWall,
+		TorchesOpensPortcullis,
 		Count,
 	};
 
@@ -45,6 +49,9 @@ namespace Spawn
 
 		// Amount of secret areas (1 door each) to seal off
 		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+
+		// Fraction of cosmetic torches (no triggers) that start lit
+		int percent_torches_lit = 50;
 	};
 
 	// Creature spawning constants:

@@ -1191,14 +1191,34 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		Vec2 pos = GetPosAtRoomBack(room);
 		m_Map.edit_suggestions().add_treasure_normal(pos);
 	}
-	else if (room.GetRegion() != Room::c_MainRegion &&
-	         room.GetNeighbourCount() >= 3)
+	else
 	{
-		// junction to several regions
+		// special room types
+		// TODO: Remove these when we have vaults?
+		switch(Random::in_range(0, 10))
+		{
+		case 0:
+		case 1:
+			AddDeskRoomSuggestions(room);
+			break;
+		case 2:
+		case 3:
+			AddArmourRoomSuggestions(room);
+			break;
+		case 4:
+			AddCosmeticTorchRoomSuggestions(room);
+			break;
+		}
 
-		// add a guard
-		Vec2 const roomCenter = room.GetBox().centre();
-		m_Map.edit_suggestions().add_enemy_moderate(roomCenter);
+		if (room.GetRegion() != Room::c_MainRegion &&
+			room.GetNeighbourCount() >= 3)
+		{
+			// junction to several regions
+
+			// add a guard
+			Vec2 const roomCenter = room.GetBox().centre();
+			m_Map.edit_suggestions().add_enemy_moderate(roomCenter);
+		}
 	}
 }
 
@@ -1275,6 +1295,88 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 	}*/
 }
 
+void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
+{
+	int const  min_x = room.GetBox().min.x;
+	int const  min_y = room.GetBox().min.y;
+	int const size_x = room.GetBox().size.x;
+	int const size_y = room.GetBox().size.y;
+	int const  max_x = room.GetBox().max(AXIS_X);
+	int const  max_y = room.GetBox().max(AXIS_Y);
+
+	if (size_x < 4 || size_y < 4)
+	{
+		return;  // room is too small for desks
+	}
+
+	bool is_aisle_x = size_x >= 7 && size_x % 2 != 0;
+	bool is_aisle_y = size_y >= 7 && size_y % 2 != 0;
+
+	if (is_aisle_x)
+	{
+		int half_x = (size_x + 1) / 2;
+		int min2_x = min_x + half_x - 1;
+
+		if (is_aisle_y)
+		{
+			int half_y = (size_y + 1) / 2;
+			int min2_y = min_y + half_y - 1;
+
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x,  min_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min2_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x,  min_y, half_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min2_y, half_x, half_y });
+		}
+		else
+		{
+			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min_y, half_x, size_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min_y, half_x, size_y });
+		}
+	}
+	else
+	{
+		if (is_aisle_y)
+		{
+			int half_y = (size_y + 1) / 2;
+			int min2_y = min_y + half_y - 1;
+
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x,  min_y, size_x, half_y });
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min2_y, size_x, half_y });
+		}
+		else
+		{
+			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min_y, size_x, size_y });
+		}
+	}
+}
+
+void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
+{
+	// all torches in the room have the same random value
+	//  -> this will be compared as chosen < desired, so 100 is impossible
+	int random_percent = Random::in_range(0, 99);
+
+	PosTempList positions =	GetTorchPositions(room);
+	for (Vec2 pos : positions)
+	{
+		m_Map.edit_suggestions().add_cosmetic_torch(pos, random_percent);
+	}
+}
+
+void MapGenerator::AddArmourRoomSuggestions(Room const & room) const
+{
+	// TODO: Armour flanking doorways sometimes
+
+	PosTempList positions =	GetPositionsAlongPlainWall(room);
+	for (Vec2 pos : positions)
+	{
+		if ((pos.x + pos.y) % 2 == 0)  // every other space
+		{
+			m_Map.edit_suggestions().add_armour(pos);
+		}
+	}
+}
+
 void MapGenerator::AddSecretPassageSuggestions(Room const & room,
                                                Room const & neighbour0, Vec2 const & door0,
                                                Room const & neighbour1, Vec2 const & door1) const
@@ -1315,17 +1417,33 @@ void MapGenerator::AddSecretPassageSuggestions(Room const & room,
 void MapGenerator::AddSecretAreaSuggestions(Room const & room,
                                             Room const & neighbour, Vec2 const & door) const
 {
-	PosTempList posList = GetPlainWallPositions(neighbour);
-	if (Util::Size(posList) > 0)
+	PosTempList button_pos_list = GetPlainWallPositions(neighbour);
+	PosTempList torch_pos_list  = GetTorchPositions(neighbour);
+
+	if (Util::Size(button_pos_list) > 0 &&
+		Util::Size(torch_pos_list) > 0)
 	{
-		Vec2 button_pos = Random::from_vector(posList);
+		Vec2 button_pos = Random::from_vector(button_pos_list);
 
 		// What if 2 secret doors spawn buttons in the same place?
 		//  -> Currently caught in Spawn
 		//  -> 2nd door spawned will be of a buttonless type (e.g. Portrait)
 		//  -> Do we want to check for collisions here?
 
-		m_Map.edit_suggestions().add_secret_area(door, button_pos);
+		// TODO: pass torch positions as vector?
+		//  -> 2 torches in a set (3xN rooms)
+		//  -> And farther along, so we can do any number?
+		if (Util::Size(torch_pos_list) == 1)
+		{
+			m_Map.edit_suggestions().add_secret_area(door, button_pos, torch_pos_list[0]);
+		}
+		else
+		{
+			assert(Util::Size(torch_pos_list) == 4);
+			m_Map.edit_suggestions().add_secret_area(door, button_pos,
+				torch_pos_list[0], torch_pos_list[1], torch_pos_list[2], torch_pos_list[3]);
+		}
+
 		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 		{
 			m_Map.set_terrain(door, Terrain::OpenHighlight);
@@ -1387,6 +1505,40 @@ Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 	case  1:
 		result.y = room.GetBox().max().y - 1;
 		break;
+	}
+
+	return result;
+}
+
+MapGenerator::PosTempList MapGenerator::GetTorchPositions(Room const & room) const
+{
+	PosTempList result;
+
+	if (room.GetBox().size.x >= 5 &&
+		room.GetBox().size.y >= 5)
+	{
+		// 4 torches in corners
+		Vec2 const pos_min = room.GetBox().min         + Vec2{ 1, 1 };
+		Vec2 const pos_max = room.GetBox().inner_max() - Vec2{ 1, 1 };
+		result.push_back(Vec2{ pos_min.x, pos_min.y });
+		result.push_back(Vec2{ pos_min.x, pos_max.y });
+		result.push_back(Vec2{ pos_max.x, pos_min.y });
+		result.push_back(Vec2{ pos_max.x, pos_max.y });
+	}
+	else if (room.GetBox().size.x % 2 != 0 &&
+	         room.GetBox().size.y % 2 != 0)
+	{
+		// 1 torch in center
+		result.push_back(room.GetBox().centre());
+	}
+	else
+	{
+		// 1 torch along the wall
+		PosTempList possible = GetPositionsAlongPlainWall(room);
+		if (Util::Size(possible) > 0)
+		{
+			result.push_back(Random::from_vector(possible));
+		}
 	}
 
 	return result;

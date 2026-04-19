@@ -59,6 +59,9 @@ enum class Problem : int
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
+
+Terrain::Type get_terrain_for_door_type(DoorType door_type);
+
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player);
@@ -67,6 +70,7 @@ void find_spawn_positions(const Map& map, int min_range_from_player);
 bool is_good_spawn_position(Map const & map, int min_range_from_player, Vec2 const & pos2);
 Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_player,
 	Vec2 const & pos2);
+bool is_good_spawn_area(Map const & map, int min_range_from_player, Box2 const & box2);
 
 // checks for Wall terrain, out of player's sight
 bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2);
@@ -98,16 +102,21 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
+int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
+                         Terrain::Type terrain_type, char const * name);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
+int spawn_desks(Map& map);
+int spawn_cosmetic_torches(Map & map);
 
 Vec2 find_boss_spawn_position(Map const& map);
 
 // Constructs a vector with the door weights.
 // Some door types can be excluded from the vector.
 IntTempList revise_door_weights(Parameters const & param,
-                                bool allow_none, bool allow_button);
+                                bool allow_none, bool allow_button, bool allow_torches);
 bool requires_button(Spawn::DoorType type);
+bool requires_torch(Spawn::DoorType type);
 DoorType choose_door_type(bool is_button_good,
                           IntTempList const & buttoned_weights,
                           IntTempList const & buttonless_weights);
@@ -192,6 +201,23 @@ float probability_factor (float difficulty, float target_difficulty)
 //-----------------------------------------------------------------------------
 // Helper Implementations
 
+Terrain::Type get_terrain_for_door_type(DoorType door_type)
+{
+	switch (door_type)
+	{
+	case DoorType::Portrait:
+		return Terrain::Portrait;
+	case DoorType::FlipendoOpensWall:
+	case DoorType::TorchesOpensWall:
+		return Terrain::SlidingWall;
+	case DoorType::FlipendoOpensPortcullis:
+	case DoorType::TorchesOpensPortcullis:
+		return Terrain::Portcullis;
+	default:
+		return Terrain::Open;
+	}
+}
+
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
 void find_spawn_positions(const Map& map, int min_range_from_player)
@@ -259,6 +285,23 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 	}
 
 	return Problem::None; // It's fine.
+}
+
+bool is_good_spawn_area(Map const & map, int min_range_from_player, Box2 const & box2)
+{
+	int const max_x = box2.max(AXIS_X);
+	int const max_y = box2.max(AXIS_Y);
+	for (int x = box2.min.x; x < max_x; ++x)
+	{
+		for (int y = box2.min.y; y < max_y; ++y)
+		{
+			if (!is_good_spawn_position(map, min_range_from_player, Vec2{ x, y }))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 bool is_good_wall_spawn_position(Map const & map, Vec2 const & pos2)
@@ -405,16 +448,21 @@ void spawn_for_map(Map& map, History& history)
 	//  -> then (re)call find_spawn_positions
 	//    -> currently not needed
 	//  -> otherwise creatures and items spawn on features
+	if (is_first_spawn)
+	{
+		// do we want some (or all) of these to appear in player sight?
+
+		spawn_secret_areas(map);
+		spawn_secret_passages(map);
+		spawn_desks(map);
+		spawn_cosmetic_torches(map);
+		spawn_simple_feature(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
+	}
+
 	if (chests_to_spawn > 0)
 	{
 		find_chest_positions(map);
 		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
-	}
-
-	if (is_first_spawn)
-	{
-		spawn_secret_areas(map);
-		spawn_secret_passages(map);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -589,13 +637,43 @@ int spawn_chests(Map& map, int chests_to_spawn)
 	return spawned;
 }
 
+int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
+                         Terrain::Type terrain_type, char const* name)
+{
+	// not randomized order
+	int spawned = 0;
+	for (Vec2 suggestion : map.read_suggestions().get(suggestion_type))
+	{
+		if (!is_good_spawn_position(map, 0, suggestion))
+		{
+			continue;
+		}
+
+		Feature::spawn(suggestion.xyz(map.get_z()), terrain_type);
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible {}.\n",
+			spawned, map.read_suggestions().get_count(suggestion_type), name);
+	}
+
+	return spawned;
+}
+
 int spawn_secret_areas(Map& map)
 {
 	// no min range from player
 
 	Spawn::Parameters const& param = map.read_spawn_param();
-	IntTempList buttoned_weights   = revise_door_weights(param, true, true);  // do we allow:
-	IntTempList buttonless_weights = revise_door_weights(param, true, false); // None, buttons
+
+	// bool parameters: Do we allow:
+	//  - None?     Yes
+	//  - Buttons?  It depends...
+	//  - Torches?  It depends...
+	IntTempList triggered_weights   = revise_door_weights(param, true, true,  true);
+	IntTempList triggerless_weights = revise_door_weights(param, true, false, false);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_areas();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -613,38 +691,65 @@ int spawn_secret_areas(Map& map)
 
 		// choose the type of door
 
-		bool is_button_good = suggestion.has_button;
-		if (is_button_good)
+		bool is_trigger_good = false;
+		switch (suggestion.trigger_types)
 		{
-			if (!is_good_wall_spawn_position(map, suggestion.button))
+		case Suggestion::TriggerTypes::ButtonOr1Torch:
+			if (is_good_wall_spawn_position(map, suggestion.button) &&
+				is_good_spawn_position(map, 0, suggestion.torch1))
 			{
-				is_button_good = false;
+				is_trigger_good = true;
 			}
+			break;
+		case Suggestion::TriggerTypes::ButtonOr4Torches:
+			if (is_good_wall_spawn_position(map, suggestion.button) &&
+				is_good_spawn_position(map, 0, suggestion.torch1) &&
+				is_good_spawn_position(map, 0, suggestion.torch2) &&
+				is_good_spawn_position(map, 0, suggestion.torch3) &&
+				is_good_spawn_position(map, 0, suggestion.torch4))
+			{
+				is_trigger_good = true;
+			}
+			break;
 		}
 
-		DoorType type = choose_door_type(is_button_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(is_trigger_good, triggered_weights, triggerless_weights);
+		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
 
-		int map_z = map.get_z();
-		switch(type)
+		int const map_z = map.get_z();
+		switch(door_type)
 		{
 		case DoorType::Portrait:
-			Feature::spawn(suggestion.door.xyz(map_z), Terrain::Portrait);
+			Feature::spawn(suggestion.door.xyz(map_z), door_terrain);
 			++spawned;
 			break;
+
 		case DoorType::FlipendoOpensWall:
-			assert(is_button_good);
+		case DoorType::FlipendoOpensPortcullis:
+			assert(is_trigger_good);
 			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
-			                               suggestion.door  .xyz(map_z),
-			                               Terrain::SlidingWall);
+			                               suggestion.door  .xyz(map_z), door_terrain);
 			++spawned;
 			break;
-		case DoorType::FlipendoOpensPortcullis:
-			assert(is_button_good);
-			Feature::spawn_flipendo_button(suggestion.button.xyz(map_z),
-			                               suggestion.door  .xyz(map_z),
-			                               Terrain::Portcullis);
+
+		case DoorType::TorchesOpensWall:
+		case DoorType::TorchesOpensPortcullis:
+			assert(is_trigger_good);
+			if(suggestion.trigger_types == Suggestion::TriggerTypes::ButtonOr1Torch)
+			{
+				Feature::spawn_torch1_door(suggestion.torch1.xyz(map_z),
+				                           suggestion.door  .xyz(map_z), door_terrain);
+			}
+			else if(suggestion.trigger_types == Suggestion::TriggerTypes::ButtonOr4Torches)
+			{
+				Feature::spawn_torch4_door(suggestion.torch1.xyz(map_z),
+				                           suggestion.torch2.xyz(map_z),
+				                           suggestion.torch3.xyz(map_z),
+				                           suggestion.torch4.xyz(map_z),
+				                           suggestion.door  .xyz(map_z), door_terrain);
+			}
 			++spawned;
 			break;
 		}
@@ -666,9 +771,12 @@ int spawn_secret_passages(Map& map)
 
 	Spawn::Parameters const& param = map.read_spawn_param();
 
-	// we don;t allow None doors: secret passages are secret
-	IntTempList buttoned_weights   = revise_door_weights(param, false, true);  // do we allow:
-	IntTempList buttonless_weights = revise_door_weights(param, false, false); // None, buttons
+	// bool parameters: Do we allow:
+	//  - None?     No, secret passages are secret
+	//  - Buttons?  It depends...
+	//  - Torches?  No, doesn't work with needing to extinguish all torches in a set
+	IntTempList triggered_weights   = revise_door_weights(param, false, true,  false);
+	IntTempList triggerless_weights = revise_door_weights(param, false, false, false);
 
 	auto const & suggestions_vec = map.read_suggestions().get_secret_passages();
 	IntTempList index_list = Util::GetIndices(suggestions_vec);
@@ -695,38 +803,31 @@ int spawn_secret_passages(Map& map)
 			}
 		}
 
-		DoorType type = choose_door_type(are_buttons_good, buttoned_weights, buttonless_weights);
+		DoorType door_type = choose_door_type(are_buttons_good, triggered_weights, triggerless_weights);
+		Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 
 		// finally add the door
 
-		int map_z = map.get_z();
-		switch(type)
+		int const map_z = map.get_z();
+		switch(door_type)
 		{
 		case DoorType::Portrait:
 			// just put a portrait at each end
-			Feature::spawn(suggestion.door1.xyz(map_z), Terrain::Portrait);
+			Feature::spawn(suggestion.door1.xyz(map_z), door_terrain);
 			if (suggestion.door1 != suggestion.door2)
 			{
-				Feature::spawn(suggestion.door2.xyz(map_z), Terrain::Portrait);
+				Feature::spawn(suggestion.door2.xyz(map_z), door_terrain);
 			}
 			++spawned;
 			break;
 		case DoorType::FlipendoOpensWall:
-			assert(are_buttons_good);
-			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
-			                                    suggestion.door1  .xyz(map_z),
-			                                    suggestion.button2.xyz(map_z),
-			                                    suggestion.door2  .xyz(map_z),
-			                                    Terrain::SlidingWall);
-			++spawned;
-			break;
 		case DoorType::FlipendoOpensPortcullis:
 			assert(are_buttons_good);
 			Feature::spawn_flipendo_button_pair(suggestion.button1.xyz(map_z),
 			                                    suggestion.door1  .xyz(map_z),
 			                                    suggestion.button2.xyz(map_z),
 			                                    suggestion.door2  .xyz(map_z),
-			                                    Terrain::Portcullis);
+			                                    door_terrain);
 			++spawned;
 			break;
 		}
@@ -741,8 +842,80 @@ int spawn_secret_passages(Map& map)
 	return spawned;
 }
 
+int spawn_desks(Map& map)
+{
+	// no min range from player
+
+	// not randomized order
+	int spawned = 0;
+	for (Box2 const & suggestion : map.read_suggestions().get_desk_blocks())
+	{
+		if (!is_good_spawn_area(map, 0, suggestion))
+		{
+			continue;
+		}
+
+		int const map_z = map.get_z();
+
+		// block includes outside border of clear cells
+		int const max_x = suggestion.inner_max(AXIS_X);
+		int const max_y = suggestion.inner_max(AXIS_Y);
+		for (int x = suggestion.min.x + 1; x < max_x; ++x)
+		{
+			for (int y = suggestion.min.y + 1; y < max_y; ++y)
+			{
+				Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
+			}
+		}
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible desk blocks.\n",
+			spawned, map.read_suggestions().get_count_desk_blocks());
+	}
+
+	return spawned;
+}
+
+int spawn_cosmetic_torches(Map& map)
+{
+	// no min range from player
+
+	Spawn::Parameters const& param = map.read_spawn_param();
+
+	// not randomized order
+	int spawned = 0;
+	for (Suggestion::CosmeticTorchInstance const & suggestion :
+		map.read_suggestions().get_cosmetic_torches())
+	{
+		if (!is_good_spawn_position(map, 0, suggestion.position))
+		{
+			continue;
+		}
+
+		std::cout << std::format("Is torch lit?  {} < {}\n",
+			suggestion.random_percent, param.percent_torches_lit);
+		bool is_lit = suggestion.random_percent < param.percent_torches_lit;
+		Terrain::Type torch_type = is_lit ? Terrain::TorchLit : Terrain::TorchUnlit;
+
+		int const map_z = map.get_z();
+		Feature::spawn(suggestion.position.xyz(map.get_z()), torch_type);
+		++spawned;
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Spawned {} of {} possible cosmetic torches.\n",
+			spawned, map.read_suggestions().get_count_desk_blocks());
+	}
+
+	return spawned;
+}
+
 IntTempList revise_door_weights(Parameters const & param,
-                                bool allow_none, bool allow_button)
+                                bool allow_none, bool allow_button, bool allow_torches)
 {
 	IntTempList revised_weights((int)(DoorType::Count), 0);  // count, value
 	int sum = 0;
@@ -756,6 +929,10 @@ IntTempList revise_door_weights(Parameters const & param,
 			continue;
 		}
 		if (!allow_button && requires_button((DoorType)(i)))
+		{
+			continue;
+		}
+		if (!allow_torches && requires_torch((DoorType)(i)))
 		{
 			continue;
 		}
@@ -779,6 +956,18 @@ bool requires_button(Spawn::DoorType type)
 	{
 	case Spawn::DoorType::FlipendoOpensWall:
 	case Spawn::DoorType::FlipendoOpensPortcullis:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool requires_torch(Spawn::DoorType type)
+{
+	switch (type)
+	{
+	case Spawn::DoorType::TorchesOpensWall:
+	case Spawn::DoorType::TorchesOpensPortcullis:
 		return true;
 	default:
 		return false;

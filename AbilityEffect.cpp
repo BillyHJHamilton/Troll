@@ -1,9 +1,11 @@
 #include "AbilityEffect.h"
 
+#include "Ability.h"
 #include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
 #include "Grammar.h"
+#include "Feature.h"
 #include "Inventory.h"
 #include "Random.h"
 #include "Status.h"
@@ -95,11 +97,16 @@ void headbutt(EffectParams params)
 
 void fire_gob_hit(EffectParams params)
 {
-	Creature::Handle const target = params.target;
-	if (Check(target.valid()))
+	if (params.target.valid())
 	{
-		Draw::creature_message(target, std::format("{} burned!",
-			Grammar::You_are(target)));
+		// fire gob vs creature
+
+		Creature::Handle const target = params.target;
+		if (Check(target.valid()))
+		{
+			Draw::creature_message(target, std::format("{} burned!",
+				Grammar::You_are(target)));
+		}
 	}
 }
 
@@ -227,7 +234,7 @@ void karate(EffectParams params)
 	if (user.valid() && target.valid())
 	{
 		Draw::creature_message(target, std::format("{} {} {} with {}!",
-			Grammar::You(user), Grammar::verbs("hit",user), Grammar::you(target),
+			Grammar::You(user), Grammar::verbs("hit", user), Grammar::you(target),
 			random_karate_move()));
 	}
 }

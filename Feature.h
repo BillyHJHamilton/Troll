@@ -18,6 +18,14 @@ namespace Feature
 	// Adds a feature to the map.
 	void spawn(Vec3 pos, Terrain::Type type);
 
+	// Adds a single torch attached to a door
+	void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
+	                       Terrain::Type door_type);
+
+	// Adds a 4 torches attached to a door
+	void spawn_torch4_door(Vec3 torch1_pos, Vec3 torch2_pos, Vec3 torch3_pos, Vec3 torch4_pos,
+	                       Vec3 door_pos, Terrain::Type door_type);
+
 	// Adds a flipendo button attached to a single door
 	void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
 	                           Terrain::Type door_type);
@@ -34,7 +42,10 @@ namespace Feature
 	void remove(Vec3 pos, Terrain::Type new_terrain_type);
 
 	// Remove feature and replace with open terrain.
-	void remove(Vec3 pos) { remove(pos, Terrain::Open); }
+	void remove(Vec3 pos);
+
+	// Damage a feature (if any) at a position:
+	void damage(Vec3 pos, Damage::Packet const& damage_packet);
 
 	// Feature-specific functions:
 	void open_chest(Vec3 pos);
