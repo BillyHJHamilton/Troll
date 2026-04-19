@@ -385,16 +385,16 @@ void update_screen()
 	terminal_print_ext(0, 0, c_StatAreaLeft - 1, 1, TK_ALIGN_CENTER, map_name);
 
 	// player stat areas
-	Box2 const player_stat_area = Box2(c_StatAreaLeft, 1, c_StatAreaWidth, 6);
+	Box2 const player_stat_area = Box2(c_StatAreaLeft, 1, c_StatAreaWidth, 7);
 	print_player_stats(player_stat_area);
 
 	// creature stat areas
 	int const creature_lines = num_lines_for_visible_creature_stats();
-	Box2 const creature_stat_area = Box2(c_StatAreaLeft, 8, c_StatAreaWidth, creature_lines);
+	Box2 const creature_stat_area = Box2(c_StatAreaLeft, 9, c_StatAreaWidth, creature_lines);
 	print_visible_creature_stats(creature_stat_area);
 
 	// game message area
-	int const message_top = 8 + creature_lines;
+	int const message_top = 9 + creature_lines;
 	int const message_lines = Config::get_height() - message_top;
 	Box2 message_area = Box2(c_StatAreaLeft, message_top, c_StatAreaWidth, message_lines);
 	print_messages(message_area);
@@ -468,7 +468,7 @@ void print_player_stats(Box2 draw_area)
 	   << Player::next_xp_threshold() << std::endl;
 	ss << "Sugar  [color=" << sugar_colour << "]"
 		<< sugar_int << " %" << "[/color]" << std::endl;
-	//ss << "Magic  " << Player::handle().skill_magic() << std::endl;
+	ss << "Magic  " << Player::handle().skill_magic() << std::endl;
 	ss << std::endl;
 
 	format_creature_stats(ss, Creature::Player);
