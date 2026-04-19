@@ -197,6 +197,9 @@ inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
 	return chessboard(p0,p1) == 1;
 }
 
+// Returns the longer axis, or AXIS_X if both are equal.
+Axis get_long_axis(Vec2 v);
+
 // Scales both components to -1, 0, or 1, preserving direction as much as possible.
 // There are only 9 possible results, all with chessboard dimension <= 1.
 // (0, 0) stays as (0, 0).

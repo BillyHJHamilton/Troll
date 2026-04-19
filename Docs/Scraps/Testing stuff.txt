@@ -1,0 +1,30 @@
+
+	// Asymmetric line test - do animation
+	if (key == TK_L)
+	{
+		if (Crosshair::is_valid())
+		{
+			Vec2 start = Player::pos().xy();
+			Vec2 target = Crosshair::get_pos().value().xy();
+			int const line_id = LineCache::get_asymmetric_line(start, target);
+			if (line_id != c_Invalid)
+			{
+				Draw::View view = Draw::get_view();
+				for (LineCache::Itr itr(start, line_id); itr; ++itr)
+				{
+					Draw::draw_tile_temp('*', *itr, view, "red");
+				}
+			}
+		}
+	}
+	
+	// Bean test
+	if (key == TK_B)
+	{
+		int const flavour = BertieBotts::random_flavour();
+		Draw::add_message(std::string("[color=") + BertieBotts::get_colour(flavour)
+			+ std::string("] ") + BertieBotts::get_name(flavour) + std::string("[/color]"));
+	
+		return Result::Handled;
+	}
+

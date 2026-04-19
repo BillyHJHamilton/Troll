@@ -1,6 +1,7 @@
 #include "Line.h"
 
 #include "Debug.h"
+#include "FloatGeometry.h"
 #include "Grid.h"
 #include "PerfTimer.h"
 #include "VectorUtil.h"
@@ -35,16 +36,20 @@ Ragged<Vec2> s_line_cache;
 //       because this causes asymmetric LOS.
 Ragged<int> s_line_lookup;
 
+// However, we may include asymmetric lines to certain squares.
+// These are only valid when tracing a line to a solid wall square.
+std::vector<int> s_asymmetric_line_lookup;
+
 //------------------------------------------------------------------------------
 // Helper function declarations
 
 int get_lookup_index(Vec2 pos);
-bool is_duplicate(LineItr line1, LineCache::Itr line2);
-bool is_duplicate(LineCache::Itr line1, LineCache::Itr line2);
+
 void add_ring_of_lines_to_cache(int range);
 void add_perfect_line_to_cache(Vec2 end);
-void add_line_to_cache_both_modes(Vec2 end, int range);
-void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range);
+void add_line_to_cache_both_modes(Vec2 end);
+void add_line_to_cache(Vec2 end, LineItr::RoundMode mode);
+void add_asymmetric_line_to_cache(Vec2 end);
 
 //------------------------------------------------------------------------------
 // Interface implementation
@@ -55,6 +60,7 @@ void init()
 
 	// Initialize lookup table with empty vectors.
 	s_line_lookup.resize(c_LineGridArea);
+	s_asymmetric_line_lookup.resize(c_LineGridArea, c_Invalid);
 
 	s_line_cache.reserve(184); // empirical result with max_range=8
 
@@ -70,16 +76,12 @@ void init()
 	add_perfect_line_to_cache({-c_MaxRange, c_MaxRange});
 	add_perfect_line_to_cache({-c_MaxRange,-c_MaxRange});
 
-	// Then work outwards, starting with the inner ring.
-	// The reasoning is that we're happy to index a nice line (from an inner ring)
-	// to a point in an outer ring, but don't want to index some weird line (from
-	// an outer ring) to a nice point on an inner ring.
-	for (int range = 1; range <= c_MaxRange; ++range)
+	// Then work outwards, starting with ring 2 (since the inner ring is all perfect).
+	for (int range = 2; range <= c_MaxRange; ++range)
 	{
 		add_ring_of_lines_to_cache(range);
-		add_ring_of_lines_to_cache(range);
 	}
-	
+		
 	if (Debug::enabled(Debug::Line))
 	{
 		std::cout << std::format("Cached {} lines with a grid area of {}.\n\n",
@@ -101,9 +103,7 @@ void init()
 		{
 			for (int j = i + 1; j < s_line_cache.size(); ++j)
 			{
-				LineCache::Itr itr_i({ 0,0 }, i);
-				LineCache::Itr itr_j({ 0,0 }, j);
-				if (is_duplicate(itr_i, itr_j))
+				if (s_line_cache[i] == s_line_cache[j])
 				{
 					++duplicate_pairs;
 				}
@@ -133,6 +133,21 @@ std::vector<int> const& get_lines(Vec2 relative_pos)
 std::vector<int> const& get_lines(Vec2 start, Vec2 end)
 {
 	return get_lines(end - start);
+}
+
+int get_asymmetric_line(Vec2 relative_pos)
+{
+	int lookup = get_lookup_index(relative_pos);
+	if (Util::IsValidIndex(s_line_lookup, lookup))
+	{
+		return s_asymmetric_line_lookup[lookup];
+	}
+	return c_Invalid;
+}
+
+int get_asymmetric_line(Vec2 start, Vec2 end)
+{
+	return get_asymmetric_line(end - start);
 }
 
 int get_num()
@@ -179,50 +194,20 @@ int get_lookup_index(Vec2 pos)
 	return adjusted_x + (c_LineGridDimension * adjusted_y);
 }
 
-bool is_duplicate(LineItr line1, LineCache::Itr line2)
-{
-	while (line2)
-	{
-		if (*line1 != *line2)
-		{
-			return false;
-		}
-
-		++line1;
-		++line2;
-	}
-	return true;
-}
-
-bool is_duplicate(LineCache::Itr line1, LineCache::Itr line2)
-{
-	while (line2)
-	{
-		if (*line1 != *line2)
-		{
-			return false;
-		}
-
-		++line1;
-		++line2;
-	}
-	return true;
-}
-
 void add_ring_of_lines_to_cache(int range)
 {
 	// Sweep in from the diagonals towards the straights.
 	// But skip the perfect straights and diagonals, which were already added.
 	for (int i = (range - 1); i > 0; --i)
 	{
-		add_line_to_cache_both_modes({ i,  range}, range);
-		add_line_to_cache_both_modes({-i,  range}, range);
-		add_line_to_cache_both_modes({ i, -range}, range);
-		add_line_to_cache_both_modes({-i, -range}, range);
-		add_line_to_cache_both_modes({ range,  i}, range);
-		add_line_to_cache_both_modes({ range, -i}, range);
-		add_line_to_cache_both_modes({-range,  i}, range);
-		add_line_to_cache_both_modes({-range, -i}, range);
+		add_line_to_cache_both_modes({ i,  range});
+		add_line_to_cache_both_modes({-i,  range});
+		add_line_to_cache_both_modes({ i, -range});
+		add_line_to_cache_both_modes({-i, -range});
+		add_line_to_cache_both_modes({ range,  i});
+		add_line_to_cache_both_modes({ range, -i});
+		add_line_to_cache_both_modes({-range,  i});
+		add_line_to_cache_both_modes({-range, -i});
 	}
 }
 
@@ -247,18 +232,18 @@ void add_perfect_line_to_cache(Vec2 end)
 	s_line_cache.emplace_back(std::move(new_line));
 }
 
-void add_line_to_cache_both_modes(Vec2 end, int range)
+void add_line_to_cache_both_modes(Vec2 end)
 {
-	add_line_to_cache(end, LineItr::RoundUp, range);
-	add_line_to_cache(end, LineItr::RoundDown, range);
+	add_line_to_cache(end, LineItr::RoundUp);
+	add_line_to_cache(end, LineItr::RoundDown);
+
+	add_asymmetric_line_to_cache(end);
 }
 
-void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range)
+void add_line_to_cache(Vec2 end, LineItr::RoundMode mode)
 {
 	std::vector<Vec2> new_line;
 	new_line.reserve(c_MaxRange);
-
-	std::vector<int> possible_duplicates;
 
 	Vec2 start{ 0,0 };
 	LineItr itr(start, end, mode);
@@ -267,22 +252,14 @@ void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range)
 		++itr; // Skip the origin since it's the same for all lines.
 
 		new_line.push_back(*itr);
-
-		int const lookup = get_lookup_index(*itr);
-		for (int line_id : s_line_lookup.at(lookup))
-		{
-			Util::AddUnique(possible_duplicates, line_id);
-		}
 	}
 
-	int new_lookup = get_lookup_index(end);
-
-	// Check if there was in fact a duplicate.
-	for (int line_id : possible_duplicates)
+	int const new_lookup = get_lookup_index(end);
+	
+	// Brute force check for a duplicate line.
+	for (int line_id = 0; line_id < Util::Size(s_line_cache); ++line_id)
 	{
-		LineItr line1(start, end, mode);
-		LineCache::Itr line2({0,0}, line_id);
-		if (is_duplicate(line1, line2))
+		if (s_line_cache[line_id] == new_line)
 		{
 			Util::AddUnique(s_line_lookup[new_lookup], line_id);
 			return;
@@ -290,9 +267,48 @@ void add_line_to_cache(Vec2 end, LineItr::RoundMode mode, int range)
 	}
 
 	// Didn't find a duplicate.  Add this line to cache.
-	int const new_line_index = (int)s_line_cache.size();
-	s_line_lookup[new_lookup].push_back(new_line_index);
 	s_line_cache.emplace_back(std::move(new_line));
+	s_line_lookup[new_lookup].push_back(Util::LastIndex(s_line_cache));
+}
+
+void add_asymmetric_line_to_cache(Vec2 end)
+{
+	float constexpr c_OffsetTowardCentre = 0.499f;
+
+	std::vector<Vec2> new_line;
+	new_line.reserve(c_MaxRange);
+
+	Axis const long_axis = get_long_axis(end);
+	Axis const other_axis = get_other_axis(long_axis);
+
+	FloatVec2 constexpr fv_start{0.0f, 0.0f};
+
+	FloatVec2 fv_end = FloatVec2::from_int(end);
+	fv_end[other_axis] -= (c_OffsetTowardCentre * Math::Sign(fv_end[other_axis]));
+
+	FloatLineItr itr(fv_start, fv_end);
+	for (int step = 1; step <= c_MaxRange; ++step)
+	{
+		++itr; // Skip the origin since it's the same for all lines.
+
+		new_line.push_back(*itr);
+	}
+
+	int const new_lookup = get_lookup_index(end);
+
+	// Brute force check for a duplicate line.
+	for (int line_id = 0; line_id < Util::Size(s_line_cache); ++line_id)
+	{
+		if (s_line_cache[line_id] == new_line)
+		{
+			s_asymmetric_line_lookup[new_lookup] = line_id;
+			return;
+		}
+	}
+
+	// Didn't find a duplicate.  Add this line to cache.
+	s_line_cache.emplace_back(std::move(new_line));
+	s_asymmetric_line_lookup[new_lookup] = Util::LastIndex(s_line_cache);
 }
 
 //------------------------------------------------------------------------------
@@ -400,6 +416,7 @@ LineItr::LineItr(Vec2 const& start, Vec2 const& end, LineItr::RoundMode mode)
 			break;
 		}
 
+		default:
 		case Thong:
 		{
 			modifier = (step_y == -1) ? -1 : 0;

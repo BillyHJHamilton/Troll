@@ -138,3 +138,6 @@ Bugs / Issues
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?
   They can see you but you can't see them. - Doesn't seem to reproduce.
+- Game crashes if you quit (by pressing X in corner) while dead.
+  It tries to serialize your save game but can't handle the fact you are dead.
+  I guess it should just save in dead state and submit your high score on reload.

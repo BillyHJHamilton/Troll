@@ -252,6 +252,9 @@
     <ClCompile Include="Feature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FloatGeometry.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -481,6 +484,9 @@
     </ClInclude>
     <ClInclude Include="Target.h">
       <Filter>Header Files\Magic</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatGeometry.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,11 @@ namespace LineCache
 	int get_num();
 	Vec2 read_line(int line_id, int step);
 
+	// The cache also includes some special asymmetric lines which should only be
+	// used when tracing to a solid tile.  May return c_Invalid if none exists.
+	int get_asymmetric_line(Vec2 relative_pos);
+	int get_asymmetric_line(Vec2 start, Vec2 end);
+
 	// Iterator using a cached line.
 	class Itr
 	{

@@ -104,6 +104,18 @@ int chessboard(Vec2 p0, Vec2 p1)
 	return std::max(dx, dy);
 }
 
+Axis get_long_axis(Vec2 v)
+{
+	if (abs(v.x) >= abs(v.y))
+	{
+		return AXIS_X;
+	}
+	else
+	{
+		return AXIS_Y;
+	}
+}
+
 Vec2 truncate_to_unit(Vec2 a)
 {
 	float constexpr c_Cutoff = 0.4142135623730950488016887242097f;  // tan(22.5)
