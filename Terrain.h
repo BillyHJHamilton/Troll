@@ -18,6 +18,10 @@ namespace Terrain
 
 		// Following types are Features and should be placed using Feature::spawn.
 		Chest,
+		Armour,
+		Desk,
+		TorchUnlit,
+		TorchLit,
 		Portrait,
 		FlipendoButton,
 		SlidingWall,
@@ -36,6 +40,7 @@ namespace Terrain
 	bool is_solid(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	bool is_feature(Terrain::Type t);
+	bool is_auto_target(Terrain::Type t);
 	bool is_matching_target(Terrain::Type t, uint target_flags);
 	Terrain::Type swap_stairs(Terrain::Type t);
 

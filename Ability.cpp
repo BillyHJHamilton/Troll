@@ -1,6 +1,7 @@
 #include "Ability.h"
 
 #include "AbilityEffect.h"
+#include "BitFlag.h"
 #include "Colour.h"
 #include "Damage.h"
 #include "Debug.h"
@@ -23,16 +24,16 @@ struct CooldownEntry
 std::vector<CooldownEntry> s_cooldowns;
 
 static std::array<Ability::Data,Ability::Count> constexpr s_ability_list =
-{	//								Damage Type		Dmg	Acc	Rng	Cooldn	TargetType		EffectFunc
-	/* StealBean */	Ability::Data{	Damage::None,	0,	80,	1,	0,0,	Target::Melee,	&steal_bean },
-	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	Target::Self,	&eat_bean },
-	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	Target::Melee,	&headbutt },
-	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	Target::Beam,	&fire_gob_hit},
-	/* DoxyBite */	Ability::Data{	Damage::Basic,	1,	75,	1,	1,1,	Target::Melee,	&doxy_bite },
-	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	Target::Melee,	&trip_kick },
-	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	Target::Melee,	&scratch },
-	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,7,	Target::Self,	&believe },
-	/* Karate */	Ability::Data{	Damage::Basic,	8,	70,	1,	1,2,	Target::Melee,	&karate },
+{	//								Damage Type		Dmg	Acc	Rng	Cooldn	EffectFunc		TargetType		Target flags
+	/* StealBean */	Ability::Data{	Damage::None,	0,	80,	1,	0,0,	&steal_bean,	Target::Melee,	f_None },
+	/* EatBean */	Ability::Data{	Damage::None,	0,	-1,	0,	0,0,	&eat_bean,		Target::Self,	f_None },
+	/* Headbutt */	Ability::Data{	Damage::Basic,	2,	70,	1,	0,0,	&headbutt,		Target::Melee,	f_None },
+	/* ShootFire*/	Ability::Data{	Damage::Fire,	3,	70,	6,	0,2,	&fire_gob_hit,	Target::Beam,	Target::f_Fire },
+	/* DoxyBite */	Ability::Data{	Damage::ToLife,	1,	75,	1,	1,1,	&doxy_bite,		Target::Melee,	f_None },
+	/* TripKick */	Ability::Data{	Damage::Basic,	1,	70,	1,	1,2,	&trip_kick,		Target::Melee,	f_None },
+	/* Scratch */	Ability::Data{	Damage::Basic,	3,	65,	1,	0,0,	&scratch,		Target::Melee,	f_None },
+	/* Believe */	Ability::Data{	Damage::None,	0,	-1,	0,	5,7,	&believe,		Target::Self,	f_None },
+	/* Karate */	Ability::Data{	Damage::Basic,	8,	70,	1,	1,2,	&karate,		Target::Melee,	f_None },
 };
 
 static std::unordered_map<Ability::Index,Ability::ProjectileData> s_projectiles;
@@ -80,6 +81,12 @@ Target::Type target_type(Ability::Index index)
 {
 	assert(is_valid(index));
 	return s_ability_list.at(index).target_type;
+}
+
+uint get_target_flags(Ability::Index index)
+{
+	assert(is_valid(index));
+	return s_ability_list[index].target_flags;
 }
 
 bool has_accuracy (Ability::Index index)

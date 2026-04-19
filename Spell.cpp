@@ -22,7 +22,7 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour				Dif Drk Type			Dmg		Acc Rng	Effect function			Miscast type		Target type		Target flags
-	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			Miscast::Beam,		Target::Beam,	f_None},
+	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			Miscast::Beam,		Target::Beam,	Target::f_Fire},
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	Damage::Basic,	2,		70,	8,	&flipendo,				Miscast::Beam,		Target::Beam,	Target::f_Flipendo },
 	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	Damage::None,	0,		50, 8,	&alohomora,				Miscast::Charm,		Target::Beam,	Target::f_Alohomora },
 	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	Damage::None,	0,		90,	8,	&tarantallegra,			Miscast::Beam,		Target::Beam,	f_None},
@@ -30,11 +30,11 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	Damage::None,	0,		85,	8,	&rictusempra,			Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	Damage::None,	0,		-1, 8,	&fumos,					Miscast::Conjuring,	Target::Beam,	Target::f_Midair },
 	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	Damage::None,	0,		85,	8,	&mimblewimble,			Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  Damage::None,	0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::Basic,	4,		60, 6,  &furnunculus,			Miscast::Beam,		Target::Beam,	f_None},
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  Damage::None,	0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam,		Target::Beam,	Target::f_Fire},
+	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::ToLife,	4,		60, 6,  &furnunculus,			Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  Damage::None,	0,		-1, 0,  &finite_incantatem,		Miscast::Charm,		Target::Self,	f_None},
 	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  Damage::None,	0,		-1, 8,  &accio,					Miscast::Conjuring, Target::Sight,	Target::f_Midair },
-	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::Basic,	c_DmgSP,75, 7,  &stupefy,				Miscast::Beam,		Target::Beam,	f_None},
+	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::ToLife,	c_DmgSP,75, 7,  &stupefy,				Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			Miscast::Beam,		Target::Beam,	f_None},
 #if _DEBUG                                                                                                                          

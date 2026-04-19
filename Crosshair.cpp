@@ -41,6 +41,7 @@ bool is_feature_target(Vec3 pos)
 	{
 		Spell::Index const spell = (Spell::Index)i;
 		if (Player::handle().knows_spell(spell) &&
+			Terrain::is_auto_target(terrain) &&
 			Terrain::is_matching_target(terrain, Spell::get_target_flags(spell)))
 		{
 			return true;

@@ -27,10 +27,14 @@ namespace Spell
 
 void vermillious (EffectParams params)
 {
-	Creature::Handle const target = params.target;
+	if (params.target.valid())
+	{
+		// vermillious vs creature
+		Creature::Handle const target = params.target;
 
-	Draw::creature_message(target, std::format("{0} showed in sparks!",
-		Grammar::You_are(target)));
+		Draw::creature_message(target, std::format("{0} showed in sparks!",
+			Grammar::You_are(target)));
+	}
 }
 
 // helper function
@@ -84,6 +88,7 @@ void flipendo_vs_creature (EffectParams const & params)
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
+		// TODO: Get terrain name
 		Draw::creature_message(target, std::format("{0} knocked into the wall!",
 			Grammar::You_are(target)));
 		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
@@ -120,18 +125,24 @@ void flipendo (EffectParams params)
 	{
 		flipendo_vs_creature(params);
 	}
-
-	Vec3 const pos = params.target_pos;
-	switch(World::read().get_terrain(pos))
+	else
 	{
-	case Terrain::FlipendoButton:
-		Feature::activate_flipendo_button(pos);
-		break;
+		// flipendo vs feature
+
+		Vec3 const pos = params.target_pos;
+		switch (World::read().get_terrain(pos))
+		{
+		case Terrain::FlipendoButton:
+			Feature::activate_flipendo_button(pos);
+			break;
+		}
 	}
 }
 
 void alohomora(EffectParams params)
 {
+	// ignores creatures
+
 	Vec3 const pos = params.target_pos;
 	switch(World::read().get_terrain(pos))
 	{
@@ -303,39 +314,61 @@ void mimblewimble (EffectParams params)
 
 void lacarnum_inflamare (EffectParams params)
 {
-	Creature::Handle caster = params.caster;
-	Creature::Handle target = params.target;
-
-	if (target.has_tag(Creature::Tag::Immune_Clothes))
+	if (params.target.valid())
 	{
-		Draw::creature_message(target, std::format("{} burned!",
-			Grammar::You_are(target)));
+		// lacarnum inflamare vs creature
+		Creature::Handle caster = params.caster;
+		Creature::Handle target = params.target;
 
-		Damage::Packet const dmg
+		if (target.has_tag(Creature::Tag::Immune_Clothes))
 		{
-			.amount = Random::in_range(1,3),
-			.type = Damage::Fire,
-			.cause = Damage::Cause(caster)
-		};
-		target.take_damage(dmg);
+			Draw::creature_message(target, std::format("{} burned!",
+				Grammar::You_are(target)));
+
+			Damage::Packet const dmg
+			{
+				.amount = Random::in_range(1,3),
+				.type = Damage::Fire,
+				.cause = Damage::Cause(caster)
+			};
+			target.take_damage(dmg);
+		}
+		else
+		{
+			char const * fmt = target.has_status(Status::Burning) ?
+				"{0} clothes are burning in more places!" :
+				"{0} clothes burst into flames!";
+			std::string s1 = Grammar::Your(target);
+			Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
+
+			target.inflict_status(Status::Burning, 5);
+		}
 	}
 	else
 	{
-		char const* fmt = target.has_status(Status::Burning) ?
-			"{0} clothes are burning in more places!" :
-			"{0} clothes burst into flames!";
-		std::string s1 = Grammar::Your(target);
-		Draw::creature_message(target, std::vformat(fmt, std::make_format_args(s1)));
+		// TODO: Replace this with a fire cloud?
+		//  -> or only if it hit something Feature?
+		//    -> there is a feature there and it has a flamable Material
 
-		target.inflict_status(Status::Burning, 5);
+		// lacarnum inflamare vs feature
+		Damage::Packet const dmg
+		{
+			.amount = Random::in_range(1, 3),
+			.type = Damage::Fire,
+			.cause = Damage::Cause(params.caster),
+		};
+		Feature::damage(params.target_pos, dmg);
 	}
 }
 
 void furnunculus (EffectParams params)
 {
-	Creature::Handle target = params.target;
-	Draw::creature_message(target, std::format("{0} skin boils!",
-		Grammar::Your(target)));
+	if (params.target.valid())
+	{
+		Creature::Handle target = params.target;
+		Draw::creature_message(target, std::format("{0} skin boils!",
+			Grammar::Your(target)));
+	}
 }
 
 // helper function
@@ -441,25 +474,28 @@ void accio (EffectParams params)
 
 void stupefy (EffectParams params)
 {
-	Creature::Handle const caster = params.caster;
-	Creature::Handle const target = params.target;
+	if (params.target.valid())
+	{
+		Creature::Handle const caster = params.caster;
+		Creature::Handle const target = params.target;
 
-	char const* bolt_description;
-	if (Spell::get_damage(Spell::Stupefy, caster) > 10)
-		bolt_description = "spectacular bolt of red light";
-	else if (Spell::get_damage(Spell::Stupefy, caster) > 8)
-		bolt_description = "mighty bolt of red light";
-	else if (Spell::get_damage(Spell::Stupefy, caster) > 6)
-		bolt_description = "strong bolt of red light";
-	else if (Spell::get_damage(Spell::Stupefy, caster) > 4)
-		bolt_description = "solid bolt of red light";
-	else if (Spell::get_damage(Spell::Stupefy, caster) > 3)
-		bolt_description = "bolt of red light";
-	else
-		bolt_description = "weak bolt of red light";
+		char const* bolt_description;
+		if (Spell::get_damage(Spell::Stupefy, caster) > 10)
+			bolt_description = "spectacular bolt of red light";
+		else if (Spell::get_damage(Spell::Stupefy, caster) > 8)
+			bolt_description = "mighty bolt of red light";
+		else if (Spell::get_damage(Spell::Stupefy, caster) > 6)
+			bolt_description = "strong bolt of red light";
+		else if (Spell::get_damage(Spell::Stupefy, caster) > 4)
+			bolt_description = "solid bolt of red light";
+		else if (Spell::get_damage(Spell::Stupefy, caster) > 3)
+			bolt_description = "bolt of red light";
+		else
+			bolt_description = "weak bolt of red light";
 
-	Draw::creature_message(target, std::format("{0} struck by a {1}!",
-		Grammar::You_are(target), bolt_description));
+		Draw::creature_message(target, std::format("{0} struck by a {1}!",
+			Grammar::You_are(target), bolt_description));
+	}
 }
 
 void impedementa (EffectParams params)

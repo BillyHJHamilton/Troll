@@ -8,6 +8,7 @@ namespace Damage
 	{
 		None = -1,
 		Basic = 0,
+		ToLife,  // doesn't affect Features
 		Fire,
 		Acid,
 		Count,

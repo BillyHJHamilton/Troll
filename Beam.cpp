@@ -7,6 +7,7 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Feature.h"
 #include "Grammar.h"
 #include "Random.h"
 #include "Spell.h"
@@ -147,6 +148,8 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		codepoint = proj.codepoint;
 	}
 
+	uint const target_flags = Ability::get_target_flags(ability);
+
 	return Beam::Data
 	{
 		.start_pos = caster.pos(),
@@ -167,7 +170,7 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.damage = Ability::get_damage(ability),
 		.spell_power = 0, // not a spell
 		.beam_flags = flags,
-		.target_flags = f_None, // None for now
+		.target_flags = target_flags,
 		.done = false
 	};
 }
@@ -288,8 +291,10 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 			beam.noun, Terrain::get_name(t)));
 		beam.done = true;
 
-		if (Terrain::is_matching_target(t, beam.target_flags))
+		if (Terrain::is_matching_target(t, beam.target_flags) ||
+		    beam.damage > 0)
 		{
+			// if we call this for a spell, its effect function must check if it hit a creature
 			detonate_in_midair(beam, line);
 		}
 
@@ -455,6 +460,16 @@ void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
 		};
 
 		beam.effect_func(params);
+	}
+	if (beam.damage > 0)
+	{
+		Damage::Packet const dmg
+		{
+			.amount = beam.damage,
+			.type = beam.damage_type,
+			.cause = Damage::Cause(beam.caster)
+		};
+		Feature::damage(beam.pos, dmg);
 	}
 }
 

@@ -14,6 +14,7 @@ namespace Terrain
 	uint constexpr f_Solid			= 1 << 2;	// Blocks movement and beams
 	uint constexpr f_Stairs			= 1 << 3;
 	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
+	uint constexpr f_NoAutotarget	= 1 << 5;	// Never automatically target
 
 	struct Data
 	{
@@ -35,10 +36,14 @@ namespace Terrain
 		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
 		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"armour",				Codepoint::Armour,			f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"desk",				Codepoint::Desk1,			f_PermitSight | f_Solid | f_Feature | f_NoAutotarget,	Target::f_Fire | Target::f_Flipendo},
+		Data{"torch",				Codepoint::TorchUnlit,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire}, // unlit
+		Data{"torch",				Codepoint::TorchLit,		f_PermitSight | f_Solid | f_Feature,	f_None}, // lit
 		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
 		Data{"button",				Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
 		Data{"wall",				Codepoint::SolidBlock,		f_Solid |  f_Feature,					f_None}, // sliding wall
-		Data{"portcullis",			'#',						f_PermitSight | f_Solid |  f_Feature,	f_None},
+		Data{"portcullis",			'#',						f_PermitSight | f_Solid | f_Feature,	f_None},
 	};
 
 	int get_character(Terrain::Type t)
@@ -57,13 +62,20 @@ namespace Terrain
 	{
 		switch (t)
 		{
+			case Terrain::Open:
+			case Terrain::OpenNoSpawn:
+			case Terrain::OpenHighlight:
+				return "- the floor";
+			case Terrain::Wall:
+			case Terrain::SlidingWall:
+				return "- the floor";
 			case Terrain::UpStairs: return "- stairs leading up";
 			case Terrain::DownStairs: return "- stairs leading down";
 			case Terrain::Chest: return "- a locked chest";
-			case Terrain::Portrait: return "- a portrait";
+			case Terrain::Armour: return "- a suit of armour";
 			case Terrain::FlipendoButton: return "- a button on the wall";
 			default:
-				return std::string("- the ") + get_name(t);
+				return std::string("- a ") + get_name(t);
 		}
 	}
 
@@ -95,6 +107,12 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_Feature);
+	}
+
+	bool is_auto_target(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return !Util::IsFlagSet(s_data[t].terrain_flags, f_NoAutotarget);
 	}
 
 	bool is_matching_target(Terrain::Type t, uint target_flags)
