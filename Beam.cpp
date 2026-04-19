@@ -285,17 +285,26 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 
 	// hit wall
 	Terrain::Type t = world.get_terrain(beam.pos);
-	if (Terrain::is_solid(t))
+	int const cover_percent = Terrain::get_cover_percent(t);
+	if (cover_percent > 0)
 	{
-		Draw::pos_message(beam.pos, std::format("The {} hits the {}.",
-			beam.noun, Terrain::get_name(t)));
-		beam.done = true;
+		bool const is_feature = Terrain::is_feature(t);
+		bool const matching_feature = Terrain::is_matching_target(t, beam.target_flags);
+		bool const targeted_feature = matching_feature && (beam.pos == beam.target_pos);
 
-		if (Terrain::is_matching_target(t, beam.target_flags) ||
-		    beam.damage > 0)
+		if (targeted_feature ||
+			cover_percent == 100 ||
+			Random::in_range(0,99) < cover_percent)
 		{
-			// if we call this for a spell, its effect function must check if it hit a creature
-			detonate_in_midair(beam, line);
+			Draw::pos_message(beam.pos, std::format("The {} hits the {}.",
+				beam.noun, Terrain::get_name(t)));
+			beam.done = true;
+
+			if (matching_feature || (is_feature && beam.damage > 0))
+			{
+				// if we call this for a spell, its effect function must check if it hit a creature
+				detonate_in_midair(beam, line);
+			}
 		}
 
 		return;

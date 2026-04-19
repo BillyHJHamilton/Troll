@@ -38,6 +38,7 @@ namespace Terrain
 	bool permits_sight(Terrain::Type t);
 	bool is_can_spawn(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
+	int get_cover_percent(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	bool is_feature(Terrain::Type t);
 	bool is_auto_target(Terrain::Type t);
