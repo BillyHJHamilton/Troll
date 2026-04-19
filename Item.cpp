@@ -10,6 +10,7 @@
 #include "Potion.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Sweets.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -93,6 +94,7 @@ int Handle::codepoint () const
 	switch (type())
 	{
 		case BBBean:		return ',';
+		case SweetsItem:	return '=';
 		case PotionItem:	return '!';
 		default:			return '?';
 	}
@@ -111,6 +113,9 @@ std::string Handle::name () const
 		case BBBean:
 			return "Bertie Bott's Every Flavour Bean";
 
+		case SweetsItem:
+			return Sweets::get_name(flavour());
+
 		case PotionItem:
 			return Potion::get_name(flavour());
 
@@ -126,6 +131,9 @@ std::string Handle::colour () const
 	{
 		case BBBean:
 			return BertieBotts::get_colour(flavour());
+
+		case SweetsItem:
+			return Sweets::get_colour(flavour());
 
 		case PotionItem:
 			return Potion::get_colour(flavour());
@@ -151,6 +159,11 @@ std::string Handle::description () const
 			return "They mean every flavour.";
 		}
 
+		case SweetsItem:
+		{
+			return Sweets::get_description(flavour());
+		}
+
 		case PotionItem:
 		{
 			return Potion::get_description(flavour());
@@ -171,6 +184,7 @@ std::string Handle::interaction_name () const
 			return "Read";
 
 		case BBBean:
+		case SweetsItem:
 			return "Eat";
 
 		case PotionItem:
@@ -212,6 +226,7 @@ Item::BagStack Handle::bag_stack_mode () const
 		case BBBean:
 			return BagStack::ByType;
 
+		case SweetsItem:
 		case PotionItem:
 			return BagStack::ByFlavour;
 
@@ -245,6 +260,7 @@ UseResult Handle::use ()
 	{
 		case Notes:			return use_notes();
 		case BBBean:		return use_bbbean();
+		case SweetsItem:	return use_sweets();
 		case PotionItem:	return use_potion();
 
 		default:
@@ -324,6 +340,14 @@ UseResult Handle::use_bbbean()
 	return UseResult::Consumed;
 }
 
+UseResult Handle::use_sweets()
+{
+	Draw::add_message(std::format("You eat the {}.", name()));
+	Draw::IndentScope indent;
+	Sweets::eat(Player::handle(), flavour());
+	return UseResult::Consumed;
+}
+
 UseResult Handle::use_potion()
 {
 	Draw::add_message(std::format("You drink the {}.", name()));
@@ -373,6 +397,14 @@ Item::Handle make_bbb ()
 	Item::Instance inst;
 	inst.type = Item::BBBean;
 	inst.flavour = BertieBotts::random_flavour();
+	return make_item(inst);
+}
+
+Item::Handle make_sweets ()
+{
+	Item::Instance inst;
+	inst.type = Item::SweetsItem;
+	inst.flavour = Sweets::random_flavour();
 	return make_item(inst);
 }
 
@@ -426,7 +458,7 @@ Item::Handle make_potion_by_level (float difficulty)
 	return make_potion(Potion::random_by_level(difficulty));
 }
 
-Item::Handle spawn_item (Instance instance, Vec3 const & pos)
+Item::Handle spawn_item (Vec3 pos, Instance instance)
 {
 	Item::Handle item = make_item(instance);
 	World::edit().add_item(pos, item);
@@ -440,6 +472,13 @@ Item::Handle spawn_item (Instance instance, Vec3 const & pos)
 Item::Handle spawn_bbb (Vec3 pos)
 {
 	Item::Handle item = make_bbb();
+	World::edit().add_item(pos, item);
+	return item;
+}
+
+Item::Handle spawn_sweets (Vec3 pos)
+{
+	Item::Handle item = make_sweets();
 	World::edit().add_item(pos, item);
 	return item;
 }
