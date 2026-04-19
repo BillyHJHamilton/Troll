@@ -44,7 +44,7 @@ namespace Feature
 	// Remove feature and replace with open terrain.
 	void remove(Vec3 pos);
 
-	// Semi-specific functions:
+	// Damage a feature (if any) at a position:
 	void damage(Vec3 pos, Damage::Packet const& damage_packet);
 
 	// Feature-specific functions:

@@ -242,9 +242,6 @@ void add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
 		});
 }
 
-//-------------------------------------------------------------------------------------------------
-// Semi-specific functions
-
 void damage(Vec3 pos, Damage::Packet const& damage_packet)
 {
 	switch (World::read().get_terrain(pos))
