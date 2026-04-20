@@ -23,10 +23,14 @@ namespace Item
 		Notes,
 
 		// Bertie Bott's Every Flavour Bean.
-		// Flavour: As defined in BertieBotts.cpp
+		// Flavour: Defined in BertieBotts.cpp
 		BBBean,
 
-		// Flavour: What potion it is.
+		// Other miscellaneous sweets.
+		// Flavour: Defined in Sweets.h.
+		SweetsItem,
+
+		// Flavour: Defined in Potion.h.
 		PotionItem,
 
 		Count
@@ -106,6 +110,7 @@ namespace Item
 	protected:
 		// Polymorphic stuff
 		UseResult use_bbbean();
+		UseResult use_sweets();
 		UseResult use_notes();
 		UseResult use_potion();
 	};
@@ -118,6 +123,7 @@ namespace Item
 	// Create item without adding it to the world.
 	Item::Handle make_item (Instance instance);
 	Item::Handle make_bbb ();
+	Item::Handle make_sweets ();
 	Item::Handle make_notes (Creature::Type owner);
 	Item::Handle make_potion (Potion::Type potion);
 	Item::Handle make_potion_by_level (float difficulty);
@@ -125,6 +131,7 @@ namespace Item
 	// Create item and add it to the world.
 	Item::Handle spawn_item (Vec3 pos, Instance instance);
 	Item::Handle spawn_bbb (Vec3 pos);
+	Item::Handle spawn_sweets (Vec3 pos);
 	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
 	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);
 	Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty);

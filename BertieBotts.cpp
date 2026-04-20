@@ -341,26 +341,26 @@ std::string get_name_capitalized(int flavour)
 	return s;
 }
 
-//int random_heal_amount(int flavour)
-//{
-//	BeanFlavour const bf = s_flavours[flavour];
-//
-//	switch (bf.tastiness)
-//	{
-//		case Tastiness::Wonderful:
-//			return Random::in_range(1,2);
-//		case Tastiness::Good:
-//			return 1;
-//		case Tastiness::Questionable:
-//			return Random::in_range(0,1);
-//		case Tastiness::Terrible:
-//			return 0;
-//
-//		default:
-//			DebugBreak();
-//			return 0;
-//	}
-//}
+int random_sugar_amount(int flavour)
+{
+	BeanFlavour const bf = s_flavours[flavour];
+
+	switch (bf.tastiness)
+	{
+		case Tastiness::Wonderful:
+			return Random::in_range(1,2);
+		case Tastiness::Good:
+			return 1;
+		case Tastiness::Questionable:
+			return Random::in_range(0,1);
+		case Tastiness::Terrible:
+			return 0;
+
+		default:
+			DebugBreak();
+			return 0;
+	}
+}
 
 std::string eat_message(int flavour)
 {

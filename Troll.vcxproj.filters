@@ -255,6 +255,9 @@
     <ClCompile Include="FloatGeometry.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Sweets.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -487,6 +490,9 @@
     </ClInclude>
     <ClInclude Include="FloatGeometry.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Sweets.h">
+      <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
