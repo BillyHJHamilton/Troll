@@ -11,8 +11,6 @@ namespace Suggestion
 	{
 		First = 0,
 
-		Armour,
-
 		Bean,  // placeholder
 		TreasureNormal,  // e.g. chest
 
@@ -74,17 +72,9 @@ namespace Suggestion
 		bool has_buttons = false;
 	};
 
-	struct CosmeticTorchInstance
-	{
-		Vec2 position = {0, 0};
-		byte random_percent = 0;
-	};
-
-	using Box2List = std::vector<Box2>;
 	using SimpleList = std::vector<Vec2>;
 	using SecretAreaList = std::vector<SecretAreaInstance>;
 	using SecretPassageList = std::vector<SecretPassageInstance>;
-	using CosmeticTorchList = std::vector<CosmeticTorchInstance>;
 
 	class Manager
 	{
@@ -97,15 +87,10 @@ namespace Suggestion
 		int get_count(Type type) const;
 		int get_count_secret_areas() const;
 		int get_count_secret_passages() const;
-		int get_count_desk_blocks() const;
-		int get_count_cosmetic_torches() const;
 		SimpleList const & get(Type type) const;
 		SecretAreaList const & get_secret_areas() const { return m_secret_area_vec; }
 		SecretPassageList const & get_secret_passages() const { return m_secret_passage_vec; }
-		Box2List const & get_desk_blocks() const { return m_desk_block_vec; }
-		CosmeticTorchList const & get_cosmetic_torches() const { return m_cosmetic_torch_vec; }
 
-		void add_armour(Vec2 position);
 		void add_treasure_normal(Vec2 position);
 		void add_player_start(Vec2 position);
 		void add_enemy_weak(Vec2 position);
@@ -121,14 +106,9 @@ namespace Suggestion
 		void add_secret_passage(Vec2 door1, Vec2 door2);
 		void add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2);
 
-		void add_desk_block(Box2 block);
-		void add_cosmetic_torch(Vec2 position, int random_percent);  // doesn't trigger anything
-
 		void remove(Type type, int index);
 		void remove_secret_area(int index);
 		void remove_secret_passage(int index);
-		void remove_desk_block(int index);
-		void remove_cosmetic_torch(int index);
 
 	private:
 		// Suggestions types that just need a position.
@@ -137,7 +117,5 @@ namespace Suggestion
 		// Suggestions types that need more data have their own vectors.
 		SecretAreaList m_secret_area_vec;
 		SecretPassageList m_secret_passage_vec;
-		CosmeticTorchList m_cosmetic_torch_vec;
-		Box2List m_desk_block_vec;
 	};
 }

@@ -61,7 +61,7 @@ protected:
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors(int chance, bool isSecretPassages);
 	void AssignRoomsToRegions();
-	void AddAllToMap();
+	void AddAllToMap();  // implementation is in MapGenerator_Finalize.cpp
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize() const;
@@ -80,19 +80,24 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
-	// Convert thie representation to cells
-	//  -> all of these are in MapGenerator_Finalize.cpp
+	void PrintAllRooms() const;
+
+	// Convert this map representation to cells
+	//  -> the implementations of these are in MapGenerator_Finalize.cpp
 	void AddStairsToMap(Room const & room) const;
 	void AddChamberToMap(Room const & room) const;
 	void AddCorridorToMap(Room const & room) const;
-	void AddDeskRoomSuggestions(Room const & room) const;
-	void AddCosmeticTorchRoomSuggestions(Room const & room) const;
-	void AddArmourRoomSuggestions(Room const & room) const;
+	void AddDesksToRoom(Room const & room) const;
+	void AddCosmeticTorchsToRoom(Room const & room) const;
+	void AddArmourToRoom(Room const & room) const;
+	void AddDesksInBox(Box2 box) const;
 	void AddSecretPassageSuggestions(Room const & room,
 	                                 Room const & neighbour0, Vec2 const & door0,
 	                                 Room const & neighbour1, Vec2 const & door1) const;
 	void AddSecretAreaSuggestions(Room const & room,
 	                              Room const & neighbour, Vec2 const & door) const;
+
+	// Functions to select positions in or near rooms
 	Vec2 GetPosAtRoomBack(Room const & room) const;
 	PosTempList GetTorchPositions(Room const & room) const;
 	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
@@ -100,8 +105,6 @@ protected:
 	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
 	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
 	                                      Box2TempList const & boxVec);
-
-	void PrintAllRooms() const;
 
 	struct RequestedConnection
 	{
@@ -128,4 +131,5 @@ protected:
 	Map& m_Map;
 	Parameters m_Param = {};
 	bool m_HasGenerated = false;
+	int m_StartRoomIndex = c_Invalid;
 };

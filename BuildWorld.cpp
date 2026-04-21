@@ -60,6 +60,30 @@ void BuildWorld()
 	world.edit_map(6).set_name("Hogwarts - Sixth Floor");
 	world.edit_map(7).set_name("Hogwarts - Seventh Floor");
 
+	// set spawn parameters
+	world.edit_map(7).set_spawn_param({
+		.boss = Creature::MarySue,
+		.min_creatures = 9,
+		.max_creatures = 10,
+		.cooldown_min = 60,
+		.cooldown_max = 120,
+		.lifetime_max_creatures = 30,
+		.min_chests = 5,
+		.max_chests = 7,
+	});
+
+	for (int z = 0; z <= c_MaxZ; ++z)
+	{
+		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
+		param.door_weights[(int)(Spawn::DoorType::None                   )] = c_MaxZ * 8 - z * 4;
+		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
+		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
+		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
+		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
+		param.percent_torches_lit = 80 - z * 10;
+	}
+
 	// Pass 2 - run generator
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
@@ -84,28 +108,4 @@ void BuildWorld()
 	}
 
 	//world.edit_map(dungeon_id).get_generator().Generate();
-
-	// set spawn parameters
-	world.edit_map(7).set_spawn_param({
-		.boss = Creature::MarySue,
-		.min_creatures = 9,
-		.max_creatures = 10,
-		.cooldown_min = 60,
-		.cooldown_max = 120,
-		.lifetime_max_creatures = 30,
-		.min_chests = 5,
-		.max_chests = 7,
-	});
-
-	for (int z = 0; z <= c_MaxZ; ++z)
-	{
-		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
-		param.door_weights[(int)(Spawn::DoorType::None                   )] = c_MaxZ * 8 - z * 4;
-		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
-		param.percent_torches_lit = 80 - z * 10;
-	}
 }

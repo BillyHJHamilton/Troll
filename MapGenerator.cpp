@@ -405,11 +405,8 @@ void MapGenerator::PlaceFirstRoomIfNeeded()
 		// Add a random chamber as our seed room.
 		Room newRoom = MakeRandomChamber();
 		m_RoomVec.push_back(newRoom);
+		m_StartRoomIndex = 0;
 		// no connections to add
-
-		// assume this is the start room for the player
-		Vec2 room_centre = newRoom.GetBox().centre();
-		m_Map.edit_suggestions().add_player_start(room_centre);
 	}
 }
 

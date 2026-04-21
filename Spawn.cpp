@@ -102,12 +102,12 @@ int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
-int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
-                         Terrain::Type terrain_type, char const * name);
+//int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
+//                         Terrain::Type terrain_type, char const * name);
 int spawn_secret_areas(Map& map);
 int spawn_secret_passages(Map& map);
-int spawn_desks(Map& map);
-int spawn_cosmetic_torches(Map & map);
+//int spawn_desks(Map& map);
+//int spawn_cosmetic_torches(Map & map);
 
 Vec2 find_boss_spawn_position(Map const& map);
 
@@ -454,9 +454,9 @@ void spawn_for_map(Map& map, History& history)
 
 		spawn_secret_areas(map);
 		spawn_secret_passages(map);
-		spawn_desks(map);
-		spawn_cosmetic_torches(map);
-		spawn_simple_feature(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
+		//spawn_desks(map);
+		//spawn_cosmetic_torches(map);
+		//spawn_simple_feature(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
 	}
 
 	if (chests_to_spawn > 0)
@@ -636,7 +636,7 @@ int spawn_chests(Map& map, int chests_to_spawn)
 
 	return spawned;
 }
-
+/* TODO: Remove?
 int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
                          Terrain::Type terrain_type, char const* name)
 {
@@ -661,7 +661,7 @@ int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
 
 	return spawned;
 }
-
+*/
 int spawn_secret_areas(Map& map)
 {
 	// no min range from player
@@ -841,7 +841,7 @@ int spawn_secret_passages(Map& map)
 
 	return spawned;
 }
-
+/*  TODO: REMOVE?
 int spawn_desks(Map& map)
 {
 	// no min range from player
@@ -913,7 +913,7 @@ int spawn_cosmetic_torches(Map& map)
 
 	return spawned;
 }
-
+*/
 IntTempList revise_door_weights(Parameters const & param,
                                 bool allow_none, bool allow_button, bool allow_torches)
 {

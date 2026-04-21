@@ -1,10 +1,23 @@
 #include "MapGenerator.h"
 
 #include "Debug.h"
+#include "Feature.h"
 #include "Map.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
+#include "World.h"
+
+//
+// This .cpp file uses:
+//  -> m_RoomVec
+//  -> m_RegionVec
+//  -> m_Map
+//  -> NOT m_Param, but it probably will
+//
+// If we want to do this outside of the MapGenerator class,
+//  we will need access to that data.
+//
 
 void MapGenerator::AddAllToMap()
 {
@@ -41,6 +54,12 @@ void MapGenerator::AddAllToMap()
 		}
 	}
 
+	// TODO: step 4: add items
+	//  -> some were added earlier
+	//  -> we may want to keep a count of how much we added before
+	//    -> then add less here
+	//  -> maybe step is just calling a Spawn function
+
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Added all rooms to map, made {} suggestions.\n",
@@ -48,7 +67,8 @@ void MapGenerator::AddAllToMap()
 	}
 }
 
-// Helpers for AddAllToMap
+//-----------------------------------------------------------------------------
+// Helper functions for AddAllToMap
 
 void MapGenerator::AddStairsToMap(Room const & room) const
 {
@@ -72,10 +92,20 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 {
 	if (!room.IsChamber())
 	{
-		DebugBreak("Only use MapGenerator::AddChamberToMap for chmabers.");
+		DebugBreak("Only use MapGenerator::AddChamberToMap for chambers.");
 	}
 
 	// Room positions are all in global space.
+
+	if (m_StartRoomIndex != c_Invalid &&
+		&(m_RoomVec[m_StartRoomIndex]) == &room)
+	{
+		// this is the starting room
+		//  -> just the players starts here; nothing else
+		m_Map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
+		m_Map.edit_suggestions().add_player_start(room.GetBox().centre());
+		return;
+	}
 
 	if (Terrain::c_HighlightType == Terrain::HighlightType::Regions &&
 	    !room.IsInMainRegion())
@@ -99,10 +129,13 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		}
 	}
 
+	// TODO: Add Fred and George near here?
+
 	if (room.GetNeighbourCount() == 1)
 	{
 		// end room of region or 1-room attic
 
+		// TODO: Add item/feature directly
 		// add treasure across the room from the entrance
 		Vec2 pos = GetPosAtRoomBack(room);
 		m_Map.edit_suggestions().add_treasure_normal(pos);
@@ -115,14 +148,14 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 		{
 		case 0:
 		case 1:
-			AddDeskRoomSuggestions(room);
+			AddDesksToRoom(room);
 			break;
 		case 2:
 		case 3:
-			AddArmourRoomSuggestions(room);
+			AddArmourToRoom(room);
 			break;
 		case 4:
-			AddCosmeticTorchRoomSuggestions(room);
+			AddCosmeticTorchsToRoom(room);
 			break;
 		}
 
@@ -181,6 +214,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		{
 			// don't spawn anything in the passage itself
 			//  -> ends must be floor, so doors can spawn
+			//    -> TODO: Can we avoid this?
 			//  -> it's OK if things spawn in the door spots after the passage is open
 			m_Map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
 			m_Map.set_terrain(door0, Terrain::Open);
@@ -203,7 +237,7 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 		}
 	}
 
-/*	// TODO doors
+/*	// TODO: doors?
 	if (room.CorridorLength() != 2 && !Random::one_in(3))
 	{
 		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
@@ -211,75 +245,82 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 	}*/
 }
 
-void MapGenerator::AddDeskRoomSuggestions(Room const & room) const
+void MapGenerator::AddDesksToRoom(Room const & room) const
 {
-	int const  min_x = room.GetBox().min.x;
-	int const  min_y = room.GetBox().min.y;
-	int const size_x = room.GetBox().size.x;
-	int const size_y = room.GetBox().size.y;
-	int const  max_x = room.GetBox().max(AXIS_X);
-	int const  max_y = room.GetBox().max(AXIS_Y);
+	// this box is 1 smaller on each side
+	int const  min_x = room.GetBox().min.x + 1;
+	int const  min_y = room.GetBox().min.y + 1;
+	int const size_x = room.GetBox().size.x - 2;
+	int const size_y = room.GetBox().size.y - 2;
+	int const  max_x = room.GetBox().inner_max(AXIS_X);
+	int const  max_y = room.GetBox().inner_max(AXIS_Y);
 
-	if (size_x < 4 || size_y < 4)
+	if (size_x < 2 || size_y < 2)
 	{
 		return;  // room is too small for desks
 	}
 
-	bool is_aisle_x = size_x >= 7 && size_x % 2 != 0;
-	bool is_aisle_y = size_y >= 7 && size_y % 2 != 0;
+	bool is_aisle_x = size_x >= 5 && size_x % 2 != 0;
+	bool is_aisle_y = size_y >= 5 && size_y % 2 != 0;
 
 	if (is_aisle_x)
 	{
-		int half_x = (size_x + 1) / 2;
-		int min2_x = min_x + half_x - 1;
+		int half_x = size_x / 2;
+		int min2_x = min_x + half_x + 1;
 
 		if (is_aisle_y)
 		{
-			int half_y = (size_y + 1) / 2;
-			int min2_y = min_y + half_y - 1;
+			int half_y = size_y / 2;
+			int min2_y = min_y + half_y + 1;
 
-			m_Map.edit_suggestions().add_desk_block(Box2{  min_x,  min_y, half_x, half_y });
-			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min2_y, half_x, half_y });
-			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x,  min_y, half_x, half_y });
-			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min2_y, half_x, half_y });
+			AddDesksInBox(Box2{  min_x,  min_y, half_x, half_y });
+			AddDesksInBox(Box2{  min_x, min2_y, half_x, half_y });
+			AddDesksInBox(Box2{ min2_x,  min_y, half_x, half_y });
+			AddDesksInBox(Box2{ min2_x, min2_y, half_x, half_y });
 		}
 		else
 		{
-			m_Map.edit_suggestions().add_desk_block(Box2{  min_x, min_y, half_x, size_y });
-			m_Map.edit_suggestions().add_desk_block(Box2{ min2_x, min_y, half_x, size_y });
+			AddDesksInBox(Box2{  min_x, min_y, half_x, size_y });
+			AddDesksInBox(Box2{ min2_x, min_y, half_x, size_y });
 		}
 	}
 	else
 	{
 		if (is_aisle_y)
 		{
-			int half_y = (size_y + 1) / 2;
-			int min2_y = min_y + half_y - 1;
+			int half_y = size_y / 2;
+			int min2_y = min_y + half_y + 1;
 
-			m_Map.edit_suggestions().add_desk_block(Box2{ min_x,  min_y, size_x, half_y });
-			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min2_y, size_x, half_y });
+			AddDesksInBox(Box2{ min_x,  min_y, size_x, half_y });
+			AddDesksInBox(Box2{ min_x, min2_y, size_x, half_y });
 		}
 		else
 		{
-			m_Map.edit_suggestions().add_desk_block(Box2{ min_x, min_y, size_x, size_y });
+			AddDesksInBox(Box2{ min_x, min_y, size_x, size_y });
 		}
 	}
 }
 
-void MapGenerator::AddCosmeticTorchRoomSuggestions(Room const & room) const
+void MapGenerator::AddCosmeticTorchsToRoom(Room const & room) const
 {
-	// all torches in the room have the same random value
-	//  -> this will be compared as chosen < desired, so 100 is impossible
-	int random_percent = Random::in_range(0, 99);
+	// torches in the room are all lit or all unlit
+	bool is_lit = Random::in_range(0, 99) < m_Map.read_spawn_param().percent_torches_lit;
 
 	PosTempList positions =	GetTorchPositions(room);
 	for (Vec2 pos : positions)
 	{
-		m_Map.edit_suggestions().add_cosmetic_torch(pos, random_percent);
+		if (is_lit)
+		{
+			Feature::spawn(pos.xyz(m_Map.get_z()), Terrain::TorchLit);
+		}
+		else
+		{
+			Feature::spawn(pos.xyz(m_Map.get_z()), Terrain::TorchUnlit);
+		}
 	}
 }
 
-void MapGenerator::AddArmourRoomSuggestions(Room const & room) const
+void MapGenerator::AddArmourToRoom(Room const & room) const
 {
 	// TODO: Armour flanking doorways sometimes
 
@@ -288,7 +329,20 @@ void MapGenerator::AddArmourRoomSuggestions(Room const & room) const
 	{
 		if ((pos.x + pos.y) % 2 == 0)  // every other space
 		{
-			m_Map.edit_suggestions().add_armour(pos);
+			Feature::spawn(pos.xyz(m_Map.get_z()), Terrain::Armour);
+		}
+	}
+}
+
+void MapGenerator::AddDesksInBox(Box2 box) const
+{
+	int const map_z = m_Map.get_z();
+
+	for (int x = box.min.x; x < box.max(AXIS_X); ++x)
+	{
+		for (int y = box.min.y; y < box.max(AXIS_Y); ++y)
+		{
+			Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
 		}
 	}
 }
@@ -307,6 +361,8 @@ void MapGenerator::AddSecretPassageSuggestions(Room const & room,
 		Vec2 button_pos0 = Random::from_vector(posList0);
 		Vec2 button_pos1 = Random::from_vector(posList1);
 		m_Map.edit_suggestions().add_secret_passage(door0, door1, button_pos0, button_pos1);
+		// TODO: Add secret passage door (and trigger if needed) directly
+		//  -> there will have to be a function to shoose the kind
 
 		if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 		{
@@ -351,6 +407,8 @@ void MapGenerator::AddSecretAreaSuggestions(Room const & room,
 		//  -> And farther along, so we can do any number?
 		if (Util::Size(torch_pos_list) == 1)
 		{
+			// TODO: Add secret area door (and trigger if needed) directly
+			//  -> there will have to be a function to shoose the kind
 			m_Map.edit_suggestions().add_secret_area(door, button_pos, torch_pos_list[0]);
 		}
 		else
@@ -374,6 +432,9 @@ void MapGenerator::AddSecretAreaSuggestions(Room const & room,
 		m_Map.set_terrain(door, Terrain::OpenHighlight);
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Functions to select positions in or near rooms
 
 Vec2 MapGenerator::GetPosAtRoomBack(Room const & room) const
 {

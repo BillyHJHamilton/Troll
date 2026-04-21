@@ -44,8 +44,6 @@ Manager::Manager()
 
 	m_secret_area_vec.reserve(c_DefaultCapacity);
 	m_secret_passage_vec.reserve(c_DefaultCapacity);
-	m_desk_block_vec.reserve(c_DefaultCapacity);
-	m_cosmetic_torch_vec.reserve(c_DefaultCapacity);
 }
 
 void Manager::serialize(ISerializer & s)
@@ -59,8 +57,6 @@ void Manager::serialize(ISerializer & s)
 
 	s.srz_vector(m_secret_area_vec,    "m_secret_area_vec");
 	s.srz_vector(m_secret_passage_vec, "m_secret_passage_vec");
-	s.srz_vector(m_desk_block_vec,     "m_desk_block_vec");
-	s.srz_vector(m_cosmetic_torch_vec, "m_cosmetic_torch_vec");
 }
 
 int Manager::get_total_count() const
@@ -75,8 +71,6 @@ int Manager::get_total_count() const
 
 	count += Util::Size(m_secret_area_vec);
 	count += Util::Size(m_secret_passage_vec);
-	count += Util::Size(m_desk_block_vec);
-	count += Util::Size(m_cosmetic_torch_vec);
 
 	return count;
 }
@@ -98,24 +92,9 @@ int Manager::get_count_secret_passages() const
 	return Util::Size(m_secret_passage_vec);
 }
 
-int Manager::get_count_desk_blocks() const
-{
-	return Util::Size(m_desk_block_vec);
-}
-
-int Manager::get_count_cosmetic_torches() const
-{
-	return Util::Size(m_cosmetic_torch_vec);
-}
-
 SimpleList const & Manager::get(Type type) const
 {
 	return m_simple_vecs[type];
-}
-
-void Manager :: add_armour(Vec2 position)
-{
-	m_simple_vecs[Armour].push_back(position);
 }
 
 void Manager :: add_treasure_normal(Vec2 position)
@@ -202,23 +181,6 @@ void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 bu
 	m_secret_passage_vec.push_back(instance);
 }
 
-void Manager :: add_desk_block(Box2 block)
-{
-	m_desk_block_vec.push_back(block);
-}
-
-void Manager :: add_cosmetic_torch(Vec2 position, int random_percent)
-{
-	assert(random_percent >=   0);
-	assert(random_percent <  100);
-
-	CosmeticTorchInstance instance =
-	{ .position = position,
-	  .random_percent = (byte)(random_percent),
-	};
-	m_cosmetic_torch_vec.push_back(instance);
-}
-
 void Manager :: remove(Type type, int index)
 {
 	assert(is_valid_type(type));
@@ -239,20 +201,6 @@ void Manager :: remove_secret_passage(int index)
 	assert(index < get_count_secret_passages());
 
 	Util::RemoveSwap(m_secret_passage_vec, index);
-}
-
-void Manager :: remove_desk_block(int index)
-{
-	assert(index < get_count_desk_blocks());
-
-	Util::RemoveSwap(m_desk_block_vec, index);
-}
-
-void Manager :: remove_cosmetic_torch(int index)
-{
-	assert(index < get_count_cosmetic_torches());
-
-	Util::RemoveSwap(m_cosmetic_torch_vec, index);
 }
 
 } // namespace Suggestion
