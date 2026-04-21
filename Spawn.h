@@ -6,16 +6,20 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
-	// TODO: Split into doors and triggers
-	//  -> portrait has no trigger, but hopefully others mix-and-match
+	enum class TriggerType : int
+	{
+		None,  // e.g. Alohamora Portrait
+		FlipendoButton,
+		LightTorch,
+		Count,
+	};
+
 	enum class DoorType : int
 	{
 		None,
 		Portrait,
-		FlipendoOpensWall,
-		FlipendoOpensPortcullis,
-		TorchesOpensWall,
-		TorchesOpensPortcullis,
+		SlidingWall,
+		Portcullis,
 		Count,
 	};
 
@@ -48,6 +52,7 @@ namespace Spawn
 		int max_chests = 3;
 
 		// Amount of secret areas (1 door each) to seal off
+		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
 		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
 
 		// Fraction of cosmetic torches (no triggers) that start lit
@@ -86,4 +91,6 @@ namespace Spawn
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);
 	float probability_factor (float difficulty, float target_difficulty);
+
+	bool is_compatible(TriggerType trigger, DoorType door);
 }

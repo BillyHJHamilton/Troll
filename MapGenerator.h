@@ -37,6 +37,14 @@ public:
 	void SetParameters(Parameters parameters) { m_Param = parameters; }
 	void RequestConnection(int targetMapId, int numConnections);
 
+	int GetRoomCount() const;
+	Room const& GetRoom(int index) const { return m_RoomVec[index]; }
+	std::vector<Room> const& GetRoomVector() const { return m_RoomVec; }
+	bool IsStartRoom(int index) const { return index == m_StartRoomIndex; }
+
+	int GetRegionCount() const;
+	int GetRegionParent(int index) const { return m_RegionVec[index].parent; }
+
 	// Generates rooms and tries to join everything up.
 	void Generate();
 
@@ -86,11 +94,13 @@ protected:
 	//  -> the implementations of these are in MapGenerator_Finalize.cpp
 	void AddStairsToMap(Room const & room) const;
 	void AddChamberToMap(Room const & room) const;
-	void AddCorridorToMap(Room const & room) const;
+	void AddBasicCorridorToMap(Room const & room) const;
 	void AddDesksToRoom(Room const & room) const;
 	void AddCosmeticTorchsToRoom(Room const & room) const;
 	void AddArmourToRoom(Room const & room) const;
 	void AddDesksInBox(Box2 box) const;
+
+	void AddCorridorDoorStuff(Room const & room) const;
 	void AddSecretPassageSuggestions(Room const & room,
 	                                 Room const & neighbour0, Vec2 const & door0,
 	                                 Room const & neighbour1, Vec2 const & door1) const;
@@ -105,6 +115,12 @@ protected:
 	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
 	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
 	                                      Box2TempList const & boxVec);
+
+	Spawn::TriggerType ChooseTriggerType(bool allowNone,
+	                                     PosTempList const & buttonPosList,
+	                                     PosTempList const & torchPosList) const;
+	Spawn::DoorType ChooseDoorType(Spawn::TriggerType triggerType, bool allowNone) const;
+	static Terrain::Type get_terrain_for_door_type(Spawn::DoorType door_type);
 
 	struct RequestedConnection
 	{

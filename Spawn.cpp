@@ -60,7 +60,7 @@ enum class Problem : int
 // Helper declarations
 
 
-Terrain::Type get_terrain_for_door_type(DoorType door_type);
+//Terrain::Type get_terrain_for_door_type(DoorType door_type);
 
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
@@ -104,8 +104,8 @@ int spawn_items(Map const& map, int items_to_spawn);
 int spawn_chests(Map& map, int chests_to_spawn);
 //int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
 //                         Terrain::Type terrain_type, char const * name);
-int spawn_secret_areas(Map& map);
-int spawn_secret_passages(Map& map);
+//int spawn_secret_areas(Map& map);
+//int spawn_secret_passages(Map& map);
 //int spawn_desks(Map& map);
 //int spawn_cosmetic_torches(Map & map);
 
@@ -198,9 +198,25 @@ float probability_factor (float difficulty, float target_difficulty)
 	return 1.0f;
 }
 
+bool is_compatible(TriggerType trigger, DoorType door)
+{
+	// TODO: Specify this differently?
+	//  -> initialize at game start
+	float constexpr c_Resistances[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
+	{
+		//	None	Portrait	SlidingWall	Portcullis
+		{	true,	true,		false,		false,	},	// None
+		{	true,	false,		true,		true,	},	// FlipendoButton
+		{	true,	false,		true,		true,	},	// LightTorch
+	};
+
+	return c_Resistances[(int)(trigger)][(int)(door)];
+}
+
 //-----------------------------------------------------------------------------
 // Helper Implementations
 
+/*
 Terrain::Type get_terrain_for_door_type(DoorType door_type)
 {
 	switch (door_type)
@@ -217,6 +233,7 @@ Terrain::Type get_terrain_for_door_type(DoorType door_type)
 		return Terrain::Open;
 	}
 }
+*/
 
 // Caches a list of open spawn positions for the map.
 // Remains valid until called against for another map, or until time passes.
@@ -452,8 +469,8 @@ void spawn_for_map(Map& map, History& history)
 	{
 		// do we want some (or all) of these to appear in player sight?
 
-		spawn_secret_areas(map);
-		spawn_secret_passages(map);
+		//spawn_secret_areas(map);
+		//spawn_secret_passages(map);
 		//spawn_desks(map);
 		//spawn_cosmetic_torches(map);
 		//spawn_simple_feature(map, Suggestion::Armour, Terrain::Armour, "suits of armour");
@@ -662,6 +679,7 @@ int spawn_simple_feature(Map & map, Suggestion::Type suggestion_type,
 	return spawned;
 }
 */
+/*
 int spawn_secret_areas(Map& map)
 {
 	// no min range from player
@@ -841,6 +859,7 @@ int spawn_secret_passages(Map& map)
 
 	return spawned;
 }
+*/
 /*  TODO: REMOVE?
 int spawn_desks(Map& map)
 {
@@ -914,6 +933,7 @@ int spawn_cosmetic_torches(Map& map)
 	return spawned;
 }
 */
+/*
 IntTempList revise_door_weights(Parameters const & param,
                                 bool allow_none, bool allow_button, bool allow_torches)
 {
@@ -949,7 +969,7 @@ IntTempList revise_door_weights(Parameters const & param,
 
 	return revised_weights;
 }
-
+/*
 bool requires_button(Spawn::DoorType type)
 {
 	switch (type)
@@ -987,7 +1007,7 @@ DoorType choose_door_type(bool is_button_good,
 		return (DoorType)(Random::weighted_index(buttonless_weights));
 	}
 }
-
+*/
 Spawn::Option choose_spawn_option(float target_difficulty)
 {
 	Spawn::OptionTempList options;

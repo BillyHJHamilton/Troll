@@ -2,6 +2,7 @@
 
 #include "Debug.h"
 #include "Map.h"
+#include "MapGridder.h"
 #include "Math.h"
 #include "PerfTimer.h"
 #include "Random.h"
@@ -61,6 +62,16 @@ void MapGenerator::RequestConnection(int targetMapId, int numToAdd)
 	m_RequestedConnections.push_back({targetMapId, numToAdd});
 }
 
+int MapGenerator::GetRoomCount() const
+{
+	return Util::Size(m_RoomVec);
+}
+
+int MapGenerator::GetRegionCount() const
+{
+	return Util::Size(m_RegionVec);
+}
+
 void MapGenerator::Generate()
 {
 	if (Debug::enabled(Debug::Map))
@@ -106,7 +117,7 @@ void MapGenerator::Generate()
 
 	//PrintAllRooms();
 
-	AddAllToMap();
+	MapGridder gridder(m_Map, *this);
 }
 
 void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)

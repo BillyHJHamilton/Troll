@@ -75,12 +75,19 @@ void BuildWorld()
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
 		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
-		param.door_weights[(int)(Spawn::DoorType::None                   )] = c_MaxZ * 8 - z * 4;
-		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
+		param.trigger_weights[(int)(Spawn::TriggerType::None          )] = c_MaxZ;
+		param.trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)] = z;
+		param.trigger_weights[(int)(Spawn::TriggerType::LightTorch    )] = z;
+		param.door_weights[(int)(Spawn::DoorType::None       )] = c_MaxZ * 3 - z * 2;
+		param.door_weights[(int)(Spawn::DoorType::Portrait   )] = c_MaxZ * 2;
+		param.door_weights[(int)(Spawn::DoorType::SlidingWall)] = z;
+		param.door_weights[(int)(Spawn::DoorType::Portcullis )] = z;
+		//param.door_weights[(int)(Spawn::DoorType::None       )] = c_MaxZ * 8 - z * 4;
+		//param.door_weights[(int)(Spawn::DoorType::Portrait   )] = c_MaxZ * 2;
+		//param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
+		//param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
+		//param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
+		//param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
 		param.percent_torches_lit = 80 - z * 10;
 	}
 

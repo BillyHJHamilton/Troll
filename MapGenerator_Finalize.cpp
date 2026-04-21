@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Feature.h"
 #include "Map.h"
+#include "MapGridder.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -13,7 +14,9 @@
 //  -> m_RoomVec
 //  -> m_RegionVec
 //  -> m_Map
-//  -> NOT m_Param, but it probably will
+//  -> m_StartRoomIndex
+//  -> NOT m_Param
+//    -> instead, it uses m_Map.read_spawn_param()
 //
 // If we want to do this outside of the MapGenerator class,
 //  we will need access to that data.
@@ -21,8 +24,27 @@
 
 void MapGenerator::AddAllToMap()
 {
+	MapGridder gridder(m_Map, *this);
+	return;
+
 	// step 0: fill map with walls
 	m_Map.fill(Terrain::Wall);
+
+	// Possibly
+	//  pass 1: Render the basic map
+	//   -> including stairs
+	//   -> any order works
+	//  pass 2: Add triggers and doors
+	//   -> secret areas, secret passages
+	//   -> we can look at look at terrain
+	//   -> probably random order
+	//  pass 3: Add cosmetic stuff
+	//   -> desks, lit torches, armor
+	//   -> suggestions for later
+	//   -> probably random order
+	//  pass 4: Add items
+	//   -> including chests
+	//   -> probably random order
 
 	// step 1: add chambers
 	for (Room const & room : m_RoomVec)
@@ -50,15 +72,25 @@ void MapGenerator::AddAllToMap()
 		assert(m_Map.contains(room.GetBox()));
 		if (room.IsCorridor())
 		{
-			AddCorridorToMap(room);
+			AddBasicCorridorToMap(room);
+		}
+	}
+	for (Room const & room : m_RoomVec)
+	{
+		assert(m_Map.contains(room.GetBox()));
+		if (room.IsCorridor())
+		{
+			// after all corridors exist
+			AddCorridorDoorStuff(room);
 		}
 	}
 
-	// TODO: step 4: add items
+	// TODO: step 4: add items (and chests)
 	//  -> some were added earlier
 	//  -> we may want to keep a count of how much we added before
 	//    -> then add less here
-	//  -> maybe step is just calling a Spawn function
+	//    -> or make a list of what to add
+	//  -> maybe this step is just calling a Spawn function
 
 	if (Debug::enabled(Debug::Map))
 	{
@@ -137,6 +169,9 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 
 		// TODO: Add item/feature directly
 		// add treasure across the room from the entrance
+		// it would be nice to add other valuable items the same way
+		//  -> e.g. potions, sweets
+		//  -> but some randomly too
 		Vec2 pos = GetPosAtRoomBack(room);
 		m_Map.edit_suggestions().add_treasure_normal(pos);
 	}
@@ -171,7 +206,7 @@ void MapGenerator::AddChamberToMap(Room const & room) const
 	}
 }
 
-void MapGenerator::AddCorridorToMap(Room const & room) const
+void MapGenerator::AddBasicCorridorToMap(Room const & room) const
 {
 	if (!room.IsCorridor())
 	{
@@ -189,6 +224,16 @@ void MapGenerator::AddCorridorToMap(Room const & room) const
 	{
 		m_Map.fill_box(room.GetBox(), Terrain::Open);
 	}
+}
+
+void MapGenerator::AddCorridorDoorStuff(Room const & room) const
+{
+	if (!room.IsCorridor())
+	{
+		DebugBreak("Only use MapGenerator::AddCorridorToMap for corridors.");
+	}
+
+	// Room positions are all in global space.
 
 	if (room.GetRegion() != Room::c_MainRegion &&
 		room.GetNeighbourCount() == 2)  // false for T-junctions
@@ -389,9 +434,68 @@ void MapGenerator::AddSecretPassageSuggestions(Room const & room,
 void MapGenerator::AddSecretAreaSuggestions(Room const & room,
                                             Room const & neighbour, Vec2 const & door) const
 {
+	// Needed
+	//  -> Find possible trigger spots
+	//    -> needs to be open/wall (as appropriate)
+	//    -> Terrain::is_can_spawn
+	//    -> idealy it has 3x3 of open/wall around it
+	//  -> Choose trigger type
+	//    -> can be none
+	//    -> choose trigger spot(s) if needed
+	//  -> Choose door type
+	//    -> trigger type affects this, only some combos are valid
+	//  -> Add door and trigger
+	//    -> need a new trigger number
+
 	PosTempList button_pos_list = GetPlainWallPositions(neighbour);
 	PosTempList torch_pos_list  = GetTorchPositions(neighbour);
 
+	Spawn::TriggerType trigger_type = ChooseTriggerType(true, button_pos_list, torch_pos_list);
+	Spawn::DoorType       door_type = ChooseDoorType(trigger_type, true);
+
+	if (door_type == Spawn::DoorType::None)
+	{
+		std::cout << "Secret area: No door" << std::endl;
+		return;  // no door
+	}
+
+	std::cout << std::format("Secret area: Trigger {}, Door {}\n",
+		(int)(trigger_type), (int)(door_type));
+
+	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
+	int const map_z = m_Map.get_z();
+
+	switch(trigger_type)
+	{
+	case Spawn::TriggerType::None:
+		Feature::spawn(door.xyz(map_z), door_terrain);
+		break;
+
+	case Spawn::TriggerType::FlipendoButton:
+		{
+			Vec2 button_pos = Random::from_vector(button_pos_list);
+			Feature::spawn_flipendo_button(button_pos.xyz(map_z),
+			                               door      .xyz(map_z), door_terrain);
+		}
+		break;
+
+	case Spawn::TriggerType::LightTorch:
+		if(Util::Size(torch_pos_list) == 1)
+		{
+			Feature::spawn_torch1_door(torch_pos_list[0].xyz(map_z),
+			                           door  .xyz(map_z), door_terrain);
+		}
+		else if(Util::Size(torch_pos_list) == 4)
+		{
+			Feature::spawn_torch4_door(torch_pos_list[0].xyz(map_z),
+			                           torch_pos_list[1].xyz(map_z),
+			                           torch_pos_list[2].xyz(map_z),
+			                           torch_pos_list[3].xyz(map_z),
+			                           door  .xyz(map_z), door_terrain);
+		}
+		break;
+	}
+/*
 	if (Util::Size(button_pos_list) > 0 &&
 		Util::Size(torch_pos_list) > 0)
 	{
@@ -408,7 +512,7 @@ void MapGenerator::AddSecretAreaSuggestions(Room const & room,
 		if (Util::Size(torch_pos_list) == 1)
 		{
 			// TODO: Add secret area door (and trigger if needed) directly
-			//  -> there will have to be a function to shoose the kind
+			//  -> there will have to be a function to choose the kind
 			m_Map.edit_suggestions().add_secret_area(door, button_pos, torch_pos_list[0]);
 		}
 		else
@@ -430,7 +534,7 @@ void MapGenerator::AddSecretAreaSuggestions(Room const & room,
 	if (Terrain::c_HighlightType == Terrain::HighlightType::Suggestions)
 	{
 		m_Map.set_terrain(door, Terrain::OpenHighlight);
-	}
+	}*/
 }
 
 //-----------------------------------------------------------------------------
@@ -698,3 +802,74 @@ bool MapGenerator::isAnyContainedByAnyInList(PosTempList const & posVec,
 	}
 	return false;
 }
+
+Spawn::TriggerType MapGenerator::ChooseTriggerType(bool allowNone,
+                                                   PosTempList const & buttonPosList,
+                                                   PosTempList const & torchPosList) const
+{
+	assert(allowNone || !buttonPosList.empty() || !torchPosList.empty());
+
+	Spawn::Parameters const& params = m_Map.read_spawn_param();
+
+	IntTempList trigger_weights((int)(Spawn::TriggerType::Count), 0);  // count, value
+
+	if (allowNone)
+	{
+		int none_weight = params.trigger_weights[(int)(Spawn::TriggerType::None)];
+		trigger_weights[(int)(Spawn::TriggerType::None)] = none_weight;
+	}
+
+	if (!buttonPosList.empty())
+	{
+		int button_weight = params.trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)];
+		trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)] = button_weight;
+	}
+
+	if (!torchPosList.empty())
+	{
+		int torch_weight = params.trigger_weights[(int)(Spawn::TriggerType::LightTorch)];
+		trigger_weights[(int)(Spawn::TriggerType::LightTorch)] = torch_weight;
+	}
+
+	return (Spawn::TriggerType)(Random::weighted_index(trigger_weights));
+}
+
+Spawn::DoorType MapGenerator::ChooseDoorType(Spawn::TriggerType triggerType, bool allowNone) const
+{
+	Spawn::Parameters const& params = m_Map.read_spawn_param();
+
+	IntTempList door_weights((int)(Spawn::DoorType::Count), 0);  // count, value
+
+	for (int i = 0; i < Util::Size(door_weights); ++i)
+	{
+		if (i == (int)(Spawn::DoorType::None) && !allowNone)
+		{
+			continue;
+		}
+		if (!Spawn::is_compatible(triggerType, (Spawn::DoorType)(i)))
+		{
+			continue;
+		}
+
+		door_weights[i] = params.door_weights[i];
+	}
+
+	return (Spawn::DoorType)(Random::weighted_index(door_weights));
+}
+
+// static
+Terrain::Type MapGenerator::get_terrain_for_door_type(Spawn::DoorType door_type)
+{
+	switch (door_type)
+	{
+	case Spawn::DoorType::Portrait:
+		return Terrain::Portrait;
+	case Spawn::DoorType::SlidingWall:
+		return Terrain::SlidingWall;
+	case Spawn::DoorType::Portcullis:
+		return Terrain::Portcullis;
+	default:
+		return Terrain::Open;
+	}
+}
+
