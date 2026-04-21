@@ -51,7 +51,7 @@ namespace Spawn
 		int min_chests = 1;
 		int max_chests = 3;
 
-		// Amount of secret areas (1 door each) to seal off
+		// Type distributions for triggers and doors
 		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
 		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
 

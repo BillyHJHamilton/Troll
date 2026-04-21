@@ -41,9 +41,6 @@ Manager::Manager()
 	{
 		m_simple_vecs[i].reserve(c_DefaultCapacity);
 	}
-
-	m_secret_area_vec.reserve(c_DefaultCapacity);
-	m_secret_passage_vec.reserve(c_DefaultCapacity);
 }
 
 void Manager::serialize(ISerializer & s)
@@ -54,9 +51,6 @@ void Manager::serialize(ISerializer & s)
 		s.srz_vector(m_simple_vecs[i], "m_simple_vecs[i]");
 		//s.srz_vector(m_simple_vecs[i], "m_simple_vecs[" + std::to_string(i) + "]");
 	}
-
-	s.srz_vector(m_secret_area_vec,    "m_secret_area_vec");
-	s.srz_vector(m_secret_passage_vec, "m_secret_passage_vec");
 }
 
 int Manager::get_total_count() const
@@ -69,9 +63,6 @@ int Manager::get_total_count() const
 		count += Util::Size(m_simple_vecs[i]);
 	}
 
-	count += Util::Size(m_secret_area_vec);
-	count += Util::Size(m_secret_passage_vec);
-
 	return count;
 }
 
@@ -80,16 +71,6 @@ int Manager::get_count(Type type) const
 	assert(is_valid_type(type));
 
 	return Util::Size(m_simple_vecs[type]);
-}
-
-int Manager::get_count_secret_areas() const
-{
-	return Util::Size(m_secret_area_vec);
-}
-
-int Manager::get_count_secret_passages() const
-{
-	return Util::Size(m_secret_passage_vec);
 }
 
 SimpleList const & Manager::get(Type type) const
@@ -127,80 +108,12 @@ void Manager :: add_boss(Vec2 position)
 	m_simple_vecs[Boss].push_back(position);
 }
 
-void Manager :: add_secret_area(Vec2 door)
-{
-	SecretAreaInstance instance =
-	{ .door = door,
-	};
-	m_secret_area_vec.push_back(instance);
-}
-
-void Manager :: add_secret_area(Vec2 door, Vec2 button, Vec2 torch)
-{
-	SecretAreaInstance instance =
-	{ .door = door,
-	  .button = button,
-	  .torch1 = torch,
-	  .trigger_types = TriggerTypes::ButtonOr1Torch,
-	};
-	m_secret_area_vec.push_back(instance);
-}
-
-void Manager :: add_secret_area(Vec2 door, Vec2 button,
-                                Vec2 torch1, Vec2 torch2, Vec2 torch3, Vec2 torch4)
-{
-	SecretAreaInstance instance =
-	{ .door = door,
-	  .button = button,
-	  .torch1 = torch1,
-	  .torch2 = torch2,
-	  .torch3 = torch3,
-	  .torch4 = torch4,
-	  .trigger_types = TriggerTypes::ButtonOr4Torches,
-	};
-	m_secret_area_vec.push_back(instance);
-}
-void Manager :: add_secret_passage(Vec2 door1, Vec2 door2)
-{
-	SecretPassageInstance instance =
-	{ .door1 = door1,
-	  .door2 = door2,
-	};
-	m_secret_passage_vec.push_back(instance);
-}
-
-void Manager :: add_secret_passage(Vec2 door1, Vec2 door2, Vec2 button1, Vec2 button2)
-{
-	SecretPassageInstance instance =
-	{ .door1 = door1,
-	  .door2 = door2,
-	  .button1 = button1,
-	  .button2 = button2,
-	  .has_buttons = true,
-	};
-	m_secret_passage_vec.push_back(instance);
-}
-
 void Manager :: remove(Type type, int index)
 {
 	assert(is_valid_type(type));
 	assert(index < get_count(type));
 
 	Util::RemoveSwap(m_simple_vecs[type], index);
-}
-
-void Manager :: remove_secret_area(int index)
-{
-	assert(index < get_count_secret_areas());
-
-	Util::RemoveSwap(m_secret_area_vec, index);
-}
-
-void Manager :: remove_secret_passage(int index)
-{
-	assert(index < get_count_secret_passages());
-
-	Util::RemoveSwap(m_secret_passage_vec, index);
 }
 
 } // namespace Suggestion

@@ -69,7 +69,6 @@ protected:
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors(int chance, bool isSecretPassages);
 	void AssignRoomsToRegions();
-	void AddAllToMap();  // implementation is in MapGenerator_Finalize.cpp
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize() const;
@@ -89,38 +88,6 @@ protected:
 	void MakeRoomARegionParent(int roomIndex);
 
 	void PrintAllRooms() const;
-
-	// Convert this map representation to cells
-	//  -> the implementations of these are in MapGenerator_Finalize.cpp
-	void AddStairsToMap(Room const & room) const;
-	void AddChamberToMap(Room const & room) const;
-	void AddBasicCorridorToMap(Room const & room) const;
-	void AddDesksToRoom(Room const & room) const;
-	void AddCosmeticTorchsToRoom(Room const & room) const;
-	void AddArmourToRoom(Room const & room) const;
-	void AddDesksInBox(Box2 box) const;
-
-	void AddCorridorDoorStuff(Room const & room) const;
-	void AddSecretPassageSuggestions(Room const & room,
-	                                 Room const & neighbour0, Vec2 const & door0,
-	                                 Room const & neighbour1, Vec2 const & door1) const;
-	void AddSecretAreaSuggestions(Room const & room,
-	                              Room const & neighbour, Vec2 const & door) const;
-
-	// Functions to select positions in or near rooms
-	Vec2 GetPosAtRoomBack(Room const & room) const;
-	PosTempList GetTorchPositions(Room const & room) const;
-	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
-	PosTempList GetPlainWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
-	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
-	                                      Box2TempList const & boxVec);
-
-	Spawn::TriggerType ChooseTriggerType(bool allowNone,
-	                                     PosTempList const & buttonPosList,
-	                                     PosTempList const & torchPosList) const;
-	Spawn::DoorType ChooseDoorType(Spawn::TriggerType triggerType, bool allowNone) const;
-	static Terrain::Type get_terrain_for_door_type(Spawn::DoorType door_type);
 
 	struct RequestedConnection
 	{

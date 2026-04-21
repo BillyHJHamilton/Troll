@@ -51,9 +51,8 @@ enum class Material
 
 // TODO: Proper resistance table for Features
 //  -> initialize at game start
-//  -> replace get_resistance funciton
 //Grid<float> s_resistances = Grid<float>((int)(Material::Count), Damage::Type::Count, 1.0f);
-// //
+//
 // Could use std::unordered_map from the terrain type to material
 //  -> most terrains won't need an entry.
 float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =

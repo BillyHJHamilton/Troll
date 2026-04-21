@@ -258,9 +258,6 @@
     <ClCompile Include="MapGridder.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
-    <ClCompile Include="MapGenerator_Finalize.cpp">
-      <Filter>Source Files\World</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
