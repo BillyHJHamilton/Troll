@@ -80,6 +80,8 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
+	// Convert thie representation to cells
+	//  -> all of these are in MapGenerator_Finalize.cpp
 	void AddStairsToMap(Room const & room) const;
 	void AddChamberToMap(Room const & room) const;
 	void AddCorridorToMap(Room const & room) const;
