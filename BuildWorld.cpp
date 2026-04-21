@@ -80,6 +80,7 @@ void BuildWorld()
 		param.trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)] = z;
 		param.trigger_weights[(int)(Spawn::TriggerType::LightTorch    )] = z;
 
+		// these are chosen after we chose the trigger type
 		param.door_weights[(int)(Spawn::DoorType::None       )] = c_MaxZ * 3 - z * 2;
 		param.door_weights[(int)(Spawn::DoorType::Portrait   )] = c_MaxZ * 2;
 		param.door_weights[(int)(Spawn::DoorType::SlidingWall)] = z;

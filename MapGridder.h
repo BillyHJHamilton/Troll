@@ -69,13 +69,6 @@ protected:
 	bool is_by_south_wall(Vec2 const & pos) const
 	{	return is_inside_east_west_wall(Vec2{ pos.x, pos.y + 1 });	}
 
-/*
-	// Functions to select positions in or near rooms
-	PosTempList GetPlainWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
-	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
-	                                      Box2TempList const & boxVec);
-*/
 private:
 	Map& m_map;
 	const MapGenerator& m_generator;
