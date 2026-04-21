@@ -300,6 +300,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Stairs.cpp" />
     <ClCompile Include="Status.cpp" />
     <ClCompile Include="Crosshair.cpp" />
+    <ClCompile Include="Sweets.cpp" />
     <ClCompile Include="Taunt.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="World.cpp" />
@@ -375,6 +376,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Stairs.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Crosshair.h" />
+    <ClInclude Include="Sweets.h" />
     <ClInclude Include="Target.h" />
     <ClInclude Include="Taunt.h" />
     <ClInclude Include="Terrain.h" />

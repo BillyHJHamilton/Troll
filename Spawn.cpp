@@ -598,9 +598,13 @@ int spawn_items(Map const& map, int items_to_spawn)
 		Vec2 const pos = next_spawn_position();
 		Vec3 const pos3 = pos.xyz(map.get_z());
 
-		if (Random::one_in(14))
+		if (Random::one_in(16))
 		{
 			Item::spawn_potion_by_level(pos3, difficulty);
+		}
+		else if (Random::one_in(8))
+		{
+			Item::spawn_sweets(pos3);
 		}
 		else
 		{
