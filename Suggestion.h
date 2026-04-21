@@ -9,9 +9,7 @@ namespace Suggestion
 
 	enum Type : int
 	{
-		First = 0,
-
-		TreasureNormal = First,  // e.g. chest
+		TreasureNormal,  // e.g. chest
 
 		PlayerStart,
 		EnemyWeak,      // below map difficulty

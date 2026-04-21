@@ -16,7 +16,7 @@ namespace Suggestion
 
 bool is_valid_type(Suggestion::Type t)
 {
-	return t >= First && t < Count;
+	return t >= 0 && t < Count;
 }
 
 Type get_enemy_type(float map_difficulty,
@@ -36,8 +36,7 @@ Manager::Manager()
 {
 	int constexpr c_DefaultCapacity = 10;
 
-	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
-	for (int i = Type::First; i < Type::Count; ++i)
+	for (int i = 0; i < Type::Count; ++i)
 	{
 		m_simple_vecs[i].reserve(c_DefaultCapacity);
 	}
@@ -45,8 +44,7 @@ Manager::Manager()
 
 void Manager::serialize(ISerializer & s)
 {
-	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
-	for (int i = Type::First; i < Type::Count; ++i)
+	for (int i = 0; i < Type::Count; ++i)
 	{
 		s.srz_vector(m_simple_vecs[i], "m_simple_vecs[i]");
 		//s.srz_vector(m_simple_vecs[i], "m_simple_vecs[" + std::to_string(i) + "]");
@@ -57,8 +55,7 @@ int Manager::get_total_count() const
 {
 	int count = 0;
 
-	static_assert(Type::First == 0, "Suggestion::Type::First must be 0");
-	for (int i = Type::First; i < Type::Count; ++i)
+	for (int i = 0; i < Type::Count; ++i)
 	{
 		count += Util::Size(m_simple_vecs[i]);
 	}
