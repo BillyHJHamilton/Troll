@@ -252,6 +252,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="Feature.cpp" />
     <ClCompile Include="FloatGeometry.cpp" />
+    <ClCompile Include="Loot.cpp" />
     <ClCompile Include="Suggestion.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
     <ClCompile Include="MenuHighScores.cpp" />
@@ -322,6 +323,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Feature.h" />
     <ClInclude Include="FloatGeometry.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="Loot.h" />
     <ClInclude Include="Suggestion.h" />
     <ClInclude Include="MenuDebug.h" />
     <ClInclude Include="MenuHighScores.h" />
