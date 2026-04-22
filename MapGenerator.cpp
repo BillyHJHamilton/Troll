@@ -176,7 +176,7 @@ void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 	}
 
 	Axis const join_axis = (adjacent_edge == c_CompassEast || adjacent_edge == c_CompassWest) ?
-		AXIS_X : AXIS_Y;
+		c_AxisX : c_AxisY;
 
 	// Establish the area we are trying to link to.
 	Box2 border_box = my_box.outer_border_box(adjacent_edge);
@@ -1152,8 +1152,8 @@ void MapGenerator::PrintAllRooms() const
 		}
 
 		Box2 const & box = m_RoomVec[r].GetBox();
-		std::cout << "\t  (" << box.min.x << " - " << box.max(AXIS_X)
-		         << ",\t"    << box.min.y << " - " << box.max(AXIS_Y) << ")";
+		std::cout << "\t  (" << box.min.x << " - " << box.max(c_AxisX)
+		         << ",\t"    << box.min.y << " - " << box.max(c_AxisY) << ")";
 
 		if(m_RoomVec[r].IsInMainRegion())
 		{

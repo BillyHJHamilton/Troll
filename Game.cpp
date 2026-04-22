@@ -358,6 +358,8 @@ void end_turn()
 		Game::save();
 	}
 
+	Player::tick_sugar();
+
 	++s_turn_number;
 }
 

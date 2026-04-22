@@ -50,7 +50,7 @@ Axis Room::CorridorAxis() const
 
 int Room::CorridorLength() const
 {
-	if (m_CorridorAxis == AXIS_X)
+	if (m_CorridorAxis == c_AxisX)
 	{
 		return m_Box.size.x;
 	}
@@ -102,11 +102,11 @@ Axis Room::StairsAxis(Stairs::Direction direction)
 	int const x = Stairs::relative_move(direction).x;
 	if (x != 0)
 	{
-		return AXIS_X;
+		return c_AxisX;
 	}
 	else
 	{
-		return AXIS_Y;
+		return c_AxisY;
 	}
 }
 
@@ -242,13 +242,13 @@ Room::TempList Room::FindPossibleJoiningCorridorsToBox(Box2 other_box) const
 
 	// See in what manner we might join the rooms
 	Axis overlapAxis;
-	if (m_Box.overlaps_on_axis(other_box, AXIS_X))
+	if (m_Box.overlaps_on_axis(other_box, c_AxisX))
 	{
-		overlapAxis = AXIS_X;
+		overlapAxis = c_AxisX;
 	}
-	else if (m_Box.overlaps_on_axis(other_box, AXIS_Y))
+	else if (m_Box.overlaps_on_axis(other_box, c_AxisY))
 	{
-		overlapAxis = AXIS_Y;
+		overlapAxis = c_AxisY;
 	}
 	else
 	{
@@ -398,19 +398,19 @@ Room::TempList Room::FindPossibleJoiningStairs(bool goingUp) const
 	}
 
 	// top and bottom
-	for (int pos = m_Box.min.x; pos < m_Box.max(AXIS_X); ++pos)
+	for (int pos = m_Box.min.x; pos < m_Box.max(c_AxisX); ++pos)
 	{
 		output.push_back(MakeStairs(Vec2{pos, m_Box.min.y - 1},
 			goingUp ? Stairs::UpNorth : Stairs::DownNorth));
-		output.push_back(MakeStairs(Vec2{pos, m_Box.max(AXIS_Y)},
+		output.push_back(MakeStairs(Vec2{pos, m_Box.max(c_AxisY)},
 			goingUp ? Stairs::UpSouth : Stairs::Direction::DownSouth));
 	}
 	// left and right
-	for (int pos = m_Box.min.y; pos < m_Box.max(AXIS_Y); ++pos)
+	for (int pos = m_Box.min.y; pos < m_Box.max(c_AxisY); ++pos)
 	{
 		output.push_back(MakeStairs(Vec2{m_Box.min.x - 1, pos},
 			goingUp ? Stairs::UpWest : Stairs::DownWest));
-		output.push_back(MakeStairs(Vec2{m_Box.max(AXIS_X), pos},
+		output.push_back(MakeStairs(Vec2{m_Box.max(c_AxisX), pos},
 			goingUp ? Stairs::UpEast : Stairs::DownEast));
 	}
 	return output;

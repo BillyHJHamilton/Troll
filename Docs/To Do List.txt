@@ -118,18 +118,11 @@ UX Notes from Richard
 Design Thoughts from Richard
 -------------------------------------------------------------------------------
 
-- It's boring that spells do exactly a predictable amount of damage
-- If the only way to gain spells is through random (?) drops, that could cause trouble later.
-  I remember that there were certain spells that dominated the game at different magic levels.
-  The progression I remember was ??? -> Stupify -> Protego -> Salvia Hexia.
-  I worry what will happen to a character who misses one.
-- Putting a smoke cloud in the hallway and running away behind it didn't work as well as I hoped.
-  I went around 2 corners with Malfoy out of sight, but he followed me (see picture).
-- [Debilitating spells are too strong] I think the problem here is that the penalties get
-  too large as the effect number gets higher.  It might help to make the power vary with
-  sqrt(N) instead of N.  You would probably want to increase the basse power by ~50% so
-  the single-cast effect power is about the same.
-- Level 1 is too hard.
+- It's boring that spells do exactly a predictable amount of damage.
+- Need other ways to learn spells.
+- Smoke isn't very useful right now.
+- Debilitating spells are too strong at high severity.
+- Level 1 (early game) is too hard.
 
 -------------------------------------------------------------------------------
 Bugs / Issues
@@ -137,7 +130,4 @@ Bugs / Issues
 
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?
-  They can see you but you can't see them. - Doesn't seem to reproduce.
-- Game crashes if you quit (by pressing X in corner) while dead.
-  It tries to serialize your save game but can't handle the fact you are dead.
-  I guess it should just save in dead state and submit your high score on reload.
+  They can see you but you can't see them. - Seems hard to reproduce.

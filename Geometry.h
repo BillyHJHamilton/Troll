@@ -8,9 +8,9 @@ struct Vec3;
 // Axis names
 
 using Axis = int;
-Axis constexpr AXIS_X = 0;
-Axis constexpr AXIS_Y = 1;
-Axis constexpr AXIS_Z = 2;
+Axis constexpr c_AxisX = 0;
+Axis constexpr c_AxisY = 1;
+Axis constexpr c_AxisZ = 2;
 inline Axis get_other_axis(Axis a) { return 1 - a; } // only really valid for X/Y
 
 //------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ inline bool chessboard_adjacent(Vec2 p0, Vec2 p1)
 	return chessboard(p0,p1) == 1;
 }
 
-// Returns the longer axis, or AXIS_X if both are equal.
+// Returns the longer axis, or c_AxisX if both are equal.
 Axis get_long_axis(Vec2 v);
 
 // Scales both components to -1, 0, or 1, preserving direction as much as possible.

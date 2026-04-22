@@ -20,6 +20,7 @@ namespace Terrain
 	{
 		char const* name;
 		int codepoint;
+		int cover_percent;
 		int terrain_flags = f_None;
 		int target_flags = f_None;
 	};
@@ -28,22 +29,23 @@ namespace Terrain
 	{
 		// Remember: These names are used by look_describe and for spell messages.
 
-		//	 Name					Codepoint					Terrain flags							Target flags
-		Data{"floor",				'.',						f_PermitSight | f_CanSpawn,				f_None},
-		Data{"floor (no spawn)",	'.',						f_PermitSight,							f_None},
-		Data{"floor (highlight)",	':',						f_PermitSight | f_CanSpawn,				f_None},
-		Data{"wall",				Codepoint::SolidBlock,		f_Solid,								f_None},
-		Data{"up stairs",			Codepoint::CaretUp,			f_Stairs,								f_None},
-		Data{"down stairs",			Codepoint::CaretDown,		f_Stairs,								f_None},
-		Data{"chest",				Codepoint::Chest,			f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
-		Data{"armour",				Codepoint::Armour,			f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"desk",				Codepoint::Desk1,			f_PermitSight | f_Solid | f_Feature | f_NoAutotarget,	Target::f_Fire | Target::f_Flipendo},
-		Data{"torch",				Codepoint::TorchUnlit,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire}, // unlit
-		Data{"torch",				Codepoint::TorchLit,		f_PermitSight | f_Solid | f_Feature,	f_None}, // lit
-		Data{"portrait",			Codepoint::Portrait,		f_Solid |  f_Feature,					Target::f_Alohomora},
-		Data{"button",				Codepoint::FlipendoButton,	f_Solid |  f_Feature,					Target::f_Flipendo},
-		Data{"wall",				Codepoint::SolidBlock,		f_Solid |  f_Feature,					f_None}, // sliding wall
-		Data{"portcullis",			'#',						f_PermitSight | f_Solid | f_Feature,	f_None},
+		//	 Name					Codepoint					Cover	Terrain flags							Target flags
+		Data{"floor",				'.',						0,		f_PermitSight | f_CanSpawn,				f_None},
+		Data{"floor (no spawn)",	'.',						0,		f_PermitSight,							f_None},
+		Data{"floor (highlight)",	':',						0,		f_PermitSight | f_CanSpawn,				f_None},
+		Data{"wall",				Codepoint::SolidBlock,		100,	f_Solid,								f_None},
+		Data{"up stairs",			Codepoint::CaretUp,			0,		f_Stairs,								f_None},
+		Data{"down stairs",			Codepoint::CaretDown,		0,		f_Stairs,								f_None},
+		Data{"chest",				Codepoint::Chest,			40,		f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"armour",				Codepoint::Armour,			30,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"desk",				Codepoint::Desk1,			50,		f_PermitSight | f_Solid | f_Feature |
+																		f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
+		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
+		Data{"torch" /*lit*/,		Codepoint::TorchLit,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid |  f_Feature,					Target::f_Alohomora},
+		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid |  f_Feature,					Target::f_Flipendo},
+		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid |  f_Feature,					f_None},
+		Data{"portcullis",			'#',						40,		f_PermitSight | f_Solid | f_Feature,	f_None},
 	};
 
 	int get_character(Terrain::Type t)
@@ -95,6 +97,12 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_Solid);
+	}
+
+	int get_cover_percent(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return s_data[t].cover_percent;
 	}
 
 	bool is_stairs(Terrain::Type t)

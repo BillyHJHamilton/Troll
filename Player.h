@@ -26,6 +26,8 @@ namespace Player
 		CompassDirection automove_dir = c_CompassInvalid;
 		bool acted = false;
 
+		float sugar = 65.0f; // 0 - 100
+
 		// Tracking when player last miscasted a spell.
 		// Used to trigger certain taunts.
 		int miscast_turn = -1;
@@ -50,6 +52,9 @@ namespace Player
 	const std::string& name ();
 	bool is_automoving ();
 	bool has_acted ();
+	float get_sugar ();
+	int get_sugar_bonus ();
+	char const* get_sugar_colour ();
 	Spell::Index get_recent_miscast ();
 	bool is_game_over ();
 	Score::Ending get_ending ();
@@ -69,6 +74,8 @@ namespace Player
 	void stop_automove ();
 	void dispatch_automove ();
 	void set_acted (bool acted);
+	void tick_sugar ();
+	void gain_sugar (int amount);
 	void set_miscasted (Spell::Index spell_index);
 	void set_defeated (Damage::Cause defeated_by);
 	void set_won ();

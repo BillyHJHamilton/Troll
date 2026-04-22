@@ -477,8 +477,8 @@ void MapGridder::add_cosmetic_desks(Room const& room) const
 	int const  min_y = room.GetBox().min.y + 1;
 	int const size_x = room.GetBox().size.x - 2;
 	int const size_y = room.GetBox().size.y - 2;
-	int const  max_x = room.GetBox().inner_max(AXIS_X);
-	int const  max_y = room.GetBox().inner_max(AXIS_Y);
+	int const  max_x = room.GetBox().inner_max(c_AxisX);
+	int const  max_y = room.GetBox().inner_max(c_AxisY);
 
 	if (size_x < 2 || size_y < 2)
 	{
@@ -534,8 +534,8 @@ void MapGridder::add_desks_in_box(Box2 const & box) const
 	}
 
 	int const map_z = m_map.get_z();
-	int max_x = box.max(AXIS_X);
-	int max_y = box.max(AXIS_Y);
+	int max_x = box.max(c_AxisX);
+	int max_y = box.max(c_AxisY);
 	for (int x = box.min.x; x < max_x; ++x)
 	{
 		for (int y = box.min.y; y < max_y; ++y)
@@ -620,9 +620,9 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 	         room.GetBox().size.y > room.GetBox().size.x)
 	{
 		// 2 torches at the Y ends of the room
-		int centre_x = room.GetBox().centre(AXIS_X);
+		int centre_x = room.GetBox().centre(c_AxisX);
 		int min_y = room.GetBox().min.y + 1;
-		int max_y = room.GetBox().inner_max(AXIS_Y) - 1;
+		int max_y = room.GetBox().inner_max(c_AxisY) - 1;
 		result.push_back(Vec2{ centre_x, min_y });
 		result.push_back(Vec2{ centre_x, max_y });
 	}
@@ -631,9 +631,9 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 	         room.GetBox().size.x > room.GetBox().size.y)
 	{
 		// 2 torches at the X ends of the room
-		int centre_y = room.GetBox().centre(AXIS_Y);
+		int centre_y = room.GetBox().centre(c_AxisY);
 		int min_x = room.GetBox().min.x + 1;
-		int max_x = room.GetBox().inner_max(AXIS_X) - 1;
+		int max_x = room.GetBox().inner_max(c_AxisX) - 1;
 		result.push_back(Vec2{ min_x, centre_y });
 		result.push_back(Vec2{ max_x, centre_y });
 	}
@@ -675,8 +675,8 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 
 	int const x_min = room.GetBox().min.x;
 	int const y_min = room.GetBox().min.y;
-	int const x_max = room.GetBox().inner_max(AXIS_X);
-	int const y_max = room.GetBox().inner_max(AXIS_Y);
+	int const x_max = room.GetBox().inner_max(c_AxisX);
+	int const y_max = room.GetBox().inner_max(c_AxisY);
 
 	// search along X sides of room
 
@@ -740,8 +740,8 @@ MapGridder::PosTempList MapGridder::get_good_positions_inside_wall(Room const& r
 
 	int const inside_x_min = room.GetBox().min.x;
 	int const inside_y_min = room.GetBox().min.y;
-	int const inside_x_max = room.GetBox().inner_max(AXIS_X);
-	int const inside_y_max = room.GetBox().inner_max(AXIS_Y);
+	int const inside_x_max = room.GetBox().inner_max(c_AxisX);
+	int const inside_y_max = room.GetBox().inner_max(c_AxisY);
 
 	// search along min X (west) side of room
 
@@ -876,8 +876,8 @@ bool MapGridder::is_good_for_isolated_floor(PosTempList const& pos_list) const
 
 bool MapGridder::is_good_floor(Box2 const& box) const
 {
-	int max_x = box.max(AXIS_X);
-	int max_y = box.max(AXIS_Y);
+	int max_x = box.max(c_AxisX);
+	int max_y = box.max(c_AxisY);
 	for (int x = box.min.x; x < max_x; ++x)
 	{
 		for (int y = box.min.y; y < max_y; ++y)

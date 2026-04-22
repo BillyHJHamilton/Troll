@@ -49,12 +49,6 @@ enum class Material
 	Count,
 };
 
-// TODO: Proper resistance table for Features
-//  -> initialize at game start
-//Grid<float> s_resistances = Grid<float>((int)(Material::Count), Damage::Type::Count, 1.0f);
-//
-// Could use std::unordered_map from the terrain type to material
-//  -> most terrains won't need an entry.
 float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =
 {
 	//	Basic	ToLife	Fire	Acid
@@ -290,7 +284,7 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 	if (Check(feature_index != c_Invalid))
 	{
 		float const resistance =
-			c_Resistances[(int)(Material::Wood)][damage_packet.type];
+			c_Resistances[(int)material][damage_packet.type];
 		int const damage_adjusted = (int)(damage_packet.amount * resistance);
 
 		Feature::Instance& feature = s_features[feature_index];
@@ -310,7 +304,7 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 				break;
 			case Damage::ToLife:
 				Draw::pos_message(pos, "The " + name + " is damaged biologically.");
-				Draw::pos_message(pos, "This should be impossible.");
+				DebugBreak("Feature should not be damaged by ToLife damage.");
 				break;
 			case Damage::Fire:
 				Draw::pos_message(pos, "The " + name + " is burned.");
