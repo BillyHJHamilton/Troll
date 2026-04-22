@@ -45,8 +45,8 @@ protected:
 	// Functions to select positions
 	Vec2 get_pos_at_room_back(Room const & room) const;
 	PosTempList choose_torch_positions(Room const & room) const;
-	PosTempList get_positions_along_plain_wall(Room const & room) const;
-	PosTempList get_positions_inside_plain_wall(Room const & room) const;
+	PosTempList get_good_positions_along_wall(Room const & room) const;
+	PosTempList get_good_positions_inside_wall(Room const & room) const;
 
 	// Functions to check if positions are good
 	bool is_good_for_spawn(Vec2 const & pos) const;

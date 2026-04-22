@@ -181,12 +181,16 @@ void MapGridder::add_corridor_doors(int room_index) const
 void MapGridder::add_secret_area(Room const & room,
                                  Room const & neighbour, Vec2 const & door) const
 {
-	PosTempList button_pos_list = get_positions_inside_plain_wall(neighbour);
+	// TODO: Doors on both ends of the entrace corridor?
+	//  -> secret passages let you reach the secret area from the wrong end
+	//  -> with triggers, both would open together
+
+	PosTempList button_pos_list = get_good_positions_inside_wall(neighbour);
 	PosTempList torch_pos_list  = choose_torch_positions(neighbour);
 
 	// first bool is whether to allow triggerless doors
 	bool is_allow_button = !button_pos_list.empty();
-	bool is_allow_torch  = !torch_pos_list .empty();
+	bool is_allow_torch  = ! torch_pos_list.empty();
 	Spawn::TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
 	Spawn::DoorType       door_type = choose_door_type(trigger_type, /* allow none */ true);
 
@@ -226,23 +230,39 @@ void MapGridder::add_secret_area(Room const & room,
 		}
 		break;
 	}
+
+	// TODO: Could sometimes add a fire crab trap (if there is a trigger)
+	//  -> it would appear in the neighbour room
 }
 
 void MapGridder::add_secret_passage(Room const & room,
                                     Room const & neighbour0, Vec2 const & door0,
                                     Room const & neighbour1, Vec2 const & door1) const
 {
-	PosTempList button0_pos_list = get_positions_inside_plain_wall(neighbour0);
-	PosTempList button1_pos_list = get_positions_inside_plain_wall(neighbour1);
-	// TODO: Allow torches, only opens from one side?
+	PosTempList button0_pos_list = get_good_positions_inside_wall(neighbour0);
+	PosTempList button1_pos_list = get_good_positions_inside_wall(neighbour1);
+
+	// Can trigger on torches, but then the passage only opens from one side
+	PosTempList torch_pos_list;
+	if (Random::coinflip())
+	{
+		torch_pos_list = choose_torch_positions(neighbour0);
+	}
+	else
+	{
+		torch_pos_list = choose_torch_positions(neighbour1);
+	}
 
 	// first bool is whether to allow triggerless doors
 	bool is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
-	bool is_allow_torch  = false;
+	bool is_allow_torch  = !torch_pos_list.empty();
 	Spawn::TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
 	Spawn::DoorType       door_type = choose_door_type(trigger_type, /* allow none */ false);
 
-	assert(door_type != Spawn::DoorType::None);
+	if (door_type == Spawn::DoorType::None)  // happens if no legal door types
+	{
+		return;  // no door
+	}
 
 	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 	int const map_z = m_map.get_z();
@@ -264,6 +284,19 @@ void MapGridder::add_secret_passage(Room const & room,
 			Vec2 button1 = Random::from_vector(button1_pos_list);
 			Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
 			Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
+		}
+		break;
+
+	case Spawn::TriggerType::LightTorch:
+		{
+			int trigger = Feature::get_new_trigger();
+			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
+			Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
+
+			for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+			{
+				Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+			}
 		}
 		break;
 	}
@@ -304,6 +337,7 @@ Spawn::DoorType MapGridder::choose_door_type(Spawn::TriggerType trigger_type, bo
 {
 	Spawn::Parameters const& params = m_map.read_spawn_param();
 
+	int sum = 0;
 	IntTempList door_weights((int)(Spawn::DoorType::Count), 0);  // count, value
 
 	for (int i = 0; i < Util::Size(door_weights); ++i)
@@ -317,10 +351,18 @@ Spawn::DoorType MapGridder::choose_door_type(Spawn::TriggerType trigger_type, bo
 			continue;
 		}
 
-		door_weights[i] = params.door_weights[i];
+		int weight = params.door_weights[i];
+		door_weights[i] = weight;
+		sum += weight;
 	}
 
-	return (Spawn::DoorType)(Random::weighted_index(door_weights));
+	if (sum > 0)
+	{
+		return (Spawn::DoorType)(Random::weighted_index(door_weights));
+	}
+
+	// no legal door types
+	return Spawn::DoorType::None;
 }
 
 // static
@@ -418,7 +460,7 @@ void MapGridder::add_cosmetic_armour(Room const & room) const
 	// TODO: Armour flanking doorways sometimes
 
 	int map_z = m_map.get_z();
-	PosTempList positions =	get_positions_along_plain_wall(room);
+	PosTempList positions =	get_good_positions_along_wall(room);
 	for (Vec2 pos : positions)
 	{
 		if ((pos.x + pos.y) % 2 == 0)  // every other space
@@ -565,7 +607,7 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 	if (room.GetBox().size.x >= 5 &&
 		room.GetBox().size.y >= 5)
 	{
-		// 4 torches in corners
+		// 4 torches in the corners
 		Vec2 const pos_min = room.GetBox().min         + Vec2{ 1, 1 };
 		Vec2 const pos_max = room.GetBox().inner_max() - Vec2{ 1, 1 };
 		result.push_back(Vec2{ pos_min.x, pos_min.y });
@@ -573,7 +615,28 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 		result.push_back(Vec2{ pos_max.x, pos_min.y });
 		result.push_back(Vec2{ pos_max.x, pos_max.y });
 	}
-	// TODO: One torch at each end of the room (2 cases)
+	else if (room.GetBox().size.x % 2 != 0 &&
+	         room.GetBox().size.y >= 5 &&
+	         room.GetBox().size.y > room.GetBox().size.x)
+	{
+		// 2 torches at the Y ends of the room
+		int centre_x = room.GetBox().centre(AXIS_X);
+		int min_y = room.GetBox().min.y + 1;
+		int max_y = room.GetBox().inner_max(AXIS_Y) - 1;
+		result.push_back(Vec2{ centre_x, min_y });
+		result.push_back(Vec2{ centre_x, max_y });
+	}
+	else if (room.GetBox().size.y % 2 != 0 &&
+	         room.GetBox().size.x >= 5 &&
+	         room.GetBox().size.x > room.GetBox().size.y)
+	{
+		// 2 torches at the X ends of the room
+		int centre_y = room.GetBox().centre(AXIS_Y);
+		int min_x = room.GetBox().min.x + 1;
+		int max_x = room.GetBox().inner_max(AXIS_X) - 1;
+		result.push_back(Vec2{ min_x, centre_y });
+		result.push_back(Vec2{ max_x, centre_y });
+	}
 	else if (room.GetBox().size.x % 2 != 0 &&
 	         room.GetBox().size.y % 2 != 0)
 	{
@@ -586,18 +649,18 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 		// if we found good torch spots, use those
 		return result;
 	}
+	result.clear();
 
 	// 1 torch along the wall at random
-	result.clear();
-	PosTempList possible = get_positions_along_plain_wall(room);
-	if (Util::Size(possible) > 0)
+	PosTempList wall_positions = get_good_positions_along_wall(room);
+	if (Util::Size(wall_positions) > 0)
 	{
-		result.push_back(Random::from_vector(possible));
+		result.push_back(Random::from_vector(wall_positions));
 	}
 	return result;
 }
 
-MapGridder::PosTempList MapGridder::get_positions_along_plain_wall(Room const& room) const
+MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& room) const
 {
 	// Goal: Find all positions
 	//  1. Inside the room
@@ -661,14 +724,14 @@ MapGridder::PosTempList MapGridder::get_positions_along_plain_wall(Room const& r
 	return result_vec;
 }
 
-MapGridder::PosTempList MapGridder::get_positions_inside_plain_wall(Room const& room) const
+MapGridder::PosTempList MapGridder::get_good_positions_inside_wall(Room const& room) const
 {
 	// Goal: Find all positions
 	//  1. Inside the room wall
 	//  2. With open space in front
 	//  3. That are surrounded by wall on 5 sides, including 2 diagonally
 	//
-	// This has to be a separate function from get_positions_along_plain_wall.
+	// This has to be a separate function from get_good_positions_along_wall.
 	//  -> The requirements are too different.
 
 	PosTempList result_vec;
