@@ -65,6 +65,7 @@ void add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
 
 void init_chest(Feature::Instance& feature);
 void init_desk(Feature::Instance& feature);
+void init_scanner(Feature::Instance& feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name);
@@ -76,6 +77,7 @@ void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
 void trigger_sliding_wall(Feature::Instance & feature);
 void trigger_portcullis(Feature::Instance & feature);
+void trigger_shop_seed(Feature::Instance & feature);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -118,18 +120,18 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(s_features.back());
 				break;
-			case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
-			case Terrain::TorchLit:
-				s_features.back().payload = c_Invalid;
-				break;
 			// special initialization
+			case Terrain::Scanner:
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::ShopSeed:
 				DebugBreak("Spawn Feature with trigger");
 				break;
 			// no initialization needed
 			// case Terrain::Armour:
+			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
+			// case Terrain::TorchLit:
 			// case Terrain::Portrait:
 		}
 	}
@@ -144,10 +146,14 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 		// Feature-specific initialization.
 		switch (type)
 		{
+			case Terrain::Scanner:
+				init_scanner(s_features.back());
+				break;
 			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::ShopSeed:
 				break;
 			default:
 				DebugBreak("Spawn Feature without trigger");
@@ -277,6 +283,11 @@ void init_desk(Feature::Instance& feature)
 	feature.hp = Random::in_range(3, 8);  // health
 }
 
+void init_scanner(Feature::Instance& feature)
+{
+	// TODO: Set up for scanning
+}
+
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name)
 {
@@ -401,6 +412,9 @@ void trigger_all(int trigger)
 		case Terrain::Portcullis:
 			trigger_portcullis(s_features[i]);
 			break;
+		case Terrain::ShopSeed:
+			trigger_shop_seed(s_features[i]);
+			break;
 		}
 	}
 }
@@ -420,6 +434,16 @@ void trigger_portcullis(Feature::Instance & feature)
 {
 	Draw::pos_message(feature.pos, "A portcullis opens!");
 	Feature::remove(feature.pos);
+}
+
+void trigger_shop_seed(Feature::Instance & feature)
+{
+	Vec3 pos = feature.pos;
+	Draw::pos_message(pos, "A shop appears!");
+	Feature::remove(pos);
+
+	// TODO: Spawn a real shop
+	spawn(pos, Terrain::Chest);
 }
 
 } // namespace Feature

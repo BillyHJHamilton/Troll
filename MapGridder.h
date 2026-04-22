@@ -18,10 +18,13 @@ protected:
 	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
 	// should these be in VectorUtil.h?
 
-	// Pass 1 function
+	// Pass 1 functions
 	void add_basic(int room_index) const;
 
 	// Pass 2 functions
+	void add_treasure_suggestions() const;
+	void add_shop_seed() const;
+
 	void add_corridor_doors(int room_index) const;
 	void add_secret_area(Room const & room,
 	                     Room const & neighbour, Vec2 const & door) const;
@@ -42,11 +45,15 @@ protected:
 	void add_cosmetic_desks(Room const & room) const;
 	void add_desks_in_box(Box2 const & box) const;
 
+	// Pass 4 functions
+	void replace_all(Terrain::Type old_type, Terrain::Type new_type) const;
+
 	// Functions to select positions
 	Vec2 get_pos_at_room_back(Room const & room) const;
 	PosTempList choose_torch_positions(Room const & room) const;
 	PosTempList get_good_positions_along_wall(Room const & room) const;
 	PosTempList get_good_positions_inside_wall(Room const & room) const;
+	PosTempList box_to_positions(Box2 const & box) const;
 
 	// Functions to check if positions are good
 	bool is_good_for_spawn(Vec2 const & pos) const;

@@ -10,8 +10,9 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
-		OpenNoSpawn,
 		OpenHighlight,  // used for debugging
+		OpenNoSpawn,
+		Placeholder,  // used for map generation
 		Wall,
 		UpStairs,
 		DownStairs,
@@ -22,10 +23,12 @@ namespace Terrain
 		Desk,
 		TorchUnlit,
 		TorchLit,
+		Scanner,
 		Portrait,
 		FlipendoButton,
 		SlidingWall,
 		Portcullis,
+		ShopSeed,
 
 		Count
 	};

@@ -23,7 +23,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 
 	// Pass 1: Add basic rooms shapes
 	//   -> including stairs
-	//   -> it only safe to look in the grid representation for the current room
+	//   -> it's only safe to look in the grid representation for the current room
 
 	for (int i = 0; i < m_generator.GetRoomCount(); ++i)
 	{
@@ -32,12 +32,16 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 	}
 
 	// The grid representation now exists
-	//   -> it can be safely queried
+	//   -> it can be safely queried anywhere
 	//   -> we are now adding refinements rather than major changes
-	//   -> functions add things in first-come-first-served order
+	//   -> functions use space in a first-come-first-served order
 
 	// Pass 2: Add important features
+	//   -> shop location
 	//   -> secret areas and secret passages
+
+	add_treasure_suggestions();
+	add_shop_seed();
 
 	IntTempList index_list = Util::GetIndices(m_generator.GetRoomVector());
 	Random::shuffle_vector(index_list);
@@ -47,7 +51,6 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 		{
 			add_corridor_doors(index);
 		}
-		// TODO: Add Fred and George here?
 	}
 
 	// Pass 3: Add cosmetic features
@@ -68,6 +71,10 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 	//   -> and chests
 	// Chests in dead-end rooms
 
+	replace_all(Terrain::Placeholder, Terrain::Open);
+
+	// Done
+
 	if (Debug::enabled(Debug::Map))
 	{
 		std::cout << std::format("Converted map to grid, made {} suggestions.\n",
@@ -77,7 +84,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 
 
 //-----------------------------------------------------------------------------
-// Pass 1 function
+// Pass 1 functions
 
 void MapGridder::add_basic(int room_index) const
 {
@@ -112,6 +119,61 @@ void MapGridder::add_basic(int room_index) const
 
 //-----------------------------------------------------------------------------
 // Pass 2 functions
+
+void MapGridder::add_treasure_suggestions() const
+{
+	// any order is fine
+	for (Room const& room : m_generator.GetRoomVector())
+	{
+		if (!room.IsChamber())
+		{
+			continue;
+		}
+
+		if (room.GetNeighbourCount() == 1)
+		{
+			// end room of region or 1-room attic
+
+			Vec2 pos = get_pos_at_room_back(room);
+			m_map.edit_suggestions().add_treasure_normal(pos);
+			m_map.set_terrain(pos, Terrain::Placeholder);
+		}
+	}
+}
+
+void MapGridder::add_shop_seed() const
+{
+	IntTempList room_index_list = Util::GetIndices(m_generator.GetRoomVector());
+	Random::shuffle_vector(room_index_list);
+	for (int room_index : room_index_list)
+	{
+		Room const& room = m_generator.GetRoom(room_index);
+		if (!room.IsChamber())
+		{
+			continue;
+		}
+
+		PosTempList pos_vec = box_to_positions(room.GetBox().minus_border(1));
+		IntTempList pos_index_list = Util::GetIndices(pos_vec);
+		Random::shuffle_vector(pos_index_list);
+		for (int pos_index : pos_index_list)
+		{
+			Vec2 const& shop_centre = pos_vec[pos_index];
+			Box2 shop_area = Box2::around_tile(shop_centre, 1);
+			if (is_good_floor(shop_area))
+			{
+				m_map.fill_box(shop_area, Terrain::OpenNoSpawn);
+
+				int map_z = m_map.get_z();
+				int trigger = Feature::get_new_trigger();
+				Vec2 scan_from = shop_centre + c_Compass[Random::compass_direction(false)];
+				Feature::spawn(scan_from  .xyz(map_z), Terrain::Scanner,  trigger);
+				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed, trigger);
+				return;  // only 1 shop
+			}
+		}
+	}
+}
 
 void MapGridder::add_corridor_doors(int room_index) const
 {
@@ -393,19 +455,9 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 		DebugBreak("Only use MapGridder::add_cosmetic_chamber for chambers.");
 	}
 
-	if (room.GetNeighbourCount() == 1)
-	{
-		// end room of region or 1-room attic
-
-		// TODO: Add this with important stuff?
-		//  -> add a placeholder terrain?
-
-		Vec2 pos = get_pos_at_room_back(room);
-		m_map.edit_suggestions().add_treasure_normal(pos);
-	}
-
 	// special room types
 	// TODO: Remove these when we have vaults?
+	//  -> or at least a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
 	case 0:
@@ -541,6 +593,29 @@ void MapGridder::add_desks_in_box(Box2 const & box) const
 		for (int y = box.min.y; y < max_y; ++y)
 		{
 			Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// Pass 4 functions
+
+void MapGridder::replace_all(Terrain::Type old_type, Terrain::Type new_type) const
+{
+	Box2 const& box = m_map.get_box();
+
+	int const map_z = m_map.get_z();
+	int max_x = box.max(c_AxisX);
+	int max_y = box.max(c_AxisY);
+	for (int x = box.min.x; x < max_x; ++x)
+	{
+		for (int y = box.min.y; y < max_y; ++y)
+		{
+			if (m_map.get_terrain(Vec2{ x, y }) == old_type)
+			{
+				m_map.set_terrain(Vec2{ x, y }, new_type);
+			}
 		}
 	}
 }
@@ -817,6 +892,22 @@ MapGridder::PosTempList MapGridder::get_good_positions_inside_wall(Room const& r
 
 	// done
 	return result_vec;
+}
+
+MapGridder::PosTempList MapGridder::box_to_positions(Box2 const& box) const
+{
+	PosTempList result;
+
+	int max_x = box.max(c_AxisX);
+	int max_y = box.max(c_AxisY);
+	for (int x = box.min.x; x < max_x; ++x)
+	{
+		for (int y = box.min.y; y < max_y; ++y)
+		{
+			result.push_back(Vec2{ x, y });
+		}
+	}
+	return result;
 }
 
 
