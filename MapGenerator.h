@@ -38,12 +38,14 @@ public:
 	void RequestConnection(int targetMapId, int numConnections);
 
 	int GetRoomCount() const;
-	Room const& GetRoom(int index) const { return m_RoomVec[index]; }
+	Room const& GetRoom(int roomIndex) const { return m_RoomVec[roomIndex]; }
 	std::vector<Room> const& GetRoomVector() const { return m_RoomVec; }
-	bool IsStartRoom(int index) const { return index == m_StartRoomIndex; }
+	bool IsStartRoom() const { return m_StartRoomIndex != c_Invalid; }
+	bool IsStartRoom(int roomIndex) const { return roomIndex == m_StartRoomIndex; }
 
 	int GetRegionCount() const;
-	int GetRegionParent(int index) const { return m_RegionVec[index].parent; }
+	int GetRegionParent(int regionIndex) const { return m_RegionVec[regionIndex].parent; }
+	bool IsStartRegionOrAncestorOfIt(int regionIndex) const;
 
 	// Generates rooms and tries to join everything up.
 	void Generate();

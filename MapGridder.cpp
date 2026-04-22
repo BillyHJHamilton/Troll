@@ -122,7 +122,8 @@ void MapGridder::add_corridor_doors(int room_index) const
 	}
 
 	if (room.GetRegion() != Room::c_MainRegion &&
-		room.GetNeighbourCount() == 2)  // false for T-junctions
+		room.GetNeighbourCount() == 2 &&  // false for T-junctions
+		!m_generator.IsStartRegionOrAncestorOfIt(room.GetRegion()))
 	{
 		// this corridor is not in the main region
 		//  -> we might want to seal it off
@@ -180,8 +181,6 @@ void MapGridder::add_corridor_doors(int room_index) const
 void MapGridder::add_secret_area(Room const & room,
                                  Room const & neighbour, Vec2 const & door) const
 {
-	// TODO: Player start cannot be in a secret area
-
 	PosTempList button_pos_list = get_positions_inside_plain_wall(neighbour);
 	PosTempList torch_pos_list  = choose_torch_positions(neighbour);
 

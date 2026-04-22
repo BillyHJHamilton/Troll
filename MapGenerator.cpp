@@ -72,6 +72,42 @@ int MapGenerator::GetRegionCount() const
 	return Util::Size(m_RegionVec);
 }
 
+bool MapGenerator::IsStartRegionOrAncestorOfIt(int regionIndex) const
+{
+	// Imagine we start at the start room and go to main region.
+	//  -> We don't take any secret passages.
+	//  -> Do we go through regionIndex?
+	//  -> If we do go through, regionIndex cannot be a secret area.
+	//    -> If it was, we would start trapped inside
+
+	if (m_StartRoomIndex == c_Invalid)
+	{
+		return false;  // no start room, so we don't go through any regions
+	}
+
+	int checkRegion = m_RoomVec[m_StartRoomIndex].GetRegion();
+
+	for(int sanity = 0; sanity < 1000; ++sanity) // loop drops out when we find the answer
+	{
+		if (checkRegion == Room::c_MainRegion)
+		{
+			return false;  // didn't go through region
+		}
+		else if (checkRegion == regionIndex)
+		{
+			return true;  // reached the region
+		}
+		else
+		{
+			// keep looking
+			checkRegion = m_RegionVec[checkRegion].parent;
+		}
+	}
+
+	DebugBreak("Region parents form a loop");
+	return false;
+}
+
 void MapGenerator::Generate()
 {
 	if (Debug::enabled(Debug::Map))
