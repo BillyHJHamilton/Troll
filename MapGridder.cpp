@@ -147,12 +147,8 @@ void MapGridder::add_corridor_doors(int room_index) const
 		if (parent_region == Room::c_SecretPassage)
 		{
 			// don't spawn anything in the passage itself
-			//  -> ends must be floor, so doors can spawn
-			//    -> TODO: Can we avoid this?
-			//  -> it's OK if things spawn in the door spots after the passage is open
+			//  -> it's OK if things spawn where the doors were after the passage is open
 			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-			//m_map.set_terrain(door0, Terrain::Open);
-			//m_map.set_terrain(door1, Terrain::Open);
 
 			add_secret_passage(room, neighbour0, door0, neighbour1, door1);
 			return;
@@ -185,7 +181,6 @@ void MapGridder::add_secret_area(Room const & room,
                                  Room const & neighbour, Vec2 const & door) const
 {
 	// TODO: Player start cannot be in a secret area
-	// TODO: Spawn triggers and doors separately
 
 	PosTempList button_pos_list = get_positions_inside_plain_wall(neighbour);
 	PosTempList torch_pos_list  = choose_torch_positions(neighbour);
@@ -212,25 +207,23 @@ void MapGridder::add_secret_area(Room const & room,
 
 	case Spawn::TriggerType::FlipendoButton:
 		{
-			Vec2 button_pos = Random::from_vector(button_pos_list);
-			Feature::spawn_flipendo_button(button_pos.xyz(map_z),
-			                               door      .xyz(map_z), door_terrain);
+			int trigger = Feature::get_new_trigger();
+			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
+
+			Vec2 button = Random::from_vector(button_pos_list);
+			Feature::spawn(button.xyz(map_z), Terrain::FlipendoButton, trigger);
 		}
 		break;
 
 	case Spawn::TriggerType::LightTorch:
-		if(Util::Size(torch_pos_list) == 1)
 		{
-			Feature::spawn_torch1_door(torch_pos_list[0].xyz(map_z),
-			                           door  .xyz(map_z), door_terrain);
-		}
-		else if(Util::Size(torch_pos_list) == 4)
-		{
-			Feature::spawn_torch4_door(torch_pos_list[0].xyz(map_z),
-			                           torch_pos_list[1].xyz(map_z),
-			                           torch_pos_list[2].xyz(map_z),
-			                           torch_pos_list[3].xyz(map_z),
-			                           door  .xyz(map_z), door_terrain);
+			int trigger = Feature::get_new_trigger();
+			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
+
+			for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+			{
+				Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+			}
 		}
 		break;
 	}
@@ -264,12 +257,14 @@ void MapGridder::add_secret_passage(Room const & room,
 
 	case Spawn::TriggerType::FlipendoButton:
 		{
-			Vec2 button0_pos = Random::from_vector(button0_pos_list);
-			Vec2 button1_pos = Random::from_vector(button1_pos_list);
-			Feature::spawn_flipendo_button_pair(button0_pos.xyz(map_z),
-			                                    door0      .xyz(map_z),
-			                                    button1_pos.xyz(map_z),
-			                                    door1      .xyz(map_z), door_terrain);
+			int trigger = Feature::get_new_trigger();
+			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
+			Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
+
+			Vec2 button0 = Random::from_vector(button0_pos_list);
+			Vec2 button1 = Random::from_vector(button1_pos_list);
+			Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
+			Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
 		}
 		break;
 	}

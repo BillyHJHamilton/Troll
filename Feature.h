@@ -15,25 +15,14 @@ namespace Feature
 	void clear();
 	void serialize(ISerializer& s);
 
+	// Obtains an unused trigger id.
+	int get_new_trigger();
+
 	// Adds a feature to the map.
 	void spawn(Vec3 pos, Terrain::Type type);
 
-	// Adds a single torch attached to a door
-	void spawn_torch1_door(Vec3 torch_pos, Vec3 door_pos,
-	                       Terrain::Type door_type);
-
-	// Adds a 4 torches attached to a door
-	void spawn_torch4_door(Vec3 torch1_pos, Vec3 torch2_pos, Vec3 torch3_pos, Vec3 torch4_pos,
-	                       Vec3 door_pos, Terrain::Type door_type);
-
-	// Adds a flipendo button attached to a single door
-	void spawn_flipendo_button(Vec3 button_pos, Vec3 door_pos,
-	                           Terrain::Type door_type);
-
-	// Adds a pair of flipendo buttons, both attached to the same two doors
-	void spawn_flipendo_button_pair(Vec3 button1_pos, Vec3 door1_pos,
-	                                Vec3 button2_pos, Vec3 door2_pos,
-	                                Terrain::Type door_type);
+	// Adds a feature that interacts with a trigger.
+	void spawn(Vec3 pos, Terrain::Type type, int trigger);
 
 	// Move feature, leaving behind open terrain and stomping terrain at new position.
 	void move(Vec3 old_pos, Vec3 new_pos);
