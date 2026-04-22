@@ -3,6 +3,7 @@
 #include "Creature.h"
 #include "Map.h"
 #include "MapGenerator.h"
+#include "MapGridder.h"
 #include "PerfTimer.h"
 #include "Random.h"
 #include "Terrain.h"
@@ -89,6 +90,8 @@ void BuildWorld()
 		param.percent_torches_lit = 80 - z * 10;
 	}
 
+	Spawn::post_world_setup();
+
 	// Pass 2 - run generator
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
@@ -110,6 +113,7 @@ void BuildWorld()
 		}
 
 		generator.Generate();
+		MapGridder(world.edit_map(z), generator, z);
 	}
 
 	//world.edit_map(dungeon_id).get_generator().Generate();

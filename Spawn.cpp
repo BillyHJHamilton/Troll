@@ -30,7 +30,7 @@ struct History
 	int next_spawn_time = -1;
 	int creatures_spawned = 0;
 	int items_spawned = 0;
-	int chests_spanwed = 0;
+	int chests_spawned = 0;
 
 	bool has_ever_spawned() const { return next_spawn_time > -1; }
 };
@@ -121,6 +121,32 @@ void post_world_setup()
 {
 	int const num_maps = World::read().num_maps();
 	Util::Fill(s_spawn_history, num_maps, Spawn::History{});
+}
+
+void spawn_early(Map& map, int map_id)
+{
+	PerfTimer perf("spawn_early");
+
+	History& history = s_spawn_history[map_id];
+	Spawn::Parameters const& param = map.read_spawn_param();
+
+	int items_to_spawn = Random::in_range(param.min_items, param.max_items);
+	int chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
+	int min_range = 2;
+
+	if (chests_to_spawn > 0)
+	{
+		find_chest_positions(map);
+		int item_count = spawn_chests(map, chests_to_spawn);
+		history.chests_spawned += item_count;
+	}
+
+	find_spawn_positions(map, min_range);
+	if (items_to_spawn > 0)
+	{
+		int item_count = spawn_items(map, items_to_spawn);
+		history.items_spawned += item_count;
+	}
 }
 
 void check_spawning()
@@ -373,22 +399,12 @@ void spawn_for_map(Map& map, History& history)
 	bool const is_first_spawn = !history.has_ever_spawned();
 
 	int creatures_to_spawn = 1;
-	int items_to_spawn = 0;
-	int chests_to_spawn = 0;
 	int min_range = param.min_range_from_player;
 
 	if (is_first_spawn)
 	{
 		creatures_to_spawn = Random::in_range(param.min_creatures, param.max_creatures);
-		items_to_spawn = Random::in_range(param.min_items, param.max_items);
-		chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
 		min_range = 2;
-	}
-
-	if (chests_to_spawn > 0)
-	{
-		find_chest_positions(map);
-		history.chests_spanwed += spawn_chests(map, chests_to_spawn);
 	}
 
 	find_spawn_positions(map, min_range);
@@ -399,11 +415,6 @@ void spawn_for_map(Map& map, History& history)
 	}
 
 	history.creatures_spawned += spawn_creatures(map, creatures_to_spawn);
-
-	if (items_to_spawn > 0)
-	{
-		history.items_spawned += spawn_items(map, items_to_spawn);
-	}
 
 	// Set next cooldown time.
 	int const cooldown = Random::in_range(param.cooldown_min, param.cooldown_max);
@@ -560,8 +571,9 @@ int spawn_chests(Map& map, int chests_to_spawn)
 
 	if (Debug::enabled(Debug::Map))
 	{
-		std::cout << std::format("Placed {}/{} chests.\n",
-			spawned, chests_to_spawn);
+		int suggestion_count = map.read_suggestions().get_count(Suggestion::TreasureNormal);
+		std::cout << std::format("Placed {}/{} chests ({} suggestions).\n",
+			spawned, chests_to_spawn, suggestion_count);
 	}
 
 	return spawned;

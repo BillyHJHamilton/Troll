@@ -11,7 +11,7 @@
 class MapGridder
 {
 public:
-	MapGridder(Map& map, MapGenerator& generator);
+	MapGridder(Map& map, MapGenerator& generator, int map_id);
 
 protected:
 	using PosTempList = std::vector<Vec2,Scratch<Vec2>>;

@@ -4,6 +4,7 @@
 #include "Feature.h"
 #include "Map.h"
 #include "MapGenerator.h"
+#include "PerfTimer.h"
 #include "Random.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
@@ -11,10 +12,12 @@
 
 #include <cassert>
 
-MapGridder::MapGridder(Map& map, MapGenerator& generator)
+MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	: m_map(map)
 	, m_generator(generator)
 {
+	PerfTimer perf0("map to grid");
+
 	// Room positions are all in global space.
 
 	// Pass 0: Fill map with walls
@@ -67,10 +70,9 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator)
 
 	// Do we want a spawn suggestions pass?
 
-	// TODO: Pass 4: Add items
-	//   -> and chests
-	// Chests in dead-end rooms
+	// Pass 4: Add items (and chests)
 
+	Spawn::spawn_early(m_map, map_id);
 	replace_all(Terrain::Placeholder, Terrain::Open);
 
 	// Done
@@ -130,6 +132,7 @@ void MapGridder::add_treasure_suggestions() const
 			continue;
 		}
 
+		// TODO: Ignore secret passges when counting exits?
 		if (room.GetNeighbourCount() == 1)
 		{
 			// end room of region or 1-room attic

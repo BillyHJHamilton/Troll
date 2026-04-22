@@ -2,7 +2,6 @@
 
 #include "Debug.h"
 #include "Map.h"
-#include "MapGridder.h"
 #include "Math.h"
 #include "PerfTimer.h"
 #include "Random.h"
@@ -152,8 +151,6 @@ void MapGenerator::Generate()
 	AddExtraCorridors(2, /* is secret passages */ true);
 
 	//PrintAllRooms();
-
-	MapGridder gridder(m_Map, *this);
 }
 
 void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)

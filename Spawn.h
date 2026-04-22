@@ -87,6 +87,7 @@ namespace Spawn
 	void serialize(ISerializer& s);
 
 	void post_world_setup();
+	void spawn_early(Map& map, int map_id);
 	void check_spawning();
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);
