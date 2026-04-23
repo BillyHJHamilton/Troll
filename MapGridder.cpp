@@ -37,14 +37,23 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	// The grid representation now exists
 	//   -> it can be safely queried anywhere
 	//   -> we are now adding refinements rather than major changes
-	//   -> functions use space in a first-come-first-served order
+	//   -> open space on the map is available for any function to use
+	//     -> first come, first served
+	//     -> once used, turn it into some other terrain
+	//     -> don't replace terrain that isn't "good" (can_spawn floor and walls)
+	//     -> to reserve open floor space for later use, replace it with Terrain::Placeholder
 
 	// Pass 2: Add important features
+	//   -> choose chest locations (chests will be added with Items)
 	//   -> shop location
 	//   -> secret areas and secret passages
 
 	add_treasure_suggestions();
-	add_shop_seed();
+
+	if (generator.ReadParameters().IsShopSeed)
+	{
+		add_shop_seed();
+	}
 
 	IntTempList index_list = Util::GetIndices(m_generator.GetRoomVector());
 	Random::shuffle_vector(index_list);
@@ -151,7 +160,7 @@ void MapGridder::add_shop_seed() const
 	for (int room_index : room_index_list)
 	{
 		Room const& room = m_generator.GetRoom(room_index);
-		if (!room.IsChamber())
+		if (!room.IsChamber() || !room.IsInMainRegion())
 		{
 			continue;
 		}
@@ -168,10 +177,17 @@ void MapGridder::add_shop_seed() const
 				m_map.fill_box(shop_area, Terrain::OpenNoSpawn);
 
 				int map_z = m_map.get_z();
-				int trigger = Feature::get_new_trigger();
-				Vec2 scan_from = shop_centre + c_Compass[Random::compass_direction(false)];
-				Feature::spawn(scan_from  .xyz(map_z), Terrain::Scanner,  trigger);
-				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed, trigger);
+				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed);
+
+				//int trigger = Feature::get_new_trigger();
+				//Vec2 scan_from = shop_centre + c_Compass[Random::compass_direction(false)];
+				//Feature::spawn(scan_from  .xyz(map_z), Terrain::Scanner,  trigger);
+				//Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed, trigger);
+
+				if (Debug::enabled(Debug::Map))
+				{
+					std::cout << "Added shop seed.\n";
+				}
 				return;  // only 1 shop
 			}
 		}
@@ -256,10 +272,10 @@ void MapGridder::add_secret_area(Room const & room,
 	// first bool is whether to allow triggerless doors
 	bool is_allow_button = !button_pos_list.empty();
 	bool is_allow_torch  = ! torch_pos_list.empty();
-	Spawn::TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	Spawn::DoorType       door_type = choose_door_type(trigger_type, /* allow none */ true);
+	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
+	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ true);
 
-	if (door_type == Spawn::DoorType::None)
+	if (door_type == DoorType::None)
 	{
 		return;  // no door
 	}
@@ -269,11 +285,11 @@ void MapGridder::add_secret_area(Room const & room,
 
 	switch(trigger_type)
 	{
-	case Spawn::TriggerType::None:
+	case TriggerType::None:
 		Feature::spawn(door.xyz(map_z), door_terrain);
 		break;
 
-	case Spawn::TriggerType::FlipendoButton:
+	case TriggerType::FlipendoButton:
 		{
 			int trigger = Feature::get_new_trigger();
 			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
@@ -283,7 +299,7 @@ void MapGridder::add_secret_area(Room const & room,
 		}
 		break;
 
-	case Spawn::TriggerType::LightTorch:
+	case TriggerType::LightTorch:
 		{
 			int trigger = Feature::get_new_trigger();
 			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
@@ -321,10 +337,10 @@ void MapGridder::add_secret_passage(Room const & room,
 	// first bool is whether to allow triggerless doors
 	bool is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
 	bool is_allow_torch  = !torch_pos_list.empty();
-	Spawn::TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	Spawn::DoorType       door_type = choose_door_type(trigger_type, /* allow none */ false);
+	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
+	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ false);
 
-	if (door_type == Spawn::DoorType::None)  // happens if no legal door types
+	if (door_type == DoorType::None)  // happens if no legal door types
 	{
 		return;  // no door
 	}
@@ -334,12 +350,12 @@ void MapGridder::add_secret_passage(Room const & room,
 
 	switch(trigger_type)
 	{
-	case Spawn::TriggerType::None:
+	case TriggerType::None:
 		Feature::spawn(door0.xyz(map_z), door_terrain);
 		Feature::spawn(door1.xyz(map_z), door_terrain);
 		break;
 
-	case Spawn::TriggerType::FlipendoButton:
+	case TriggerType::FlipendoButton:
 		{
 			int trigger = Feature::get_new_trigger();
 			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
@@ -352,7 +368,7 @@ void MapGridder::add_secret_passage(Room const & room,
 		}
 		break;
 
-	case Spawn::TriggerType::LightTorch:
+	case TriggerType::LightTorch:
 		{
 			int trigger = Feature::get_new_trigger();
 			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
@@ -367,51 +383,51 @@ void MapGridder::add_secret_passage(Room const & room,
 	}
 }
 
-Spawn::TriggerType MapGridder::choose_trigger_type(bool allow_none,
-                                                   bool allow_button,
-                                                   bool allow_torch) const
+TriggerType MapGridder::choose_trigger_type(bool allow_none,
+                                            bool allow_button,
+                                             bool allow_torch) const
 {
 	assert(allow_none || allow_button || allow_torch);
 
-	Spawn::Parameters const& params = m_map.read_spawn_param();
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
 
-	IntTempList trigger_weights((int)(Spawn::TriggerType::Count), 0);  // count, value
+	IntTempList trigger_weights((int)(TriggerType::Count), 0);  // count, value
 
 	if (allow_none)
 	{
-		int none_weight = params.trigger_weights[(int)(Spawn::TriggerType::None)];
-		trigger_weights[(int)(Spawn::TriggerType::None)] = none_weight;
+		int none_weight = params.trigger_weights[(int)(TriggerType::None)];
+		trigger_weights[(int)(TriggerType::None)] = none_weight;
 	}
 
 	if (allow_button)
 	{
-		int button_weight = params.trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)];
-		trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)] = button_weight;
+		int button_weight = params.trigger_weights[(int)(TriggerType::FlipendoButton)];
+		trigger_weights[(int)(TriggerType::FlipendoButton)] = button_weight;
 	}
 
 	if (allow_torch)
 	{
-		int torch_weight = params.trigger_weights[(int)(Spawn::TriggerType::LightTorch)];
-		trigger_weights[(int)(Spawn::TriggerType::LightTorch)] = torch_weight;
+		int torch_weight = params.trigger_weights[(int)(TriggerType::LightTorch)];
+		trigger_weights[(int)(TriggerType::LightTorch)] = torch_weight;
 	}
 
-	return (Spawn::TriggerType)(Random::weighted_index(trigger_weights));
+	return (TriggerType)(Random::weighted_index(trigger_weights));
 }
 
-Spawn::DoorType MapGridder::choose_door_type(Spawn::TriggerType trigger_type, bool allow_none) const
+DoorType MapGridder::choose_door_type(TriggerType trigger_type, bool allow_none) const
 {
-	Spawn::Parameters const& params = m_map.read_spawn_param();
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
 
 	int sum = 0;
-	IntTempList door_weights((int)(Spawn::DoorType::Count), 0);  // count, value
+	IntTempList door_weights((int)(DoorType::Count), 0);  // count, value
 
 	for (int i = 0; i < Util::Size(door_weights); ++i)
 	{
-		if (i == (int)(Spawn::DoorType::None) && !allow_none)
+		if (i == (int)(DoorType::None) && !allow_none)
 		{
 			continue;
 		}
-		if (!Spawn::is_compatible(trigger_type, (Spawn::DoorType)(i)))
+		if (!is_compatible(trigger_type, (DoorType)(i)))
 		{
 			continue;
 		}
@@ -423,23 +439,23 @@ Spawn::DoorType MapGridder::choose_door_type(Spawn::TriggerType trigger_type, bo
 
 	if (sum > 0)
 	{
-		return (Spawn::DoorType)(Random::weighted_index(door_weights));
+		return (DoorType)(Random::weighted_index(door_weights));
 	}
 
 	// no legal door types
-	return Spawn::DoorType::None;
+	return DoorType::None;
 }
 
 // static
-Terrain::Type MapGridder::get_terrain_for_door_type(Spawn::DoorType door_type)
+Terrain::Type MapGridder::get_terrain_for_door_type(DoorType door_type)
 {
 	switch (door_type)
 	{
-	case Spawn::DoorType::Portrait:
+	case DoorType::Portrait:
 		return Terrain::Portrait;
-	case Spawn::DoorType::SlidingWall:
+	case DoorType::SlidingWall:
 		return Terrain::SlidingWall;
-	case Spawn::DoorType::Portcullis:
+	case DoorType::Portcullis:
 		return Terrain::Portcullis;
 	default:
 		return Terrain::Open;
@@ -500,7 +516,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 void MapGridder::add_cosmetic_torches(Room const& room) const
 {
 	// torches in the room are all lit or all unlit
-	bool is_lit = Random::in_range(0, 99) < m_map.read_spawn_param().percent_torches_lit;
+	bool is_lit = Random::in_range(0, 99) < m_generator.ReadParameters().percent_torches_lit;
 	Terrain::Type terrain = is_lit ? Terrain::TorchLit : Terrain::TorchUnlit;
 
 	PosTempList positions =	choose_torch_positions(room);

@@ -40,6 +40,7 @@ struct Instance
 std::vector<Feature::Instance> s_features;
 
 int s_next_trigger_id = 0;
+std::vector<Vec3> s_features_to_update;  // index to s_features
 
 enum class Material
 {
@@ -63,9 +64,13 @@ float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =
 int find_feature(Vec3 pos);
 void add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
 
+void register_for_updates(Feature::Instance& feature);
 void init_chest(Feature::Instance& feature);
 void init_desk(Feature::Instance& feature);
-void init_scanner(Feature::Instance& feature);
+
+bool update_at(Vec3 pos);  // returns if there was a suitable feature to update
+void update_scanner(Feature::Instance& feature);
+void update_shop_seed(Feature::Instance& feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name);
@@ -77,26 +82,28 @@ void trigger_all(int trigger);
 void trigger_flipendo_button(Feature::Instance & feature);
 void trigger_sliding_wall(Feature::Instance & feature);
 void trigger_portcullis(Feature::Instance & feature);
-void trigger_shop_seed(Feature::Instance & feature);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
 
 void init()
 {
-	s_features.reserve(30);
+	s_features.reserve(200);
+	s_features_to_update.reserve(20);
 }
 
 void clear()
 {
 	s_features.clear();
 	s_next_trigger_id = 0;
+	s_features_to_update.clear();
 }
 
 void serialize(ISerializer& s)
 {
-	s.srz_vector(s_features, "Feature::s_chests");
+	s.srz_vector(s_features, "Feature::s_features");
 	s.srz_int(s_next_trigger_id);
+	s.srz_vector(s_features_to_update, "Feature::s_features_to_update");
 }
 
 int get_new_trigger()
@@ -120,12 +127,14 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(s_features.back());
 				break;
+			case Terrain::ShopSeed:
+				register_for_updates(s_features.back());
+				break;
 			// special initialization
 			case Terrain::Scanner:
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
-			case Terrain::ShopSeed:
 				DebugBreak("Spawn Feature with trigger");
 				break;
 			// no initialization needed
@@ -147,17 +156,52 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 		switch (type)
 		{
 			case Terrain::Scanner:
-				init_scanner(s_features.back());
+				register_for_updates(s_features.back());
 				break;
 			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
-			case Terrain::ShopSeed:
 				break;
 			default:
 				DebugBreak("Spawn Feature without trigger");
 				break;
+		}
+	}
+}
+
+void update_all()
+{
+	//
+	//  The goal here is to have every feature update exactly once
+	//    -> This is tricky because features might be added or removed during updates
+	//
+	//  Keeping a list of feature indexes doesn't work
+	//    -> Elements might get skipped if other elements are removed during updates
+	//      -> e.g. if a trigger removes features
+	//    -> Having features return whether they need to be removed isn't enough
+	//      -> A button might remove a door, and I wouldn't know about the door
+	//    -> I don't think anything could get updated twice, but you never know...
+	//
+	//  I think using positions as keys will work
+	//    -> If the feature is gone, we remove it instead of updating it
+	//      -> Also if the feature has the wrong type (it was replaced)
+	//    -> We have to update the list whenever a feature is moved
+	//      -> So ALWAYS use the Feature::move function
+	//    -> Do not remove features from the s_features_to_update array except here
+	//      -> Notably, not in the Feature::remove functions
+	//    -> A feature that removes itself will still be in the array
+	//      -> It will be removed next time through
+	//      -> I'm declaring this Not A Problem.
+	//
+
+	for (int i = 0; i < Util::Size(s_features_to_update); ++i)
+	{
+		if (update_at(s_features_to_update[i]) == false)
+		{
+			// feature has been removed
+			Util::RemoveSwap(s_features_to_update, i);
+			--i;
 		}
 	}
 }
@@ -172,6 +216,18 @@ void move(Vec3 old_pos, Vec3 new_pos)
 		World::edit().set_terrain(new_pos, terrain);
 
 		s_features[index].pos = new_pos;
+
+		// update s_features_to_update
+		for (int i = 0; i < Util::Size(s_features_to_update); ++i)
+		{
+			// do not move any features around in the array
+			//  -> update_all might be running
+
+			if(s_features_to_update[i] == old_pos)
+			{
+				s_features_to_update[i] = new_pos;
+			}
+		}
 	}
 }
 
@@ -184,6 +240,10 @@ void remove(Vec3 pos, Terrain::Type new_terrain_type)
 	{
 		Util::RemoveSwap(s_features, index);
 		World::edit().set_terrain(pos, new_terrain_type);
+
+		// do not change s_features_to_update here
+		//  -> update_all might be running
+		//  -> update_all will change s_features_to_update as needed
 	}
 }
 
@@ -228,6 +288,11 @@ void damage(Vec3 pos, Damage::Packet const& damage_packet)
 
 //-------------------------------------------------------------------------------------------------
 // Feature-specific functions
+
+void register_for_updates(Feature::Instance& feature)
+{
+	s_features_to_update.push_back(feature.pos);
+}
 
 void init_chest(Feature::Instance& feature)
 {
@@ -283,9 +348,53 @@ void init_desk(Feature::Instance& feature)
 	feature.hp = Random::in_range(3, 8);  // health
 }
 
-void init_scanner(Feature::Instance& feature)
+bool update_at(Vec3 pos)
 {
-	// TODO: Set up for scanning
+	int const feature_index = find_feature(pos);
+	if (feature_index == c_Invalid)
+	{
+		return false;  // nothing to update here
+	}
+
+	Feature::Instance& feature = s_features[feature_index];
+	Terrain::Type feature_type = World::read().get_terrain(feature.pos);
+	switch (feature_type)
+	{
+	// good features -- keep updating them
+	case Terrain::Scanner:
+		update_scanner(feature);
+		return true;
+	case Terrain::ShopSeed:
+		update_shop_seed(feature);
+		return true;
+
+	default:
+		// the feature here does not need updates
+		//  -> there was probably a different feature here before, but it was replaced
+		return false;
+	}
+}
+
+void update_scanner(Feature::Instance& feature)
+{
+	if (World::read().is_visible(feature.pos))
+	{
+		trigger_all(feature.payload);
+		Feature::remove(feature.pos);
+	}
+}
+
+void update_shop_seed(Feature::Instance& feature)
+{
+	if (World::read().is_visible(feature.pos))
+	{
+		Vec3 pos = feature.pos;
+		Draw::pos_message(pos, "A shop appears!");
+		Feature::remove(pos);
+
+		// TODO: Spawn a real shop
+		spawn(pos, Terrain::Chest);
+	}
 }
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
@@ -395,25 +504,23 @@ void trigger_all(int trigger)
 	// search backwards so indexes stay consistant
 	for (int i = Util::Size(s_features) - 1; i >= 0; --i)
 	{
-		if (s_features[i].payload != trigger)
+		Feature::Instance& feature = s_features[i];
+		if (feature.payload != trigger)
 		{
 			continue;
 		}
 
-		Terrain::Type feature_type = World::read().get_terrain(s_features[i].pos);
+		Terrain::Type feature_type = World::read().get_terrain(feature.pos);
 		switch (feature_type)
 		{
 		case Terrain::FlipendoButton:
-			trigger_flipendo_button(s_features[i]);
+			trigger_flipendo_button(feature);
 			break;
 		case Terrain::SlidingWall:
-			trigger_sliding_wall(s_features[i]);
+			trigger_sliding_wall(feature);
 			break;
 		case Terrain::Portcullis:
-			trigger_portcullis(s_features[i]);
-			break;
-		case Terrain::ShopSeed:
-			trigger_shop_seed(s_features[i]);
+			trigger_portcullis(feature);
 			break;
 		}
 	}
@@ -434,16 +541,6 @@ void trigger_portcullis(Feature::Instance & feature)
 {
 	Draw::pos_message(feature.pos, "A portcullis opens!");
 	Feature::remove(feature.pos);
-}
-
-void trigger_shop_seed(Feature::Instance & feature)
-{
-	Vec3 pos = feature.pos;
-	Draw::pos_message(pos, "A shop appears!");
-	Feature::remove(pos);
-
-	// TODO: Spawn a real shop
-	spawn(pos, Terrain::Chest);
 }
 
 } // namespace Feature

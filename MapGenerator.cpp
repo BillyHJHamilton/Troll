@@ -9,6 +9,26 @@
 #include "VectorUtil.h"
 #include "World.h"
 
+//-----------------------------------------------------------------------------
+// Global interface
+
+bool is_compatible(TriggerType trigger, DoorType door)
+{
+	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
+	{
+		//	None	Portrait	SlidingWall	Portcullis
+		{	true,	true,		false,		false,	},	// None
+		{	true,	false,		true,		true,	},	// FlipendoButton
+		{	true,	false,		true,		true,	},	// LightTorch
+	};
+
+	return c_Compatible[(int)(trigger)][(int)(door)];
+}
+
+
+//-----------------------------------------------------------------------------
+// MapGenerator class
+
 MapGenerator::MapGenerator(Map& owner)
 	: m_Map(owner)
 {
@@ -28,6 +48,21 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 	s.srz_int(MinStairsProximity);
 	s.srz_int(MinFacingStairsProximity);
+
+	s.srz_int(MaxCorridorLength);
+
+	s.srz_bool(IsShopSeed);
+
+	for (int i = 0; i < (int)(TriggerType::Count); i++)
+	{
+		s.srz_int(trigger_weights[i]);
+	}
+	for (int i = 0; i < (int)(DoorType::Count); i++)
+	{
+		s.srz_int(door_weights[i]);
+	}
+
+	s.srz_int(percent_torches_lit);
 }
 
 void MapGenerator::Region::serialize(ISerializer& s)
@@ -75,7 +110,7 @@ bool MapGenerator::IsStartRegionOrAncestorOfIt(int regionIndex) const
 {
 	// Imagine we start at the start room and go to main region.
 	//  -> We don't take any secret passages.
-	//  -> Do we go through regionIndex?
+	//  -> Do we go through region regionIndex?
 	//  -> If we do go through, regionIndex cannot be a secret area.
 	//    -> If it was, we would start trapped inside
 
@@ -152,6 +187,10 @@ void MapGenerator::Generate()
 
 	//PrintAllRooms();
 }
+
+
+//-----------------------------------------------------------------------------
+// Add connections from other maps
 
 void MapGenerator::AddTunnelTo(MapGenerator& other, int numToAdd)
 {
@@ -428,18 +467,8 @@ bool MapGenerator::TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair)
 	}
 }
 
-int MapGenerator::FindRoomAtPos(Vec2 pos) const
-{
-	for (int i = 0; i < Util::Size(m_RoomVec); ++i)
-	{
-		if (m_RoomVec[i].GetBox().contains(pos))
-		{
-			return i;
-		}
-	}
-	return -1;
-}
 
+//-----------------------------------------------------------------------------
 // Map Gen Helpers
 
 void MapGenerator::PlaceFirstRoomIfNeeded()
@@ -735,7 +764,7 @@ void MapGenerator::AssignRoomsToRegions()
 					{
 						// maybe add this room to existing region
 						//  -> if 0 regions leads off this, it becomes a new region
-						//  -> if 1 regions leads off this, join it
+						//  -> if 1 region leads off this, join it to that region
 						//  -> if 2 regions lead off this, it becomes a third region
 						if (currentRegion == c_NoRegion)
 						{
@@ -807,6 +836,8 @@ void MapGenerator::AssignRoomsToRegions()
 	}
 }
 
+
+//-----------------------------------------------------------------------------
 // Map Gen Helper Helpers
 
 Vec2 MapGenerator::RandRoomSize() const
@@ -1131,6 +1162,9 @@ void MapGenerator::MakeRoomARegionParent(int roomIndex)
 		}
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Debugging
 
 void MapGenerator::PrintAllRooms() const
 {
