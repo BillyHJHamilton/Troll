@@ -141,6 +141,7 @@ void spawn_early(Map& map, int map_id)
 		history.chests_spawned += item_count;
 	}
 
+	// can be in player sight because player doesn't exist yet
 	find_spawn_positions(map, min_range);
 	if (items_to_spawn > 0)
 	{
@@ -199,19 +200,6 @@ float probability_factor (float difficulty, float target_difficulty)
 		return pow(Spawn::c_UnderLevelFactor, difference);
 	}
 	return 1.0f;
-}
-
-bool is_compatible(TriggerType trigger, DoorType door)
-{
-	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
-	{
-		//	None	Portrait	SlidingWall	Portcullis
-		{	true,	true,		false,		false,	},	// None
-		{	true,	false,		true,		true,	},	// FlipendoButton
-		{	true,	false,		true,		true,	},	// LightTorch
-	};
-
-	return c_Compatible[(int)(trigger)][(int)(door)];
 }
 
 //-----------------------------------------------------------------------------

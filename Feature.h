@@ -24,6 +24,9 @@ namespace Feature
 	// Adds a feature that interacts with a trigger.
 	void spawn(Vec3 pos, Terrain::Type type, int trigger);
 
+	// Update features that need it.  Runs each turn after the game begins.
+	void update_all();
+
 	// Move feature, leaving behind open terrain and stomping terrain at new position.
 	void move(Vec3 old_pos, Vec3 new_pos);
 

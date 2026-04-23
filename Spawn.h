@@ -6,23 +6,6 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
-	enum class TriggerType : int
-	{
-		None,  // e.g. Alohamora Portrait
-		FlipendoButton,
-		LightTorch,
-		Count,
-	};
-
-	enum class DoorType : int
-	{
-		None,
-		Portrait,
-		SlidingWall,
-		Portcullis,
-		Count,
-	};
-
 	struct Parameters
 	{
 		// One of this creature must be spawned.
@@ -50,13 +33,6 @@ namespace Spawn
 		// Amount of chests to spawn.
 		int min_chests = 1;
 		int max_chests = 3;
-
-		// Type distributions for triggers and doors
-		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
-		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
-
-		// Fraction of cosmetic torches (no triggers) that start lit
-		int percent_torches_lit = 50;
 	};
 
 	// Creature spawning constants:
@@ -96,6 +72,4 @@ namespace Spawn
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);
 	float probability_factor (float difficulty, float target_difficulty);
-
-	bool is_compatible(TriggerType trigger, DoorType door);
 }

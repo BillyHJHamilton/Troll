@@ -320,6 +320,7 @@ void end_turn()
 
 	// Need to update visibility since player has likely moved.
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
+	Feature::update_all();
 	Creature::update_visible_creatures();
 
 	// Now all other creatures act.
