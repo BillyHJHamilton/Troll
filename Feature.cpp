@@ -377,7 +377,6 @@ bool update_at(Vec3 pos)
 
 void update_scanner(Feature::Instance& feature)
 {
-	// TODO: Should there be a range?
 	if (World::read().is_visible(feature.pos))
 	{
 		trigger_all(feature.payload);
@@ -387,7 +386,6 @@ void update_scanner(Feature::Instance& feature)
 
 void update_shop_seed(Feature::Instance& feature)
 {
-	// TODO: Should there be a range?
 	if (World::read().is_visible(feature.pos))
 	{
 		Vec3 pos = feature.pos;
