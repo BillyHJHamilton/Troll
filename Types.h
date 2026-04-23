@@ -15,6 +15,7 @@ class ISerializer;
 
 class Map;
 class MapGenerator;
+class Room;
 class World;
 
 struct Vec2;
@@ -106,6 +107,12 @@ namespace Score
 {
 	enum class Ending : int;
 	struct Entry;
+}
+
+namespace Spawn
+{
+	enum class TriggerType : int;
+	enum class DoorType : int;
 }
 
 namespace Spell

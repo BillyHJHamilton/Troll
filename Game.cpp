@@ -205,7 +205,6 @@ void setup()
 
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 
-	Spawn::post_world_setup();
 	Spawn::check_spawning();
 
 	Draw::add_message("Welcome to TROLL.  Press H for help.");
