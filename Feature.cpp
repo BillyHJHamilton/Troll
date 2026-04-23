@@ -5,6 +5,7 @@
 #include "Draw.h"
 #include "Item.h"
 #include "Pathfind.h"
+#include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
 #include "Terrain.h"
@@ -377,7 +378,9 @@ bool update_at(Vec3 pos)
 
 void update_scanner(Feature::Instance& feature)
 {
-	if (World::read().is_visible(feature.pos))
+	if (World::read().is_visible(feature.pos) &&
+		Player::pos().z == feature.pos.z &&
+		chessboard(Player::pos().xy(), feature.pos.xy()) < 5)
 	{
 		trigger_all(feature.payload);
 		Feature::remove(feature.pos);
@@ -386,13 +389,15 @@ void update_scanner(Feature::Instance& feature)
 
 void update_shop_seed(Feature::Instance& feature)
 {
-	if (World::read().is_visible(feature.pos))
+	if (World::read().is_visible(feature.pos) &&
+		Player::pos().z == feature.pos.z &&
+		chessboard(Player::pos().xy(), feature.pos.xy()) < 5)
 	{
 		Vec3 pos = feature.pos;
-		Draw::pos_message(pos, "A shop appears!");
 		Feature::remove(pos);
 
 		// TODO: Spawn a real shop
+		Draw::pos_message(pos, "A shop appears!");
 		spawn(pos, Terrain::Chest);
 	}
 }
