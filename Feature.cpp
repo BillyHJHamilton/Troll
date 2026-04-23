@@ -306,7 +306,7 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 			Draw::pos_message(pos, "The " + name + " is destroyed!");
 			Feature::remove(pos);
 		}
-		else if(damage_adjusted > 0)
+		else if (damage_adjusted > 0)
 		{
 			switch (damage_packet.type)
 			{

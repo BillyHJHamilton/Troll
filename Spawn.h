@@ -87,7 +87,11 @@ namespace Spawn
 	void serialize(ISerializer& s);
 
 	void post_world_setup();
+
+	// Spawns items and chests.  Run during the MapGridder pass.
 	void spawn_early(Map& map, int map_id);
+
+	// Spawns creatures.  Runs each turn after the game begins.
 	void check_spawning();
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);

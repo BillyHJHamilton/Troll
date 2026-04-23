@@ -156,7 +156,7 @@ void MapGridder::add_shop_seed() const
 			continue;
 		}
 
-		PosTempList pos_vec = box_to_positions(room.GetBox().minus_border(1));
+		PosTempList const pos_vec = box_to_positions(room.GetBox().minus_border(1));
 		IntTempList pos_index_list = Util::GetIndices(pos_vec);
 		Random::shuffle_vector(pos_index_list);
 		for (int pos_index : pos_index_list)
@@ -646,8 +646,8 @@ Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
 	// case -1: as initialized
 	case  0:
 		result.x = roomCenter.x;
-		if(room.GetBox().size.x % 2 == 0 &&  // size is even
-		   Random::coinflip())
+		if (room.GetBox().size.x % 2 == 0 &&  // size is even
+			Random::coinflip())
 		{
 			// might choose other center-ish position
 			result.x -= 1;
@@ -663,8 +663,8 @@ Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
 	// case -1: as initialized
 	case  0:
 		result.y = roomCenter.y;
-		if(room.GetBox().size.y % 2 == 0 &&  // size is even
-		   Random::coinflip())
+		if (room.GetBox().size.y % 2 == 0 &&  // size is even
+			Random::coinflip())
 		{
 			// might choose other center-ish position
 			result.y -= 1;
@@ -920,12 +920,12 @@ MapGridder::PosTempList MapGridder::box_to_positions(Box2 const& box) const
 bool MapGridder::is_good_for_spawn(Vec2 const& pos) const
 {
 	Terrain::Type terrain = m_map.get_terrain(pos);
-	return terrain == Terrain::Wall || Terrain::is_can_spawn(terrain);
+	return terrain == Terrain::Wall || Terrain::can_spawn(terrain);
 }
 
 bool MapGridder::is_good_floor(Vec2 const & pos) const
 {
-	return Terrain::is_can_spawn(m_map.get_terrain(pos));
+	return Terrain::can_spawn(m_map.get_terrain(pos));
 }
 
 bool MapGridder::is_good_wall(Vec2 const & pos) const

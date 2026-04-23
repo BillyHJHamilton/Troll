@@ -15,29 +15,6 @@ void BuildWorld()
 
 	World& world = World::edit();
 
-	//Box2 const map_box_0 = Box2(0, 0, 30, 30);
-	//Box2 const map_box_e = Box2(30, 0, 50, 16);
-	//Box2 const map_box_w = Box2(-30, 0, 30, 30);
-	//Box2 const map_box_n = Box2(0, -30, 30, 30);
-	//Box2 const map_box_s = Box2(0, 30, 20, 60);
-	//
-	//world.add_map(0, 0, map_box_0, Terrain::Wall);
-	//world.add_map(0, 0, map_box_e, Terrain::Wall);
-	//world.add_map(0, 0, map_box_w, Terrain::Wall);
-	//world.add_map(0, 0, map_box_n, Terrain::Wall);
-	//world.add_map(0, 0, map_box_s, Terrain::Wall);
-	//
-	//world.edit_map(0).get_generator().RequestConnection(1, 1);
-	//world.edit_map(0).get_generator().RequestConnection(2, 2);
-	//world.edit_map(0).get_generator().RequestConnection(3, 3);
-	//world.edit_map(0).get_generator().RequestConnection(4, 2);
-	//
-	//world.edit_map(0).get_generator().Generate();
-	//world.edit_map(1).get_generator().Generate();
-	//world.edit_map(2).get_generator().Generate();
-	//world.edit_map(3).get_generator().Generate();
-	//world.edit_map(4).get_generator().Generate();
-
 	// Create a stack of levels.
 	int constexpr c_MaxZ = 7;
 

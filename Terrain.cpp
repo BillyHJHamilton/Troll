@@ -90,7 +90,7 @@ namespace Terrain
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_PermitSight);
 	}
 
-	bool is_can_spawn(Terrain::Type t)
+	bool can_spawn(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_CanSpawn);

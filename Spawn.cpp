@@ -203,9 +203,7 @@ float probability_factor (float difficulty, float target_difficulty)
 
 bool is_compatible(TriggerType trigger, DoorType door)
 {
-	// TODO: Specify this differently?
-	//  -> initialize at game start
-	float constexpr c_Resistances[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
+	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
 	{
 		//	None	Portrait	SlidingWall	Portcullis
 		{	true,	true,		false,		false,	},	// None
@@ -213,7 +211,7 @@ bool is_compatible(TriggerType trigger, DoorType door)
 		{	true,	false,		true,		true,	},	// LightTorch
 	};
 
-	return c_Resistances[(int)(trigger)][(int)(door)];
+	return c_Compatible[(int)(trigger)][(int)(door)];
 }
 
 //-----------------------------------------------------------------------------
@@ -259,7 +257,7 @@ Spawn::Problem problem_with_spawn_position(Map const & map, int min_range_from_p
 {
 	Vec3 const pos3 = pos2.xyz(map.get_z());
 
-	if (!Terrain::is_can_spawn(map.get_terrain(pos2)))
+	if (!Terrain::can_spawn(map.get_terrain(pos2)))
 	{
 		return Problem::NotOpen;
 	}
@@ -327,10 +325,10 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 
 		// We want it against a wall, with open space in front.
 		// And not blocking a hallway on either side.
-		bool const front_ok = Terrain::is_can_spawn(t_front);
+		bool const front_ok = Terrain::can_spawn(t_front);
 		bool const back_ok = t_back == Terrain::Wall;
-		bool const left_ok = (t_l1 == Terrain::Wall || Terrain::is_can_spawn(t_l2)) && t_l1 == t_l2;
-		bool const right_ok = (t_r1 == Terrain::Wall || Terrain::is_can_spawn(t_r2)) && t_r1 == t_r2;
+		bool const left_ok = (t_l1 == Terrain::Wall || Terrain::can_spawn(t_l2)) && t_l1 == t_l2;
+		bool const right_ok = (t_r1 == Terrain::Wall || Terrain::can_spawn(t_r2)) && t_r1 == t_r2;
 
 		if (front_ok && back_ok && left_ok && right_ok)
 		{

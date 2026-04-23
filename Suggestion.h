@@ -6,7 +6,6 @@
 namespace Suggestion
 {
 	// Use int because used as an array index
-
 	enum Type : int
 	{
 		TreasureNormal,  // e.g. chest
@@ -19,7 +18,7 @@ namespace Suggestion
 
 		Count,
 	};
-	// secret areas and secret passages are handles separately
+	// secret areas and secret passages are handled separately
 
 	bool is_valid_type(Suggestion::Type t);
 

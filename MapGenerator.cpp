@@ -633,7 +633,7 @@ void MapGenerator::AddExtraCorridors(int chance, bool isSecretPassages)
 			}
 
 			// Don't add another one the same.
-			if(AreRoomsAlreadyConnected(r0, r1))
+			if (AreRoomsAlreadyConnected(r0, r1))
 			{
 				continue;
 			}
@@ -1072,7 +1072,7 @@ bool MapGenerator::AreStairsProblematic(Room const& new_stairs, Room const& othe
 	Vec2 p0 = new_stairs.StairsLocalEnd();
 	Vec2 p1 = other_stairs.StairsLocalEnd();
 
-	if(strict_range(p0, p1, m_Param.MinStairsProximity))
+	if (strict_range(p0, p1, m_Param.MinStairsProximity))
 	{
 		return true;
 	}
@@ -1152,11 +1152,11 @@ void MapGenerator::PrintAllRooms() const
 		std::cout << "\t  (" << box.min.x << " - " << box.max(c_AxisX)
 		         << ",\t"    << box.min.y << " - " << box.max(c_AxisY) << ")";
 
-		if(m_RoomVec[r].IsInMainRegion())
+		if (m_RoomVec[r].IsInMainRegion())
 		{
 			std::cout << "  \tMain region";
 		}
-		else if(m_RegionVec[m_RoomVec[r].GetRegion()].parent == Room::c_SecretPassage)
+		else if (m_RegionVec[m_RoomVec[r].GetRegion()].parent == Room::c_SecretPassage)
 		{
 			std::cout << "  \tSecret passage";
 		}

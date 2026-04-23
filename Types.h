@@ -15,8 +15,8 @@ class ISerializer;
 
 class Map;
 class MapGenerator;
-class World;
 class Room;
+class World;
 
 struct Vec2;
 struct Vec3;

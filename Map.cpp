@@ -194,7 +194,7 @@ void Map::step_clouds()
 		}
 
 		--lifetime;
-		if(lifetime <= 0)
+		if (lifetime <= 0)
 		{
 			clear_cloud(pos);
 			itr = cloud_lifetimes.erase(itr);
