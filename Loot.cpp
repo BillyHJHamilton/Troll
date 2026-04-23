@@ -13,12 +13,12 @@ void init()
 {
 	s_loot_table.resize(ListIndex::Count);
 
-	//									None	Notes	Bean	Potion
-	s_loot_table[Empty] = {				1,		0,		0,		0,		};
-	s_loot_table[Notes] =			{	0,		1,		0,		0,		};
-	s_loot_table[Floor] =			{	0,		0,		13,		1,		};
-	s_loot_table[Chest_Main] = {		1,		0,		0,		1,		};
-	s_loot_table[Student_Generic] =	{	5,		0,		0,		1,		};
+	//									None	Notes	Bean	Sweets	Potion
+	s_loot_table[Empty] = {				1,		0,		0,		0,		0,		};
+	s_loot_table[Notes] =			{	0,		1,		0,		0,		0,		};
+	s_loot_table[Floor] =			{	0,		0,		14,		3,		1,		};
+	s_loot_table[Chest_Main] = {		1,		0,		0,		0,		1,		};
+	s_loot_table[Student_Generic] =	{	8,		0,		0,		3,		1,		};
 
 	// Validation
 	int constexpr c_ExpectedSize = Item::Count + 1;
