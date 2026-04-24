@@ -438,6 +438,7 @@ void update_shop_seed(Feature::Instance& feature)
 		Feature::remove(pos);  // feature becomes invalid
 
 		// TODO: Spawn a real shop
+		// TODO: Interrupt automove, etc.
 		Draw::pos_message(pos, "A shop appears!");
 		spawn(pos, Terrain::Chest);
 	}
@@ -452,7 +453,7 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 	//  -> Features might move around in s_features
 	//  -> s_features will not be reallocated
 	// Copy any data you will need after calling this into local variables first
-	// The feature ight not exist after calling this
+	// The feature might not exist after calling this
 	//  -> If it does, references and indexes are still valid
 
 	int const feature_index = find_feature(pos);
@@ -558,6 +559,7 @@ void trigger_all(int trigger)
 	// Copy any data you will need after calling this into local variables first
 	// If you need any feature after calling this, call find_feature again
 	//  -> And remember that the feature might not exist anymore
+	//  -> Finding a feature in the same place does not guarentee it's the same one
 
 	if (trigger == c_Invalid)
 	{
