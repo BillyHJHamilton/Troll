@@ -56,7 +56,7 @@ void BuildWorld()
 		//param.MinNumRooms += z;
 		//param.MaxNumRooms += 2*z;
 
-		param.IsShopSeed = true;
+		param.IsShopSeed = Random::coinflip();
 
 		param.trigger_weights[(int)(TriggerType::None          )] = c_MaxZ;
 		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = z;
