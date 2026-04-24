@@ -378,9 +378,9 @@ bool update_at(Vec3 pos)
 
 void update_scanner(Feature::Instance& feature)
 {
-	if (World::read().is_visible(feature.pos) &&
-		Player::pos().z == feature.pos.z &&
-		chessboard(Player::pos().xy(), feature.pos.xy()) < 5)
+	if (Player::pos().z == feature.pos.z &&
+		chessboard(Player::pos().xy(), feature.pos.xy()) < 5 &&
+		World::read().is_visible(feature.pos))
 	{
 		trigger_all(feature.payload);
 		Feature::remove(feature.pos);
@@ -389,9 +389,13 @@ void update_scanner(Feature::Instance& feature)
 
 void update_shop_seed(Feature::Instance& feature)
 {
-	if (World::read().is_visible(feature.pos) &&
-		Player::pos().z == feature.pos.z &&
-		chessboard(Player::pos().xy(), feature.pos.xy()) < 5)
+	// TODO: Is there some way feature updates could work without visiblity?
+	//  -> We have to recalculate the entire visibility state for them
+	//  -> But we don't want things activating through walls
+
+	if (Player::pos().z == feature.pos.z &&
+		chessboard(Player::pos().xy(), feature.pos.xy()) < 5 &&
+		World::read().is_visible(feature.pos))
 	{
 		Vec3 pos = feature.pos;
 		Feature::remove(pos);
