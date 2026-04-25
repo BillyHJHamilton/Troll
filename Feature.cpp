@@ -4,6 +4,7 @@
 #include "Debug.h"
 #include "Draw.h"
 #include "Item.h"
+#include "Loot.h"
 #include "Pathfind.h"
 #include "Player.h"
 #include "Random.h"
@@ -267,24 +268,16 @@ void register_for_updates(Feature::Instance& feature)
 
 void init_chest(Feature::Instance& feature)
 {
-	// Todo: Variable treasure based on current map
-
 	Item::Handle top(c_Invalid);
 
-	if (Random::coinflip())
-	{
-		Item::Handle new_potion = Item::make_potion_by_level(
-			World::read().find_map_difficulty(feature.pos) + 1.0f);
-		new_potion.stack_onto(top);
-		top = new_potion;
-	}
+	// Slightly better than normal for this level.
+	float const difficulty = World::read().find_map_difficulty(feature.pos) + 1.0f;
+	Loot::stack(Loot::Chest_Main, top, Creature::None, difficulty);
 
 	int const num_beans = Random::in_range(3,6);
 	for (int i = 0; i < num_beans; ++i)
 	{
-		Item::Handle new_bean = Item::make_bbb();
-		new_bean.stack_onto(top);
-		top = new_bean;
+		Loot::stack(Loot::Bean, top, Creature::None, difficulty);
 	}
 
 	feature.payload = (int)top;

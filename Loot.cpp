@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "Item.h"
 #include "Random.h"
+#include "World.h"
 
 namespace Loot
 {
@@ -16,6 +17,7 @@ void init()
 	//									None	Notes	Bean	Sweets	Potion
 	s_loot_table[Empty] =			{	1,		0,		0,		0,		0,		};
 	s_loot_table[Notes] =			{	0,		1,		0,		0,		0,		};
+	s_loot_table[Bean] =			{	0,		0,		1,		0,		0,		};
 	s_loot_table[Sweets] =			{	0,		0,		0,		1,		0,		};
 	s_loot_table[Potion] =			{	0,		0,		0,		0,		1,		};
 	s_loot_table[Floor] =			{	0,		0,		14,		3,		1,		};
@@ -54,5 +56,36 @@ Item::Type select(Loot::TypePercent type_percent)
 	}
 }
 
+Item::Handle make(Loot::Type loot_type, Creature::Type creature_type, float difficulty)
+{
+	Item::Type const item_type = select(loot_type);
+	return Item::make_generic(item_type, creature_type, difficulty);
+}
+
+Item::Handle make(Loot::TypePercent type_percent, Creature::Type creature_type, float difficulty)
+{
+	Item::Type const item_type = select(type_percent);
+	return Item::make_generic(item_type, creature_type, difficulty);
+}
+
+void spawn(Loot::Type type, Vec3 pos, Creature::Type creature_type, float difficulty)
+{
+	Item::Handle item = make(type, creature_type, difficulty);
+	if (item.valid())
+	{
+		World::edit().add_item(pos, item);
+	}
+}
+
+void stack(Loot::Type type, Item::Handle& stack_top, Creature::Type creature_type,
+	float difficulty)
+{
+	Item::Handle item = make(type, creature_type, difficulty);
+	if (item.valid())
+	{
+		item.stack_onto(stack_top);
+		stack_top = item;
+	}
+}
 
 } // namespace Loot

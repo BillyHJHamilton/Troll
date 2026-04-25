@@ -458,51 +458,7 @@ Item::Handle make_potion_by_level (float difficulty)
 	return make_potion(Potion::random_by_level(difficulty));
 }
 
-Item::Handle spawn_item (Vec3 pos, Instance instance)
-{
-	Item::Handle item = make_item(instance);
-	World::edit().add_item(pos, item);
-
-	// Confirm that we added to a valid map.
-	assert(World::read().peek_item(pos) == item);
-
-	return item;
-}
-
-Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
-{
-	Item::Handle item = make_notes(owner_type);
-	World::edit().add_item(pos, item);
-	return item;
-}
-
-Item::Handle spawn_bbb (Vec3 pos)
-{
-	Item::Handle item = make_bbb();
-	World::edit().add_item(pos, item);
-	return item;
-}
-
-Item::Handle spawn_sweets (Vec3 pos)
-{
-	Item::Handle item = make_sweets();
-	World::edit().add_item(pos, item);
-	return item;
-}
-
-Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
-{
-	Item::Handle item = make_potion(potion);
-	World::edit().add_item(pos, item);
-	return item;
-}
-
-Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty)
-{
-	return spawn_potion(pos, Potion::random_by_level(difficulty));
-}
-
-Item::Handle make_for_creature(Item::Type type, Creature::Type creature_type,
+Item::Handle make_generic(Item::Type type, Creature::Type creature_type,
 	float difficulty)
 {
 	switch(type)
@@ -510,8 +466,11 @@ Item::Handle make_for_creature(Item::Type type, Creature::Type creature_type,
 		case Item::None: return c_Invalid;
 		case Item::BBBean: return make_bbb();
 		case Item::SweetsItem: return make_sweets();
-		case Item::Notes: return make_notes(creature_type);
 		case Item::PotionItem: return make_potion_by_level(difficulty);
+
+		case Item::Notes:
+			assert(Creature::is_valid_type(creature_type));
+			return make_notes(creature_type);
 
 		default:
 			DebugBreak("Unhandled case");

@@ -524,8 +524,7 @@ void provide_items(Creature::Handle creature)
 	std::vector<Loot::TypePercent> const& loot_list = s_loot[creature_type];
 	for (Loot::TypePercent type_percent : loot_list)
 	{
-		Item::Type const item_type = Loot::select(type_percent);
-		Item::Handle const item = Item::make_for_creature(item_type, creature_type,
+		Item::Handle const item = Loot::make(type_percent, creature_type,
 			Gingerbread::read(creature_type).difficulty);
 		if (item.valid())
 		{
