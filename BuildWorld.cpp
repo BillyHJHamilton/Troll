@@ -3,6 +3,7 @@
 #include "Creature.h"
 #include "Map.h"
 #include "MapGenerator.h"
+#include "MapGridder.h"
 #include "PerfTimer.h"
 #include "Random.h"
 #include "Terrain.h"
@@ -13,29 +14,6 @@ void BuildWorld()
 	PerfTimer perf("BuildWorld");
 
 	World& world = World::edit();
-
-	//Box2 const map_box_0 = Box2(0, 0, 30, 30);
-	//Box2 const map_box_e = Box2(30, 0, 50, 16);
-	//Box2 const map_box_w = Box2(-30, 0, 30, 30);
-	//Box2 const map_box_n = Box2(0, -30, 30, 30);
-	//Box2 const map_box_s = Box2(0, 30, 20, 60);
-	//
-	//world.add_map(0, 0, map_box_0, Terrain::Wall);
-	//world.add_map(0, 0, map_box_e, Terrain::Wall);
-	//world.add_map(0, 0, map_box_w, Terrain::Wall);
-	//world.add_map(0, 0, map_box_n, Terrain::Wall);
-	//world.add_map(0, 0, map_box_s, Terrain::Wall);
-	//
-	//world.edit_map(0).get_generator().RequestConnection(1, 1);
-	//world.edit_map(0).get_generator().RequestConnection(2, 2);
-	//world.edit_map(0).get_generator().RequestConnection(3, 3);
-	//world.edit_map(0).get_generator().RequestConnection(4, 2);
-	//
-	//world.edit_map(0).get_generator().Generate();
-	//world.edit_map(1).get_generator().Generate();
-	//world.edit_map(2).get_generator().Generate();
-	//world.edit_map(3).get_generator().Generate();
-	//world.edit_map(4).get_generator().Generate();
 
 	// Create a stack of levels.
 	int constexpr c_MaxZ = 7;
@@ -48,7 +26,6 @@ void BuildWorld()
 		int const map_id = world.add_map(z, (z * 0.5f), map_box, Terrain::Wall);
 		assert(map_id == z);
 	}
-	//int const dungeon_id = world.add_map(-1, (4.0f), map_box1, Terrain::Wall);
 
 	// Set map names
 	world.edit_map(0).set_name("Hogwarts - Ground Floor");
@@ -59,31 +36,6 @@ void BuildWorld()
 	world.edit_map(5).set_name("Hogwarts - Fifth Floor");
 	world.edit_map(6).set_name("Hogwarts - Sixth Floor");
 	world.edit_map(7).set_name("Hogwarts - Seventh Floor");
-
-	// Pass 2 - run generator
-	for (int z = 0; z <= c_MaxZ; ++z)
-	{
-		MapGenerator& generator = world.edit_map(z).get_generator();
-
-		MapGenerator::Parameters param{};
-		//param.MinNumRooms += z;
-		//param.MaxNumRooms += 2*z;
-		generator.SetParameters(param);
-
-		//if (z == 0)
-		//{
-		//	generator.RequestConnection(dungeon_id, 1);
-		//}
-
-		if (z < c_MaxZ)
-		{
-			generator.RequestConnection(z + 1, Random::in_range(2,3));
-		}
-
-		generator.Generate();
-	}
-
-	//world.edit_map(dungeon_id).get_generator().Generate();
 
 	// set spawn parameters
 	world.edit_map(7).set_spawn_param({
@@ -99,13 +51,39 @@ void BuildWorld()
 
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
-		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
-		param.door_weights[(int)(Spawn::DoorType::None                   )] = c_MaxZ * 8 - z * 4;
-		param.door_weights[(int)(Spawn::DoorType::Portrait               )] = c_MaxZ * 2;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensWall      )] = z;
-		param.door_weights[(int)(Spawn::DoorType::FlipendoOpensPortcullis)] = z;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensWall       )] = 0;
-		param.door_weights[(int)(Spawn::DoorType::TorchesOpensPortcullis )] = z * 2;
+		MapGenerator::Parameters & param = world.edit_map(z).get_generator().EditParameters();
+
+		//param.MinNumRooms += z;
+		//param.MaxNumRooms += 2*z;
+
+		param.IsShopSeed = Random::coinflip();
+
+		param.trigger_weights[(int)(TriggerType::None          )] = c_MaxZ;
+		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = z;
+		param.trigger_weights[(int)(TriggerType::LightTorch    )] = z;
+
+		// these are used depending on the trigger type
+		param.door_weights[(int)(DoorType::None       )] = c_MaxZ * 3 - z * 2;
+		param.door_weights[(int)(DoorType::Portrait   )] = c_MaxZ * 2;
+		param.door_weights[(int)(DoorType::SlidingWall)] = z;
+		param.door_weights[(int)(DoorType::Portcullis )] = z;
+
 		param.percent_torches_lit = 80 - z * 10;
+	}
+
+	Spawn::post_world_setup();
+
+	// Pass 2 - run generator
+	for (int z = 0; z <= c_MaxZ; ++z)
+	{
+		MapGenerator& generator = world.edit_map(z).get_generator();
+
+		if (z < c_MaxZ)
+		{
+			generator.RequestConnection(z + 1, Random::in_range(2,3));
+		}
+
+		generator.Generate();
+		MapGridder(world.edit_map(z), generator, z);
 	}
 }

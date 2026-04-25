@@ -363,16 +363,20 @@ void draw (Draw::View view)
 		if (view.contains_global_pos(pos))
 		{
 			Visibility const vis = World::read().get_visibility(pos);
-			bool const is_wall = World::read().get_terrain(pos) == Terrain::Wall;
+			Terrain::Type terrain = World::read().get_terrain(pos);
+			bool const draw_terrain = Terrain::fills_crosshair(terrain);
 
 			bool draw = true;
-			char const* draw_colour = Crosshair::colour(vis, is_wall);
+			char const* draw_colour = Crosshair::colour(vis, draw_terrain);
 			int codepoint = Codepoint::OpenCursor;
 
 			if (vis == Visibility::Visible)
 			{
-				draw = is_wall;
-				codepoint = Codepoint::SolidBlock;
+				// Within visible area, cursor is already drawn as background.
+				// We only need to redraw it here if terrain fills the square
+				// (so the highlighting is hard to see).
+				draw = draw_terrain;
+				codepoint = Terrain::get_character(terrain);
 			}
 
 			if (draw)

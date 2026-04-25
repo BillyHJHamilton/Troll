@@ -6,19 +6,6 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
-	// TODO: Split into doors and triggers
-	//  -> portrait has no trigger, but hopefully others mix-and-match
-	enum class DoorType : int
-	{
-		None,
-		Portrait,
-		FlipendoOpensWall,
-		FlipendoOpensPortcullis,
-		TorchesOpensWall,
-		TorchesOpensPortcullis,
-		Count,
-	};
-
 	struct Parameters
 	{
 		// One of this creature must be spawned.
@@ -46,12 +33,6 @@ namespace Spawn
 		// Amount of chests to spawn.
 		int min_chests = 1;
 		int max_chests = 3;
-
-		// Amount of secret areas (1 door each) to seal off
-		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
-
-		// Fraction of cosmetic torches (no triggers) that start lit
-		int percent_torches_lit = 50;
 	};
 
 	// Creature spawning constants:
@@ -82,6 +63,11 @@ namespace Spawn
 	void serialize(ISerializer& s);
 
 	void post_world_setup();
+
+	// Spawns items and chests.  Run during the MapGridder pass.
+	void spawn_early(Map& map, int map_id);
+
+	// Spawns creatures.  Runs each turn after the game begins.
 	void check_spawning();
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);

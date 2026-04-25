@@ -15,6 +15,7 @@ namespace Terrain
 	uint constexpr f_Stairs			= 1 << 3;
 	uint constexpr f_Feature		= 1 << 4;	// Has extra data in Feature module
 	uint constexpr f_NoAutotarget	= 1 << 5;	// Never automatically target
+	uint constexpr f_CrosshairFill	= 1 << 6;	// Crosshair highlights entire glyph
 
 	struct Data
 	{
@@ -31,9 +32,10 @@ namespace Terrain
 
 		//	 Name					Codepoint					Cover	Terrain flags							Target flags
 		Data{"floor",				'.',						0,		f_PermitSight | f_CanSpawn,				f_None},
-		Data{"floor (no spawn)",	'.',						0,		f_PermitSight,							f_None},
 		Data{"floor (highlight)",	':',						0,		f_PermitSight | f_CanSpawn,				f_None},
-		Data{"wall",				Codepoint::SolidBlock,		100,	f_Solid,								f_None},
+		Data{"floor (no spawn)",	'.',						0,		f_PermitSight,							f_None},
+		Data{"placeholder",			'X',						0,		f_PermitSight,							f_None},
+		Data{"wall",				Codepoint::SolidBlock,		100,	f_Solid | f_CrosshairFill,				f_None},
 		Data{"up stairs",			Codepoint::CaretUp,			0,		f_Stairs,								f_None},
 		Data{"down stairs",			Codepoint::CaretDown,		0,		f_Stairs,								f_None},
 		Data{"chest",				Codepoint::Chest,			40,		f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
@@ -42,10 +44,12 @@ namespace Terrain
 																		f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
 		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
 		Data{"torch" /*lit*/,		Codepoint::TorchLit,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid |  f_Feature,					Target::f_Alohomora},
-		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid |  f_Feature,					Target::f_Flipendo},
-		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid |  f_Feature,					f_None},
+		Data{"floor" /* scanner */,	'.',						0,		f_PermitSight | f_Feature,				f_None},
+		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
+		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
 		Data{"portcullis",			'#',						40,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"floor" /*shop seed*/,	'.',						0,		f_PermitSight | f_Feature,				f_None},
 	};
 
 	int get_character(Terrain::Type t)
@@ -70,7 +74,7 @@ namespace Terrain
 				return "- the floor";
 			case Terrain::Wall:
 			case Terrain::SlidingWall:
-				return "- the floor";
+				return "- the wall";
 			case Terrain::UpStairs: return "- stairs leading up";
 			case Terrain::DownStairs: return "- stairs leading down";
 			case Terrain::Chest: return "- a locked chest";
@@ -87,7 +91,7 @@ namespace Terrain
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_PermitSight);
 	}
 
-	bool is_can_spawn(Terrain::Type t)
+	bool can_spawn(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
 		return Util::IsFlagSet(s_data[t].terrain_flags, f_CanSpawn);
@@ -121,6 +125,12 @@ namespace Terrain
 	{
 		assert(is_valid_type(t));
 		return !Util::IsFlagSet(s_data[t].terrain_flags, f_NoAutotarget);
+	}
+
+	bool fills_crosshair(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return Util::IsFlagSet(s_data[t].terrain_flags, f_CrosshairFill);
 	}
 
 	bool is_matching_target(Terrain::Type t, uint target_flags)

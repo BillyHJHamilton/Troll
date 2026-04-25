@@ -253,6 +253,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClCompile Include="Feature.cpp" />
     <ClCompile Include="FloatGeometry.cpp" />
     <ClCompile Include="Loot.cpp" />
+    <ClCompile Include="MapGridder.cpp" />
     <ClCompile Include="Suggestion.cpp" />
     <ClCompile Include="MenuDebug.cpp" />
     <ClCompile Include="MenuHighScores.cpp" />
@@ -324,6 +325,8 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Feature.h" />
     <ClInclude Include="FloatGeometry.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="MapGridder.h" />
+    <ClInclude Include="SparseVector.h" />
     <ClInclude Include="Loot.h" />
     <ClInclude Include="Suggestion.h" />
     <ClInclude Include="MenuDebug.h" />
@@ -368,7 +371,6 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="SerializeSaveLoad.h" />
-    <ClInclude Include="SparseArray.h" />
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />

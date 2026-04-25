@@ -205,7 +205,6 @@ void setup()
 
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 
-	Spawn::post_world_setup();
 	Spawn::check_spawning();
 
 	Draw::add_message("Welcome to TROLL.  Press H for help.");
@@ -320,6 +319,8 @@ void end_turn()
 	Spawn::check_spawning();
 
 	// Need to update visibility since player has likely moved.
+	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
+	Feature::update_all();  // uses visibility, but can change it
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 	Creature::update_visible_creatures();
 

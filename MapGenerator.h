@@ -4,6 +4,28 @@
 #include "Room.h"
 #include "Stairs.h"
 
+
+// These cannot be inside MapGenerator or forward declarations are impossible
+enum class TriggerType : int
+{
+	None,  // e.g. Alohamora Portrait
+	FlipendoButton,
+	LightTorch,
+	Count,
+};
+
+enum class DoorType : int
+{
+	None,
+	Portrait,
+	SlidingWall,
+	Portcullis,
+	Count,
+};
+
+bool is_compatible(TriggerType trigger, DoorType door);
+
+
 // The architecture is that each map owns its own "MapGenerator".
 // The generator contains metadata like where rooms are located,
 // whereas the Map layer exposes the resulting terrain and staircase table.
@@ -27,6 +49,15 @@ public:
 
 		int MaxCorridorLength = 6;
 
+		bool IsShopSeed = false;
+
+		// Type distributions for triggers and doors
+		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
+		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+
+		// Fraction of cosmetic torches (no triggers) that start lit
+		int percent_torches_lit = 50;
+
 		void Serialize(ISerializer& s);
 	};
 
@@ -35,11 +66,25 @@ public:
 	void Serialize(ISerializer& s);
 
 	void SetParameters(Parameters parameters) { m_Param = parameters; }
+	Parameters const & ReadParameters() const { return m_Param; }
+	Parameters & EditParameters() { return m_Param; }
+
 	void RequestConnection(int targetMapId, int numConnections);
+
+	int GetRoomCount() const;
+	Room const& GetRoom(int roomIndex) const { return m_RoomVec[roomIndex]; }
+	std::vector<Room> const& GetRoomVector() const { return m_RoomVec; }
+	bool IsStartRoom() const { return m_StartRoomIndex != c_Invalid; }
+	bool IsStartRoom(int roomIndex) const { return roomIndex == m_StartRoomIndex; }
+
+	int GetRegionCount() const;
+	int GetRegionParent(int regionIndex) const { return m_RegionVec[regionIndex].parent; }
+	bool IsStartRegionOrAncestorOfIt(int regionIndex) const;
 
 	// Generates rooms and tries to join everything up.
 	void Generate();
 
+	// Add connections from other maps
 	void AddTunnelTo(MapGenerator& other, int numToAdd);
 	bool TryReceiveTunnel(Vec2 entry, Axis corridorAxis);
 
@@ -47,12 +92,6 @@ public:
 	bool TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair);
 
 protected:
-	using PosTempList = std::vector<Vec2,Scratch<Vec2>>;
-	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
-	// should these be in VectorUtil.h?
-
-	int FindRoomAtPos(Vec2 pos) const;
-
 	// Map Gen Helpers
 	void PlaceFirstRoomIfNeeded();
 	void MarkExistingRoomsJoined();
@@ -61,7 +100,6 @@ protected:
 	void RemoveDisconnectedRooms();
 	void AddExtraCorridors(int chance, bool isSecretPassages);
 	void AssignRoomsToRegions();
-	void AddAllToMap();
 
 	// Map Gen Helper Helpers
 	Vec2 RandRoomSize() const;
@@ -80,25 +118,7 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
-	void AddStairsToMap(Room const & room) const;
-	void AddChamberToMap(Room const & room) const;
-	void AddCorridorToMap(Room const & room) const;
-	void AddDeskRoomSuggestions(Room const & room) const;
-	void AddCosmeticTorchRoomSuggestions(Room const & room) const;
-	void AddArmourRoomSuggestions(Room const & room) const;
-	void AddSecretPassageSuggestions(Room const & room,
-	                                 Room const & neighbour0, Vec2 const & door0,
-	                                 Room const & neighbour1, Vec2 const & door1) const;
-	void AddSecretAreaSuggestions(Room const & room,
-	                              Room const & neighbour, Vec2 const & door) const;
-	Vec2 GetPosAtRoomBack(Room const & room) const;
-	PosTempList GetTorchPositions(Room const & room) const;
-	PosTempList GetPositionsAlongPlainWall(Room const & room) const;
-	PosTempList GetPlainWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
-	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
-	                                      Box2TempList const & boxVec);
-
+	// Debugging
 	void PrintAllRooms() const;
 
 	struct RequestedConnection
@@ -126,4 +146,5 @@ protected:
 	Map& m_Map;
 	Parameters m_Param = {};
 	bool m_HasGenerated = false;
+	int m_StartRoomIndex = c_Invalid;
 };

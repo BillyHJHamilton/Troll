@@ -10,8 +10,9 @@ namespace Terrain
 	enum Type : byte
 	{
 		Open = 0,
-		OpenNoSpawn,
 		OpenHighlight,  // used for debugging
+		OpenNoSpawn,
+		Placeholder,  // used for map generation
 		Wall,
 		UpStairs,
 		DownStairs,
@@ -22,10 +23,12 @@ namespace Terrain
 		Desk,
 		TorchUnlit,
 		TorchLit,
+		Scanner,
 		Portrait,
 		FlipendoButton,
 		SlidingWall,
 		Portcullis,
+		ShopSeed,
 
 		Count
 	};
@@ -36,12 +39,13 @@ namespace Terrain
 	char const* get_name(Terrain::Type t);
 	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);
-	bool is_can_spawn(Terrain::Type t);
+	bool can_spawn(Terrain::Type t);
 	bool is_solid(Terrain::Type t);
 	int get_cover_percent(Terrain::Type t);
 	bool is_stairs(Terrain::Type t);
 	bool is_feature(Terrain::Type t);
 	bool is_auto_target(Terrain::Type t);
+	bool fills_crosshair(Terrain::Type t);
 	bool is_matching_target(Terrain::Type t, uint target_flags);
 	Terrain::Type swap_stairs(Terrain::Type t);
 
