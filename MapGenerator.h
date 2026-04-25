@@ -4,6 +4,28 @@
 #include "Room.h"
 #include "Stairs.h"
 
+
+// These cannot be inside MapGenerator or forward declarations are impossible
+enum class TriggerType : int
+{
+	None,  // e.g. Alohamora Portrait
+	FlipendoButton,
+	LightTorch,
+	Count,
+};
+
+enum class DoorType : int
+{
+	None,
+	Portrait,
+	SlidingWall,
+	Portcullis,
+	Count,
+};
+
+bool is_compatible(TriggerType trigger, DoorType door);
+
+
 // The architecture is that each map owns its own "MapGenerator".
 // The generator contains metadata like where rooms are located,
 // whereas the Map layer exposes the resulting terrain and staircase table.
@@ -27,6 +49,15 @@ public:
 
 		int MaxCorridorLength = 6;
 
+		bool IsShopSeed = false;
+
+		// Type distributions for triggers and doors
+		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
+		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+
+		// Fraction of cosmetic torches (no triggers) that start lit
+		int percent_torches_lit = 50;
+
 		void Serialize(ISerializer& s);
 	};
 
@@ -35,6 +66,9 @@ public:
 	void Serialize(ISerializer& s);
 
 	void SetParameters(Parameters parameters) { m_Param = parameters; }
+	Parameters const & ReadParameters() const { return m_Param; }
+	Parameters & EditParameters() { return m_Param; }
+
 	void RequestConnection(int targetMapId, int numConnections);
 
 	int GetRoomCount() const;
@@ -50,6 +84,7 @@ public:
 	// Generates rooms and tries to join everything up.
 	void Generate();
 
+	// Add connections from other maps
 	void AddTunnelTo(MapGenerator& other, int numToAdd);
 	bool TryReceiveTunnel(Vec2 entry, Axis corridorAxis);
 
@@ -57,12 +92,6 @@ public:
 	bool TryReceiveStairs(int sender_z, Stairs::Pair stairs_pair);
 
 protected:
-	using PosTempList = std::vector<Vec2,Scratch<Vec2>>;
-	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
-	// should these be in VectorUtil.h?
-
-	int FindRoomAtPos(Vec2 pos) const;
-
 	// Map Gen Helpers
 	void PlaceFirstRoomIfNeeded();
 	void MarkExistingRoomsJoined();
@@ -89,6 +118,7 @@ protected:
 	bool AreStairsProblematic(Room const& new_stairs, Room const& other_stairs) const;
 	void MakeRoomARegionParent(int roomIndex);
 
+	// Debugging
 	void PrintAllRooms() const;
 
 	struct RequestedConnection

@@ -24,10 +24,12 @@ struct Box2;
 
 enum CompassDirection : int;
 
+enum class DoorType : int;
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
 enum class RoomType : int;
+enum class TriggerType : int;
 enum class Visibility : byte;
 
 namespace Ability
@@ -107,12 +109,6 @@ namespace Score
 {
 	enum class Ending : int;
 	struct Entry;
-}
-
-namespace Spawn
-{
-	enum class TriggerType : int;
-	enum class DoorType : int;
 }
 
 namespace Spell

@@ -26,7 +26,6 @@ void BuildWorld()
 		int const map_id = world.add_map(z, (z * 0.5f), map_box, Terrain::Wall);
 		assert(map_id == z);
 	}
-	//int const dungeon_id = world.add_map(-1, (4.0f), map_box1, Terrain::Wall);
 
 	// Set map names
 	world.edit_map(0).set_name("Hogwarts - Ground Floor");
@@ -52,17 +51,22 @@ void BuildWorld()
 
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
-		Spawn::Parameters & param = world.edit_map(z).edit_spawn_param();
+		MapGenerator::Parameters & param = world.edit_map(z).get_generator().EditParameters();
 
-		param.trigger_weights[(int)(Spawn::TriggerType::None          )] = c_MaxZ;
-		param.trigger_weights[(int)(Spawn::TriggerType::FlipendoButton)] = z;
-		param.trigger_weights[(int)(Spawn::TriggerType::LightTorch    )] = z;
+		//param.MinNumRooms += z;
+		//param.MaxNumRooms += 2*z;
+
+		param.IsShopSeed = Random::coinflip();
+
+		param.trigger_weights[(int)(TriggerType::None          )] = c_MaxZ;
+		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = z;
+		param.trigger_weights[(int)(TriggerType::LightTorch    )] = z;
 
 		// these are used depending on the trigger type
-		param.door_weights[(int)(Spawn::DoorType::None       )] = c_MaxZ * 3 - z * 2;
-		param.door_weights[(int)(Spawn::DoorType::Portrait   )] = c_MaxZ * 2;
-		param.door_weights[(int)(Spawn::DoorType::SlidingWall)] = z;
-		param.door_weights[(int)(Spawn::DoorType::Portcullis )] = z;
+		param.door_weights[(int)(DoorType::None       )] = c_MaxZ * 3 - z * 2;
+		param.door_weights[(int)(DoorType::Portrait   )] = c_MaxZ * 2;
+		param.door_weights[(int)(DoorType::SlidingWall)] = z;
+		param.door_weights[(int)(DoorType::Portcullis )] = z;
 
 		param.percent_torches_lit = 80 - z * 10;
 	}
@@ -74,16 +78,6 @@ void BuildWorld()
 	{
 		MapGenerator& generator = world.edit_map(z).get_generator();
 
-		MapGenerator::Parameters param{};
-		//param.MinNumRooms += z;
-		//param.MaxNumRooms += 2*z;
-		generator.SetParameters(param);
-
-		//if (z == 0)
-		//{
-		//	generator.RequestConnection(dungeon_id, 1);
-		//}
-
 		if (z < c_MaxZ)
 		{
 			generator.RequestConnection(z + 1, Random::in_range(2,3));
@@ -92,6 +86,4 @@ void BuildWorld()
 		generator.Generate();
 		MapGridder(world.edit_map(z), generator, z);
 	}
-
-	//world.edit_map(dungeon_id).get_generator().Generate();
 }

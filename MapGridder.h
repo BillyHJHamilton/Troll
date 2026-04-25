@@ -32,11 +32,9 @@ protected:
 	                        Room const & neighbour0, Vec2 const & door0,
 	                        Room const & neighbour1, Vec2 const & door1) const;
 
-	Spawn::TriggerType choose_trigger_type(bool allow_none,
-	                                       bool allow_button,
-	                                       bool allow_torch) const;
-	Spawn::DoorType choose_door_type(Spawn::TriggerType trigger_type, bool allow_none) const;
-	static Terrain::Type get_terrain_for_door_type(Spawn::DoorType door_type);
+	TriggerType choose_trigger_type(bool allow_none, bool allow_button, bool allow_torch) const;
+	DoorType choose_door_type(TriggerType trigger_type, bool allow_none) const;
+	static Terrain::Type get_terrain_for_door_type(DoorType door_type);
 
 	// Pass 3 functions
 	void add_cosmetic_chamber(int room_index) const;
