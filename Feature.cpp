@@ -31,6 +31,8 @@ namespace Feature
 //  - SlidingWall - payload is which trigger id it responds to
 //  - Portcullis - payload is which trigger id it responds to
 
+int constexpr c_MaxFeatures = 1000;
+
 struct Instance
 {
 	Vec3 pos;
@@ -89,7 +91,7 @@ void trigger_portcullis(Feature::Instance & feature);
 
 void init()
 {
-	s_features.reserve(200);
+	s_features.reserve(c_MaxFeatures);
 }
 
 void clear()
@@ -232,6 +234,11 @@ int find_feature(Vec3 pos)
 
 int add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
 {
+	if (s_features.size() == c_MaxFeatures)
+	{
+		DebugBreak("Exceeded MaxFeatures.  List will be reallocated.");
+	}
+
 	World::edit().set_terrain(pos, terrain);
 	return s_features.insert({
 		.pos = pos,
