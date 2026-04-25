@@ -325,6 +325,7 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="FloatGeometry.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="MapGridder.h" />
+    <ClInclude Include="SparseVector.h" />
     <ClInclude Include="Suggestion.h" />
     <ClInclude Include="MenuDebug.h" />
     <ClInclude Include="MenuHighScores.h" />
@@ -368,7 +369,6 @@ copy /Y "$(TargetPath)" "$(SolutionDir)Build\Win64\Troll.exe"</Command>
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="SerializeSaveLoad.h" />
-    <ClInclude Include="SparseArray.h" />
     <ClInclude Include="Spawn.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="SpellEffect.h" />
