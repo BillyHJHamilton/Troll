@@ -43,6 +43,8 @@ struct Instance
 };
 SparseVector<Feature::Instance> s_features;
 
+using Itr = SparseVector<Feature::Instance>::Itr;
+
 int s_next_trigger_id = 0;
 
 enum class Material
@@ -64,16 +66,17 @@ float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
-int find_feature(Vec3 pos);
-int add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
+Itr find_feature(Vec3 pos);
+Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
+void remove_feature(Feature::Itr feature, Terrain::Type new_terrain_type);
 
-void register_for_updates(Feature::Instance& feature);
-void init_chest(Feature::Instance& feature);
-void init_desk(Feature::Instance& feature);
+void register_for_updates(Feature::Itr feature);
+void init_chest(Itr feature);
+void init_desk(Itr feature);
 
-void update_feature(int index);
-void update_scanner(Feature::Instance& feature);
-void update_shop_seed(Feature::Instance& feature);
+void update_feature(Itr feature);
+void update_scanner(Itr feature);
+void update_shop_seed(Itr feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name);
@@ -82,15 +85,15 @@ void light_torch(Vec3 pos);
 bool is_any_unlit_torch_with_trigger(int trigger);
 
 void trigger_all(int trigger);
-void trigger_sliding_wall(Feature::Instance & feature);
-void trigger_portcullis(Feature::Instance & feature);
+void trigger_sliding_wall(Itr feature);
+void trigger_portcullis(Itr feature);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
 
 void init()
 {
-	s_features.reserve(200);
+	s_features.reserve(500);
 }
 
 void clear()
@@ -115,19 +118,19 @@ void spawn(Vec3 pos, Terrain::Type type)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
-		int new_index = add_feature_internal(pos, type, c_Invalid, c_Invalid);
+		Itr new_feature = add_feature_internal(pos, type, c_Invalid, c_Invalid);
 
 		// Feature-specific initialization.
 		switch (type)
 		{
 			case Terrain::Chest:
-				init_chest(s_features[new_index]);
+				init_chest(new_feature);
 				break;
 			case Terrain::Desk:
-				init_desk(s_features[new_index]);
+				init_desk(new_feature);
 				break;
 			case Terrain::ShopSeed:
-				register_for_updates(s_features[new_index]);
+				register_for_updates(new_feature);
 				break;
 			// special initialization
 			case Terrain::Scanner:
@@ -149,13 +152,13 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
-		int new_index = add_feature_internal(pos, type, c_Invalid, trigger);
+		Feature::Itr new_feature = add_feature_internal(pos, type, c_Invalid, trigger);
 
 		// Feature-specific initialization.
 		switch (type)
 		{
 			case Terrain::Scanner:
-				register_for_updates(s_features[new_index]);
+				register_for_updates(new_feature);
 				break;
 			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
 			case Terrain::FlipendoButton:
@@ -188,7 +191,7 @@ void update_all()
 		// Check valid in case an earlier update destroyed one.
 		if (s_features.is_valid(i))
 		{
-			update_feature(i);
+			update_feature(s_features.get_itr(i));
 		}
 	}
 }
@@ -206,39 +209,30 @@ void move(Vec3 old_pos, Vec3 new_pos)
 	}
 }
 
-void remove(Vec3 pos, Terrain::Type new_terrain_type)
-{
-	assert(!Terrain::is_feature(new_terrain_type));
-
-	int const index = find_feature(pos);
-	if (index != c_Invalid)
-	{
-		s_features.remove(index);
-		World::edit().set_terrain(pos, new_terrain_type);
-	}
-}
-
-void remove(Vec3 pos)
-{
-	remove(pos, Terrain::Open);
-}
-
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
 
-int find_feature(Vec3 pos)
+Feature::Itr find_feature(Vec3 pos)
 {
-	return s_features.find_index_by_key(&Feature::Instance::pos, pos);
+	int const index = s_features.find_index_by_key(&Feature::Instance::pos, pos);
+	return s_features.get_itr(index);
 }
 
-int add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
+Feature::Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
 {
 	World::edit().set_terrain(pos, terrain);
-	return s_features.insert({
+	int new_index = s_features.insert({
 		.pos = pos,
 		.hp = hp,
 		.payload = payload,
 		});
+	return s_features.get_itr(new_index);
+}
+
+void remove_feature(Feature::Itr feature, Terrain::Type new_terrain_type)
+{
+	World::edit().set_terrain(feature->pos, new_terrain_type);
+	feature.remove_current();
 }
 
 void damage(Vec3 pos, Damage::Packet const& damage_packet)
@@ -261,17 +255,17 @@ void damage(Vec3 pos, Damage::Packet const& damage_packet)
 //-------------------------------------------------------------------------------------------------
 // Feature-specific functions
 
-void register_for_updates(Feature::Instance& feature)
+void register_for_updates(Feature::Itr feature)
 {
-	feature.needs_update = true;
+	feature->needs_update = true;
 }
 
-void init_chest(Feature::Instance& feature)
+void init_chest(Feature::Itr feature)
 {
 	Item::Handle top(c_Invalid);
 
 	// Slightly better than normal for this level.
-	float const difficulty = World::read().find_map_difficulty(feature.pos) + 1.0f;
+	float const difficulty = World::read().find_map_difficulty(feature->pos) + 1.0f;
 	Loot::stack(Loot::Chest_Main, top, Creature::None, difficulty);
 
 	int const num_beans = Random::in_range(3,6);
@@ -280,13 +274,13 @@ void init_chest(Feature::Instance& feature)
 		Loot::stack(Loot::Bean, top, Creature::None, difficulty);
 	}
 
-	feature.payload = (int)top;
+	feature->payload = (int)top;
 }
 
 void open_chest(Vec3 pos)
 {
-	int const feature_index = find_feature(pos);
-	if (Check(feature_index != c_Invalid))
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
 	{
 		Draw::pos_message(pos, "The chest bursts open!");
 
@@ -295,28 +289,26 @@ void open_chest(Vec3 pos)
 		Pathfind::find_open_neighbours(pos, {}, open_pos);
 		open_pos.push_back(pos);
 
-		Feature::Instance& feature = s_features[feature_index];
-		Item::Handle item_stack = (Item::Handle)feature.payload;
+		Item::Handle item_stack = (Item::Handle)feature->payload;
 		while (item_stack.valid())
 		{
 			Item::Handle next_item = Item::unstack(item_stack);
 			World::edit().add_item(Random::from_vector(open_pos), next_item);
 		}
 
-		Feature::remove(pos);
+		remove_feature(feature, Terrain::Open);
 	}
 }
 
-void init_desk(Feature::Instance& feature)
+void init_desk(Feature::Itr feature)
 {
-	feature.hp = Random::in_range(3, 8);
+	feature->hp = Random::in_range(3, 8);
 }
 
-void update_feature(int index)
+void update_feature(Feature::Itr feature)
 {
-	assert(s_features.is_valid(index));
-	Feature::Instance& feature = s_features[index];
-	Terrain::Type feature_type = World::read().get_terrain(feature.pos);
+	assert(feature.valid());
+	Terrain::Type feature_type = World::read().get_terrain(feature->pos);
 	switch (feature_type)
 	{
 		case Terrain::Scanner:
@@ -329,25 +321,25 @@ void update_feature(int index)
 	}
 }
 
-void update_scanner(Feature::Instance& feature)
+void update_scanner(Feature::Itr feature)
 {
-	if (Player::pos().z == feature.pos.z &&
-		chessboard(Player::pos().xy(), feature.pos.xy()) < 5 &&
-		World::read().is_visible(feature.pos))
+	if (Player::pos().z == feature->pos.z &&
+		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
+		World::read().is_visible(feature->pos))
 	{
 		// This feature is removed when it triggers itself.
-		trigger_all(feature.payload);
+		trigger_all(feature->payload);
 	}
 }
 
-void update_shop_seed(Feature::Instance& feature)
+void update_shop_seed(Feature::Itr feature)
 {
-	if (Player::pos().z == feature.pos.z &&
-		chessboard(Player::pos().xy(), feature.pos.xy()) < 5 &&
-		World::read().is_visible(feature.pos))
+	if (Player::pos().z == feature->pos.z &&
+		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
+		World::read().is_visible(feature->pos))
 	{
-		Vec3 const pos = feature.pos;
-		Feature::remove(pos);
+		Vec3 const pos = feature->pos;
+		remove_feature(feature, Terrain::Open);
 
 		// TODO: Spawn a real shop
 		// TODO: Interrupt automove, etc.
@@ -366,13 +358,13 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 			c_Resistances[(int)material][damage_packet.type];
 		int const damage_adjusted = (int)(damage_packet.amount * resistance);
 
-		Feature::Instance& feature = s_features[feature_index];
-		feature.hp -= damage_adjusted;
+		Feature::Itr feature = s_features.get_itr(feature_index);
+		feature->hp -= damage_adjusted;
 
-		if (feature.hp <= 0)
+		if (feature->hp <= 0)
 		{
 			Draw::pos_message(pos, "The " + name + " is destroyed!");
-			Feature::remove(pos);
+			remove_feature(feature, Terrain::Open);
 		}
 		else if (damage_adjusted > 0)
 		{
@@ -431,25 +423,25 @@ bool is_any_unlit_torch_with_trigger(int trigger)
 
 void open_portrait(Vec3 pos)
 {
-	int const feature_index = find_feature(pos);
-	if (Check(feature_index != c_Invalid))
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
 	{
 		Draw::pos_message(pos, "The portrait swings open!");
-		Feature::remove(pos);
+		remove_feature(feature, Terrain::Open);
 	}
 }
 
 void activate_flipendo_button(Vec3 pos)
 {
-	int const feature_index = find_feature(pos);
-	if (Check(feature_index != c_Invalid))
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
 	{
 		// only print a message for the one button we cast on
 		//  -> other buttons on the same trigger flip silently
 		Draw::pos_message(pos, "The button flips.");
 
 		// This feature is removed when it triggers itself.
-		int const trigger = s_features[feature_index].payload;
+		int const trigger = feature->payload;
 		trigger_all(trigger);
 	}
 }
@@ -461,21 +453,21 @@ void trigger_all(int trigger)
 		return;
 	}
 
-	for (Feature::Instance& feature : s_features)
+	for (Feature::Itr feature = s_features.begin(); feature; ++feature)
 	{
-		if (feature.payload != trigger)
+		if (feature->payload != trigger)
 		{
 			continue;
 		}
 
-		Terrain::Type feature_type = World::read().get_terrain(feature.pos);
+		Terrain::Type feature_type = World::read().get_terrain(feature->pos);
 		switch (feature_type)
 		{
 		case Terrain::Scanner:
-			Feature::remove(feature.pos, Terrain::Open);
+			remove_feature(feature, Terrain::Open);
 			break;
 		case Terrain::FlipendoButton:
-			Feature::remove(feature.pos, Terrain::Wall);
+			remove_feature(feature, Terrain::Wall);
 			break;
 		case Terrain::SlidingWall:
 			trigger_sliding_wall(feature);
@@ -487,16 +479,16 @@ void trigger_all(int trigger)
 	}
 }
 
-void trigger_sliding_wall(Feature::Instance & feature)
+void trigger_sliding_wall(Feature::Itr feature)
 {
-	Draw::pos_message(feature.pos, "A wall slides aside!");
-	Feature::remove(feature.pos);
+	Draw::pos_message(feature->pos, "A wall slides aside!");
+	remove_feature(feature, Terrain::Open);
 }
 
-void trigger_portcullis(Feature::Instance & feature)
+void trigger_portcullis(Feature::Itr feature)
 {
-	Draw::pos_message(feature.pos, "A portcullis opens!");
-	Feature::remove(feature.pos);
+	Draw::pos_message(feature->pos, "A portcullis opens!");
+	remove_feature(feature, Terrain::Open);
 }
 
 } // namespace Feature
