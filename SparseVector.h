@@ -83,9 +83,12 @@ public:
 
 	void remove (int index)
 	{
-		mask.at(index) = false;
-		data.at(index) = T{};
-		++free_space;
+		if (mask.at(index))
+		{
+			mask.at(index) = false;
+			data.at(index) = T{};
+			++free_space;
+		}
 	}
 
 	T extract (int index)
@@ -199,7 +202,8 @@ public:
 		}
 
 		void advance () { ++i; seek(); }
-		bool finished () const { return i >= v.size(); }
+		bool finished () const { return i >= v.size() || i < 0; }
+		bool valid () const { return !finished(); }
 		SparseVector const* address() const { return &v; }
 		int index() const { return i; }
 
@@ -211,7 +215,7 @@ public:
 			index() != rhs.index(); }
 		bool operator!= (ConstItr rhs) const { return address() != rhs.address() ||
 			index() != rhs.index(); }
-		operator bool() const { return !finished(); }
+		operator bool() const { return valid(); }
 		// post-increment not provided to avoid accidental copy
 
 	private:
@@ -236,9 +240,14 @@ public:
 		}
 		
 		void advance () { ++i; seek(); }
-		bool finished () const { return i >= v.size(); }
+		bool finished () const { return i >= v.size() || i < 0; }
+		bool valid () const { return !finished(); }
 		SparseVector const* address() const { return &v; }
 		int index() const { return i; }
+
+		// Removes item at the iterator.  This temporarily invalidates the iterator, but
+		// it keeps its index and will become valid again the next time it is advanced.
+		void remove_current () { v.remove(i); }
 
 		// iterator functions
 		T & operator*() const { return v.edit(i); }
@@ -248,7 +257,7 @@ public:
 			index() != rhs.index(); }
 		bool operator!= (ConstItr rhs) const { return address() != rhs.address() ||
 			index() != rhs.index(); }
-		operator bool() const { return !finished(); }
+		operator bool() const { return valid(); }
 		// post-increment not provided to avoid accidental copy
 
 	private:
@@ -264,25 +273,15 @@ public:
 		int i;
 	};
 
-	Itr begin()
-	{
-		return Itr(*this);
-	}
+	Itr begin() { return Itr(*this); }
+	Itr end() { return Itr(*this, size()); }
+	ConstItr begin() const { return ConstItr(*this); }
+	ConstItr end() const { return ConstItr(*this, size()); }
+	ConstItr cbegin() const { return ConstItr(*this); }
+	ConstItr cend() const { return ConstItr(*this, size()); }
 
-	Itr end()
-	{
-		return Itr(*this, size());
-	}
-
-	ConstItr begin() const
-	{
-		return ConstItr(*this);
-	}
-
-	ConstItr end() const
-	{
-		return ConstItr(*this, size());
-	}
+	Itr get_itr(int index) { return Itr(*this, index); }
+	ConstItr get_const_itr(int index) { return ConstItr(*this, index); }
 
 protected:
 	int find_free_cell ()
