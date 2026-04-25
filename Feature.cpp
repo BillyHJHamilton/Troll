@@ -329,8 +329,7 @@ void update_feature(Feature::Itr feature)
 void update_scanner(Feature::Itr feature)
 {
 	if (Player::pos().z == feature->pos.z &&
-		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
-		World::read().is_visible(feature->pos))
+		World::read().has_los(feature->pos, Player::pos(), 5))
 	{
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
@@ -340,15 +339,16 @@ void update_scanner(Feature::Itr feature)
 void update_shop_seed(Feature::Itr feature)
 {
 	if (Player::pos().z == feature->pos.z &&
-		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
-		World::read().is_visible(feature->pos))
+		World::read().has_los(feature->pos, Player::pos(), 5) &&
+		!Creature::creature_at_pos(feature->pos).valid())
 	{
 		Vec3 const pos = feature->pos;
 		remove_feature(feature, Terrain::Open);
 
-		// TODO: Spawn a real shop
-		// TODO: Interrupt automove, etc.
+		Player::stop_automove();
 		Draw::pos_message(pos, "A shop appears!");
+
+		// TODO: Spawn a real shop
 		spawn(pos, Terrain::Chest);
 	}
 }

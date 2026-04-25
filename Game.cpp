@@ -320,8 +320,6 @@ void end_turn()
 
 	// Need to update visibility since player has likely moved.
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
-	Feature::update_all();  // uses visibility, but can change it
-	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 	Creature::update_visible_creatures();
 
 	// Now all other creatures act.
@@ -342,6 +340,12 @@ void end_turn()
 	if (!Player::is_game_over())
 	{
 		World::edit().step_clouds();
+		Creature::remove_defeated_creatures();
+	}
+
+	if (!Player::is_game_over())
+	{
+		Feature::update_all();
 		Creature::remove_defeated_creatures();
 	}
 
