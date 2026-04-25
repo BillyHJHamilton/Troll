@@ -1,7 +1,8 @@
 #pragma once
 
-#include "NameHash.h"
 #include "Types.h"
+
+#include "NameHash.h"
 #include "Spawn.h"
 #include "Spell.h" // for bitset
 
@@ -34,8 +35,7 @@ namespace Gingerbread
 	std::string short_name(Creature::Type type);
 	std::string long_name(Creature::Type type);
 	bool has_tag(Creature::Type type, Creature::Tag tag);
-	Item::Type random_item_drop(Creature::Type type);
-	Item::Handle make_item_for_creature(Creature::Type type);
+	void provide_items(Creature::Handle creature);
 
 	void reset_player_stats(House::Type house);
 	Stats& edit_player_stats();

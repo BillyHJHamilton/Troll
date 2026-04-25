@@ -6,18 +6,27 @@
 // Used for giving items to creatures, placing items in chests, etc.
 namespace Loot
 {
-	enum ListIndex : int
+	enum Type : int
 	{
 		None = c_Invalid,
 		Empty,
 		Notes,
+		Sweets,
+		Potion,
 		Floor,
 		Chest_Main,
 		Student_Generic,
 		Count
 	};
 
+	struct TypePercent
+	{
+		Type type;
+		int percent;
+	};
+
 	void init();
 
-	Item::Type select(ListIndex list_index);
+	Item::Type select(Loot::Type type);
+	Item::Type select(Loot::TypePercent type_percent);
 };

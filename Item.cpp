@@ -392,22 +392,6 @@ Item::Handle make_item (Instance instance)
 	return Item::Handle(new_index);
 }
 
-Item::Handle make_bbb ()
-{
-	Item::Instance inst;
-	inst.type = Item::BBBean;
-	inst.flavour = BertieBotts::random_flavour();
-	return make_item(inst);
-}
-
-Item::Handle make_sweets ()
-{
-	Item::Instance inst;
-	inst.type = Item::SweetsItem;
-	inst.flavour = Sweets::random_flavour();
-	return make_item(inst);
-}
-
 Item::Handle make_notes (Creature::Type owner_type)
 {
 	Item::Instance inst;
@@ -445,6 +429,22 @@ Item::Handle make_notes (Creature::Type owner_type)
 	return make_item(inst);
 }
 
+Item::Handle make_bbb ()
+{
+	Item::Instance inst;
+	inst.type = Item::BBBean;
+	inst.flavour = BertieBotts::random_flavour();
+	return make_item(inst);
+}
+
+Item::Handle make_sweets ()
+{
+	Item::Instance inst;
+	inst.type = Item::SweetsItem;
+	inst.flavour = Sweets::random_flavour();
+	return make_item(inst);
+}
+
 Item::Handle make_potion (Potion::Type potion)
 {
 	Item::Instance inst;
@@ -469,6 +469,13 @@ Item::Handle spawn_item (Vec3 pos, Instance instance)
 	return item;
 }
 
+Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
+{
+	Item::Handle item = make_notes(owner_type);
+	World::edit().add_item(pos, item);
+	return item;
+}
+
 Item::Handle spawn_bbb (Vec3 pos)
 {
 	Item::Handle item = make_bbb();
@@ -483,13 +490,6 @@ Item::Handle spawn_sweets (Vec3 pos)
 	return item;
 }
 
-Item::Handle spawn_notes (Vec3 pos, Creature::Type owner_type)
-{
-	Item::Handle item = make_notes(owner_type);
-	World::edit().add_item(pos, item);
-	return item;
-}
-
 Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
 {
 	Item::Handle item = make_potion(potion);
@@ -500,6 +500,23 @@ Item::Handle spawn_potion (Vec3 pos, Potion::Type potion)
 Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty)
 {
 	return spawn_potion(pos, Potion::random_by_level(difficulty));
+}
+
+Item::Handle make_for_creature(Item::Type type, Creature::Type creature_type,
+	float difficulty)
+{
+	switch(type)
+	{
+		case Item::None: return c_Invalid;
+		case Item::BBBean: return make_bbb();
+		case Item::SweetsItem: return make_sweets();
+		case Item::Notes: return make_notes(creature_type);
+		case Item::PotionItem: return make_potion_by_level(difficulty);
+
+		default:
+			DebugBreak("Unhandled case");
+			return c_Invalid;
+	}
 }
 
 Item::Handle unstack(Item::Handle& item_stack)
