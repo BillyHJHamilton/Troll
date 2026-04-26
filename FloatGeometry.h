@@ -114,7 +114,7 @@ public:
 	bool finished() const { return steps_left < 0; }
 
 	// iterator-style functions
-	operator bool() { return !finished(); }
+	explicit operator bool() { return !finished(); }
 	Vec2 operator*() const { return current.round_to_int(); }
 	Vec2 operator++() { advance(); return current.round_to_int(); }
 	// post-increment not provided to avoid accidental copy

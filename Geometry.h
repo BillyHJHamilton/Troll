@@ -526,7 +526,7 @@ public:
 	Vec3 get_vec3 () const { return c_Compass[dir].xy0(); }
 
 	// iterator style functions
-	operator bool () const { return !finished(); }
+	explicit operator bool () const { return !finished(); }
 	CompassDirection operator* () const { return get(); }
 	CompassDirection operator++() { advance(); return dir; }
 	bool operator== (CompassItr rhs) const { return dir == rhs.dir; } 
@@ -557,7 +557,7 @@ public:
 	Vec2 const * operator->() const { return &current; }
 	Vec2 const & operator++() { advance(); return current; }
 	bool operator!= (BoxItr rhs) const { return current != rhs.current; } 
-	operator bool() const { return !finished(); }
+	explicit operator bool() const { return !finished(); }
 	// post-increment not provided to avoid accidental copy
 
 private:
