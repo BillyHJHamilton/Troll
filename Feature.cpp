@@ -84,7 +84,10 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 void light_torch(Vec3 pos);
 bool is_any_unlit_torch_with_trigger(int trigger);
 
+// Warning: Calling this normally causes features to be added/removed.
+// Do not assume that feature references will remain valid afterwards.
 void trigger_all(int trigger);
+
 void trigger_sliding_wall(Itr feature);
 void trigger_portcullis(Itr feature);
 
@@ -176,36 +179,35 @@ void update_all()
 {
 	// First gather the list of features to update, then update them.
 	// Any new features created during updating will not be updated till next turn.
-	IntTempList to_update;
+	std::vector<Feature::Itr,Scratch<Feature::Itr>> to_update;
 	to_update.reserve(s_features.size() / 10); // just a guess
-	for (auto itr = s_features.begin(); itr; ++itr)
+	for (Feature::Itr feature = s_features.begin(); feature; ++feature)
 	{
-		if (itr->needs_update)
+		if (feature->needs_update)
 		{
-			to_update.push_back(itr.index());
+			to_update.push_back(feature);
 		}
 	}
 
-	for (int const i : to_update)
+	for (Feature::Itr& feature : to_update)
 	{
-		// Check valid in case an earlier update destroyed one.
-		if (s_features.is_valid(i))
+		if (feature.valid())
 		{
-			update_feature(s_features.get_itr(i));
+			update_feature(feature);
 		}
 	}
 }
 
 void move(Vec3 old_pos, Vec3 new_pos)
 {
-	int const index = find_feature(old_pos);
-	if (index != c_Invalid)
+	Feature::Itr feature = find_feature(old_pos);
+	if (feature.valid())
 	{
 		Terrain::Type terrain = World::read().get_terrain(old_pos);
 		World::edit().set_terrain(old_pos, Terrain::Open);
 		World::edit().set_terrain(new_pos, terrain);
 
-		s_features[index].pos = new_pos;
+		feature->pos = new_pos;
 	}
 }
 
@@ -324,8 +326,7 @@ void update_feature(Feature::Itr feature)
 void update_scanner(Feature::Itr feature)
 {
 	if (Player::pos().z == feature->pos.z &&
-		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
-		World::read().is_visible(feature->pos))
+		World::read().has_los(feature->pos, Player::pos(), 5))
 	{
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
@@ -335,15 +336,16 @@ void update_scanner(Feature::Itr feature)
 void update_shop_seed(Feature::Itr feature)
 {
 	if (Player::pos().z == feature->pos.z &&
-		chessboard(Player::pos().xy(), feature->pos.xy()) < 5 &&
-		World::read().is_visible(feature->pos))
+		World::read().has_los(feature->pos, Player::pos(), 5) &&
+		!Creature::creature_at_pos(feature->pos).valid())
 	{
 		Vec3 const pos = feature->pos;
 		remove_feature(feature, Terrain::Open);
 
-		// TODO: Spawn a real shop
-		// TODO: Interrupt automove, etc.
+		Player::stop_automove();
 		Draw::pos_message(pos, "A shop appears!");
+
+		// TODO: Spawn a real shop
 		spawn(pos, Terrain::Chest);
 	}
 }
@@ -351,14 +353,13 @@ void update_shop_seed(Feature::Itr feature)
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name)
 {
-	int const feature_index = find_feature(pos);
-	if (Check(feature_index != c_Invalid))
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
 	{
 		float const resistance =
 			c_Resistances[(int)material][damage_packet.type];
 		int const damage_adjusted = (int)(damage_packet.amount * resistance);
 
-		Feature::Itr feature = s_features.get_itr(feature_index);
 		feature->hp -= damage_adjusted;
 
 		if (feature->hp <= 0)
@@ -394,13 +395,13 @@ void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
 
 void light_torch(Vec3 pos)
 {
-	int const feature_index = find_feature(pos);
-	if (Check(feature_index != c_Invalid))
+	Feature::Itr feature = find_feature(pos);
+	if (feature.valid())
 	{
 		Draw::pos_message(pos, "The torch bursts into flames!");
 		World::edit().set_terrain(pos, Terrain::TorchLit);
 
-		int trigger = s_features[feature_index].payload;
+		int trigger = feature->payload;
 		if (!is_any_unlit_torch_with_trigger(trigger))
 		{
 			trigger_all(trigger);

@@ -13,8 +13,6 @@ To Do:
  - Can't use kick/trip/karate attacks if leg-locked
 
 - Features
- - Chests should really be placed as part of Map Generation, not creature spawning
- - How should "cover" work?  I'd like to shoot over chests (sometimes), but not walk over them.
  - Features that respond to other spells: flipendo vases, ectoplasm, etc.
    (actually, Scourge or Scourgify should clear slime, right?)
 
@@ -32,7 +30,6 @@ To Do:
   - But it's too bad if they ruin their treasure.  May need a more advanced way of assigning items to characters.
   - They may need multiple item slots, or the ability to search their inventory stack.
  - New items:
-  - Candy: pumpkin pastries, cauldron cakes, edible dark marks
   - Joke shop: fanged frisbee, bashing boomerang, stink pellet, dungbomb
    - Stink pellet could create a poison cloud; dungbomb perhaps a slime puddle?
    - Or have a "sick" status of some kind which causes distraction
@@ -43,8 +40,6 @@ To Do:
  - More advanced map layout
  - New things in map:
   - Special rooms
-  - Locked doors
-  - Secret treasure rooms
  - (Advanced) Staircases that change
  - Stronger methods to enforce internal connectivity (for "crossroads" levels)
 
@@ -77,14 +72,8 @@ To Do:
   - In principle it could be targeted, if we have lingering spell effects.
 
 - Sweets
- - They need to have a purpose.  Healing?  Hunger/Sugar?
  - Chocolate frogs (with wizard cards)
   - Presumably chocolate gives a temporary courage boost
- - Other types (cauldron cakes, etc)
-
-- Terrain
- - Furniture for cover/obstacles?
- - Breakable terrain?
 
 - UI
  - Add version of "confirm" which pauses until Y/N is pressed.
@@ -104,7 +93,7 @@ To consider:
 -------------------------------------------------------------------------------
 
 - How do we handle initiative to support the "ping pong" shield gameplay
- - But without making it too hard to aim at moving characters.
+ - But without making it hard to aim at moving characters.
 
 -------------------------------------------------------------------------------
 UX Notes from Richard
@@ -112,7 +101,6 @@ UX Notes from Richard
 
 - HP versus "Stamina" is inconsistent terminology  [Feels like HP is too gamey.  Maybe "healthier"?]
 - Would be nice to see spell durations (for TA, RS, etc)
-- Confusing that alohomora doesn't fly past enemy to hit chest
 
 -------------------------------------------------------------------------------
 Design Thoughts from Richard

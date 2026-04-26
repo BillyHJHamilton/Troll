@@ -5,7 +5,9 @@
 #include "VectorUtil.h"
 
 // A sparse array that dynamically grows if it runs out of space.
-// Implemented as a wrapper around std::vector with a std::vector<bool> for an occupancy mask.
+// It tracks which slots are used, and has a counter at each slot so it is
+// possible to check if the same slot is still occupied by the same element.
+// Requires T to have a default constructor; default is stored in free spaces.
 template<typename T>
 class SparseVector
 {
@@ -23,13 +25,13 @@ public:
 
 	void reserve (int size)
 	{
-		mask.reserve(size);
+		counter.reserve(size);
 		data.reserve(size);
 	}
 
 	void clear ()
 	{
-		mask.clear();
+		counter.clear();
 		data.clear();
 		free_space = 0;
 	}
@@ -41,32 +43,38 @@ public:
 
 	int num_used () const
 	{
-		return Util::Size(mask) - free_space;
+		return Util::Size(counter) - free_space;
 	}
 
 	// Gives the size, including free spaces.
 	int size() const
 	{
-		return Util::Size(mask);
+		return Util::Size(counter);
 	}
 
 	bool is_free (int index) const
 	{
-		return Util::IsValidIndex(mask, index) && !mask.at(index);
+		return (counter.at(index) % 2) == 0;
 	}
 
 	bool is_valid (int index) const
 	{
-		return Util::IsValidIndex(mask, index) && mask.at(index);
+		return is_in_range(index) && !is_free(index);
+	}
+
+	// Checks whether the index is within the range of the container,
+	// but not whether that slot is currently occupied.
+	bool is_in_range (int index) const
+	{
+		return Util::IsValidIndex(counter, index);
 	}
 
 	// Add new item in the first free space.  Returns new index.
 	int insert (T const& value)
 	{
 		int const index = find_free_cell();
-		mask.at(index) = true;
+		occupy(index);
 		data.at(index) = value;
-		--free_space;
 
 		return index;
 	}
@@ -74,56 +82,53 @@ public:
 	int insert (T&& value)
 	{
 		int const index = find_free_cell();
-		mask.at(index) = true;
+		occupy(index);
 		data.at(index) = std::move(value);
-		--free_space;
 
 		return index;
 	}
 
 	void remove (int index)
 	{
-		if (mask.at(index))
+		if (!is_free(index))
 		{
-			mask.at(index) = false;
+			++counter.at(index);
 			data.at(index) = T{};
-			++free_space;
+			assert(is_free(index));
 		}
-	}
-
-	T extract (int index)
-	{
-		mask.at(index) = false;
-		++free_space;
-		return std::move(data[index]);
 	}
 
 	T const& read (int index) const
 	{
-		assert(mask.at(index));
+		assert(is_valid(index));
 		return data.at(index);
 	}
 
 	T& edit (int index)
 	{
-		assert(mask.at(index));
+		assert(is_valid(index));
 		return data.at(index);
 	}
 
 	void set(int index, T const& value)
 	{
-		if (!mask.at(index))
-		{
-			--free_space;
-			mask.at(index) = true;
-		}
-		operator[](index) = value;
+		occupy(index);
+		data.at(index) = value;
 	}
 
 	T& operator[] (int index)
 	{
-		assert(mask.at(index));
+		assert(is_valid(index));
 		return data.at(index);
+	}
+
+	uint16_t get_counter(int index) const
+	{
+		if (is_in_range(index))
+		{
+			return counter.at(index);
+		}
+		return 0u;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -152,7 +157,7 @@ public:
 	
 		for (int i = 0; i < size(); ++i)
 		{
-			if (mask.at(i))
+			if (is_valid(i))
 			{
 				s.srz_value(data.at(i));
 			}
@@ -169,41 +174,26 @@ public:
 	
 		if (s.is_load())
 		{
-			mask.resize(n, false);
+			counter.resize(n, false);
 			data.resize(n, T{});
 		}
-	
-		for (int i = 0; i < size(); ++i)
-		{
-			// Deal with the annoyingness of std::vector<bool>
-			if (s.is_load())
-			{
-				bool b;
-				s.srz_bool(b);
-				mask.at(i) = b;
-			}
-			else
-			{
-				bool b = mask.at(i);
-				s.srz_bool(b);
-			}
-		}
+
+		s.srz_array_data(counter.data(), n);
 	}
 
-	//-------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------------------
 	// Iterators
 
 	class ConstItr
 	{
 	public:
-		ConstItr(SparseVector<T> const& vector, int index = 0) : v(vector), i(index)
+		ConstItr(SparseVector<T> const& vector, int index = 0) : v(vector), i(index), c(0)
 		{
 			seek();
 		}
 
 		void advance () { ++i; seek(); }
-		bool finished () const { return i >= v.size() || i < 0; }
-		bool valid () const { return !finished(); }
+		bool valid () const { return v.is_valid(i) && v.get_counter(i) == c; }
 		SparseVector const* address() const { return &v; }
 		int index() const { return i; }
 
@@ -215,7 +205,7 @@ public:
 			index() != rhs.index(); }
 		bool operator!= (ConstItr rhs) const { return address() != rhs.address() ||
 			index() != rhs.index(); }
-		operator bool() const { return valid(); }
+		explicit operator bool() const { return valid(); }
 		// post-increment not provided to avoid accidental copy
 
 	private:
@@ -225,23 +215,25 @@ public:
 			{
 				++i;
 			}
+
+			c = v.get_counter(i);
 		}
 
 		SparseVector<T> const& v;
 		int i;
+		uint16_t c;
 	};
 
 	class Itr
 	{
 	public:
-		Itr(SparseVector<T>& vector, int index = 0) : v(vector), i(index)
+		Itr(SparseVector<T>& vector, int index = 0) : v(vector), i(index), c(0)
 		{
 			seek();
 		}
-		
+
 		void advance () { ++i; seek(); }
-		bool finished () const { return i >= v.size() || i < 0; }
-		bool valid () const { return !finished(); }
+		bool valid () const { return v.is_valid(i) && v.get_counter(i) == c; }
 		SparseVector const* address() const { return &v; }
 		int index() const { return i; }
 
@@ -257,7 +249,7 @@ public:
 			index() != rhs.index(); }
 		bool operator!= (ConstItr rhs) const { return address() != rhs.address() ||
 			index() != rhs.index(); }
-		operator bool() const { return valid(); }
+		explicit operator bool() const { return valid(); }
 		// post-increment not provided to avoid accidental copy
 
 	private:
@@ -267,10 +259,13 @@ public:
 			{
 				++i;
 			}
+
+			c = v.get_counter(i);
 		}
 
 		SparseVector<T>& v;
 		int i;
+		uint16_t c;
 	};
 
 	Itr begin() { return Itr(*this); }
@@ -290,7 +285,7 @@ protected:
 		{
 			for (int i = 0; i < Util::Size(data); ++i)
 			{
-				if (!mask.at(i))
+				if (is_free(i))
 				{
 					return i;
 				}
@@ -299,14 +294,29 @@ protected:
 		}
 		
 		// Out of space, so add to the end.
-		mask.push_back(false);
+		counter.push_back(0u);
 		data.push_back(T{});
-		free_space += 1;
-		assert(mask.size() == data.size());
+		++free_space;
+		assert(counter.size() == data.size());
 		return Util::LastIndex(data);
 	}
 
+	void occupy (int index)
+	{
+		if (is_free(index))
+		{
+			++counter.at(index);
+			--free_space;
+		}
+	}
+
 	int free_space = 0;
-	std::vector<bool> mask;
+
+	// Even value means space is free, odd means it is occupied.
+	// Incremented each time an element is added/removed in the slot.
+	// Can be used to check if iterator still refers to same element.
+	std::vector<uint16_t> counter;
+
 	std::vector<T> data;
 };
+
