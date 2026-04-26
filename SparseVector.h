@@ -187,9 +187,16 @@ public:
 	class ConstItr
 	{
 	public:
-		ConstItr(SparseVector<T> const& vector, int index = 0) : v(vector), i(index), c(0)
+		// Default - Finds first valid if any
+		ConstItr(SparseVector<T> const& vector) : v(vector), i(0), c(0)
 		{
 			seek();
+		}
+
+		// Points to the index provided, even if invalid.
+		ConstItr(SparseVector<T> const& vector, int index) : v(vector), i(index), c(0)
+		{
+			c = v.get_counter(i);
 		}
 
 		void advance () { ++i; seek(); }
@@ -227,9 +234,16 @@ public:
 	class Itr
 	{
 	public:
-		Itr(SparseVector<T>& vector, int index = 0) : v(vector), i(index), c(0)
+		// Default - Finds first valid if any
+		Itr(SparseVector<T>& vector) : v(vector), i(0), c(0)
 		{
 			seek();
+		}
+
+		// Points to the index provided, even if invalid.
+		Itr(SparseVector<T>& vector, int index) : v(vector), i(index), c(0)
+		{
+			c = v.get_counter(i);
 		}
 
 		void advance () { ++i; seek(); }
