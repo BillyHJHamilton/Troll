@@ -16,6 +16,7 @@ namespace Loot
 		Potion,
 		Floor,
 		Chest_Main,
+		Shop,
 		Student_Generic,
 		Count
 	};

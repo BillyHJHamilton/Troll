@@ -114,6 +114,14 @@ char const* get_description(int potion)
 	return "";
 }
 
+int buy_price(int potion)
+{
+	if (is_valid(potion))
+	{
+		return s_potions[potion].difficulty - 2;
+	}
+	return c_Invalid;
+}
 
 void drink (Creature::Handle imbiber, int potion)
 {

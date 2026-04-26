@@ -97,9 +97,11 @@ namespace Item
 		//bool is_plural () const;
 		bool can_use () const;
 		bool can_discard () const;
+		bool can_sell () const;
 		BagStack bag_stack_mode () const;
 		bool stacks_in_bag () const { return bag_stack_mode() != BagStack::None; }
 		bool can_stack_in_bag_with (Item::Handle other) const;
+		int buy_price () const;
 
 		// Mutators
 		UseResult use ();

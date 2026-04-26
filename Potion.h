@@ -19,6 +19,7 @@ namespace Potion
 	char const* get_name(int potion);
 	char const* get_colour(int potion);
 	char const* get_description(int potion);
+	int buy_price(int potion);
 
 	void drink (Creature::Handle imbiber, int potion);
 }

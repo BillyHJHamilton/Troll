@@ -211,7 +211,7 @@ void show_spells_known()
 
 void show_inventory()
 {	
-	if (Inventory::read().num_items() > 0)
+	if (Inventory::read().num_slots() > 0)
 	{
 		set_menu(s_menu_inventory);
 		s_menu_inventory.refresh();

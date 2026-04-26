@@ -264,6 +264,9 @@
     <ClCompile Include="MapGridder.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
+    <ClCompile Include="Shop.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -470,9 +473,6 @@
     <ClInclude Include="Squad.h">
       <Filter>Header Files\Creature</Filter>
     </ClInclude>
-    <ClInclude Include="SparseArray.h">
-      <Filter>Header Files\Core</Filter>
-    </ClInclude>
     <ClInclude Include="MenuHighScores.h">
       <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
@@ -504,6 +504,12 @@
       <Filter>Header Files\World</Filter>
     </ClInclude>
     <ClInclude Include="Loot.h">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="SparseVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shop.h">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>

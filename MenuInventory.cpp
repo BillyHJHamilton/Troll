@@ -37,9 +37,9 @@ void MenuInventory::refresh()
 	clear_list();
 	set_title("Inventory:");
 
-	reserve(Inventory::read().num_items());
+	reserve(Inventory::read().num_slots());
 
-	for (int slot = 0; slot < Inventory::read().num_items(); ++slot)
+	for (int slot = 0; slot < Inventory::read().num_slots(); ++slot)
 	{
 		Item::Handle const item = Inventory::read().peek_item(slot);
 
@@ -105,7 +105,7 @@ void MenuInventory::try_discard_item()
 	{
 		Inventory::edit().remove_item(slot);
 
-		if (Inventory::read().num_items() == 0)
+		if (Inventory::read().num_slots() == 0)
 		{
 			Menu::close();
 		}
