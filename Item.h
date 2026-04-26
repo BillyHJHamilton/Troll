@@ -122,19 +122,15 @@ namespace Item
 
 	// Create item without adding it to the world.
 	Item::Handle make_item (Instance instance);
+	Item::Handle make_notes (Creature::Type owner);
 	Item::Handle make_bbb ();
 	Item::Handle make_sweets ();
-	Item::Handle make_notes (Creature::Type owner);
 	Item::Handle make_potion (Potion::Type potion);
 	Item::Handle make_potion_by_level (float difficulty);
 
-	// Create item and add it to the world.
-	Item::Handle spawn_item (Vec3 pos, Instance instance);
-	Item::Handle spawn_bbb (Vec3 pos);
-	Item::Handle spawn_sweets (Vec3 pos);
-	Item::Handle spawn_notes (Vec3 pos, Creature::Type owner);
-	Item::Handle spawn_potion (Vec3 pos, Potion::Type potion);
-	Item::Handle spawn_potion_by_level (Vec3 pos, float difficulty);
+	// Make item and parameterize it appropriately.
+	Item::Handle make_generic(Item::Type type, Creature::Type creature_type,
+		float difficulty);
 
 	// Returns item from top of stack, while redirecting referenced variable to next item down.
 	Item::Handle unstack(Item::Handle& item_stack);
@@ -145,4 +141,3 @@ namespace Item
 // Doxycide
 // Flesh-Eating Slug Repellant
 // Skele-Gro
-

@@ -953,12 +953,7 @@ Creature::Handle spawn_creature (Creature::Type type, Vec3 const & pos)
 
 	Bot::reset_brain(new_creature);
 	Gingerbread::claim_identity(new_creature);
-
-	Item::Handle item = Gingerbread::make_item_for_creature(type);
-	if (item.valid())
-	{
-		new_creature.push_item(item);
-	}
+	Gingerbread::provide_items(new_creature);
 
 	assert(new_creature.valid());
 

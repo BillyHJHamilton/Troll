@@ -15,6 +15,7 @@
 #include "Input.h"
 #include "Inventory.h"
 #include "Line.h"
+#include "Loot.h"
 #include "Map.h"
 #include "MapGenerator.h"
 #include "Menu.h"
@@ -73,6 +74,7 @@ void init()
 	Gingerbread::init();
 	Item::init();
 	LineCache::init();
+	Loot::init();
 	Menu::init();
 	Random::init();
 	Score::init();
