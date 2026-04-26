@@ -175,12 +175,12 @@ void reset_brain(Creature::Handle handle)
 
 Brain& get_brain(Creature::Handle handle)
 {
-	return s_brains.at(handle);
+	return s_brains.at((int)handle);
 }
 
 std::vector<Vec3>& get_move_stack(Creature::Handle handle)
 {
-	return s_move_stacks.at(handle);
+	return s_move_stacks.at((int)handle);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ void do_turn (Creature::Handle creature)
 {
 	PerfTimer perf("Bot::do_turn");
 
-	Brain& brain = s_brains[creature];
+	Brain& brain = get_brain(creature);
 	Thoughts thoughts {};
 
 	update_attack_ranges(creature, brain);
@@ -309,7 +309,7 @@ void do_turn (Creature::Handle creature)
 
 void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 {
-	Brain& brain = s_brains[creature];
+	Brain& brain = get_brain(creature);
 
 	switch (brain.state)
 	{
@@ -341,7 +341,7 @@ void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 
 void notify_attacks_changed(Creature::Handle creature)
 {
-	Brain& brain = s_brains[creature];
+	Brain& brain = get_brain(creature);
 	brain.any_attack_range = c_Invalid;
 	brain.all_attack_range = c_Invalid;
 	brain.dmg_attack_range = c_Invalid;
@@ -766,7 +766,8 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 bool is_aware(Creature::Handle const creature)
 {
-	return s_brains[creature].awareness > 0;
+	Brain const& brain = get_brain(creature);
+	return brain.awareness > 0;
 }
 
 bool is_separated_from_leader(Creature::Handle const creature)

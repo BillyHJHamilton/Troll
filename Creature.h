@@ -180,9 +180,11 @@ namespace Creature
 		// int interface
 		Handle () : index(Creature::None) { }
 		Handle (int const i) : index(i) { }
-		operator int () { return index; }
-		operator int const () const { return index; }
+		explicit operator int () { return index; }
+		explicit operator int const () const { return index; }
 		Creature::Handle & operator++ () { ++ index; return *this; }
+		bool operator== (Creature::Handle rhs) const { return index == rhs.index; }
+		bool operator!= (Creature::Handle rhs) const { return index != rhs.index; }
 
 		// invalidate handle without destroying creature it points to
 		void invalidate() { index = c_Invalid; }
@@ -271,9 +273,9 @@ namespace Creature
 		Creature::Handle get() const;
 		void advance();
 		bool finished () const;
-		int operator++ () { advance(); return current; }
-		int operator* () const { return get(); }
-		Creature::Handle * operator->() { return &current; }
+		HandleItr& operator++ () { advance(); return *this; }
+		Creature::Handle operator* () const { return get(); }
+		Creature::Handle* operator->() { return &current; }
 		explicit operator bool () const { return !finished(); }
 	private:
 		Creature::Handle current;
