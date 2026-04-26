@@ -255,6 +255,9 @@
     <ClCompile Include="FloatGeometry.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Loot.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
     <ClCompile Include="Sweets.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
@@ -499,6 +502,9 @@
     </ClInclude>
     <ClInclude Include="MapGridder.h">
       <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Loot.h">
+      <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

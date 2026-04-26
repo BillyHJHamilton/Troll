@@ -6,6 +6,7 @@
 #include "Debug.h"
 #include "House.h"
 #include "Item.h"
+#include "Loot.h"
 #include "Math.h"
 #include "MapUtil.h"
 #include "Random.h"
@@ -31,10 +32,10 @@ Creature::TagBitset s_gingerbread_tags [Creature::Count];
 Ragged<Ability::Index> s_gingerbread_abilities;
 Grid<float> s_resistances; // (creature type, damage type)
 
-// List of items the creature will drop, and probability of each.
-// Conventionally the weights should sum to 100, including an entry for Item::None.
-std::vector<Item::Type> s_item_drops [Creature::Count];
-std::vector<int> s_item_weights [Creature::Count];
+// List of items the creature will carry.
+// For each loot slot there is a loot list to choose the item type from,
+// and a percent likelihood that this loot will be added.
+std::vector<Loot::TypePercent> s_loot [Creature::Count];
 
 // Data about how this identity has been used in the current game.
 struct IdentityMetadata
@@ -75,11 +76,13 @@ struct Builder
 	Builder& magic(int skill, std::string spell_string);
 	Builder& tags(Creature::Tag new_tag);
 	Builder& abil(std::vector<Ability::Index>&& abilities);
-	Builder& item(std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights);
+	Builder& loot(Loot::Type loot_type); // implying 100%
+	Builder& loot(Loot::Type loot_type, int percent);
+	Builder& loot(std::vector<Loot::TypePercent>&& loot_list);
 	Builder& resist(Damage::Type type);
 	Builder& vuln(Damage::Type type);
 	Builder& immune(Damage::Type type);
-	
+
 	template<class ... Packed>
 	Builder& tags(Creature::Tag tag, Packed... args)
 	{
@@ -158,14 +161,14 @@ void init()
 	Builder(Creature::Neville_0, "Neville",
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 7)
 		.magic(0, "VM FP")
-		.item({Item::None, Item::Notes}, {50, 50});
+		.loot(Loot::Notes, 50);
 
 	// TODO: Camera ability (or item, which player can also use).
 	// It should blind you (reduce LOS) and produce some smoke, too.
 	Builder(Creature::ColinCreevy_0, "Colin",
 		/*Difficulty*/ 0.3f, /*Probability*/ 1.0f, /*HP*/ 5)
 		.magic(8, "VM MW")
-		.item({Item::BBBean}, {100});
+		.loot(Loot::Student_Generic);
 	
 	Builder(Creature::SallyAnne_0, "Sally-Anne",
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.2f, /*HP*/ 3)
@@ -175,68 +178,68 @@ void init()
 	Builder(Creature::Harry_1, "Harry", 
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(10, "VM FP LM")
-		.item({Item::Notes, Item::PotionItem}, {60, 40});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
 	
 	Builder(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 10)
 		.magic(15, "VM FP TA")
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	Builder(Creature::Ron_2, "Ron",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 14)
 		.magic(5, "FP VM FM")
-		.item({Item::Notes}, {100});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
 
 	Builder(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(35, "VM MW LC AL FI")
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	// Crabbe and Goyle have 0 probability because they spawn in a squad instead.
 	Builder(Creature::Crabbe_3, "Crabbe",
 		/*Difficulty*/ 2.3f, /*Probability*/ 0.0f, /*HP*/ 15)
 		.magic(15, "FN RS")
-		.item({Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
+		.loot({{Loot::Notes, 20}, {Loot::Sweets, 60}});
 
 	Builder(Creature::Goyle_3, "Goyle",
 		/*Difficulty*/ 2.3f, /*Probability*/ 0.0f, /*HP*/ 15)
 		.magic(15, "VM FP LM")
-		.item({Item::Notes, Item::PotionItem, Item::None}, {10,10,80});
+		.loot({{Loot::Notes, 20}, {Loot::Sweets, 60}});
 
 	Builder(Creature::Harry_4, "Harry",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(45, "FP TA SP IP AC")
-		.item({Item::Notes, Item::PotionItem}, {60, 40});
+		.loot(Loot::Notes);
 
 	Builder(Creature::Cedric_4, "Cedric",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(50, "SP RS") // PT, Lapifors?
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	Builder(Creature::Fleur_4, "Fleur",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 16)
 		.magic(70, "MW LM FP FI") // PT, Sleepiness?
-		.item({Item::Notes, Item::PotionItem}, {60,40});
+		.loot({{Loot::Notes, 70}, {Loot::Potion, 60}});
 
 	Builder(Creature::Krum_5, "Krum",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 20)
 		.magic(50, "SP FN")
-		.item({Item::PotionItem, Item::None}, {50,50});
+		.loot(Loot::Potion, 50);
 
 	Builder(Creature::Neville_5, "Neville",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 20)
 		.magic(50, "SP IP LM") // PT
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	Builder(Creature::Ginny_5, "Ginny",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(60, "SP BT") // PT
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	Builder(Creature::Luna_5, "Luna",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 17)
 		.magic(50, "SP MW FM TA") // PT
-		.item({Item::Notes}, {100});
+		.loot(Loot::Notes);
 
 	Builder(Creature::MarySue, "Mary Sue",
 		/*Difficulty*/ 7.0f, /*Probability*/ 0.0f, /*HP*/ 30)
@@ -251,25 +254,25 @@ void init()
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 5,
 		"Hufflepuff", "first-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(6, "TA")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 3,
 		"Ravenclaw", "first-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
 		.magic(8, "MW")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
 		"Gryffindor", "first-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Male)
 		.magic(7, "FP")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
 		"Slytherin", "first-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)
 		.magic(7, "FN")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Second-years
 
@@ -277,25 +280,25 @@ void init()
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 7,
 		"Hufflepuff", "second-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Female)
 		.magic(12, "TA")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 5,
 		"Ravenclaw", "second-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Male)
 		.magic(20, "MW")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
 		"Gryffindor", "second-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
 		.magic(15, "RS")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
 		"Slytherin", "second-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
 		.magic(15, "LM")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Third-years
 
@@ -303,25 +306,25 @@ void init()
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 14,
 		"Hufflepuff", "third-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(22, "TA")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 9,
 		"Ravenclaw", "third-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
 		.magic(30, "MW")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 11,
 		"Gryffindor", "third-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
 		.magic(24, "FP")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 10,
 		"Slytherin", "third-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
 		.magic(26, "FN")
-		.tags(Tag::Spells_Random);
+		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Fantastic Beasts and Where To Find Them:
 
@@ -375,7 +378,7 @@ void init()
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(10, "VM FP LM")
 		.tags(Creature::Tag::Move_Slow)
-		.item({Item::Notes, Item::PotionItem}, {70, 30});
+		.loot({{Loot::Notes, 70}, {Loot::Potion, 40}});
 
 	// Validate that we didn't miss something.
 	for (int i = 0; i < Creature::Count; ++i)
@@ -515,35 +518,19 @@ bool has_tag(Creature::Type type, Creature::Tag tag)
 	return false;
 }
 
-Item::Type random_item_drop(Creature::Type type)
+void provide_items(Creature::Handle creature)
 {
-	if (!Creature::is_valid_type(type) ||
-		s_item_weights[type].empty())
+	Creature::Type const creature_type = creature.type();
+	std::vector<Loot::TypePercent> const& loot_list = s_loot[creature_type];
+	for (Loot::TypePercent type_percent : loot_list)
 	{
-		return Item::None;
-	}
-
-	int const r = Random::weighted_index(s_item_weights[type]);
-	return s_item_drops[type].at(r);
-}
-
-Item::Handle make_item_for_creature(Creature::Type type)
-{
-	Item::Type item_type = random_item_drop(type);
-	if (item_type != Item::None)
-	{
-		switch (item_type)
+		Item::Handle const item = Loot::make(type_percent, creature_type,
+			Gingerbread::read(creature_type).difficulty);
+		if (item.valid())
 		{
-			case Item::BBBean:
-				return Item::make_bbb();
-			case Item::Notes:
-				return Item::make_notes(type);
-			case Item::PotionItem:
-				return Item::make_potion_by_level(Gingerbread::read(type).difficulty);
+			creature.push_item(item);
 		}
 	}
-
-	return c_Invalid;
 }
 
 void reset_player_stats(House::Type house)
@@ -752,10 +739,21 @@ Builder& Builder::abil(std::vector<Ability::Index>&& abilities)
 	return *this;
 }
 
-Builder& Builder::item(std::vector<Item::Type>&& item_drops, std::vector<int>&& item_weights)
+Builder& Builder::loot(Loot::Type loot_type)
 {
-	s_item_drops[m_type] = std::move(item_drops);
-	s_item_weights[m_type] = std::move(item_weights);
+	s_loot[m_type].push_back({loot_type, 100});
+	return *this;
+}
+
+Builder& Builder::loot(Loot::Type loot_type, int percent)
+{
+	s_loot[m_type].push_back({loot_type, percent});
+	return *this;
+}
+
+Builder& Builder::loot(std::vector<Loot::TypePercent>&& list)
+{
+	s_loot[m_type] = std::move(list);
 	return *this;
 }
 
