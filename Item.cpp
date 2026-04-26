@@ -271,7 +271,7 @@ UseResult Handle::use ()
 
 void Handle::stack_onto (Item::Handle other)
 {
-	edit_inst(index).next = other;
+	edit_inst(index).next = (int)other;
 
 	edit_inst(index).height = other.valid() ?
 		1 + other.stack_height() :
