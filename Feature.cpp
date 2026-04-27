@@ -27,6 +27,10 @@ namespace Feature
 // 	             - trigger only activates when the last torch with that trigger is lit
 //  - TorchLit - no payload
 //  - Portrait - no payload
+//  - DoorOpen - no payload
+//  - DoorClosed - no payload
+//  - DoorLocked - no payload
+//  - DoorColloportus - payload is countdown until it reopens TODO
 //  - FlipendoButton - payload is which trigger id it activates
 //                   - it also turns into a wall on that trigger
 //  - SlidingWall - payload is which trigger id it responds to
@@ -76,6 +80,7 @@ void init_desk(Itr feature);
 
 void update_feature(Itr feature);
 void update_scanner(Itr feature);
+void update_door_closed(Itr feature);
 void update_shop_seed(Itr feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
@@ -147,6 +152,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			// case Terrain::TorchLit:
 			// case Terrain::Portrait:
+			// case Terrain::DoopOpen:
+			// case Terrain::DoopLocked:
 		}
 	}
 }
@@ -316,7 +323,10 @@ void update_feature(Feature::Itr feature)
 		case Terrain::Scanner:
 			update_scanner(feature);
 			break;
-
+		case Terrain::DoorClosed:
+			update_door_closed(feature);
+			break;
+		// TODO: Colloportus door
 		case Terrain::ShopSeed:
 			update_shop_seed(feature);
 			break;
@@ -331,6 +341,17 @@ void update_scanner(Feature::Itr feature)
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
 	}
+}
+
+void update_door_closed(Feature::Itr feature)
+{
+	if (Player::pos() == feature->pos)
+	{
+		Draw::pos_message(feature->pos, "You open the door.");
+		World::edit().set_terrain(feature->pos, Terrain::DoorOpen);
+	}
+	// TODO: Open the door if any creature steps on it
+	//  -> with a nice message
 }
 
 void update_shop_seed(Feature::Itr feature)
@@ -429,6 +450,17 @@ void open_portrait(Vec3 pos)
 	{
 		Draw::pos_message(pos, "The portrait swings open!");
 		remove_feature(feature, Terrain::Open);
+	}
+}
+
+void unlock_door(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Draw::pos_message(pos, "The door unlocks!");
+		World::edit().set_terrain(pos, Terrain::DoorClosed);
+		feature->needs_update = true;
 	}
 }
 

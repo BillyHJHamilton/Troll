@@ -152,6 +152,10 @@ void alohomora(EffectParams params)
 	case Terrain::Portrait:
 		Feature::open_portrait(pos);
 		break;
+	case Terrain::DoorLocked:
+	case Terrain::DoorColloportus:
+		Feature::unlock_door(pos);
+		break;
 	default:
 		Draw::pos_message(pos, "It has no effect.");
 		break;

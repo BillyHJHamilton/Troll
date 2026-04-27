@@ -18,6 +18,7 @@ enum class DoorType : int
 {
 	None,
 	Portrait,
+	AlohamoraDoor,
 	SlidingWall,
 	Portcullis,
 	Count,

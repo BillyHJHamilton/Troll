@@ -453,6 +453,8 @@ Terrain::Type MapGridder::get_terrain_for_door_type(DoorType door_type)
 	{
 	case DoorType::Portrait:
 		return Terrain::Portrait;
+	case DoorType::AlohamoraDoor:
+		return Terrain::DoorLocked;
 	case DoorType::SlidingWall:
 		return Terrain::SlidingWall;
 	case DoorType::Portcullis:

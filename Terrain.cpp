@@ -45,8 +45,13 @@ namespace Terrain
 		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
 		Data{"torch" /*lit*/,		Codepoint::TorchLit,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
 		Data{"floor" /* scanner */,	'.',						0,		f_PermitSight | f_Feature,				f_None},
-		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
+		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"door", /*open*/		Codepoint::DoorOpen,		0,		f_PermitSight | f_Feature |
+																		f_CrosshairFill,						f_None},
+		Data{"door", /*closed*/		Codepoint::DoorClosed,		100,	f_Feature | f_CrosshairFill,			f_None},
+		Data{"door", /*locked*/		Codepoint::DoorLocked,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
 		Data{"portcullis",			'#',						40,		f_PermitSight | f_Solid | f_Feature,	f_None},
 		Data{"floor" /*shop seed*/,	'.',						0,		f_PermitSight | f_Feature,				f_None},
@@ -80,6 +85,10 @@ namespace Terrain
 			case Terrain::Chest: return "- a locked chest";
 			case Terrain::Armour: return "- a suit of armour";
 			case Terrain::FlipendoButton: return "- a button on the wall";
+			case Terrain::DoorOpen: return "- an open door";
+			case Terrain::DoorClosed: return "- a closed door (unlocked)";
+			case Terrain::DoorLocked: return "- a locked door";
+			case Terrain::DoorColloportus: return "- a closed door (locked by colloportus)";
 			default:
 				return std::string("- a ") + get_name(t);
 		}

@@ -63,10 +63,11 @@ void BuildWorld()
 		param.trigger_weights[(int)(TriggerType::LightTorch    )] = z;
 
 		// these are used depending on the trigger type
-		param.door_weights[(int)(DoorType::None       )] = c_MaxZ * 3 - z * 2;
-		param.door_weights[(int)(DoorType::Portrait   )] = c_MaxZ * 2;
-		param.door_weights[(int)(DoorType::SlidingWall)] = z;
-		param.door_weights[(int)(DoorType::Portcullis )] = z;
+		param.door_weights[(int)(DoorType::None         )] = c_MaxZ * 3 - z * 2;
+		param.door_weights[(int)(DoorType::Portrait     )] = c_MaxZ;
+		param.door_weights[(int)(DoorType::AlohamoraDoor)] = c_MaxZ;
+		param.door_weights[(int)(DoorType::SlidingWall  )] = z;
+		param.door_weights[(int)(DoorType::Portcullis   )] = z;
 
 		param.percent_torches_lit = 80 - z * 10;
 	}
