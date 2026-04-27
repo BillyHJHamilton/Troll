@@ -24,12 +24,13 @@ struct Box2;
 
 enum CompassDirection : int;
 
-enum class DoorType : int;
+enum class LockedDoorType : int;
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
 enum class RoomType : int;
 enum class TriggerType : int;
+enum class UnlockedDoorType : int;
 enum class Visibility : byte;
 
 namespace Ability

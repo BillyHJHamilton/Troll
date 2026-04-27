@@ -12,9 +12,9 @@
 //-----------------------------------------------------------------------------
 // Global interface
 
-bool is_compatible(TriggerType trigger, DoorType door)
+bool is_compatible(TriggerType trigger, LockedDoorType door)
 {
-	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
+	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(LockedDoorType::Count)] =
 	{
 		//	None	Portrait	AlohamoraDoor	SlidingWall	Portcullis
 		{	true,	true,		true,			false,		false,	},	// None
@@ -57,9 +57,13 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 	{
 		s.srz_int(trigger_weights[i]);
 	}
-	for (int i = 0; i < (int)(DoorType::Count); i++)
+	for (int i = 0; i < (int)(LockedDoorType::Count); i++)
 	{
-		s.srz_int(door_weights[i]);
+		s.srz_int(locked_door_weights[i]);
+	}
+	for (int i = 0; i < (int)(UnlockedDoorType::Count); i++)
+	{
+		s.srz_int(unlocked_door_weights[i]);
 	}
 
 	s.srz_int(percent_torches_lit);

@@ -174,6 +174,37 @@ int weighted_index(const FloatTempList &weights)
 	return 0;
 }
 
+int weighted_index(int const weights[], int size)
+{
+	assert(size > 0);
+	int sum = 0;
+	for (int i = 0; i < size; ++i)
+	{
+		assert(weights[i] >= 0);
+		sum += weights[i];
+	}
+	assert(sum > 0);
+
+	int const roll = Random::in_range(0, sum - 1);
+	int x = roll;
+
+	for (int i = 0; i < size; ++i)
+	{
+		assert(weights[i] >= 0);
+		x -= weights[i];
+		if (x < 0)
+			return i;
+	}
+	std::cerr << "RandomNumbers - weighted_index (int) failed to resolve." << std::endl;
+	std::cerr << "Contents of weight array: ";
+	for (int i = 0; i < size; ++i)
+	{
+		std::cerr << weights[i] << " ";
+	}
+	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
+	return 0;
+}
+
 bool coinflip ()
 {
 	static std::uniform_int_distribution<int> dist(0, 1);

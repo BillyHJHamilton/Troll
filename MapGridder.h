@@ -33,8 +33,9 @@ protected:
 	                        Room const & neighbour1, Vec2 const & door1) const;
 
 	TriggerType choose_trigger_type(bool allow_none, bool allow_button, bool allow_torch) const;
-	DoorType choose_door_type(TriggerType trigger_type, bool allow_none) const;
-	static Terrain::Type get_terrain_for_door_type(DoorType door_type);
+	LockedDoorType choose_locked_door_type(TriggerType trigger_type, bool allow_none) const;
+	static Terrain::Type get_terrain_for_locked_door_type(LockedDoorType door_type);
+	static Terrain::Type get_terrain_for_unlocked_door_type(UnlockedDoorType door_type);
 
 	// Pass 3 functions
 	void add_cosmetic_chamber(int room_index) const;
@@ -42,6 +43,8 @@ protected:
 	void add_cosmetic_armour(Room const & room) const;
 	void add_cosmetic_desks(Room const & room) const;
 	void add_desks_in_box(Box2 const & box) const;
+
+	void add_unlocked_doors(int room_index) const;
 
 	// Pass 4 functions
 	void replace_all(Terrain::Type old_type, Terrain::Type new_type) const;

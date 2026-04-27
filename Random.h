@@ -19,6 +19,7 @@ namespace Random
 	int weighted_index(const std::vector<float> &weights);
 	int weighted_index(const IntTempList &weights);
 	int weighted_index(const FloatTempList &weights);
+	int weighted_index(int const weights[], int size);
 	bool coinflip ();
 	bool one_in (int x);
 	CompassDirection compass_direction(bool include_no_move);

@@ -77,6 +77,15 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 		}
 	}
 
+	Random::shuffle_vector(index_list);
+	for (int index : index_list)
+	{
+		if (m_generator.GetRoom(index).IsCorridor())
+		{
+			add_unlocked_doors(index);
+		}
+	}
+
 	// Do we want a spawn suggestions pass?
 
 	// Pass 4: Add items (and chests)
@@ -273,14 +282,14 @@ void MapGridder::add_secret_area(Room const & room,
 	bool is_allow_button = !button_pos_list.empty();
 	bool is_allow_torch  = ! torch_pos_list.empty();
 	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ true);
+	LockedDoorType door_type = choose_locked_door_type(trigger_type, /* allow none */ true);
 
-	if (door_type == DoorType::None)
+	if (door_type == LockedDoorType::None)
 	{
 		return;  // no door
 	}
 
-	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
+	Terrain::Type door_terrain = get_terrain_for_locked_door_type(door_type);
 	int const map_z = m_map.get_z();
 
 	switch(trigger_type)
@@ -338,14 +347,14 @@ void MapGridder::add_secret_passage(Room const & room,
 	bool is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
 	bool is_allow_torch  = !torch_pos_list.empty();
 	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ false);
+	LockedDoorType door_type = choose_locked_door_type(trigger_type, /* allow none */ false);
 
-	if (door_type == DoorType::None)  // happens if no legal door types
+	if (door_type == LockedDoorType::None)  // happens if no legal door types
 	{
 		return;  // no door
 	}
 
-	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
+	Terrain::Type door_terrain = get_terrain_for_locked_door_type(door_type);
 	int const map_z = m_map.get_z();
 
 	switch(trigger_type)
@@ -385,7 +394,7 @@ void MapGridder::add_secret_passage(Room const & room,
 
 TriggerType MapGridder::choose_trigger_type(bool allow_none,
                                             bool allow_button,
-                                             bool allow_torch) const
+                                            bool allow_torch) const
 {
 	assert(allow_none || allow_button || allow_torch);
 
@@ -414,51 +423,66 @@ TriggerType MapGridder::choose_trigger_type(bool allow_none,
 	return (TriggerType)(Random::weighted_index(trigger_weights));
 }
 
-DoorType MapGridder::choose_door_type(TriggerType trigger_type, bool allow_none) const
+LockedDoorType MapGridder::choose_locked_door_type(TriggerType trigger_type,
+                                                   bool allow_none) const
 {
 	MapGenerator::Parameters const& params = m_generator.ReadParameters();
 
 	int sum = 0;
-	IntTempList door_weights((int)(DoorType::Count), 0);  // count, value
+	IntTempList door_weights((int)(LockedDoorType::Count), 0);  // count, value
 
 	for (int i = 0; i < Util::Size(door_weights); ++i)
 	{
-		if (i == (int)(DoorType::None) && !allow_none)
+		if (i == (int)(LockedDoorType::None) && !allow_none)
 		{
 			continue;
 		}
-		if (!is_compatible(trigger_type, (DoorType)(i)))
+		if (!is_compatible(trigger_type, (LockedDoorType)(i)))
 		{
 			continue;
 		}
 
-		int weight = params.door_weights[i];
+		int weight = params.locked_door_weights[i];
 		door_weights[i] = weight;
 		sum += weight;
 	}
 
 	if (sum > 0)
 	{
-		return (DoorType)(Random::weighted_index(door_weights));
+		return (LockedDoorType)(Random::weighted_index(door_weights));
 	}
 
 	// no legal door types
-	return DoorType::None;
+	return LockedDoorType::None;
 }
 
 // static
-Terrain::Type MapGridder::get_terrain_for_door_type(DoorType door_type)
+Terrain::Type MapGridder::get_terrain_for_locked_door_type(LockedDoorType door_type)
 {
 	switch (door_type)
 	{
-	case DoorType::Portrait:
+	case LockedDoorType::Portrait:
 		return Terrain::Portrait;
-	case DoorType::AlohamoraDoor:
+	case LockedDoorType::AlohamoraDoor:
 		return Terrain::DoorLocked;
-	case DoorType::SlidingWall:
+	case LockedDoorType::SlidingWall:
 		return Terrain::SlidingWall;
-	case DoorType::Portcullis:
+	case LockedDoorType::Portcullis:
 		return Terrain::Portcullis;
+	default:
+		return Terrain::Open;
+	}
+}
+
+// static
+Terrain::Type MapGridder::get_terrain_for_unlocked_door_type(UnlockedDoorType door_type)
+{
+	switch (door_type)
+	{
+	case UnlockedDoorType::Open:
+		return Terrain::DoorOpen;
+	case UnlockedDoorType::Closed:
+		return Terrain::DoorClosed;
 	default:
 		return Terrain::Open;
 	}
@@ -614,6 +638,40 @@ void MapGridder::add_desks_in_box(Box2 const & box) const
 		for (int y = box.min.y; y < max_y; ++y)
 		{
 			Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
+		}
+	}
+}
+
+void MapGridder::add_unlocked_doors(int room_index) const
+{
+	Room const& room = m_generator.GetRoom(room_index);
+	if (!room.IsCorridor())
+	{
+		DebugBreak("Only use MapGridder::add_unlocked_doors for corridors.");
+	}
+
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
+
+	int door_index = Random::weighted_index(params.unlocked_door_weights,
+	                                        (int)(UnlockedDoorType::Count));
+	UnlockedDoorType door_type = (UnlockedDoorType)(door_index);
+
+	if(door_type != UnlockedDoorType::None)
+	{
+		Vec2 const door0 = room.GetBox().min;
+		Vec2 const door1 = room.GetBox().inner_max();
+
+		Terrain::Type door_terrain = get_terrain_for_unlocked_door_type(door_type);
+		int const map_z = m_map.get_z();
+
+		// these can be beside things as long as the floor itself is good
+		if (is_good_floor(door0))
+		{
+			Feature::spawn(door0.xyz(map_z), door_terrain);
+		}
+		if (is_good_floor(door1))
+		{
+			Feature::spawn(door1.xyz(map_z), door_terrain);
 		}
 	}
 }

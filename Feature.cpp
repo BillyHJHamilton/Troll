@@ -138,6 +138,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(new_feature);
 				break;
+			case Terrain::DoorClosed:
 			case Terrain::ShopSeed:
 				register_for_updates(new_feature);
 				break;
@@ -148,13 +149,16 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Portcullis:
 				DebugBreak("Spawn Feature with trigger");
 				break;
+			case Terrain::DoorColloportus:
+				DebugBreak("Never spawn DoorColloportus directly");
+				break;
 			// no initialization needed
 			// case Terrain::Armour:
 			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			// case Terrain::TorchLit:
 			// case Terrain::Portrait:
-			// case Terrain::DoopOpen:
-			// case Terrain::DoopLocked:
+			// case Terrain::DoorOpen:
+			// case Terrain::DoorLocked:
 		}
 	}
 }

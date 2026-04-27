@@ -14,7 +14,7 @@ enum class TriggerType : int
 	Count,
 };
 
-enum class DoorType : int
+enum class LockedDoorType : int
 {
 	None,
 	Portrait,
@@ -24,7 +24,15 @@ enum class DoorType : int
 	Count,
 };
 
-bool is_compatible(TriggerType trigger, DoorType door);
+enum class UnlockedDoorType : int
+{
+	None,
+	Open,
+	Closed,
+	Count,
+};
+
+bool is_compatible(TriggerType trigger, LockedDoorType door);
 
 
 // The architecture is that each map owns its own "MapGenerator".
@@ -52,9 +60,12 @@ public:
 
 		bool IsShopSeed = false;
 
-		// Type distributions for triggers and doors
+		// Type distributions for triggers and locked doors
 		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
-		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+		int locked_door_weights[(int)(LockedDoorType::Count)] = { 1 };  // None: 1, all others: 0
+
+		// Type distributions for unlocked doors
+		int unlocked_door_weights[(int)(UnlockedDoorType::Count)] = { 1 };  // None: 1, all others: 0
 
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
