@@ -3,6 +3,7 @@
 #include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Grammar.h"
 #include "Item.h"
 #include "Loot.h"
 #include "Pathfind.h"
@@ -352,13 +353,13 @@ void update_scanner(Feature::Itr feature)
 
 void update_door_closed(Feature::Itr feature)
 {
-	if (Player::pos() == feature->pos)
+	Creature::Handle creature_on_door = Creature::creature_at_pos(feature->pos);
+	if (creature_on_door != Creature::None)
 	{
-		Draw::pos_message(feature->pos, "You open the door.");
+		Draw::creature_message(creature_on_door, std::format("{} {} the door.",
+			Grammar::You(creature_on_door), Grammar::verbs("open", creature_on_door)));
 		World::edit().set_terrain(feature->pos, Terrain::DoorOpen);
 	}
-	// TODO: Open the door if any creature steps on it
-	//  -> with a nice message
 }
 
 void update_door_colloportus(Feature::Itr feature)
@@ -486,6 +487,14 @@ void lock_door(Vec3 pos)
 	Feature::Itr feature = find_feature(pos);
 	if (Check(feature.valid()))
 	{
+		Creature::Handle creature_on_door = Creature::creature_at_pos(feature->pos);
+		if (creature_on_door != Creature::None)
+		{
+			Draw::creature_message(creature_on_door, std::format("The door is blocked by {}.",
+				Grammar::you(creature_on_door)));
+			return;
+		}
+
 		Terrain::Type old_type = World::read().get_terrain(pos);
 		if (old_type == Terrain::DoorOpen)
 		{
