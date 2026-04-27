@@ -49,7 +49,7 @@ int index (int size)
 	return dist(generator);
 }
 
-int weighted_index(const std::vector<int> &weights)
+int weighted_index(std::vector<int> const& weights)
 {
 	assert(weights.size() > 0);
 	int sum = 0;
@@ -60,7 +60,7 @@ int weighted_index(const std::vector<int> &weights)
 	}
 	assert(sum > 0);
 
-	const int roll = Random::in_range(0, sum-1);
+	int const roll = Random::in_range(0, sum-1);
 	int x = roll;
 
 	for (int i = 0; i < (int)weights.size(); i++)
@@ -74,13 +74,13 @@ int weighted_index(const std::vector<int> &weights)
 	std::cerr << "Contents of weight vector: ";
 	for (int w : weights)
 	{
-		std::cerr << w;
+		std::cerr << w << " ";
 	}
 	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
 	return 0;
 }
 
-int weighted_index(const std::vector<float> &weights)
+int weighted_index(std::vector<float> const& weights)
 {
 	assert(weights.size() > 0);
 	float sum = 0.0f;
@@ -91,7 +91,7 @@ int weighted_index(const std::vector<float> &weights)
 	}
 	assert(sum > 0.0f);
 
-	const float roll = Random::in_range(0.0f, sum);
+	float const roll = Random::in_range(0.0f, sum);
 
 	float x = roll;
 	for (int i = 0; i < (int)weights.size(); i++)
@@ -104,14 +104,14 @@ int weighted_index(const std::vector<float> &weights)
 	std::cerr << "Contents of weight vector: ";
 	for (float w : weights)
 	{
-		std::cerr << w;
+		std::cerr << w << " ";
 	}
 	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
 	return 0;
 }
 
 // Copy-pasted from the above
-int weighted_index(const IntTempList &weights)
+int weighted_index(IntTempList const& weights)
 {
 	assert(weights.size() > 0);
 	int sum = 0;
@@ -122,7 +122,7 @@ int weighted_index(const IntTempList &weights)
 	}
 	assert(sum > 0);
 
-	const int roll = Random::in_range(0, sum-1);
+	int const roll = Random::in_range(0, sum-1);
 	int x = roll;
 
 	for (int i = 0; i < (int)weights.size(); i++)
@@ -136,7 +136,7 @@ int weighted_index(const IntTempList &weights)
 	std::cerr << "Contents of weight vector: ";
 	for (int w : weights)
 	{
-		std::cerr << w;
+		std::cerr << w << " ";
 	}
 	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
 	return 0;
@@ -144,7 +144,7 @@ int weighted_index(const IntTempList &weights)
 
 // Copy-pasted from the above since I didn't feel like making a template
 // (since there are some small differences between the int and float versions).
-int weighted_index(const FloatTempList &weights)
+int weighted_index(FloatTempList const& weights)
 {
 	assert(weights.size() > 0);
 	float sum = 0.0f;
@@ -155,7 +155,7 @@ int weighted_index(const FloatTempList &weights)
 	}
 	assert(sum > 0.0f);
 
-	const float roll = Random::in_range(0.0f, sum);
+	float const roll = Random::in_range(0.0f, sum);
 
 	float x = roll;
 	for (int i = 0; i < (int)weights.size(); i++)
@@ -168,7 +168,7 @@ int weighted_index(const FloatTempList &weights)
 	std::cerr << "Contents of weight vector: ";
 	for (float w : weights)
 	{
-		std::cerr << w;
+		std::cerr << w << " ";
 	}
 	std::cerr << "Roll: " << roll << ", Subtraction result: " << x << "\n";
 	return 0;
