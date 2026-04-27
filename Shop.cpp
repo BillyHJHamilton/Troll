@@ -26,6 +26,16 @@ void serialize(ISerializer& s)
 	s_shop_inventory.serialize_instance(s);
 }
 
+Inventory const& read_inventory()
+{
+	return s_shop_inventory;
+}
+
+Inventory& edit_inventory()
+{
+	return s_shop_inventory;
+}
+
 void restock(float difficulty)
 {
 	// First clean up some old inventory.

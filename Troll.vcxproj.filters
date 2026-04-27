@@ -267,6 +267,9 @@
     <ClCompile Include="Shop.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
+    <ClCompile Include="MenuShopBuy.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -511,6 +514,9 @@
     </ClInclude>
     <ClInclude Include="Shop.h">
       <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuShopBuy.h">
+      <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

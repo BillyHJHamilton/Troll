@@ -64,6 +64,14 @@ int Inventory::total_items () const
 	return n;
 }
 
+int Inventory::num_beans () const
+{
+	int const bean_slot = find_first_item(Item::BBBean);
+	return (bean_slot == c_Invalid) ?
+		0 :
+		peek_item(bean_slot).stack_height();
+}
+
 int Inventory::random_slot () const
 {
 	if (num_slots() == 0)

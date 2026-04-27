@@ -17,6 +17,7 @@
 #include "MenuPrologue.h"
 #include "MenuSelectHouse.h"
 #include "MenuSettings.h"
+#include "MenuShopBuy.h"
 #include "MenuSpells.h"
 #include "MenuTitle.h"
 #include "VectorUtil.h"
@@ -42,6 +43,7 @@ MenuName s_menu_name;
 MenuPrologue s_menu_prologue;
 MenuSelectHouse s_menu_select_house;
 MenuSettings s_menu_settings;
+MenuShopBuy s_menu_shop_buy;
 MenuSpells s_menu_spells;
 MenuTitle s_menu_title;
 MenuPause s_menu_pause;
@@ -242,6 +244,12 @@ void show_settings()
 {
 	set_menu(s_menu_settings);
 	s_menu_settings.reset_cursor();
+}
+
+void show_shop_buy()
+{
+	set_menu(s_menu_shop_buy);
+	s_menu_shop_buy.refresh();
 }
 
 #if _DEBUG

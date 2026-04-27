@@ -8,5 +8,8 @@ namespace Shop
 	void clear();
 	void serialize(ISerializer& s);
 
+	Inventory const& read_inventory();
+	Inventory& edit_inventory();
+
 	void restock(float difficulty);
 };

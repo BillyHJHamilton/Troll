@@ -17,6 +17,7 @@ public:
 	bool has_item () const;	
 	int num_slots () const;
 	int total_items () const;
+	int num_beans () const;
 	int random_slot () const;
 	Item::Handle const peek_item (int slot) const;
 
