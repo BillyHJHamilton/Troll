@@ -156,7 +156,9 @@ std::string Handle::description () const
 
 		case BBBean:
 		{
-			return "They mean every flavour.";
+			return "They mean every flavour!  "
+				"Eating beans may raise your sugar level, depending on the flavour.  "
+				"Hogwarts students sometimes use these beans as currency.";
 		}
 
 		case SweetsItem:

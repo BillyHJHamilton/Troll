@@ -30,9 +30,9 @@ struct Info
 std::array<Info,Sweets::Count> s_sweets =
 {
 	Info{ "Pumpkin Pasty", "orange", 4, nullptr,
-	  "A turnover pasty with a sweet pumpkin flavour." },
+	  "A turnover pasty with a sweet pumpkin flavour.  When eaten, it raises your sugar level by 4%." },
 	Info{ "Cauldron Cake", "light cyan", 8, nullptr,
-	  "A sugary cake shaped like a cauldron." },
+	  "A sugary cake shaped like a cauldron.  When eaten, it raises your sugar level by 8%." },
 };
 
 std::vector<int> s_weights =
