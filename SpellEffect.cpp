@@ -162,6 +162,23 @@ void alohomora(EffectParams params)
 	}
 }
 
+void colloportus(EffectParams params)
+{
+	// ignores creatures
+
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::DoorOpen:
+	case Terrain::DoorClosed:
+		Feature::lock_door(pos);
+		break;
+	default:
+		Draw::pos_message(pos, "It has no effect.");
+		break;
+	}
+}
+
 void tarantallegra (EffectParams params)
 {
 	Creature::Handle target = params.target;

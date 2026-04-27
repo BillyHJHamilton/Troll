@@ -48,8 +48,8 @@ namespace Terrain
 		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"door", /*open*/		Codepoint::DoorOpen,		0,		f_PermitSight | f_Feature |
-																		f_CrosshairFill,						f_None},
-		Data{"door", /*closed*/		Codepoint::DoorClosed,		100,	f_Feature | f_CrosshairFill,			f_None},
+																		f_CrosshairFill,						Target::f_Colloportus},
+		Data{"door", /*closed*/		Codepoint::DoorClosed,		100,	f_Feature | f_CrosshairFill,			Target::f_Colloportus},
 		Data{"door", /*locked*/		Codepoint::DoorLocked,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},

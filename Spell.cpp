@@ -34,6 +34,7 @@ static std::array<Spell::Data, Spell::Count> constexpr s_spell_list =
 	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::ToLife,	4,		60, 6,  &furnunculus,			Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  Damage::None,	0,		-1, 0,  &finite_incantatem,		Miscast::Charm,		Target::Self,	f_None},
 	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  Damage::None,	0,		-1, 8,  &accio,					Miscast::Conjuring, Target::Sight,	Target::f_Midair },
+	Spell::Data {"Colloportus",			"CP",	"lighter yellow",	40,	0,	Damage::None,	0,		-1, 8,	&colloportus,			Miscast::Charm,		Target::Sight,	Target::f_Colloportus },
 	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::ToLife,	c_DmgSP,75, 7,  &stupefy,				Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			Miscast::Beam,		Target::Beam,	f_None},
 	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			Miscast::Beam,		Target::Beam,	f_None},
@@ -58,6 +59,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* Furnunculus */ "Causes the target to burst out in painful boils.",
 	/* Finite Incantatem */ "This valuable counter-spell completely ends one enchantment afflicting the caster.",
 	/* Accio */ "The Summoning Charm.  Causes an object to fly through the air to the caster.",
+	/* Colloportus */ "The Locking Spell.  Magically locks a door for a short time.",
 	/* Stupefy */ "The Stunning Spell.  This spell deals more damage when used by a more skilled caster.",
 	/* Impedementa */ "The Impedement Jinx.  This spell impedes the target's movement, lowering his evasion and causing him to act more slowly.",
 	// /* Protego */ "The Shield Charm.  Provides protection against hostile spells, and may deflect a spell back at its caster.  More powerful spells may penetrate the shield."

@@ -1159,7 +1159,8 @@ bool spell_is_useless (Spell::Index spell, Creature::Handle caster, Creature::Ha
 		return true;
 
 	// Non-combat spells
-	if (spell == Spell::Alohomora)
+	if ((spell == Spell::Alohomora) ||
+		(spell == Spell::Colloportus))
 	{
 		return true;
 	}

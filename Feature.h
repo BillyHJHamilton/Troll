@@ -37,6 +37,7 @@ namespace Feature
 	void open_chest(Vec3 pos);
 	void open_portrait(Vec3 pos);
 	void unlock_door(Vec3 pos);
+	void lock_door(Vec3 pos);
 	void activate_flipendo_button(Vec3 pos);
 }
 
