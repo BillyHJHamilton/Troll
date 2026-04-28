@@ -58,17 +58,19 @@ void BuildWorld()
 
 		param.IsShopSeed = Random::coinflip();
 
-		param.trigger_weights[(int)(TriggerType::None          )] = c_MaxZ;
-		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = z;
-		param.trigger_weights[(int)(TriggerType::LightTorch    )] = z;
+		param.door_genus_weights[(int)(LockedDoorGenus::None   )] = c_MaxZ * 2 - z;
+		param.door_genus_weights[(int)(LockedDoorGenus::Spell  )] = c_MaxZ;
+		param.door_genus_weights[(int)(LockedDoorGenus::Trigger)] = z;
 
-		// these are used depending on the trigger type
-		param.locked_door_weights[(int)(LockedDoorType::None         )] = c_MaxZ * 4 - z * 2;
-		param.locked_door_weights[(int)(LockedDoorType::Portrait     )] = c_MaxZ;
-		param.locked_door_weights[(int)(LockedDoorType::AlohamoraDoor)] = c_MaxZ;
-		param.locked_door_weights[(int)(LockedDoorType::Ectoplasm    )] = z;
-		param.locked_door_weights[(int)(LockedDoorType::SlidingWall  )] = z;
-		param.locked_door_weights[(int)(LockedDoorType::Portcullis   )] = z;
+		param.spell_door_weights[(int)(SpellDoorType::Portrait     )] = c_MaxZ;
+		param.spell_door_weights[(int)(SpellDoorType::AlohamoraDoor)] = c_MaxZ;
+		param.spell_door_weights[(int)(SpellDoorType::Ectoplasm    )] = z;
+
+		param.trigger_door_weights[(int)(TriggerDoorType::SlidingWall)] = 1;
+		param.trigger_door_weights[(int)(TriggerDoorType::Portcullis )] = 1;
+
+		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = 2;
+		param.trigger_weights[(int)(TriggerType::LightTorch    )] = 1;
 
 		param.unlocked_door_weights[(int)(UnlockedDoorType::None  )] = 3;
 		param.unlocked_door_weights[(int)(UnlockedDoorType::Open  )] = 2;

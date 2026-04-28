@@ -9,26 +9,6 @@
 #include "VectorUtil.h"
 #include "World.h"
 
-//-----------------------------------------------------------------------------
-// Global interface
-
-bool is_compatible(TriggerType trigger, LockedDoorType door)
-{
-	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(LockedDoorType::Count)] =
-	{
-		//	None	Portrait	AlohamoraDoor	Ectoplasm	SlidingWall	Portcullis
-		{	true,	true,		true,			true,			false,		false,	},	// None
-		{	true,	false,		false,			false,			true,		true,	},	// FlipendoButton
-		{	true,	false,		false,			false,			false,		true,	},	// LightTorch
-	};
-
-	return c_Compatible[(int)(trigger)][(int)(door)];
-}
-
-
-//-----------------------------------------------------------------------------
-// MapGenerator class
-
 MapGenerator::MapGenerator(Map& owner)
 	: m_Map(owner)
 {
@@ -53,13 +33,21 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 	s.srz_bool(IsShopSeed);
 
+	for (int i = 0; i < (int)(LockedDoorGenus::Count); i++)
+	{
+		s.srz_int(door_genus_weights[i]);
+	}
+	for (int i = 0; i < (int)(SpellDoorType::Count); i++)
+	{
+		s.srz_int(spell_door_weights[i]);
+	}
+	for (int i = 0; i < (int)(TriggerDoorType::Count); i++)
+	{
+		s.srz_int(trigger_door_weights[i]);
+	}
 	for (int i = 0; i < (int)(TriggerType::Count); i++)
 	{
 		s.srz_int(trigger_weights[i]);
-	}
-	for (int i = 0; i < (int)(LockedDoorType::Count); i++)
-	{
-		s.srz_int(locked_door_weights[i]);
 	}
 	for (int i = 0; i < (int)(UnlockedDoorType::Count); i++)
 	{

@@ -5,24 +5,38 @@
 #include "Stairs.h"
 
 
-// These cannot be inside MapGenerator or forward declarations are impossible
-enum class TriggerType : int
+// These enums cannot be inside MapGenerator or forward declarations are impossible
+
+enum class LockedDoorGenus : int
 {
-	None,  // e.g. Alohamora Portrait
-	FlipendoButton,
-	LightTorch,
+	None,
+	Spell,
+	Trigger,
 	Count,
 };
 
-// TODO: Split into TriggerDoorType and SpellDoorType?
-enum class LockedDoorType : int
+enum class SpellDoorType : int
 {
-	None,
+	NotPossible = -1,  // error value
 	Portrait,
 	AlohamoraDoor,
 	Ectoplasm,
+	Count,
+};
+
+enum class TriggerDoorType : int
+{
+	NotPossible = -1,  // error value
 	SlidingWall,
 	Portcullis,
+	Count,
+};
+
+enum class TriggerType : int
+{
+	NotPossible = -1,  // error value
+	FlipendoButton,
+	LightTorch,
 	Count,
 };
 
@@ -33,8 +47,6 @@ enum class UnlockedDoorType : int
 	Closed,
 	Count,
 };
-
-bool is_compatible(TriggerType trigger, LockedDoorType door);
 
 
 // The architecture is that each map owns its own "MapGenerator".
@@ -63,8 +75,10 @@ public:
 		bool IsShopSeed = false;
 
 		// Type distributions for triggers and locked doors
-		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
-		int locked_door_weights[(int)(LockedDoorType::Count)] = { 1 };  // None: 1, all others: 0
+		int door_genus_weights[(int)(LockedDoorGenus::Count)] = { 1 };  // None: 1, all others: 0
+		int spell_door_weights[(int)(SpellDoorType::Count)] = { 1 };  // Portrait: 1, all others: 0
+		int trigger_door_weights[(int)(TriggerDoorType::Count)] = { 1 };  // SlidingWall: 1, all others: 0
+		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // FlipendoButton: 1, all others: 0
 
 		// Type distributions for unlocked doors
 		int unlocked_door_weights[(int)(UnlockedDoorType::Count)] = { 1 };  // None: 1, all others: 0
