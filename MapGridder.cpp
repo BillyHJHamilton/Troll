@@ -459,6 +459,8 @@ Terrain::Type MapGridder::get_terrain_for_locked_door_type(LockedDoorType door_t
 		return Terrain::Portrait;
 	case LockedDoorType::AlohamoraDoor:
 		return Terrain::DoorLocked;
+	case LockedDoorType::Ectoplasm:
+		return Terrain::Ectoplasm;
 	case LockedDoorType::SlidingWall:
 		return Terrain::SlidingWall;
 	case LockedDoorType::Portcullis:

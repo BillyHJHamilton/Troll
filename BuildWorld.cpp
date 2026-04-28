@@ -63,9 +63,10 @@ void BuildWorld()
 		param.trigger_weights[(int)(TriggerType::LightTorch    )] = z;
 
 		// these are used depending on the trigger type
-		param.locked_door_weights[(int)(LockedDoorType::None         )] = c_MaxZ * 3 - z * 2;
+		param.locked_door_weights[(int)(LockedDoorType::None         )] = c_MaxZ * 4 - z * 2;
 		param.locked_door_weights[(int)(LockedDoorType::Portrait     )] = c_MaxZ;
 		param.locked_door_weights[(int)(LockedDoorType::AlohamoraDoor)] = c_MaxZ;
+		param.locked_door_weights[(int)(LockedDoorType::Ectoplasm    )] = z;
 		param.locked_door_weights[(int)(LockedDoorType::SlidingWall  )] = z;
 		param.locked_door_weights[(int)(LockedDoorType::Portcullis   )] = z;
 

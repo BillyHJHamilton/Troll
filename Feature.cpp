@@ -28,6 +28,7 @@ namespace Feature
 // 	             - trigger only activates when the last torch with that trigger is lit
 //  - TorchLit - no payload
 //  - Portrait - no payload
+//  - Ectoplasm - no payload
 //  - DoorOpen - no payload
 //  - DoorClosed - no payload
 //  - DoorLocked - no payload
@@ -158,6 +159,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			// case Terrain::TorchLit:
 			// case Terrain::Portrait:
+			// case Terrain::Ectoplasm:
 			// case Terrain::DoorOpen:
 			// case Terrain::DoorLocked:
 		}

@@ -14,11 +14,13 @@ enum class TriggerType : int
 	Count,
 };
 
+// TODO: Split into TriggerDoorType and SpellDoorType?
 enum class LockedDoorType : int
 {
 	None,
 	Portrait,
 	AlohamoraDoor,
+	Ectoplasm,
 	SlidingWall,
 	Portcullis,
 	Count,

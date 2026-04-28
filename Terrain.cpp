@@ -47,6 +47,7 @@ namespace Terrain
 		Data{"floor" /* scanner */,	'.',						0,		f_PermitSight | f_Feature,				f_None},
 		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	100,	f_PermitSight | f_Solid | f_Feature,	f_None},
 		Data{"door", /*open*/		Codepoint::DoorOpen,		0,		f_PermitSight | f_Feature |
 																		f_CrosshairFill,						Target::f_Colloportus},
 		Data{"door", /*closed*/		Codepoint::DoorClosed,		100,	f_Feature | f_CrosshairFill,			Target::f_Colloportus},
@@ -76,6 +77,8 @@ namespace Terrain
 			case Terrain::Open:
 			case Terrain::OpenNoSpawn:
 			case Terrain::OpenHighlight:
+			case Terrain::Scanner:
+			case Terrain::ShopSeed:
 				return "- the floor";
 			case Terrain::Wall:
 			case Terrain::SlidingWall:
@@ -89,6 +92,7 @@ namespace Terrain
 			case Terrain::DoorClosed: return "- a closed door (unlocked)";
 			case Terrain::DoorLocked: return "- a locked door";
 			case Terrain::DoorColloportus: return "- a closed door (locked by colloportus)";
+			case Terrain::Ectoplasm: return "- ectoplasm";
 			default:
 				return std::string("- a ") + get_name(t);
 		}

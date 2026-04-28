@@ -26,6 +26,7 @@ namespace Terrain
 		Scanner,
 		FlipendoButton,
 		Portrait,
+		Ectoplasm,
 		DoorOpen,
 		DoorClosed,
 		DoorLocked,

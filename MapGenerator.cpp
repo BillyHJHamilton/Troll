@@ -16,10 +16,10 @@ bool is_compatible(TriggerType trigger, LockedDoorType door)
 {
 	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(LockedDoorType::Count)] =
 	{
-		//	None	Portrait	AlohamoraDoor	SlidingWall	Portcullis
-		{	true,	true,		true,			false,		false,	},	// None
-		{	true,	false,		false,			true,		true,	},	// FlipendoButton
-		{	true,	false,		false,			true,		true,	},	// LightTorch
+		//	None	Portrait	AlohamoraDoor	Ectoplasm	SlidingWall	Portcullis
+		{	true,	true,		true,			true,			false,		false,	},	// None
+		{	true,	false,		false,			false,			true,		true,	},	// FlipendoButton
+		{	true,	false,		false,			false,			false,		true,	},	// LightTorch
 	};
 
 	return c_Compatible[(int)(trigger)][(int)(door)];
