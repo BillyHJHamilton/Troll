@@ -649,8 +649,24 @@ void MapGridder::add_unlocked_doors(int room_index) const
 	Vec2 const door0 = room.GetBox().min;
 	Vec2 const door1 = room.GetBox().inner_max();
 
-	add_unlocked_door(door0);
-	add_unlocked_door(door1);
+	if (room.CorridorLength() >= 3)
+	{
+		// can be doors on both ends
+		add_unlocked_door(door0);
+		add_unlocked_door(door1);
+	}
+	else
+	{
+		// only one door
+		if (Random::coinflip())
+		{
+			add_unlocked_door(door0);
+		}
+		else
+		{
+			add_unlocked_door(door1);
+		}
+	}
 }
 
 void MapGridder::add_unlocked_door(Vec2 const& pos) const
