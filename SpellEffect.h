@@ -28,6 +28,7 @@ namespace Spell
 	void vermillious(EffectParams params);
 	void flipendo(EffectParams params);
 	void alohomora(EffectParams params);
+	void colloportus(EffectParams params);
 	void tarantallegra(EffectParams params);
 	void locomotor_mortis(EffectParams params);
 	void rictusempra(EffectParams params);

@@ -36,4 +36,9 @@ namespace Codepoint
 	int constexpr Desk1 = 12345;
 	int constexpr Desk2 = 12346;
 	int constexpr Armour = 12347;
+	int constexpr EctoplasmDoor = 12348;
+	int constexpr DoorOpen = 12349;
+	int constexpr DoorClosed = 12350;
+	int constexpr DoorLocked = 12351;
+	int constexpr DoorColloportus = 12352;
 }

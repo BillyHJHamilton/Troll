@@ -25,6 +25,7 @@ namespace Spell
 		Furnunculus,
 		FiniteIncantatem,
 		Accio,
+		Colloportus,
 		Stupefy,
 		Impedementa,
 		// Protego,

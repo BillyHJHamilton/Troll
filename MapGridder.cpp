@@ -77,6 +77,15 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 		}
 	}
 
+	Random::shuffle_vector(index_list);
+	for (int index : index_list)
+	{
+		if (m_generator.GetRoom(index).IsCorridor())
+		{
+			add_unlocked_doors(index);
+		}
+	}
+
 	// Do we want a spawn suggestions pass?
 
 	// Pass 4: Add items (and chests)
@@ -250,13 +259,6 @@ void MapGridder::add_corridor_doors(int room_index) const
 			return;
 		}
 	}
-
-/*	// TODO: doors?
-	if (room.CorridorLength() != 2 && !Random::one_in(3))
-	{
-		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
-		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
-	}*/
 }
 
 void MapGridder::add_secret_area(Room const & room,
@@ -265,61 +267,67 @@ void MapGridder::add_secret_area(Room const & room,
 	// TODO: Doors on both ends of the entrace corridor?
 	//  -> secret passages let you reach the secret area from the wrong end
 	//  -> with triggers, both would open together
+	//  -> I think add_unlocked_door might now add one anyway
 
-	PosTempList button_pos_list = get_good_positions_inside_wall(neighbour);
-	PosTempList torch_pos_list  = choose_torch_positions(neighbour);
-
-	// first bool is whether to allow triggerless doors
-	bool is_allow_button = !button_pos_list.empty();
-	bool is_allow_torch  = ! torch_pos_list.empty();
-	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ true);
-
-	if (door_type == DoorType::None)
-	{
-		return;  // no door
-	}
-
-	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
 	int const map_z = m_map.get_z();
 
-	switch(trigger_type)
+	PosTempList const button_pos_list = get_good_positions_inside_wall(neighbour);
+	PosTempList const torch_pos_list  = choose_torch_positions(neighbour);
+
+	bool const is_allow_button = !button_pos_list.empty();
+	bool const is_allow_torch  = ! torch_pos_list.empty();
+	TriggerType const trigger_type = choose_trigger_type(is_allow_button, is_allow_torch);
+
+	bool const is_allow_trigger = trigger_type != TriggerType::NotPossible;
+	switch(choose_locked_door_genus(/* allow none */ true, is_allow_trigger))
 	{
-	case TriggerType::None:
-		Feature::spawn(door.xyz(map_z), door_terrain);
-		break;
-
-	case TriggerType::FlipendoButton:
+		case LockedDoorGenus::Spell:
 		{
-			int trigger = Feature::get_new_trigger();
-			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
-
-			Vec2 button = Random::from_vector(button_pos_list);
-			Feature::spawn(button.xyz(map_z), Terrain::FlipendoButton, trigger);
+			SpellDoorType const door_type = choose_spell_door_type();
+			Terrain::Type const door_terrain = get_door_terrain(door_type);
+			Feature::spawn(door.xyz(map_z), door_terrain);
+			break;
 		}
-		break;
 
-	case TriggerType::LightTorch:
+		case LockedDoorGenus::Trigger:
 		{
-			int trigger = Feature::get_new_trigger();
+			int const trigger = Feature::get_new_trigger();
+
+			TriggerDoorType const door_type = choose_trigger_door_type();
+			Terrain::Type   const door_terrain = get_door_terrain(door_type);
 			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
 
-			for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+			switch (trigger_type)
 			{
-				Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+				case TriggerType::FlipendoButton:
+				{
+					Vec2 const button = Random::from_vector(button_pos_list);
+					Feature::spawn(button.xyz(map_z), Terrain::FlipendoButton, trigger);
+					break;
+				}
+				case TriggerType::LightTorch:
+				{
+					for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+					{
+						Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+					}
+					break;
+				}
 			}
-		}
-		break;
-	}
 
-	// TODO: Could sometimes add a fire crab trap (if there is a trigger)
-	//  -> it would appear in the neighbour room
+			// TODO: Could sometimes add a fire crab trap (if there is a trigger)
+			//  -> it would appear in the neighbour room
+			break;
+		}
+	}
 }
 
 void MapGridder::add_secret_passage(Room const & room,
                                     Room const & neighbour0, Vec2 const & door0,
                                     Room const & neighbour1, Vec2 const & door1) const
 {
+	int const map_z = m_map.get_z();
+
 	PosTempList button0_pos_list = get_good_positions_inside_wall(neighbour0);
 	PosTempList button1_pos_list = get_good_positions_inside_wall(neighbour1);
 
@@ -334,130 +342,192 @@ void MapGridder::add_secret_passage(Room const & room,
 		torch_pos_list = choose_torch_positions(neighbour1);
 	}
 
-	// first bool is whether to allow triggerless doors
-	bool is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
-	bool is_allow_torch  = !torch_pos_list.empty();
-	TriggerType trigger_type = choose_trigger_type(true, is_allow_button, is_allow_torch);
-	DoorType       door_type = choose_door_type(trigger_type, /* allow none */ false);
+	bool const is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
+	bool const is_allow_torch  = !torch_pos_list.empty();
+	TriggerType const trigger_type = choose_trigger_type(is_allow_button, is_allow_torch);
 
-	if (door_type == DoorType::None)  // happens if no legal door types
+	bool const is_allow_trigger = trigger_type != TriggerType::NotPossible;
+	switch(choose_locked_door_genus(/* allow none */ false, is_allow_trigger))
 	{
-		return;  // no door
-	}
-
-	Terrain::Type door_terrain = get_terrain_for_door_type(door_type);
-	int const map_z = m_map.get_z();
-
-	switch(trigger_type)
-	{
-	case TriggerType::None:
-		Feature::spawn(door0.xyz(map_z), door_terrain);
-		Feature::spawn(door1.xyz(map_z), door_terrain);
-		break;
-
-	case TriggerType::FlipendoButton:
+		case LockedDoorGenus::Spell:
 		{
-			int trigger = Feature::get_new_trigger();
-			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
-			Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
-
-			Vec2 button0 = Random::from_vector(button0_pos_list);
-			Vec2 button1 = Random::from_vector(button1_pos_list);
-			Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
-			Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
-		}
-		break;
-
-	case TriggerType::LightTorch:
-		{
-			int trigger = Feature::get_new_trigger();
-			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
-			Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
-
-			for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+			SpellDoorType const door_type = choose_spell_door_type();
+			Terrain::Type const door_terrain = get_door_terrain(door_type);
+			Feature::spawn(door0.xyz(map_z), door_terrain);
+			if (room.CorridorLength() >= 3)
 			{
-				Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+				if (door_type == SpellDoorType::AlohamoraDoor)
+				{
+					// 2 locked doors in a row is annoying because one blocks LoS to the other
+					Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
+				}
+				else
+				{
+					Feature::spawn(door1.xyz(map_z), door_terrain);
+				}
 			}
+			break;
 		}
-		break;
+
+		case LockedDoorGenus::Trigger:
+		{
+			int const trigger = Feature::get_new_trigger();
+
+			TriggerDoorType const door_type = choose_trigger_door_type();
+			Terrain::Type   const door_terrain = get_door_terrain(door_type);
+			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
+			if (room.CorridorLength() > 1)
+			{
+				Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
+			}
+
+			switch (trigger_type)
+			{
+				case TriggerType::FlipendoButton:
+				{
+					Vec2 const button0 = Random::from_vector(button0_pos_list);
+					Vec2 const button1 = Random::from_vector(button1_pos_list);
+					Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
+					Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
+					break;
+				}
+				case TriggerType::LightTorch:
+				{
+					for (int i = 0; i < Util::Size(torch_pos_list); ++i)
+					{
+						Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
+					}
+					break;
+				}
+			}
+			break;
+		}
 	}
 }
 
-TriggerType MapGridder::choose_trigger_type(bool allow_none,
-                                            bool allow_button,
-                                             bool allow_torch) const
-{
-	assert(allow_none || allow_button || allow_torch);
-
-	MapGenerator::Parameters const& params = m_generator.ReadParameters();
-
-	IntTempList trigger_weights((int)(TriggerType::Count), 0);  // count, value
-
-	if (allow_none)
-	{
-		int none_weight = params.trigger_weights[(int)(TriggerType::None)];
-		trigger_weights[(int)(TriggerType::None)] = none_weight;
-	}
-
-	if (allow_button)
-	{
-		int button_weight = params.trigger_weights[(int)(TriggerType::FlipendoButton)];
-		trigger_weights[(int)(TriggerType::FlipendoButton)] = button_weight;
-	}
-
-	if (allow_torch)
-	{
-		int torch_weight = params.trigger_weights[(int)(TriggerType::LightTorch)];
-		trigger_weights[(int)(TriggerType::LightTorch)] = torch_weight;
-	}
-
-	return (TriggerType)(Random::weighted_index(trigger_weights));
-}
-
-DoorType MapGridder::choose_door_type(TriggerType trigger_type, bool allow_none) const
+LockedDoorGenus MapGridder::choose_locked_door_genus(bool allow_none, bool allow_trigger) const
 {
 	MapGenerator::Parameters const& params = m_generator.ReadParameters();
 
 	int sum = 0;
-	IntTempList door_weights((int)(DoorType::Count), 0);  // count, value
+	IntTempList door_weights((int)(LockedDoorGenus::Count), 0);  // count, value
 
 	for (int i = 0; i < Util::Size(door_weights); ++i)
 	{
-		if (i == (int)(DoorType::None) && !allow_none)
+		if (i == (int)(LockedDoorGenus::None) && !allow_none)
 		{
 			continue;
 		}
-		if (!is_compatible(trigger_type, (DoorType)(i)))
+		if (i == (int)(LockedDoorGenus::Trigger) && !allow_trigger)
 		{
 			continue;
 		}
 
-		int weight = params.door_weights[i];
+		int weight = params.door_genus_weights[i];
 		door_weights[i] = weight;
 		sum += weight;
 	}
 
 	if (sum > 0)
 	{
-		return (DoorType)(Random::weighted_index(door_weights));
+		return (LockedDoorGenus)(Random::weighted_index(door_weights));
 	}
 
 	// no legal door types
-	return DoorType::None;
+	return LockedDoorGenus::None;
+}
+
+SpellDoorType MapGridder::choose_spell_door_type() const
+{
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
+
+	int index = Random::weighted_index(params.spell_door_weights,
+	                                   (int)(SpellDoorType::Count));
+	return (SpellDoorType)(index);
+}
+
+TriggerDoorType MapGridder::choose_trigger_door_type() const
+{
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
+
+	int index = Random::weighted_index(params.spell_door_weights,
+	                                   (int)(TriggerDoorType::Count));
+	return (TriggerDoorType)(index);
+}
+
+TriggerType MapGridder::choose_trigger_type(bool allow_button,
+                                            bool allow_torch) const
+{
+	MapGenerator::Parameters const& params = m_generator.ReadParameters();
+
+	IntTempList trigger_weights((int)(TriggerType::Count), 0);  // count, value
+	int sum = 0;
+
+	if (allow_button)
+	{
+		int button_weight = params.trigger_weights[(int)(TriggerType::FlipendoButton)];
+		trigger_weights[(int)(TriggerType::FlipendoButton)] = button_weight;
+		sum += button_weight;
+	}
+	if (allow_torch)
+	{
+		int torch_weight = params.trigger_weights[(int)(TriggerType::LightTorch)];
+		trigger_weights[(int)(TriggerType::LightTorch)] = torch_weight;
+		sum += torch_weight;
+	}
+
+	if (sum > 0)
+	{
+		return (TriggerType)(Random::weighted_index(trigger_weights));
+	}
+	return TriggerType::NotPossible;
 }
 
 // static
-Terrain::Type MapGridder::get_terrain_for_door_type(DoorType door_type)
+Terrain::Type MapGridder::get_door_terrain(SpellDoorType door_type)
 {
 	switch (door_type)
 	{
-	case DoorType::Portrait:
+	case SpellDoorType::Portrait:
 		return Terrain::Portrait;
-	case DoorType::SlidingWall:
+	case SpellDoorType::AlohamoraDoor:
+		return Terrain::DoorLocked;
+	case SpellDoorType::Ectoplasm:
+		return Terrain::Ectoplasm;
+	default:
+		// TODO: Error
+		return Terrain::Open;
+	}
+}
+
+// static
+Terrain::Type MapGridder::get_door_terrain(TriggerDoorType door_type)
+{
+	switch (door_type)
+	{
+	case TriggerDoorType::SlidingWall:
 		return Terrain::SlidingWall;
-	case DoorType::Portcullis:
+	case TriggerDoorType::Portcullis:
 		return Terrain::Portcullis;
 	default:
+		// TODO: Error
+		return Terrain::Open;
+	}
+}
+
+// static
+Terrain::Type MapGridder::get_door_terrain(UnlockedDoorType door_type)
+{
+	switch (door_type)
+	{
+	case UnlockedDoorType::None:
+		return Terrain::Open;
+	case UnlockedDoorType::Open:
+		return Terrain::DoorOpen;
+	case UnlockedDoorType::Closed:
+		return Terrain::DoorClosed;
+	default:
+		// TODO: Error
 		return Terrain::Open;
 	}
 }
@@ -476,7 +546,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 
 	// special room types
 	// TODO: Remove these when we have vaults?
-	//  -> or at least a heavier-duty system
+	//  -> or at least use a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
 	case 0:
@@ -612,6 +682,57 @@ void MapGridder::add_desks_in_box(Box2 const & box) const
 		for (int y = box.min.y; y < max_y; ++y)
 		{
 			Feature::spawn(Vec3{ x, y, map_z }, Terrain::Desk);
+		}
+	}
+}
+
+void MapGridder::add_unlocked_doors(int room_index) const
+{
+	Room const& room = m_generator.GetRoom(room_index);
+	if (!room.IsCorridor())
+	{
+		DebugBreak("Only use MapGridder::add_unlocked_doors for corridors.");
+	}
+
+	Vec2 const door0 = room.GetBox().min;
+	Vec2 const door1 = room.GetBox().inner_max();
+
+	if (room.CorridorLength() >= 3)
+	{
+		// can be doors on both ends
+		add_unlocked_door(door0);
+		add_unlocked_door(door1);
+	}
+	else
+	{
+		// only one door
+		// TODO: Only if both positions are good?
+
+		if (Random::coinflip())
+		{
+			add_unlocked_door(door0);
+		}
+		else
+		{
+			add_unlocked_door(door1);
+		}
+	}
+}
+
+void MapGridder::add_unlocked_door(Vec2 const& pos) const
+{
+	// this door can be beside things as long as the position itself is good
+	if (is_good_floor(pos))
+	{
+		MapGenerator::Parameters const& params = m_generator.ReadParameters();
+
+		int door_index = Random::weighted_index(params.unlocked_door_weights,
+		                                        (int)(UnlockedDoorType::Count));
+		UnlockedDoorType door_type = (UnlockedDoorType)(door_index);
+		if (door_type != UnlockedDoorType::None)
+		{
+			Terrain::Type door_terrain = get_door_terrain(door_type);
+			Feature::spawn(pos.xyz(m_map.get_z()), door_terrain);
 		}
 	}
 }

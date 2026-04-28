@@ -5,25 +5,48 @@
 #include "Stairs.h"
 
 
-// These cannot be inside MapGenerator or forward declarations are impossible
-enum class TriggerType : int
+// These enums cannot be inside MapGenerator or forward declarations are impossible
+
+enum class LockedDoorGenus : int
 {
-	None,  // e.g. Alohamora Portrait
-	FlipendoButton,
-	LightTorch,
+	None,
+	Spell,
+	Trigger,
 	Count,
 };
 
-enum class DoorType : int
+enum class SpellDoorType : int
 {
-	None,
+	NotPossible = -1,  // error value
 	Portrait,
+	AlohamoraDoor,
+	Ectoplasm,
+	Count,
+};
+
+enum class TriggerDoorType : int
+{
+	NotPossible = -1,  // error value
 	SlidingWall,
 	Portcullis,
 	Count,
 };
 
-bool is_compatible(TriggerType trigger, DoorType door);
+enum class TriggerType : int
+{
+	NotPossible = -1,  // error value
+	FlipendoButton,
+	LightTorch,
+	Count,
+};
+
+enum class UnlockedDoorType : int
+{
+	None,
+	Open,
+	Closed,
+	Count,
+};
 
 
 // The architecture is that each map owns its own "MapGenerator".
@@ -51,9 +74,14 @@ public:
 
 		bool IsShopSeed = false;
 
-		// Type distributions for triggers and doors
-		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
-		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
+		// Type distributions for triggers and locked doors
+		int door_genus_weights[(int)(LockedDoorGenus::Count)] = { 1 };  // None: 1, all others: 0
+		int spell_door_weights[(int)(SpellDoorType::Count)] = { 1 };  // Portrait: 1, all others: 0
+		int trigger_door_weights[(int)(TriggerDoorType::Count)] = { 1 };  // SlidingWall: 1, all others: 0
+		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // FlipendoButton: 1, all others: 0
+
+		// Type distributions for unlocked doors
+		int unlocked_door_weights[(int)(UnlockedDoorType::Count)] = { 1 };  // None: 1, all others: 0
 
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
