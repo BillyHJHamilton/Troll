@@ -62,13 +62,14 @@ void BuildWorld()
 		param.door_genus_weights[(int)(LockedDoorGenus::Spell  )] = c_MaxZ;
 		param.door_genus_weights[(int)(LockedDoorGenus::Trigger)] = z;
 
+		// if we chose a spell door
 		param.spell_door_weights[(int)(SpellDoorType::Portrait     )] = c_MaxZ;
 		param.spell_door_weights[(int)(SpellDoorType::AlohamoraDoor)] = c_MaxZ;
 		param.spell_door_weights[(int)(SpellDoorType::Ectoplasm    )] = z;
 
+		// if we chose a trigger door
 		param.trigger_door_weights[(int)(TriggerDoorType::SlidingWall)] = 1;
 		param.trigger_door_weights[(int)(TriggerDoorType::Portcullis )] = 1;
-
 		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = 2;
 		param.trigger_weights[(int)(TriggerType::LightTorch    )] = 1;
 

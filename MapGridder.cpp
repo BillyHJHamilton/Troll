@@ -351,11 +351,21 @@ void MapGridder::add_secret_passage(Room const & room,
 	{
 		case LockedDoorGenus::Spell:
 		{
-			// TODO: Handle length 1 corridor
 			SpellDoorType const door_type = choose_spell_door_type();
 			Terrain::Type const door_terrain = get_door_terrain(door_type);
 			Feature::spawn(door0.xyz(map_z), door_terrain);
-			Feature::spawn(door1.xyz(map_z), door_terrain);
+			if (room.CorridorLength() >= 3)
+			{
+				if (door_type == SpellDoorType::AlohamoraDoor)
+				{
+					// 2 locked doors in a row is annoying because one blocks LoS to the other
+					Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
+				}
+				else
+				{
+					Feature::spawn(door1.xyz(map_z), door_terrain);
+				}
+			}
 			break;
 		}
 
@@ -363,11 +373,13 @@ void MapGridder::add_secret_passage(Room const & room,
 		{
 			int const trigger = Feature::get_new_trigger();
 
-			// TODO: Handle length 1 corridor
 			TriggerDoorType const door_type = choose_trigger_door_type();
 			Terrain::Type   const door_terrain = get_door_terrain(door_type);
 			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
-			Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
+			if (room.CorridorLength() > 1)
+			{
+				Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
+			}
 
 			switch (trigger_type)
 			{
