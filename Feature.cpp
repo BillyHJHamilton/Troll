@@ -355,10 +355,17 @@ void update_scanner(Feature::Itr feature)
 
 void update_door_closed(Feature::Itr feature)
 {
+	// TODO: Opening the door should take a move
+	//  -> It will have to be detected when a creatue is moving
+	//    -> Including the player
+	//  -> The movement AI will have to understand it
+	//    -> Moving onto a door is a move, but does not consume a path step
+	//    -> The move has not failed, even though the creature didn't move
+
 	Creature::Handle creature_on_door = Creature::creature_at_pos(feature->pos);
 	if (creature_on_door != Creature::None)
 	{
-		Draw::creature_message(creature_on_door, std::format("{} {} the door.",
+		Draw::creature_message(creature_on_door, std::format("{} {} a door.",
 			Grammar::You(creature_on_door), Grammar::verbs("open", creature_on_door)));
 		World::edit().set_terrain(feature->pos, Terrain::DoorOpen);
 	}
