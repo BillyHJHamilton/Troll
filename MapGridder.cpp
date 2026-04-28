@@ -259,13 +259,6 @@ void MapGridder::add_corridor_doors(int room_index) const
 			return;
 		}
 	}
-
-/*	// TODO: doors?
-	if (room.CorridorLength() != 2 && !Random::one_in(3))
-	{
-		m_Map.set_terrain(room.GetBox().min, Terrain::Door);
-		m_Map.set_terrain(room.GetBox().inner_max(), Terrain::Door);
-	}*/
 }
 
 void MapGridder::add_secret_area(Room const & room,
@@ -274,6 +267,7 @@ void MapGridder::add_secret_area(Room const & room,
 	// TODO: Doors on both ends of the entrace corridor?
 	//  -> secret passages let you reach the secret area from the wrong end
 	//  -> with triggers, both would open together
+	//  -> I think add_unlocked_door might now add one anyway
 
 	PosTempList button_pos_list = get_good_positions_inside_wall(neighbour);
 	PosTempList torch_pos_list  = choose_torch_positions(neighbour);
@@ -286,7 +280,7 @@ void MapGridder::add_secret_area(Room const & room,
 
 	if (door_type == LockedDoorType::None)
 	{
-		return;  // no door
+		return;  // no locked door (but add_unlocked_doors might add an unlocked one)
 	}
 
 	Terrain::Type door_terrain = get_terrain_for_locked_door_type(door_type);
@@ -502,7 +496,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 
 	// special room types
 	// TODO: Remove these when we have vaults?
-	//  -> or at least a heavier-duty system
+	//  -> or at least use a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
 	case 0:
@@ -650,28 +644,27 @@ void MapGridder::add_unlocked_doors(int room_index) const
 		DebugBreak("Only use MapGridder::add_unlocked_doors for corridors.");
 	}
 
-	MapGenerator::Parameters const& params = m_generator.ReadParameters();
+	Vec2 const door0 = room.GetBox().min;
+	Vec2 const door1 = room.GetBox().inner_max();
 
-	int door_index = Random::weighted_index(params.unlocked_door_weights,
-	                                        (int)(UnlockedDoorType::Count));
-	UnlockedDoorType door_type = (UnlockedDoorType)(door_index);
+	add_unlocked_door(door0);
+	add_unlocked_door(door1);
+}
 
-	if(door_type != UnlockedDoorType::None)
+void MapGridder::add_unlocked_door(Vec2 const& pos) const
+{
+	// this door can be beside things as long as the position itself is good
+	if (is_good_floor(pos))
 	{
-		Vec2 const door0 = room.GetBox().min;
-		Vec2 const door1 = room.GetBox().inner_max();
+		MapGenerator::Parameters const& params = m_generator.ReadParameters();
 
-		Terrain::Type door_terrain = get_terrain_for_unlocked_door_type(door_type);
-		int const map_z = m_map.get_z();
-
-		// these can be beside things as long as the floor itself is good
-		if (is_good_floor(door0))
+		int door_index = Random::weighted_index(params.unlocked_door_weights,
+		                                        (int)(UnlockedDoorType::Count));
+		UnlockedDoorType door_type = (UnlockedDoorType)(door_index);
+		if (door_type != UnlockedDoorType::None)
 		{
-			Feature::spawn(door0.xyz(map_z), door_terrain);
-		}
-		if (is_good_floor(door1))
-		{
-			Feature::spawn(door1.xyz(map_z), door_terrain);
+			Terrain::Type door_terrain = get_terrain_for_unlocked_door_type(door_type);
+			Feature::spawn(pos.xyz(m_map.get_z()), door_terrain);
 		}
 	}
 }

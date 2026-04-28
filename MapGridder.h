@@ -45,6 +45,7 @@ protected:
 	void add_desks_in_box(Box2 const & box) const;
 
 	void add_unlocked_doors(int room_index) const;
+	void add_unlocked_door(Vec2 const & pos) const;
 
 	// Pass 4 functions
 	void replace_all(Terrain::Type old_type, Terrain::Type new_type) const;
