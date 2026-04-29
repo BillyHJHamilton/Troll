@@ -31,7 +31,7 @@ struct History
 	int next_spawn_time = -1;
 	int creatures_spawned = 0;
 	int items_spawned = 0;
-	int chests_spawned = 0;
+	int treasures_spawned = 0;
 
 	bool has_ever_spawned() const { return next_spawn_time > -1; }
 };
@@ -95,9 +95,10 @@ void spawn_for_map(Map& map, History& history);
 int spawn_boss(Map const& map);
 int spawn_creatures(Map const& map, int creatures_to_spawn);
 int spawn_items(Map const& map, int items_to_spawn);
-int spawn_chests(Map& map, int chests_to_spawn);
+int spawn_treasures(Map& map, int treasures_to_spawn);
 
 Vec2 find_boss_spawn_position(Map const& map);
+void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius);
 
 // Decides on a creature or squad to spawn.
 Spawn::Option choose_spawn_option(float target_difficulty);
@@ -132,14 +133,14 @@ void spawn_early(Map& map, int map_id)
 	Spawn::Parameters const& param = map.read_spawn_param();
 
 	int items_to_spawn = Random::in_range(param.min_items, param.max_items);
-	int chests_to_spawn = Random::in_range(param.min_chests, param.max_chests);
+	int treasures_to_spawn = Random::in_range(param.min_treasures, param.max_treasures);
 	int min_range = 2;
 
-	if (chests_to_spawn > 0)
+	if (treasures_to_spawn > 0)
 	{
 		find_chest_positions(map);
-		int item_count = spawn_chests(map, chests_to_spawn);
-		history.chests_spawned += item_count;
+		int treasure_count = spawn_treasures(map, treasures_to_spawn);
+		history.treasures_spawned += treasure_count;
 	}
 
 	// can be in player sight because player doesn't exist yet
@@ -535,24 +536,63 @@ int spawn_items(Map const& map, int items_to_spawn)
 	return items_spawned;
 }
 
-int spawn_chests(Map& map, int chests_to_spawn)
+int spawn_treasures(Map& map, int treasures_to_spawn)
 {
+	Spawn::Parameters const& param = map.read_spawn_param();
+	float const difficulty = map.get_difficulty();
+	int const map_z = map.get_z();
+
 	int spawned = 0;
-	while (has_special_positions() && spawned < chests_to_spawn)
+	while (has_special_positions() && spawned < treasures_to_spawn)
 	{
-		Vec2 const pos = next_special_position();
-		Feature::spawn(pos.xyz(map.get_z()), Terrain::Chest);
+		Vec2 const pos2 = next_special_position();
+		Vec3 const pos3 = pos2.xyz(map_z);
+		TreasureHolder const holder = (TreasureHolder)(Random::weighted_index(
+			param.treasure_holder_weights, (int)(TreasureHolder::Count)));
+		switch (holder)
+		{
+			case TreasureHolder::Floor:
+				// TODO: Spawn items on floor spearately?
+				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
+				break;
+			case TreasureHolder::Chest:
+				Feature::spawn(pos3, Terrain::Chest);
+				break;
+			case TreasureHolder::SlimePool:
+				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
+				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
+				break;
+		}
 		++spawned;
 	}
 
 	if (Debug::enabled(Debug::Map))
 	{
 		int suggestion_count = map.read_suggestions().get_count(Suggestion::TreasureNormal);
-		std::cout << std::format("Placed {}/{} chests ({} suggestions).\n",
-			spawned, chests_to_spawn, suggestion_count);
+		std::cout << std::format("Placed {}/{} treasures ({} suggestions).\n",
+			spawned, treasures_to_spawn, suggestion_count);
 	}
 
 	return spawned;
+}
+
+void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
+{
+	Box2 const box = Box2::around_tile(centre.xy(), radius);
+	int const map_z = centre.z;
+
+	for (Vec2 pos : box)
+	{
+		Vec3 const pos3 = pos.xyz(map_z);
+		Terrain::Type terrain = World::read().get_terrain(pos3);
+		if (Terrain::can_spawn(terrain) &&
+			rounded_range(centre.xy(), pos, Random::in_range(1, radius + 1)) &&
+		    World::read().has_los(centre, pos3, -1))
+		{
+			// TODO: Truely immortal clouds
+			map.try_add_cloud(pos, cloud_type, 999999);
+		}
+	}
 }
 
 Spawn::Option choose_spawn_option(float target_difficulty)

@@ -53,7 +53,7 @@ namespace Door
 		int triggered_weights[(int)(Door::Triggered::Count)] = { 1 };  // SlidingWall: 1, all others: 0
 		int trigger_weights[(int)(Door::TriggerType::Count)] = { 1 };  // FlipendoButton: 1, all others: 0
 
-		// Type distributions for unlocked doors
+		// Type distribution for unlocked doors
 		int unlocked_weights[(int)(Door::Unlocked::Count)] = { 1 };  // None: 1, all others: 0
 
 		void serialize(ISerializer& s);

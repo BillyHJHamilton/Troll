@@ -48,8 +48,8 @@ void BuildWorld()
 		.cooldown_min = 60,
 		.cooldown_max = 120,
 		.lifetime_max_creatures = 30,
-		.min_chests = 5,
-		.max_chests = 7,
+		.min_treasures = 5,
+		.max_treasures = 7,
 	});
 
 	for (int z = 0; z <= c_MaxZ; ++z)
@@ -82,6 +82,11 @@ void BuildWorld()
 		door_param.unlocked_weights[(int)(Door::Unlocked::Closed)] = 1;
 
 		assert(door_param.are_weights_valid());
+
+		Spawn::Parameters& spawn_param = world.edit_map(z).edit_spawn_param();
+		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::Floor    )] = c_MaxZ - z;
+		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::Chest    )] = c_MaxZ;
+		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::SlimePool)] = z;
 	}
 
 	Spawn::post_world_setup();

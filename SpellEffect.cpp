@@ -295,6 +295,7 @@ void skurge(EffectParams params)
 	Box2 const box_to_clear = Box2::around_tile(pos.xy(), 1);
 	for (Vec2 clear2d : box_to_clear)
 	{
+		// TODO: Handle skurge cleaning area going up/down stairs?
 		// TODO: Should skurge clear other types of clouds?
 		//  -> there will be types it should not clear
 		//  -> if puddles are different than clouds, this would clear some puddles
