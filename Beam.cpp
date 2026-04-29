@@ -350,6 +350,12 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 
 static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 {
+	// Special case for Fred and George
+	if (target.has_tag(Creature::Tag::Shop))
+	{
+		return 0;
+	}
+
 	int caster_accuracy_factor;
 	int target_evasion_divisor;
 	
@@ -425,9 +431,7 @@ static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::Itr3D const & line)
 {
 	// todo - exception for firing into watertrap
-
 	// todo - exception for disintegration field--annihilate non-spell projectiles
-
 	// todo - exception for protego: block or reflect spell
 
 	// Apply effect, then deal damage.
@@ -441,7 +445,6 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 			.target_pos = target.pos(),
 			.impact_line = &line
 		};
-
 		beam.effect_func(params);
 	}
 	if (beam.damage > 0)
@@ -467,7 +470,6 @@ void detonate_in_midair (Beam::Data const & beam, LineCache::Itr3D const & line)
 			beam.pos,
 			&line
 		};
-
 		beam.effect_func(params);
 	}
 	if (beam.damage > 0)

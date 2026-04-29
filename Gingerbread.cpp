@@ -140,6 +140,8 @@ void init()
 	register_identity("Colin", "Colin Creevy", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Crabbe", "Vincent Crabbe", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Fleur", "Fleur Delacour", cstr_Sky, Gender::Female);
+	register_identity("Fred", "Fred Weasley", cstr_Orange, Gender::Male);
+	register_identity("George", "George Weasley", cstr_Orange, Gender::Male);
 	register_identity("Ginny", "Ginny Weasley", House::colour(House::Gryffindor), Gender::Female);
 	register_identity("Goyle", "Gregory Goyle", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Harry", "Harry Potter", House::colour(House::Gryffindor), Gender::Male);
@@ -379,6 +381,16 @@ void init()
 		.magic(10, "VM FP LM")
 		.tags(Creature::Tag::Move_Slow)
 		.loot({{Loot::Notes, 70}, {Loot::Potion, 40}});
+
+	// Shop Characters:
+	
+	Builder(Creature::Fred_Shop, "Fred",
+		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		.tags(Tag::Shop);
+
+	Builder(Creature::George_Shop, "George",
+		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		.tags(Tag::Shop);
 
 	// Validate that we didn't miss something.
 	for (int i = 0; i < Creature::Count; ++i)

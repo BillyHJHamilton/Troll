@@ -547,6 +547,29 @@ void init()
 		Taunt::Data{.text="Time for my famous Harry-Kari strategy.",
 			.condition=AttackSpell},
 	};
+
+	// TODO: Add a way for Fred and George to finish one other's sentences.
+	// TODO: Have them say different things after you buy, or leave without buying,
+	//   when out of stock, when player has nothing to sell, when leaving soon, etc.
+	s_taunts[Creature::Fred_Shop] = 
+	{
+		Taunt::Data{.text="Psst!  Over here!",
+			.condition=Greeting, .repeat=true},
+		Taunt::Data{.text="Have you collected any beans for us?"},
+		Taunt::Data{.text="Anything you need?"},
+		Taunt::Data{.text="Don't give up!", .rarity=10},
+		Taunt::Data{.text="Give 'em our regards!", .rarity=10},
+	};
+
+	s_taunts[Creature::George_Shop] = 
+	{
+		Taunt::Data{.text="Care to trade?"},
+		Taunt::Data{.text="Are you running short of beans?"},
+		Taunt::Data{.text="Anything you'd like to sell?"},
+		Taunt::Data{.text="We're on your side, you know.", .rarity=10},
+		Taunt::Data{.text="Huge fans of your work.", .rarity=10},
+	};
+
 }
 
 void clear()
