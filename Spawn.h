@@ -8,8 +8,8 @@ namespace Spawn
 {
 	enum class TreasureHolder : int
 	{
-		Floor = 0,
-		Chest,
+		Chest = 0,
+		WaterPool,
 		SlimePool,
 		Count,
 	};
@@ -39,7 +39,7 @@ namespace Spawn
 		int max_items = 35;
 
 		// Type distributions for how items are held
-		int treasure_holder_weights[(int)(TreasureHolder::Count)] = { 1 };  // Floor: 1, all others: 0
+		int treasure_holder_weights[(int)(TreasureHolder::Count)] = { 1 };  // Chest: 1, all others: 0
 		int min_treasures = 1;
 		int max_treasures = 3;
 

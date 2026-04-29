@@ -9,6 +9,7 @@ namespace Cloud
 		None = -1,
 		Smoke = 0,
 		Slime,
+		Puddle,
 		Count,
 	};
 

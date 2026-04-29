@@ -28,6 +28,7 @@ namespace Cloud
 		//	 Name		Codepoint						Colour					-Accuracy	-Vision	Damage Type
 		Data{"smoke",	Codepoint::BackwardsSquiggle,	cstr_Grey,				30,			2,		Damage::None	},
 		Data{"slime",	Codepoint::MidTilde,			cstr_LightChartreuse,	0,			0,		Damage::Acid	},
+		Data{"puddle",	Codepoint::MidTilde,			cstr_Sky,				0,			0,		Damage::None	},
 	};
 
 	//-------------------------------------------------------------------------
@@ -55,6 +56,7 @@ namespace Cloud
 		switch (c)
 		{
 			case Cloud::Smoke:		return "- a cloud of smoke";
+			case Cloud::Puddle:		return "- a puddle of water";
 			case Cloud::Slime:		return "- a puddle of slime";
 			default: DebugBreak();	return "- error: unknown cloud type";
 		}

@@ -551,12 +551,12 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 			param.treasure_holder_weights, (int)(TreasureHolder::Count)));
 		switch (holder)
 		{
-			case TreasureHolder::Floor:
-				// TODO: Spawn items on floor spearately?
-				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
-				break;
 			case TreasureHolder::Chest:
 				Feature::spawn(pos3, Terrain::Chest);
+				break;
+			case TreasureHolder::WaterPool:
+				spawn_pool(map, Cloud::Puddle, pos3, Random::in_range(1, 3));
+				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
 				break;
 			case TreasureHolder::SlimePool:
 				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
