@@ -12,4 +12,8 @@ namespace Shop
 	Inventory& edit_inventory();
 
 	void restock(float difficulty);
+
+	bool is_active();
+	bool try_spawn(Vec3 at);
+	void update();
 };

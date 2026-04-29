@@ -680,6 +680,21 @@ void release_identity(Creature::Handle creature)
 	}
 }
 
+Creature::Handle find_incarnation(Creature::Type type_for_identity)
+{
+	NameHash const identity = read(type_for_identity).identity;
+	if (identity != c_IdentityGeneric)
+	{
+		IdentityMetadata* metadata = Util::Find(s_metadata, identity);
+		if (metadata)
+		{
+			return metadata->current_handle;
+		}
+	}
+
+	return (Creature::Handle)c_Invalid;
+}
+
 //------------------------------------------------------------------------------
 // Helper implementations
 

@@ -26,6 +26,7 @@
 #include "Scratch.h"
 #include "Score.h"
 #include "SerializeSaveLoad.h"
+#include "Shop.h"
 #include "Spawn.h"
 #include "Spell.h"
 #include "Stairs.h"
@@ -104,6 +105,7 @@ void clear()
 	Menu::clear();
 	Player::clear();
 	Score::clear();
+	Shop::clear();
 	Spawn::clear();
 	Squad::clear();
 	Taunt::clear();
@@ -169,6 +171,7 @@ bool try_serialize_all(ISerializer& s)
 	Gingerbread::serialize(s);
 	Inventory::serialize(s);
 	Item::serialize(s);
+	Shop::serialize(s);
 	Spawn::serialize(s);
 	Squad::serialize(s);
 	Taunt::serialize(s);
@@ -323,6 +326,8 @@ void end_turn()
 	// Need to update visibility since player has likely moved.
 	World::edit().update_visibility(Player::pos(), Player::c_VisionRadius);
 	Creature::update_visible_creatures();
+
+	Shop::update();
 
 	// Now all other creatures act.
 	for (Creature::HandleItr itr(1);

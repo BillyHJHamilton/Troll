@@ -1,7 +1,16 @@
 #include "Shop.h"
 
+#include "Colour.h"
+#include "Creature.h"
+#include "Draw.h"
+#include "Game.h"
+#include "Gingerbread.h"
 #include "Loot.h"
+#include "Pathfind.h"
 #include "Random.h"
+#include "Serialize.h"
+#include "VectorUtil.h"
+#include "World.h"
 
 namespace Shop
 {
@@ -10,8 +19,12 @@ namespace Shop
 // Data
 
 int constexpr c_ShopItems = 7;
+int constexpr c_ActiveTurns = 100;
+int constexpr c_InactiveTurns = 150;
 
 Inventory s_shop_inventory;
+
+int s_next_trigger_turn = 0;
 
 //-------------------------------------------------------------------------------------------------
 // Interface
@@ -24,6 +37,7 @@ void clear()
 void serialize(ISerializer& s)
 {
 	s_shop_inventory.serialize_instance(s);
+	s.srz_int(s_next_trigger_turn);
 }
 
 Inventory const& read_inventory()
@@ -65,6 +79,64 @@ void restock(float difficulty)
 	{
 		Item::Handle new_item = Loot::make(Loot::Shop, (Creature::Type)c_Invalid, difficulty);
 		s_shop_inventory.add_item(new_item);
+	}
+}
+
+bool is_active()
+{
+	Creature::Handle const fred = Gingerbread::find_incarnation(Creature::Fred_Shop);
+	Creature::Handle const george = Gingerbread::find_incarnation(Creature::George_Shop);
+	return fred.valid() || george.valid();
+}
+
+bool try_spawn(Vec3 pos)
+{
+	if (is_active() ||
+		Game::get_turn_number() < s_next_trigger_turn)
+	{
+		return false;
+	}
+
+	Vec3TempList pos_list;
+	Pathfind::find_open_neighbours(pos, {.allow_stairs = false}, pos_list);
+	if (Util::Size(pos_list) < 2)
+	{
+		return false;
+	}
+
+	Random::shuffle_vector(pos_list);
+	Creature::Handle f = Creature::spawn_creature(Creature::Fred_Shop, pos_list.at(0));
+	Creature::Handle g = Creature::spawn_creature(Creature::George_Shop, pos_list.at(1));
+
+	float difficulty = World::read().find_map_difficulty(pos);
+	restock(difficulty);
+
+	s_next_trigger_turn = Game::get_turn_number() + c_ActiveTurns;
+
+	if (f.visible() || g.visible())
+	{
+		Draw::add_message("Fred and George emerge from a hidden trapdoor.", cstr_Orange);
+	}
+
+	return true;
+}
+
+void update()
+{
+	if (is_active())
+	{
+		Creature::Handle fred = Gingerbread::find_incarnation(Creature::Fred_Shop);
+		Creature::Handle george = Gingerbread::find_incarnation(Creature::George_Shop);
+
+		// Consider if we should despawn.
+		if (Game::get_turn_number() >= s_next_trigger_turn &&
+			(!fred.valid() || !fred.visible()) &&
+			(!george.valid() || !george.visible()))
+		{
+			fred.destroy();
+			george.destroy();
+			s_next_trigger_turn = Game::get_turn_number() + c_InactiveTurns;
+		}
 	}
 }
 

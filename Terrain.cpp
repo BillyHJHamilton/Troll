@@ -49,7 +49,7 @@ namespace Terrain
 		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
 		Data{"portcullis",			'#',						40,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /*shop seed*/,	'.',						0,		f_PermitSight | f_Feature,				f_None},
+		Data{"floor" /*shop seed*/,	'/',						0,		f_PermitSight | f_Feature,				f_None},
 	};
 
 	int get_character(Terrain::Type t)
