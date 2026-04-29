@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "Item.h"
 #include "Cloud.h"
+#include "Door.h"
 #include "Geometry.h"
 #include "Grid.h"
 #include "Serialize.h"
@@ -27,6 +28,9 @@ public:
 
 	Suggestion::Manager& edit_suggestions() { return suggestions; }
 	Suggestion::Manager const& read_suggestions() const { return suggestions; }
+
+	Door::Parameters const& read_door_param() const { return door_param; }
+	Door::Parameters& edit_door_param() { return door_param; }
 
 	void set_spawn_param(Spawn::Parameters const& new_param) { spawn_param = new_param; }
 	Spawn::Parameters const& read_spawn_param() const { return spawn_param; }
@@ -105,6 +109,7 @@ protected:
 	// List of stairs on the level.  Key is global pos for local end of the stairs.
 	std::unordered_map<Vec2,Stairs::Direction> stairs;
 
+	Door::Parameters door_param;
 	Spawn::Parameters spawn_param = {};
 
 	std::shared_ptr<MapGenerator> generator;

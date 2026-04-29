@@ -42,6 +42,7 @@ void Map::serialize(ISerializer& s)
 	s.srz_hashmap(stairs, "map.stairs");
 
 	s.srz_value(spawn_param);
+	door_param.serialize(s);
 
 	bool has_generator = (generator != nullptr);
 	s.srz_bool(has_generator);

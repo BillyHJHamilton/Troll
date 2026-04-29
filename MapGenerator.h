@@ -32,15 +32,6 @@ public:
 
 		bool IsShopSeed = false;
 
-		// Type distributions for triggers and locked doors
-		int door_genus_weights[(int)(Door::LockedGenus::Count)] = { 1 };  // None: 1, all others: 0
-		int spell_door_weights[(int)(Door::Spelled::Count)] = { 1 };  // Portrait: 1, all others: 0
-		int trigger_door_weights[(int)(Door::Triggered::Count)] = { 1 };  // SlidingWall: 1, all others: 0
-		int trigger_weights[(int)(Door::TriggerType::Count)] = { 1 };  // FlipendoButton: 1, all others: 0
-
-		// Type distributions for unlocked doors
-		int unlocked_door_weights[(int)(Door::Unlocked::Count)] = { 1 };  // None: 1, all others: 0
-
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
 

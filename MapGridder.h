@@ -32,12 +32,6 @@ protected:
 	                        Room const & neighbour0, Vec2 const & door0,
 	                        Room const & neighbour1, Vec2 const & door1) const;
 
-	Door::LockedGenus choose_locked_door_genus(bool allow_none, bool allow_trigger) const;
-	Door::Spelled choose_spelled_door_type() const;
-	Door::Triggered choose_triggered_door_type() const;
-	Door::TriggerType choose_trigger_type(bool allow_button, bool allow_torch) const;
-	Door::Unlocked choose_unlocked_door_type() const;
-
 	// Pass 3 functions
 	void add_cosmetic_chamber(int room_index) const;
 	void add_cosmetic_torches(Room const & room) const;
@@ -82,4 +76,5 @@ protected:
 private:
 	Map& m_map;
 	const MapGenerator& m_generator;
+	const Door::Parameters& m_doors;
 };

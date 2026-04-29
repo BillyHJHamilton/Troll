@@ -1,6 +1,7 @@
 #include "BuildWorld.h"
 
 #include "Creature.h"
+#include "Door.h"
 #include "Map.h"
 #include "MapGenerator.h"
 #include "MapGridder.h"
@@ -8,6 +9,8 @@
 #include "Random.h"
 #include "Terrain.h"
 #include "World.h"
+
+#include <cassert>
 
 void BuildWorld()
 {
@@ -51,33 +54,34 @@ void BuildWorld()
 
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
-		MapGenerator::Parameters & param = world.edit_map(z).get_generator().EditParameters();
+		MapGenerator::Parameters & gen_param = world.edit_map(z).get_generator().EditParameters();
+		//gen_param.MinNumRooms += z;
+		//gen_param.MaxNumRooms += 2*z;
+		gen_param.IsShopSeed = Random::coinflip();
+		gen_param.percent_torches_lit = 80 - z * 10;
 
-		//param.MinNumRooms += z;
-		//param.MaxNumRooms += 2*z;
+		Door::Parameters & door_param = world.edit_map(z).edit_door_param();
 
-		param.IsShopSeed = Random::coinflip();
-
-		param.door_genus_weights[(int)(Door::LockedGenus::None   )] = c_MaxZ * 2 - z;
-		param.door_genus_weights[(int)(Door::LockedGenus::Spell  )] = c_MaxZ;
-		param.door_genus_weights[(int)(Door::LockedGenus::Trigger)] = z;
+		door_param.locked_genus_weights[(int)(Door::LockedGenus::None   )] = c_MaxZ * 2 - z;
+		door_param.locked_genus_weights[(int)(Door::LockedGenus::Spell  )] = c_MaxZ;
+		door_param.locked_genus_weights[(int)(Door::LockedGenus::Trigger)] = z;
 
 		// if we chose a spell door
-		param.spell_door_weights[(int)(Door::Spelled::Portrait     )] = c_MaxZ;
-		param.spell_door_weights[(int)(Door::Spelled::AlohamoraDoor)] = c_MaxZ;
-		param.spell_door_weights[(int)(Door::Spelled::Ectoplasm    )] = z;
+		door_param.spelled_weights[(int)(Door::Spelled::Portrait     )] = c_MaxZ;
+		door_param.spelled_weights[(int)(Door::Spelled::AlohamoraDoor)] = c_MaxZ;
+		door_param.spelled_weights[(int)(Door::Spelled::Ectoplasm    )] = z;
 
 		// if we chose a trigger door
-		param.trigger_door_weights[(int)(Door::Triggered::SlidingWall)] = 1;
-		param.trigger_door_weights[(int)(Door::Triggered::Portcullis )] = 1;
-		param.trigger_weights[(int)(Door::TriggerType::FlipendoButton)] = 2;
-		param.trigger_weights[(int)(Door::TriggerType::LightTorch    )] = 1;
+		door_param.triggered_weights[(int)(Door::Triggered::SlidingWall)] = 1;
+		door_param.triggered_weights[(int)(Door::Triggered::Portcullis )] = 1;
+		door_param.trigger_weights[(int)(Door::TriggerType::FlipendoButton)] = 2;
+		door_param.trigger_weights[(int)(Door::TriggerType::LightTorch    )] = 1;
 
-		param.unlocked_door_weights[(int)(Door::Unlocked::None  )] = 3;
-		param.unlocked_door_weights[(int)(Door::Unlocked::Open  )] = 2;
-		param.unlocked_door_weights[(int)(Door::Unlocked::Closed)] = 1;
+		door_param.unlocked_weights[(int)(Door::Unlocked::None  )] = 3;
+		door_param.unlocked_weights[(int)(Door::Unlocked::Open  )] = 2;
+		door_param.unlocked_weights[(int)(Door::Unlocked::Closed)] = 1;
 
-		param.percent_torches_lit = 80 - z * 10;
+		assert(door_param.are_weights_valid());
 	}
 
 	Spawn::post_world_setup();
