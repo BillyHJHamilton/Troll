@@ -549,6 +549,7 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 		Vec3 const pos3 = pos2.xyz(map_z);
 		TreasureHolder const holder = (TreasureHolder)(Random::weighted_index(
 			param.treasure_holder_weights, (int)(TreasureHolder::Count)));
+
 		switch (holder)
 		{
 			case TreasureHolder::Chest:
@@ -556,13 +557,14 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 				break;
 			case TreasureHolder::WaterPool:
 				spawn_pool(map, Cloud::Puddle, pos3, Random::in_range(1, 3));
-				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
+				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
 				break;
 			case TreasureHolder::SlimePool:
 				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
-				Loot::spawn(Loot::Chest_Main, pos3, Creature::None, difficulty);
+				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
 				break;
 		}
+
 		++spawned;
 	}
 

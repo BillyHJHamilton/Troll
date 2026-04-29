@@ -21,7 +21,7 @@ void init()
 	s_loot_table[Sweets] =			{	0,		0,		0,		1,		0,		};
 	s_loot_table[Potion] =			{	0,		0,		0,		0,		1,		};
 	s_loot_table[Floor] =			{	0,		0,		14,		3,		1,		};
-	s_loot_table[Chest_Main] =		{	0,		0,		0,		1,		2,		};
+	s_loot_table[Treasure] =		{	0,		0,		0,		1,		2,		};
 	s_loot_table[Student_Generic] =	{	8,		0,		0,		3,		1,		};
 
 	// Validation
