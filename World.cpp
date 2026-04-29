@@ -506,7 +506,10 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 		if (range != -1)
 		{
 			Cloud::Type const cloud = get_cloud(itr->xyz(start.z));
-			cloud_loss += Cloud::vision_loss(cloud);
+			if (cloud != Cloud::None)
+			{
+				cloud_loss += Cloud::vision_loss(cloud);
+			}
 		}
 
 		itr.advance();

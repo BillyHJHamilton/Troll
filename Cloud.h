@@ -23,7 +23,7 @@ namespace Cloud
 	int accuracy_loss (Cloud::Type c);
 	int vision_loss (Cloud::Type c);
 
-	bool affects_creatures (Cloud::Type cloud);
+	//bool affects_creatures (Cloud::Type cloud);
 	bool hazardous_for (Cloud::Type cloud, Creature::Handle const& creature);
 	void affect_creature (Cloud::Type cloud, Creature::Handle& creature);
 }

@@ -10,6 +10,26 @@
 
 namespace Cloud
 {
+	//-------------------------------------------------------------------------------------------------
+	// Data
+
+	struct Data
+	{
+		char const* name;
+		int codepoint;
+		char const* colour;
+		int accuray_loss;
+		int vision_loss;
+		Damage::Type damage_type;
+	};
+
+	Cloud::Data const s_data[] = 
+	{
+		//	 Name		Codepoint						Colour					-Accuracy	-Vision	Damage Type
+		Data{"smoke",	Codepoint::BackwardsSquiggle,	cstr_Grey,				30,			2,		Damage::None	},
+		Data{"slime",	Codepoint::MidTilde,			cstr_LightChartreuse,	0,			0,		Damage::Acid	},
+	};
+
 	//-------------------------------------------------------------------------
 	// Helper function declarations
 
@@ -20,24 +40,14 @@ namespace Cloud
 
 	int get_codepoint(Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::Smoke:
-				return Codepoint::BackwardsSquiggle;
-			case Cloud::Slime:
-				return Codepoint::MidTilde;
-			default: DebugBreak(); return '?';
-		}
+		assert(is_cloud(c));
+		return s_data[c].codepoint;
 	}
 
 	char const * get_colour(Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::Smoke:		return cstr_Grey;
-			case Cloud::Slime:		return cstr_LightChartreuse;
-			default: DebugBreak();	return cstr_White;
-		}
+		assert(is_cloud(c));
+		return s_data[c].colour;
 	}
 
 	char const * look_describe(Cloud::Type c)
@@ -52,48 +62,24 @@ namespace Cloud
 
 	int accuracy_loss (Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::None:		return 0;
-			case Cloud::Smoke:		return 30;
-			case Cloud::Slime:		return 0;
-			default: DebugBreak();	return 0;
-		}
+		assert(is_cloud(c));
+		return s_data[c].accuray_loss;
 	}
 
 	int vision_loss (Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::None:		return 0;
-			case Cloud::Smoke:		return 2;
-			case Cloud::Slime:		return 0;
-			default: DebugBreak();	return 0;
-		}
-	}
-
-	bool affects_creatures (Cloud::Type cloud)
-	{
-		switch (cloud)
-		{
-			case Cloud::Slime:
-				return true;
-			default:
-				return false;
-		}
+		assert(is_cloud(c));
+		return s_data[c].vision_loss;
 	}
 
 	bool hazardous_for (Cloud::Type cloud, Creature::Handle const& creature)
 	{
-		switch (cloud)
+		assert(is_cloud(cloud));
+		if (s_data[cloud].damage_type == Damage::None)
 		{
-			case Cloud::Slime:
-				return !creature.has_tag(Creature::Tag::Trail_Slime)
-					&& !creature.is_immune(Damage::Acid);
-
-			default:
-				return false;
+			return false;
 		}
+		return !creature.is_immune(s_data[cloud].damage_type);
 	}
 
 	void affect_creature (Cloud::Type cloud, Creature::Handle& creature)

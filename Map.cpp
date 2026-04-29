@@ -184,14 +184,11 @@ void Map::step_clouds()
 		Vec2 const pos = itr->first;
 		int& lifetime = itr->second;
 
-		Cloud::Type cloud_type = clouds.read(pos.x, pos.y);
-		if (Cloud::affects_creatures(cloud_type))
+		Creature::Handle creature = Creature::creature_at_pos(pos.xyz(global_z));
+		if (creature.valid())
 		{
-			Creature::Handle creature = Creature::creature_at_pos(pos.xyz(global_z));
-			if (creature.valid())
-			{
-				Cloud::affect_creature(cloud_type, creature);
-			}
+			Cloud::Type cloud_type = clouds.read(pos.x, pos.y);
+			Cloud::affect_creature(cloud_type, creature);
 		}
 
 		--lifetime;

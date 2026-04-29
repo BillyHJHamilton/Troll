@@ -264,6 +264,8 @@ void rictusempra (EffectParams params)
 void skurge(EffectParams params)
 {
 	// ignores creatures
+	// TODO: Should skurge damage ghosts?
+	//  -> if so, update description
 
 	bool is_ectoplasm = false;
 	Vec3 const pos = params.target_pos;
@@ -279,6 +281,9 @@ void skurge(EffectParams params)
 	Box2 const box_to_clear = Box2::around_tile(pos.xy(), 1);
 	for (Vec2 clear2d : box_to_clear)
 	{
+		// TODO: Should skurge clear other types of clouds?
+		//  -> there will be types it should not clear
+		//  -> if puddles are different than clouds, this would clear some puddles
 		Vec3 const clear3d = clear2d.xyz(pos.z);
 		if (World::read().get_cloud(clear3d) == Cloud::Slime)
 		{

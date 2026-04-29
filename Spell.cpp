@@ -54,7 +54,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* Tarantallegra */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* Locomotor Mortis */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
 	/* Rictusempra */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
-	/* Skurge */ "A simple Scouring Charm.  It clears away slime and ectoplasm.",  // it could also do damage to ghosts
+	/* Skurge */ "A simple Scouring Charm.  It clears away slime and ectoplasm.",
 	/* Fumos */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.  Try aiming at a point between you and your enemy before casting.",
 	/* Mimblewimble */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
 	/* Lacarnum Inflamare */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",
