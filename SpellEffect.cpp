@@ -21,6 +21,16 @@
 namespace Spell
 {
 
+//-------------------------------------------------------------------------------------------------
+// Helper declarations
+
+void flipendo_vs_creature(EffectParams const& params);
+void finite_option(std::vector<Status::Index>& list, Creature::Handle caster, Status::Index status);
+
+
+//-------------------------------------------------------------------------
+// 1st-year spells
+
 // Put one space at the start of the messages for these, for a hanging indent.
 // Be aware that impact_line MAY be nullptr, particularly if spell is self-targeted.
 // Target may be Creature::None, if spell hit self or detonated in midair.
@@ -244,6 +254,10 @@ void locomotor_mortis (EffectParams params)
 	}
 }
 
+
+//-------------------------------------------------------------------------
+// 2nd-year spells
+
 void rictusempra (EffectParams params)
 {
 	Creature::Handle target = params.target;
@@ -406,6 +420,10 @@ void lacarnum_inflamare (EffectParams params)
 	}
 }
 
+
+//-------------------------------------------------------------------------
+// 3rd-year spells
+
 void furnunculus (EffectParams params)
 {
 	if (params.target.valid())
@@ -453,6 +471,10 @@ void finite_incantatem (EffectParams params)
 		Draw::creature_message(caster, " Nothing happens.");
 	}
 }
+
+
+//-------------------------------------------------------------------------
+// 4th-year spells
 
 void accio (EffectParams params)
 {
@@ -577,6 +599,10 @@ void impedementa (EffectParams params)
 	target.inflict_status(Status::Impeded, 5);
 }
 
+
+//-------------------------------------------------------------------------
+// 5th-year spells
+
 void bat_bogey_hex (EffectParams params)
 {
 	Creature::Handle target = params.target;
@@ -590,4 +616,4 @@ void bat_bogey_hex (EffectParams params)
 	target.inflict_status(Status::Batty, 6);
 }
 
-}
+} // namespace Spell
