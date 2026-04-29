@@ -33,23 +33,23 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 	s.srz_bool(IsShopSeed);
 
-	for (int i = 0; i < (int)(LockedDoorGenus::Count); i++)
+	for (int i = 0; i < (int)(Door::LockedGenus::Count); i++)
 	{
 		s.srz_int(door_genus_weights[i]);
 	}
-	for (int i = 0; i < (int)(SpellDoorType::Count); i++)
+	for (int i = 0; i < (int)(Door::Spelled::Count); i++)
 	{
 		s.srz_int(spell_door_weights[i]);
 	}
-	for (int i = 0; i < (int)(TriggerDoorType::Count); i++)
+	for (int i = 0; i < (int)(Door::Triggered::Count); i++)
 	{
 		s.srz_int(trigger_door_weights[i]);
 	}
-	for (int i = 0; i < (int)(TriggerType::Count); i++)
+	for (int i = 0; i < (int)(Door::TriggerType::Count); i++)
 	{
 		s.srz_int(trigger_weights[i]);
 	}
-	for (int i = 0; i < (int)(UnlockedDoorType::Count); i++)
+	for (int i = 0; i < (int)(Door::Unlocked::Count); i++)
 	{
 		s.srz_int(unlocked_door_weights[i]);
 	}

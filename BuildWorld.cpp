@@ -58,24 +58,24 @@ void BuildWorld()
 
 		param.IsShopSeed = Random::coinflip();
 
-		param.door_genus_weights[(int)(LockedDoorGenus::None   )] = c_MaxZ * 2 - z;
-		param.door_genus_weights[(int)(LockedDoorGenus::Spell  )] = c_MaxZ;
-		param.door_genus_weights[(int)(LockedDoorGenus::Trigger)] = z;
+		param.door_genus_weights[(int)(Door::LockedGenus::None   )] = c_MaxZ * 2 - z;
+		param.door_genus_weights[(int)(Door::LockedGenus::Spell  )] = c_MaxZ;
+		param.door_genus_weights[(int)(Door::LockedGenus::Trigger)] = z;
 
 		// if we chose a spell door
-		param.spell_door_weights[(int)(SpellDoorType::Portrait     )] = c_MaxZ;
-		param.spell_door_weights[(int)(SpellDoorType::AlohamoraDoor)] = c_MaxZ;
-		param.spell_door_weights[(int)(SpellDoorType::Ectoplasm    )] = z;
+		param.spell_door_weights[(int)(Door::Spelled::Portrait     )] = c_MaxZ;
+		param.spell_door_weights[(int)(Door::Spelled::AlohamoraDoor)] = c_MaxZ;
+		param.spell_door_weights[(int)(Door::Spelled::Ectoplasm    )] = z;
 
 		// if we chose a trigger door
-		param.trigger_door_weights[(int)(TriggerDoorType::SlidingWall)] = 1;
-		param.trigger_door_weights[(int)(TriggerDoorType::Portcullis )] = 1;
-		param.trigger_weights[(int)(TriggerType::FlipendoButton)] = 2;
-		param.trigger_weights[(int)(TriggerType::LightTorch    )] = 1;
+		param.trigger_door_weights[(int)(Door::Triggered::SlidingWall)] = 1;
+		param.trigger_door_weights[(int)(Door::Triggered::Portcullis )] = 1;
+		param.trigger_weights[(int)(Door::TriggerType::FlipendoButton)] = 2;
+		param.trigger_weights[(int)(Door::TriggerType::LightTorch    )] = 1;
 
-		param.unlocked_door_weights[(int)(UnlockedDoorType::None  )] = 3;
-		param.unlocked_door_weights[(int)(UnlockedDoorType::Open  )] = 2;
-		param.unlocked_door_weights[(int)(UnlockedDoorType::Closed)] = 1;
+		param.unlocked_door_weights[(int)(Door::Unlocked::None  )] = 3;
+		param.unlocked_door_weights[(int)(Door::Unlocked::Open  )] = 2;
+		param.unlocked_door_weights[(int)(Door::Unlocked::Closed)] = 1;
 
 		param.percent_torches_lit = 80 - z * 10;
 	}
