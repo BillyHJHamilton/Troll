@@ -6,7 +6,7 @@ namespace Door
 {
 	enum class LockedGenus : int
 	{
-		None,
+		None = 0,
 		Spell,
 		Trigger,
 		Count,
@@ -15,7 +15,7 @@ namespace Door
 	enum class Spelled : int
 	{
 		NotPossible = -1,  // error value
-		Portrait,
+		Portrait = 0,
 		AlohamoraDoor,
 		Ectoplasm,
 		Count,
@@ -24,7 +24,7 @@ namespace Door
 	enum class Triggered : int
 	{
 		NotPossible = -1,  // error value
-		SlidingWall,
+		SlidingWall = 0,
 		Portcullis,
 		Count,
 	};
@@ -32,14 +32,14 @@ namespace Door
 	enum class TriggerType : int
 	{
 		NotPossible = -1,  // error value
-		FlipendoButton,
+		FlipendoButton = 0,
 		LightTorch,
 		Count,
 	};
 
 	enum class Unlocked : int
 	{
-		None,
+		None = 0,
 		Open,
 		Closed,
 		Count,
