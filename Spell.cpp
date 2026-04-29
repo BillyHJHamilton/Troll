@@ -22,24 +22,25 @@ int constexpr c_DmgSP = -2;  // special Stupefy damage--scaled by level
 
 static std::array<Spell::Data, Spell::Count> constexpr s_spell_list = 
 {	//			Spell name				Abbrv	Colour				Dif Drk Type			Dmg		Acc Rng	Effect function			Miscast type		Target type		Target flags
-	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			Miscast::Beam,		Target::Beam,	Target::f_Fire},
+	Spell::Data {"Vermillious",			"VM",	"red",				5,	0,	Damage::Fire,	2,		85,	4,	&vermillious,			Miscast::Beam,		Target::Beam,	Target::f_Fire },
 	Spell::Data {"Flipendo",			"FP",	"orange",			10,	0,	Damage::Basic,	2,		70,	8,	&flipendo,				Miscast::Beam,		Target::Beam,	Target::f_Flipendo },
 	Spell::Data {"Alohomora",			"AL",	"light sky",		15,	0,	Damage::None,	0,		50, 8,	&alohomora,				Miscast::Charm,		Target::Beam,	Target::f_Alohomora },
-	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	Damage::None,	0,		90,	8,	&tarantallegra,			Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	Damage::None,	0,		90,	8,	&locomotor_mortis,		Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	Damage::None,	0,		85,	8,	&rictusempra,			Miscast::Beam,		Target::Beam,	f_None},
+	Spell::Data {"Tarantallegra",		"TA",	"light pink",		15,	0,	Damage::None,	0,		90,	8,	&tarantallegra,			Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Locomotor Mortis",	"LM",	"yellow",			15,	0,	Damage::None,	0,		90,	8,	&locomotor_mortis,		Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Rictusempra",			"RS",	"light red",		20,	0,	Damage::None,	0,		85,	8,	&rictusempra,			Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Skurge",				"SK",	"han",				20,	0,	Damage::None,	0,		50,	8,	&skurge,				Miscast::Charm,		Target::Beam,	Target::f_Midair | Target::f_Skurge },
 	Spell::Data {"Fumos",				"FM",	"light grey",		25,	0,	Damage::None,	0,		-1, 8,	&fumos,					Miscast::Conjuring,	Target::Beam,	Target::f_Midair },
-	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	Damage::None,	0,		85,	8,	&mimblewimble,			Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  Damage::None,	0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam,		Target::Beam,	Target::f_Fire},
-	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::ToLife,	4,		60, 6,  &furnunculus,			Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  Damage::None,	0,		-1, 0,  &finite_incantatem,		Miscast::Charm,		Target::Self,	f_None},
+	Spell::Data {"Mimblewimble",		"MW",	"blue",				25,	0,	Damage::None,	0,		85,	8,	&mimblewimble,			Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Lacarnum Inflamare",  "LC",   "orange",			25, 0,  Damage::None,	0,		65, 3,  &lacarnum_inflamare,	Miscast::Beam,		Target::Beam,	Target::f_Fire },
+	Spell::Data {"Furnunculus",			"FN",   "lighter orange",	30, 0,  Damage::ToLife,	4,		60, 6,  &furnunculus,			Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Finite Incantatem",	"FI",   "blue",				35, 0,  Damage::None,	0,		-1, 0,  &finite_incantatem,		Miscast::Charm,		Target::Self,	f_None },
 	Spell::Data {"Accio",				"AC",   "light sea",		40, 0,  Damage::None,	0,		-1, 8,  &accio,					Miscast::Conjuring, Target::Sight,	Target::f_Midair },
 	Spell::Data {"Colloportus",			"CP",	"lighter yellow",	40,	0,	Damage::None,	0,		-1, 8,	&colloportus,			Miscast::Charm,		Target::Sight,	Target::f_Colloportus },
-	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::ToLife,	c_DmgSP,75, 7,  &stupefy,				Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			Miscast::Beam,		Target::Beam,	f_None},
-	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			Miscast::Beam,		Target::Beam,	f_None},
+	Spell::Data {"Stupefy",				"SP",   "red",				45, 0,  Damage::ToLife,	c_DmgSP,75, 7,  &stupefy,				Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Impedementa",			"IP",   "light green",		45, 0,  Damage::None,	0,		85, 8,  &impedementa,			Miscast::Beam,		Target::Beam,	f_None },
+	Spell::Data {"Bat-Bogey Hex",		"BT",   "dark purple",		55, 0,  Damage::None,	0,		80, 6,  &bat_bogey_hex,			Miscast::Beam,		Target::Beam,	f_None },
 #if _DEBUG                                                                                                                          
-	Spell::Data {"Megabolt",			"MG",	"light amber",		0,	0,	Damage::Basic,	20,		999,8,	nullptr,				Miscast::Beam,		Target::Sight,	f_None},
+	Spell::Data {"Megabolt",			"MG",	"light amber",		0,	0,	Damage::Basic,	20,		999,8,	nullptr,				Miscast::Beam,		Target::Sight,	f_None },
 #else                                                                                                                               
 	Spell::Data {"Megabolt",			"MG",	"light amber",		999,0,	Damage::Basic,	0,		0,	0,	nullptr,				Miscast::Beam,		Target::Sight,	f_None },
 #endif
@@ -53,6 +54,7 @@ static std::array<const char*, Spell::Count> constexpr s_spell_description =
 	/* Tarantallegra */ "Causes the target\'s feet to dance on their own, which may render him too distracted to cast spells.",
 	/* Locomotor Mortis */ "The Leg-Locker Jinx.  Makes the target's legs stick together.  This makes it harder to move, and harder to dodge hostile spells.",
 	/* Rictusempra */ "A tickling charm.  Distracts the target and may also cause him to miscast his spells.",
+	/* Skurge */ "A simple Scouring Charm.  It clears away slime and ectoplasm.",  // it could also do damage to ghosts
 	/* Fumos */ "Produces a cloud of smoke, which reduces line of sight and reduces the accuracy of spells.  Try aiming at a point between you and your enemy before casting.",
 	/* Mimblewimble */ "The Tongue-Tying Jynx.  Causes the target to mispronounce his incantations, increasing the chance of spell miscasts.",
 	/* Lacarnum Inflamare */ "Used to set fire to the target's clothing, which is highly distracting and also deals some damage each turn.",

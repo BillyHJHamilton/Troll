@@ -162,23 +162,6 @@ void alohomora(EffectParams params)
 	}
 }
 
-void colloportus(EffectParams params)
-{
-	// ignores creatures
-
-	Vec3 const pos = params.target_pos;
-	switch(World::read().get_terrain(pos))
-	{
-	case Terrain::DoorOpen:
-	case Terrain::DoorClosed:
-		Feature::lock_door(pos);
-		break;
-	default:
-		Draw::pos_message(pos, "It has no effect.");
-		break;
-	}
-}
-
 void tarantallegra (EffectParams params)
 {
 	Creature::Handle target = params.target;
@@ -276,6 +259,32 @@ void rictusempra (EffectParams params)
 			Grammar::you(target)));
 		target.inflict_status(Status::Tickled, Random::in_range(4,6));
 	}
+}
+
+void skurge(EffectParams params)
+{
+	// ignores creatures
+	// 
+	// TODO: Could say "The imp is unaffected"
+	//	Draw::creature_message(target, std::format("{} unaffected.",
+	//		Grammar::You_are(target)));
+	//  -> if so, also other non-combat spells
+	//  -> could be a standard function
+	//  -> but what if there is something on the same cell?
+	//    -> if a neighbouring cell for skurge specifically
+
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::Ectoplasm:
+		Feature::clear_ectoplasm(pos);
+		break;
+	default:
+		Draw::pos_message(pos, "It has no effect.");
+		break;
+	}
+
+	// TODO: Clean up slime in a 3x3 box
 }
 
 void fumos (EffectParams params)
@@ -490,6 +499,23 @@ void accio (EffectParams params)
 	else if (target.valid())
 	{
 		Draw::creature_message(caster, "Nothing happened.");
+	}
+}
+
+void colloportus(EffectParams params)
+{
+	// ignores creatures
+
+	Vec3 const pos = params.target_pos;
+	switch(World::read().get_terrain(pos))
+	{
+	case Terrain::DoorOpen:
+	case Terrain::DoorClosed:
+		Feature::lock_door(pos);
+		break;
+	default:
+		Draw::pos_message(pos, "It has no effect.");
+		break;
 	}
 }
 

@@ -480,6 +480,16 @@ void open_portrait(Vec3 pos)
 	}
 }
 
+void clear_ectoplasm(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Draw::pos_message(pos, "The ectoplasm dissolves!");
+		remove_feature(feature, Terrain::Open);
+	}
+}
+
 void unlock_door(Vec3 pos)
 {
 	Feature::Itr feature = find_feature(pos);
