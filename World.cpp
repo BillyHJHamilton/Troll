@@ -561,7 +561,15 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		}
 
 		int code = Terrain::get_character(t);
-		std::string draw_colour = (v == Visibility::Visible) ? cstr_White : cstr_DarkGrey;
+		std::string draw_colour = cstr_White;
+		if (Terrain::is_colour(t))
+		{
+			draw_colour = Terrain::get_colour(t);
+		}
+		if (v != Visibility::Visible)
+		{
+			draw_colour = cstr_DarkGrey;
+		}
 
 		if (v == Visibility::Visible)
 		{

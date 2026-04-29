@@ -2,6 +2,7 @@
 
 #include "BitFlag.h"
 #include "Codepoint.h"
+#include "Colour.h"
 #include "Target.h"
 
 #include <cassert>
@@ -21,6 +22,7 @@ namespace Terrain
 	{
 		char const* name;
 		int codepoint;
+		char const* colour;
 		int cover_percent;
 		int terrain_flags = f_None;
 		int target_flags = f_None;
@@ -30,38 +32,44 @@ namespace Terrain
 	{
 		// Remember: These names are used by look_describe and for spell messages.
 
-		//	 Name					Codepoint					Cover	Terrain flags							Target flags
-		Data{"floor",				'.',						0,		f_PermitSight | f_CanSpawn,				f_None},
-		Data{"floor (highlight)",	':',						0,		f_PermitSight | f_CanSpawn,				f_None},
-		Data{"floor (no spawn)",	'.',						0,		f_PermitSight,							f_None},
-		Data{"placeholder",			'X',						0,		f_PermitSight,							f_None},
-		Data{"wall",				Codepoint::SolidBlock,		100,	f_Solid | f_CrosshairFill,				f_None},
-		Data{"up stairs",			Codepoint::CaretUp,			0,		f_Stairs,								f_None},
-		Data{"down stairs",			Codepoint::CaretDown,		0,		f_Stairs,								f_None},
-		Data{"chest",				Codepoint::Chest,			40,		f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
-		Data{"armour",				Codepoint::Armour,			30,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"desk",				Codepoint::Desk1,			50,		f_PermitSight | f_Solid | f_Feature |
-																		f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
-		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
-		Data{"torch" /*lit*/,		Codepoint::TorchLit,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /* scanner */,	'.',						0,		f_PermitSight | f_Feature,				f_None},
-		Data{"button",				Codepoint::FlipendoButton,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
-		Data{"portrait",			Codepoint::Portrait,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
-		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	100,	f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"door", /*open*/		Codepoint::DoorOpen,		0,		f_PermitSight | f_Feature |
-																		f_CrosshairFill,						Target::f_Colloportus},
-		Data{"door", /*closed*/		Codepoint::DoorClosed,		100,	f_Feature | f_CrosshairFill,			Target::f_Colloportus},
-		Data{"door", /*locked*/		Codepoint::DoorLocked,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
-		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
-		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
-		Data{"portcullis",			'#',						40,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /*shop seed*/,	'.',						0,		f_PermitSight | f_Feature,				f_None},
+		//	 Name					Codepoint					Colour			Cover	Terrain flags							Target flags
+		Data{"floor",				'.',						nullptr,		0,		f_PermitSight | f_CanSpawn,				f_None},
+		Data{"floor (highlight)",	':',						nullptr,		0,		f_PermitSight | f_CanSpawn,				f_None},
+		Data{"floor (no spawn)",	'.',						nullptr,		0,		f_PermitSight,							f_None},
+		Data{"placeholder",			'X',						nullptr,		0,		f_PermitSight,							f_None},
+		Data{"wall",				Codepoint::SolidBlock,		nullptr,		100,	f_Solid | f_CrosshairFill,				f_None},
+		Data{"up stairs",			Codepoint::CaretUp,			nullptr,		0,		f_Stairs,								f_None},
+		Data{"down stairs",			Codepoint::CaretDown,		nullptr,		0,		f_Stairs,								f_None},
+		Data{"chest",				Codepoint::Chest,			nullptr,		40,		f_PermitSight | f_Solid | f_Feature,	Target::f_Alohomora},
+		Data{"armour",				Codepoint::Armour,			nullptr,		30,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"desk",				Codepoint::Desk1,			nullptr,		50,		f_PermitSight | f_Solid | f_Feature |
+																						f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
+		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
+		Data{"torch" /*lit*/,		Codepoint::TorchLit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"floor" /* scanner */,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
+		Data{"button",				Codepoint::FlipendoButton,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
+		Data{"portrait",			Codepoint::Portrait,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	cstr_LightGreen,100,	f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"door", /*open*/		Codepoint::DoorOpen,		nullptr,		0,		f_PermitSight | f_Feature |
+																						f_CrosshairFill,						Target::f_Colloportus},
+		Data{"door", /*closed*/		Codepoint::DoorClosed,		nullptr,		100,	f_Feature | f_CrosshairFill,			Target::f_Colloportus},
+		Data{"door", /*locked*/		Codepoint::DoorLocked,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
+		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
+		Data{"portcullis",			'#',						nullptr,		40,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"floor" /*shop seed*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 	};
 
 	int get_character(Terrain::Type t)
 	{
 		assert(is_valid_type(t));
 		return s_data[t].codepoint;
+	}
+
+	const char* get_colour(Terrain::Type t)
+	{
+		assert(is_valid_type(t));
+		return s_data[t].colour;
 	}
 
 	const char* get_name(Terrain::Type t)
