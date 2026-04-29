@@ -264,27 +264,37 @@ void rictusempra (EffectParams params)
 void skurge(EffectParams params)
 {
 	// ignores creatures
-	// 
-	// TODO: Could say "The imp is unaffected"
-	//	Draw::creature_message(target, std::format("{} unaffected.",
-	//		Grammar::You_are(target)));
-	//  -> if so, also other non-combat spells
-	//  -> could be a standard function
-	//  -> but what if there is something on the same cell?
-	//    -> if a neighbouring cell for skurge specifically
 
+	bool is_ectoplasm = false;
 	Vec3 const pos = params.target_pos;
 	switch(World::read().get_terrain(pos))
 	{
 	case Terrain::Ectoplasm:
 		Feature::clear_ectoplasm(pos);
-		break;
-	default:
-		Draw::pos_message(pos, "It has no effect.");
+		is_ectoplasm = true;
 		break;
 	}
 
-	// TODO: Clean up slime in a 3x3 box
+	bool is_any_slime = false;
+	Box2 const box_to_clear = Box2::around_tile(pos.xy(), 1);
+	for (Vec2 clear2d : box_to_clear)
+	{
+		Vec3 const clear3d = clear2d.xyz(pos.z);
+		if (World::read().get_cloud(clear3d) == Cloud::Slime)
+		{
+			World::edit().clear_cloud(clear3d);
+			is_any_slime = true;
+		}
+	}
+	if (is_any_slime)
+	{
+		Draw::pos_message(pos, "The slime on the floor dissolves.");
+	}
+
+	if (!is_ectoplasm && !is_any_slime)
+	{
+		Draw::pos_message(pos, "It has no effect.");
+	}
 }
 
 void fumos (EffectParams params)
