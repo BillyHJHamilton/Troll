@@ -67,6 +67,7 @@ namespace Door
 	enum class Triggered : int;
 	enum class TriggerType : int;
 	enum class Unlocked : int;
+	struct Parameters;
 }
 
 namespace Draw
