@@ -2,6 +2,7 @@
 
 #include "Ability.h"
 #include "Beam.h"
+#include "Colour.h"
 #include "Creature.h"
 #include "Crosshair.h"
 #include "Debug.h"
@@ -470,8 +471,8 @@ void do_miscast (Creature::Handle caster, Spell::Index spell, Vec3 target_pos, i
 			+ " " + Spell::get_name(spell) + "!");
 
 		Draw::View view = Draw::get_view();
-		Draw::draw_tile_temp('X', caster.pos().xy(), view, "yellow");
-		Draw::draw_tile_temp('X', caster.pos().xy(), view, "black");
+		Draw::draw_tile_temp('X', caster.pos().xy(), view, cstr_Yellow);
+		Draw::draw_tile_temp('X', caster.pos().xy(), view, cstr_Black);
 	}
 
 	if (caster.is_player())
