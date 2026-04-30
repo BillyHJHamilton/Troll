@@ -555,11 +555,8 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 			case TreasureHolder::Chest:
 				Feature::spawn(pos3, Terrain::Chest);
 				break;
-			case TreasureHolder::WaterPool:
-				spawn_pool(map, Cloud::Puddle, pos3, Random::in_range(1, 3));
-				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
-				break;
 			case TreasureHolder::SlimePool:
+				map.set_terrain(pos2, Terrain::OpenNoSpawn);  // replacing Placeholder
 				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
 				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
 				break;
@@ -592,6 +589,7 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 		    World::read().has_los(centre, pos3, -1))
 		{
 			map.try_add_cloud(pos, cloud_type, Cloud::c_InfiniteLifetime);
+			map.set_terrain(pos, Terrain::OpenNoSpawn);
 		}
 	}
 }

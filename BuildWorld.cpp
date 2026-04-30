@@ -85,7 +85,6 @@ void BuildWorld()
 
 		Spawn::Parameters& spawn_param = world.edit_map(z).edit_spawn_param();
 		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::Chest    )] = c_MaxZ;
-		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::WaterPool)] = c_MaxZ - z;
 		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::SlimePool)] = z;
 	}
 

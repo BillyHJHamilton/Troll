@@ -9,7 +9,6 @@ namespace Spawn
 	enum class TreasureHolder : int
 	{
 		Chest = 0,
-		WaterPool,
 		SlimePool,
 		Count,
 	};
