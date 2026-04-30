@@ -56,8 +56,6 @@ namespace Door
 		// Type distribution for unlocked doors
 		int unlocked_weights[(int)(Door::Unlocked::Count)] = { 1 };  // None: 1, all others: 0
 
-		void serialize(ISerializer& s);
-
 		bool are_weights_valid() const;  // requires no negatives, at least 1 in each catagory
 
 		Door::LockedGenus choose_locked_genus(bool allow_none, bool allow_trigger) const;

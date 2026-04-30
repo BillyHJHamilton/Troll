@@ -42,7 +42,7 @@ namespace Terrain
 
 	int get_character(Terrain::Type t);
 	char const* get_colour(Terrain::Type t);
-	inline bool is_colour(Terrain::Type t) { return get_colour(t) != nullptr; }
+	inline bool has_colour(Terrain::Type t) { return get_colour(t) != nullptr; }
 	char const* get_name(Terrain::Type t);
 	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);

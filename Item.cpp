@@ -125,7 +125,7 @@ std::string Handle::name () const
 	}
 }
 
-std::string Handle::colour () const
+char const* Handle::colour () const
 {
 	switch (type())
 	{

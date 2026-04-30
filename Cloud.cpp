@@ -10,8 +10,17 @@
 
 namespace Cloud
 {
+	//-------------------------------------------------------------------------
+	// Helper function declarations
+
+	bool is_slime_hazardous_for(Cloud::Type cloud, Creature::Handle const& creature);
+	void slime_burn(Cloud::Type cloud, Creature::Handle& creature);
+
 	//-------------------------------------------------------------------------------------------------
 	// Data
+
+	using IsCloudHazardousFunc = bool(*)(Cloud::Type cloud, Creature::Handle const& creature);
+	using CloudEffectFunc = void(*)(Cloud::Type cloud, Creature::Handle& creature);
 
 	struct Data
 	{
@@ -20,21 +29,17 @@ namespace Cloud
 		char const* colour;
 		int accuray_loss;
 		int vision_loss;
-		Damage::Type damage_type;
+		IsCloudHazardousFunc is_hazardous_func;
+		CloudEffectFunc effect_func;
 	};
 
 	Cloud::Data const s_data[] = 
 	{
-		//	 Name		Codepoint						Colour					-Accuracy	-Vision	Damage Type
-		Data{"smoke",	Codepoint::BackwardsSquiggle,	cstr_Grey,				30,			2,		Damage::None	},
-		Data{"slime",	Codepoint::MidTilde,			cstr_LightChartreuse,	0,			0,		Damage::Acid	},
-		Data{"puddle",	Codepoint::MidTilde,			cstr_Sky,				0,			0,		Damage::None	},
+		//	 Name		Codepoint						Colour					-Accuracy	-Vision	Is Hazardous Function?	Effect Function
+		Data{"smoke",	Codepoint::BackwardsSquiggle,	cstr_Grey,				30,			2,		nullptr,				nullptr	},
+		Data{"slime",	Codepoint::MidTilde,			cstr_LightChartreuse,	0,			0,		is_slime_hazardous_for,	slime_burn	},
+		Data{"puddle",	Codepoint::MidTilde,			cstr_Sky,				0,			0,		nullptr,				nullptr	},
 	};
-
-	//-------------------------------------------------------------------------
-	// Helper function declarations
-
-	void slime_burn(Creature::Handle creature);
 
 	//-------------------------------------------------------------------------
 	// Interface
@@ -74,34 +79,50 @@ namespace Cloud
 		return s_data[c].vision_loss;
 	}
 
-	bool hazardous_for (Cloud::Type cloud, Creature::Handle const& creature)
+	bool affects_creatures(Cloud::Type cloud)
 	{
-		assert(is_cloud(cloud));
-		if (s_data[cloud].damage_type == Damage::None)
+		if (!is_cloud(cloud))
 		{
 			return false;
 		}
-		return !creature.is_immune(s_data[cloud].damage_type);
+		return s_data[cloud].is_hazardous_func != nullptr;
+	}
+	
+	bool hazardous_for(Cloud::Type cloud, Creature::Handle const& creature)
+	{
+		assert(is_cloud(cloud));
+		if (!is_cloud(cloud))
+		{
+			return false;
+		}
+		if (s_data[cloud].is_hazardous_func == nullptr)
+		{
+			return false;
+		}
+		return s_data[cloud].is_hazardous_func(cloud, creature);
 	}
 
 	void affect_creature (Cloud::Type cloud, Creature::Handle& creature)
 	{
-		switch (cloud)
+		if (is_cloud(cloud))
 		{
-			case Cloud::Slime:
-				slime_burn(creature);
-				break;
-
-			default:
-				// Other clouds have no ill effect.
-				break;
+			if (s_data[cloud].effect_func != nullptr)
+			{
+				s_data[cloud].effect_func(cloud, creature);
+			}
 		}
 	}
 
 	//-------------------------------------------------------------------------
 	// Helper function implementations
 
-	void slime_burn(Creature::Handle creature)
+	bool is_slime_hazardous_for(Cloud::Type cloud, Creature::Handle const& creature)
+	{
+		assert(is_cloud(cloud));
+		return !creature.is_immune(Damage::Acid);
+	}
+
+	void slime_burn(Cloud::Type cloud, Creature::Handle& creature)
 	{
 		if (hazardous_for(Cloud::Slime, creature))
 		{

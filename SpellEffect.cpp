@@ -69,7 +69,7 @@ void flipendo_vs_creature (EffectParams const & params)
 	}
 
 	// Push back
-	const int dz = World::read().get_stairs_dz(target.pos(), knock_pos.xy());
+	int const dz = World::read().get_stairs_dz(target.pos(), knock_pos.xy());
 	knock_pos.z += dz;
 
 	Creature::Handle secondary_target = Creature::creature_at_pos(knock_pos);
@@ -281,37 +281,38 @@ void skurge(EffectParams params)
 	// TODO: Should skurge damage ghosts?
 	//  -> if so, update description
 
-	bool is_ectoplasm = false;
+	bool hit_ectoplasm = false;
 	Vec3 const pos = params.target_pos;
 	switch(World::read().get_terrain(pos))
 	{
 	case Terrain::Ectoplasm:
 		Feature::clear_ectoplasm(pos);
-		is_ectoplasm = true;
+		hit_ectoplasm = true;
 		break;
 	}
 
-	bool is_any_slime = false;
+	bool hit_slime = false;
 	Box2 const box_to_clear = Box2::around_tile(pos.xy(), 1);
 	for (Vec2 clear2d : box_to_clear)
 	{
-		// TODO: Handle skurge cleaning area going up/down stairs?
+		int const dz = World::read().get_stairs_dz(pos, clear2d);
+		Vec3 const clear3d = clear2d.xyz(pos.z + dz);
+
 		// TODO: Should skurge clear other types of clouds?
 		//  -> there will be types it should not clear
 		//  -> if puddles are different than clouds, this would clear some puddles
-		Vec3 const clear3d = clear2d.xyz(pos.z);
 		if (World::read().get_cloud(clear3d) == Cloud::Slime)
 		{
 			World::edit().clear_cloud(clear3d);
-			is_any_slime = true;
+			hit_slime = true;
 		}
 	}
-	if (is_any_slime)
+	if (hit_slime)
 	{
-		Draw::pos_message(pos, "The slime on the floor dissolves.");
+		Draw::pos_message(pos, "The slime is scrubbed away.");
 	}
 
-	if (!is_ectoplasm && !is_any_slime)
+	if (!hit_ectoplasm && !hit_slime)
 	{
 		Draw::pos_message(pos, "It has no effect.");
 	}

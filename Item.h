@@ -93,7 +93,7 @@ namespace Item
 		// Complex accessors
 		int codepoint () const;
 		std::string name () const;
-		std::string colour () const;
+		char const* colour () const;
 		std::string description () const;
 		std::string interaction_name () const;
 		//bool is_plural () const;

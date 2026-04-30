@@ -564,8 +564,8 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		}
 
 		int code = Terrain::get_character(t);
-		std::string draw_colour = cstr_White;
-		if (Terrain::is_colour(t))
+		char const * draw_colour = cstr_White;
+		if (Terrain::has_colour(t))
 		{
 			draw_colour = Terrain::get_colour(t);
 		}
@@ -598,11 +598,11 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		const bool highlight_target = Crosshair::is_target(pos) && v == Visibility::Visible;
 		if (highlight_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), Crosshair::colour());
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, Crosshair::colour());
 		}
 		else
 		{
-			Draw::draw_tile(code, pos.xy(), view, draw_colour.c_str());
+			Draw::draw_tile(code, pos.xy(), view, draw_colour);
 		}
 	}
 }

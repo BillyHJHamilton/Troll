@@ -8,32 +8,6 @@
 namespace Door
 {
 
-void Parameters::serialize(ISerializer& s)
-{
-	// TODO: Do I need this function?
-
-	for (int i = 0; i < (int)(LockedGenus::Count); i++)
-	{
-		s.srz_int(locked_genus_weights[i]);
-	}
-	for (int i = 0; i < (int)(Spelled::Count); i++)
-	{
-		s.srz_int(spelled_weights[i]);
-	}
-	for (int i = 0; i < (int)(Triggered::Count); i++)
-	{
-		s.srz_int(triggered_weights[i]);
-	}
-	for (int i = 0; i < (int)(TriggerType::Count); i++)
-	{
-		s.srz_int(trigger_weights[i]);
-	}
-	for (int i = 0; i < (int)(Unlocked::Count); i++)
-	{
-		s.srz_int(unlocked_weights[i]);
-	}
-}
-
 bool Parameters::are_weights_valid() const
 {
 	int locked_genus_count = 0;

@@ -591,8 +591,7 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 			rounded_range(centre.xy(), pos, Random::in_range(1, radius + 1)) &&
 		    World::read().has_los(centre, pos3, -1))
 		{
-			// TODO: Truely immortal clouds
-			map.try_add_cloud(pos, cloud_type, 999999);
+			map.try_add_cloud(pos, cloud_type, Cloud::c_InfiniteLifetime);
 		}
 	}
 }

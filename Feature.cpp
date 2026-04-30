@@ -485,7 +485,7 @@ void clear_ectoplasm(Vec3 pos)
 	Feature::Itr feature = find_feature(pos);
 	if (Check(feature.valid()))
 	{
-		Draw::pos_message(pos, "The ectoplasm dissolves!");
+		Draw::pos_message(pos, "The ectoplasm is scrubbed away!");
 		remove_feature(feature, Terrain::Open);
 	}
 }

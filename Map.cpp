@@ -42,7 +42,7 @@ void Map::serialize(ISerializer& s)
 	s.srz_hashmap(stairs, "map.stairs");
 
 	s.srz_value(spawn_param);
-	door_param.serialize(s);
+	s.srz_value(door_param);
 
 	bool has_generator = (generator != nullptr);
 	s.srz_bool(has_generator);
@@ -184,15 +184,21 @@ void Map::step_clouds()
 		Vec2 const pos = itr->first;
 		int& lifetime = itr->second;
 
-		Creature::Handle creature = Creature::creature_at_pos(pos.xyz(global_z));
-		if (creature.valid())
+		Cloud::Type cloud_type = clouds.read(pos.x, pos.y);
+		if (Cloud::affects_creatures(cloud_type))
 		{
-			Cloud::Type cloud_type = clouds.read(pos.x, pos.y);
-			Cloud::affect_creature(cloud_type, creature);
+			Creature::Handle creature = Creature::creature_at_pos(pos.xyz(global_z));
+			if (creature.valid())
+			{
+				Cloud::affect_creature(cloud_type, creature);
+			}
 		}
 
-		--lifetime;
-		if (lifetime <= 0)
+		if (lifetime != Cloud::c_InfiniteLifetime)
+		{
+			--lifetime;
+		}
+		if (lifetime <= 0)  // not else if
 		{
 			clear_cloud(pos);
 			itr = cloud_lifetimes.erase(itr);
