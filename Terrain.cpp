@@ -52,8 +52,9 @@ namespace Terrain
 		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	cstr_LightGreen,100,	f_PermitSight | f_Solid | f_Feature |
 																						f_CrosshairFill,						Target::f_Skurge},
 		Data{"door", /*open*/		Codepoint::DoorOpen,		nullptr,		0,		f_PermitSight | f_Feature |
-																						f_CrosshairFill,						Target::f_Colloportus},
-		Data{"door", /*closed*/		Codepoint::DoorClosed,		nullptr,		100,	f_Feature | f_CrosshairFill,			Target::f_Colloportus},
+																						f_CrosshairFill | f_NoAutotarget,		Target::f_Colloportus},
+		Data{"door", /*closed*/		Codepoint::DoorClosed,		nullptr,		100,	f_Feature | f_CrosshairFill |
+																						f_NoAutotarget,							Target::f_Colloportus},
 		Data{"door", /*locked*/		Codepoint::DoorLocked,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
