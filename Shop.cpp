@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "Gingerbread.h"
 #include "Loot.h"
+#include "Menu.h"
 #include "Pathfind.h"
 #include "Random.h"
 #include "Serialize.h"
@@ -137,6 +138,28 @@ void update()
 			george.destroy();
 			s_next_trigger_turn = Game::get_turn_number() + c_InactiveTurns;
 		}
+	}
+}
+
+void interact(Creature::Type shop_creature)
+{
+	if (shop_creature == Creature::Fred_Shop)
+	{
+		if (s_shop_inventory.read().has_item())
+		{
+			Menu::show_shop_buy();
+		}
+		else
+		{
+			Draw::add_message("Fred says, \"I'm afraid we're out of stock!\"",
+				Gingerbread::read(shop_creature).colour);
+		}
+	}
+	else
+	{
+		// TODO: George has the "Sell" menu
+		Draw::add_message("George says, \"Talk to Fred if you'd like to buy.\"",
+			Gingerbread::read(shop_creature).colour);
 	}
 }
 

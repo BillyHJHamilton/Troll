@@ -16,4 +16,5 @@ namespace Shop
 	bool is_active();
 	bool try_spawn(Vec3 at);
 	void update();
+	void interact(Creature::Type shop_creature);
 };
