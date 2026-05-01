@@ -13,31 +13,46 @@ namespace Cloud
 	//-------------------------------------------------------------------------
 	// Helper function declarations
 
-	void slime_burn(Creature::Handle creature);
+	bool is_slime_hazardous_for(Cloud::Type cloud, Creature::Handle const& creature);
+	void slime_burn(Cloud::Type cloud, Creature::Handle& creature);
+
+	//-------------------------------------------------------------------------------------------------
+	// Data
+
+	using IsCloudHazardousFunc = bool(*)(Cloud::Type cloud, Creature::Handle const& creature);
+	using CloudEffectFunc = void(*)(Cloud::Type cloud, Creature::Handle& creature);
+
+	struct Data
+	{
+		char const* name;
+		int codepoint;
+		char const* colour;
+		int accuray_loss;
+		int vision_loss;
+		IsCloudHazardousFunc is_hazardous_func;
+		CloudEffectFunc effect_func;
+	};
+
+	Cloud::Data const s_data[] = 
+	{
+		//	 Name		Codepoint						Colour					-Accuracy	-Vision	Is Hazardous Function?	Effect Function
+		Data{"smoke",	Codepoint::BackwardsSquiggle,	cstr_Grey,				30,			2,		nullptr,				nullptr	},
+		Data{"slime",	Codepoint::MidTilde,			cstr_LightChartreuse,	0,			0,		is_slime_hazardous_for,	slime_burn	},
+	};
 
 	//-------------------------------------------------------------------------
 	// Interface
 
 	int get_codepoint(Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::Smoke:
-				return Codepoint::BackwardsSquiggle;
-			case Cloud::Slime:
-				return Codepoint::MidTilde;
-			default: DebugBreak(); return '?';
-		}
+		assert(is_cloud(c));
+		return s_data[c].codepoint;
 	}
 
 	char const * get_colour(Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::Smoke:		return cstr_Grey;
-			case Cloud::Slime:		return cstr_LightChartreuse;
-			default: DebugBreak();	return cstr_White;
-		}
+		assert(is_cloud(c));
+		return s_data[c].colour;
 	}
 
 	char const * look_describe(Cloud::Type c)
@@ -52,68 +67,60 @@ namespace Cloud
 
 	int accuracy_loss (Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::None:		return 0;
-			case Cloud::Smoke:		return 30;
-			case Cloud::Slime:		return 0;
-			default: DebugBreak();	return 0;
-		}
+		assert(is_cloud(c));
+		return s_data[c].accuray_loss;
 	}
 
 	int vision_loss (Cloud::Type c)
 	{
-		switch (c)
-		{
-			case Cloud::None:		return 0;
-			case Cloud::Smoke:		return 2;
-			case Cloud::Slime:		return 0;
-			default: DebugBreak();	return 0;
-		}
+		assert(is_cloud(c));
+		return s_data[c].vision_loss;
 	}
 
-	bool affects_creatures (Cloud::Type cloud)
+	bool affects_creatures(Cloud::Type cloud)
 	{
-		switch (cloud)
+		if (!is_cloud(cloud))
 		{
-			case Cloud::Slime:
-				return true;
-			default:
-				return false;
+			return false;
 		}
+		return s_data[cloud].is_hazardous_func != nullptr;
 	}
-
-	bool hazardous_for (Cloud::Type cloud, Creature::Handle const& creature)
+	
+	bool hazardous_for(Cloud::Type cloud, Creature::Handle const& creature)
 	{
-		switch (cloud)
+		assert(is_cloud(cloud));
+		if (!is_cloud(cloud))
 		{
-			case Cloud::Slime:
-				return !creature.has_tag(Creature::Tag::Trail_Slime)
-					&& !creature.is_immune(Damage::Acid);
-
-			default:
-				return false;
+			return false;
 		}
+		if (s_data[cloud].is_hazardous_func == nullptr)
+		{
+			return false;
+		}
+		return s_data[cloud].is_hazardous_func(cloud, creature);
 	}
 
 	void affect_creature (Cloud::Type cloud, Creature::Handle& creature)
 	{
-		switch (cloud)
+		if (is_cloud(cloud))
 		{
-			case Cloud::Slime:
-				slime_burn(creature);
-				break;
-
-			default:
-				// Other clouds have no ill effect.
-				break;
+			if (s_data[cloud].effect_func != nullptr)
+			{
+				s_data[cloud].effect_func(cloud, creature);
+			}
 		}
 	}
 
 	//-------------------------------------------------------------------------
 	// Helper function implementations
 
-	void slime_burn(Creature::Handle creature)
+	bool is_slime_hazardous_for(Cloud::Type cloud, Creature::Handle const& creature)
+	{
+		assert(is_cloud(cloud));
+		return !creature.is_immune(Damage::Acid);
+	}
+
+	void slime_burn(Cloud::Type cloud, Creature::Handle& creature)
 	{
 		if (hazardous_for(Cloud::Slime, creature))
 		{

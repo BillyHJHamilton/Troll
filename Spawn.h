@@ -6,6 +6,13 @@
 // Deals with placing characters and items in the world.
 namespace Spawn
 {
+	enum class TreasureHolder : int
+	{
+		Chest = 0,
+		SlimePool,
+		Count,
+	};
+
 	struct Parameters
 	{
 		// One of this creature must be spawned.
@@ -30,9 +37,11 @@ namespace Spawn
 		int min_items = 25;
 		int max_items = 35;
 
-		// Amount of chests to spawn.
-		int min_chests = 1;
-		int max_chests = 3;
+		// Type distributions for how items are held
+		int treasure_holder_weights[(int)(TreasureHolder::Count)] = { 1 };  // Chest: 1, all others: 0
+		int min_treasures = 1;
+		int max_treasures = 3;
+
 	};
 
 	// Creature spawning constants:

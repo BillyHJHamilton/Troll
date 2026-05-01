@@ -42,6 +42,7 @@ void Map::serialize(ISerializer& s)
 	s.srz_hashmap(stairs, "map.stairs");
 
 	s.srz_value(spawn_param);
+	s.srz_value(door_param);
 
 	bool has_generator = (generator != nullptr);
 	s.srz_bool(has_generator);
@@ -193,8 +194,11 @@ void Map::step_clouds()
 			}
 		}
 
-		--lifetime;
-		if (lifetime <= 0)
+		if (lifetime != Cloud::c_InfiniteLifetime)
+		{
+			--lifetime;
+		}
+		if (lifetime <= 0)  // not else if
 		{
 			clear_cloud(pos);
 			itr = cloud_lifetimes.erase(itr);

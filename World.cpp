@@ -506,7 +506,10 @@ bool World::has_los_on_line(Vec3 start, Vec3 end, int line_id, int range) const
 		if (range != -1)
 		{
 			Cloud::Type const cloud = get_cloud(itr->xyz(start.z));
-			cloud_loss += Cloud::vision_loss(cloud);
+			if (cloud != Cloud::None)
+			{
+				cloud_loss += Cloud::vision_loss(cloud);
+			}
 		}
 
 		itr.advance();
@@ -561,7 +564,15 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		}
 
 		int code = Terrain::get_character(t);
-		std::string draw_colour = (v == Visibility::Visible) ? cstr_White : cstr_DarkGrey;
+		char const * draw_colour = cstr_White;
+		if (Terrain::has_colour(t))
+		{
+			draw_colour = Terrain::get_colour(t);
+		}
+		if (v != Visibility::Visible)
+		{
+			draw_colour = cstr_DarkGrey;
+		}
 
 		if (v == Visibility::Visible)
 		{
@@ -587,11 +598,11 @@ void World::draw_map_tile(Vec3 pos, Draw::View const& view) const
 		const bool highlight_target = Crosshair::is_target(pos) && v == Visibility::Visible;
 		if (highlight_target)
 		{
-			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour.c_str(), Crosshair::colour());
+			Draw::draw_tile_bg(code, pos.xy(), view, draw_colour, Crosshair::colour());
 		}
 		else
 		{
-			Draw::draw_tile(code, pos.xy(), view, draw_colour.c_str());
+			Draw::draw_tile(code, pos.xy(), view, draw_colour);
 		}
 	}
 }

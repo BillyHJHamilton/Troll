@@ -283,7 +283,7 @@ void init_chest(Feature::Itr feature)
 
 	// Slightly better than normal for this level.
 	float const difficulty = World::read().find_map_difficulty(feature->pos) + 1.0f;
-	Loot::stack(Loot::Chest_Main, top, Creature::None, difficulty);
+	Loot::stack(Loot::Treasure, top, Creature::None, difficulty);
 
 	int const num_beans = Random::in_range(3,6);
 	for (int i = 0; i < num_beans; ++i)
@@ -476,6 +476,16 @@ void open_portrait(Vec3 pos)
 	if (Check(feature.valid()))
 	{
 		Draw::pos_message(pos, "The portrait swings open!");
+		remove_feature(feature, Terrain::Open);
+	}
+}
+
+void clear_ectoplasm(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Draw::pos_message(pos, "The ectoplasm is scrubbed away!");
 		remove_feature(feature, Terrain::Open);
 	}
 }

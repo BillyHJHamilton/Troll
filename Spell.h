@@ -19,6 +19,7 @@ namespace Spell
 		Tarantallegra,
 		LocomotorMortis,
 		Rictusempra,
+		Skurge,
 		Fumos,
 		Mimblewimble,
 		LacarnumInflamare,

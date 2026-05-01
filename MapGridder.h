@@ -32,14 +32,6 @@ protected:
 	                        Room const & neighbour0, Vec2 const & door0,
 	                        Room const & neighbour1, Vec2 const & door1) const;
 
-	LockedDoorGenus choose_locked_door_genus(bool allow_none, bool allow_trigger) const;
-	SpellDoorType choose_spell_door_type() const;
-	TriggerDoorType choose_trigger_door_type() const;
-	TriggerType choose_trigger_type(bool allow_button, bool allow_torch) const;
-	static Terrain::Type get_door_terrain(SpellDoorType door_type);
-	static Terrain::Type get_door_terrain(TriggerDoorType door_type);
-	static Terrain::Type get_door_terrain(UnlockedDoorType door_type);
-
 	// Pass 3 functions
 	void add_cosmetic_chamber(int room_index) const;
 	void add_cosmetic_torches(Room const & room) const;
@@ -84,4 +76,5 @@ protected:
 private:
 	Map& m_map;
 	const MapGenerator& m_generator;
+	const Door::Parameters& m_doors;
 };
