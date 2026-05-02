@@ -48,6 +48,7 @@ protected:
 	// Functions to select positions
 	Vec2 get_pos_at_room_back(Room const & room) const;
 	PosTempList choose_torch_positions(Room const & room) const;
+	PosTempList get_good_positions_away_from_wall(Room const & room) const;
 	PosTempList get_good_positions_along_wall(Room const & room) const;
 	PosTempList get_good_positions_inside_wall(Room const & room) const;
 	PosTempList box_to_positions(Box2 const & box) const;

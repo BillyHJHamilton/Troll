@@ -46,7 +46,7 @@ namespace Terrain
 																						f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
 		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
 		Data{"torch" /*lit*/,		Codepoint::TorchLit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /* scanner */,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
+		Data{"floor" /*scanner*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"button",				Codepoint::FlipendoButton,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"portrait",			Codepoint::Portrait,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	cstr_LightGreen,100,	f_PermitSight | f_Solid | f_Feature |
@@ -59,6 +59,7 @@ namespace Terrain
 		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
 		Data{"portcullis",			'#',						nullptr,		40,		f_PermitSight | f_Solid | f_Feature,	f_None},
+		Data{"floor" /*mnstr trp*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"floor" /*shop seed*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 	};
 

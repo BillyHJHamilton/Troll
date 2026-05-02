@@ -11,6 +11,7 @@
 #include "Random.h"
 #include "Serialize.h"
 #include "SparseVector.h"
+#include "Spawn.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -37,6 +38,7 @@ namespace Feature
 //                   - it also turns into a wall on that trigger
 //  - SlidingWall - payload is which trigger id it responds to
 //  - Portcullis - payload is which trigger id it responds to
+//  - MonsterTrap - payload is which trigger id it responds to
 
 struct Instance
 {
@@ -52,6 +54,12 @@ SparseVector<Feature::Instance> s_features;
 using Itr = SparseVector<Feature::Instance>::Itr;
 
 int s_next_trigger_id = 0;
+
+// Vec3TempList is coming in from "Pathfind.h"
+//  -> should this be in VectorUtil.h?
+//    -> con: It would have to #include "Geometry.h"
+
+Vec3 constexpr c_NoValidSpawnPos = { 999999, 999999, 999999 };
 
 enum class Material
 {
@@ -98,6 +106,9 @@ void trigger_all(int trigger);
 
 void trigger_sliding_wall(Itr feature);
 void trigger_portcullis(Itr feature);
+void trigger_monster_trap(Itr feature);
+Vec3 find_nearby_good_spawn_pos(Vec3 centre);  // can return c_NoValidSpawnPos
+Vec3 find_nearby_good_spawn_pos(Vec3 centre, int radius);  // can return c_NoValidSpawnPos
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -149,6 +160,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::MonsterTrap:
 				DebugBreak("Spawn Feature with trigger");
 				break;
 			case Terrain::DoorColloportus:
@@ -182,6 +194,7 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::MonsterTrap:
 				break;
 			default:
 				DebugBreak("Spawn Feature without trigger");
@@ -573,6 +586,9 @@ void trigger_all(int trigger)
 		case Terrain::Portcullis:
 			trigger_portcullis(feature);
 			break;
+		case Terrain::MonsterTrap:
+			trigger_monster_trap(feature);
+			break;
 		}
 	}
 }
@@ -587,6 +603,80 @@ void trigger_portcullis(Feature::Itr feature)
 {
 	Draw::pos_message(feature->pos, "A portcullis opens!");
 	remove_feature(feature, Terrain::Open);
+}
+
+void trigger_monster_trap(Feature::Itr feature)
+{
+	Vec3 spawn_pos = find_nearby_good_spawn_pos(feature->pos);
+
+	float const difficulty = World::read().find_map_difficulty(feature->pos);
+	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Tag::Spawn_From_Trap);
+
+	if (option.type == Spawn::Option::Creature)
+	{
+		Creature::Type const creature_type = (Creature::Type)option.index;
+		assert(Creature::is_valid_type(creature_type));
+		Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
+
+		Draw::pos_message(feature->pos, std::format("A {} drops in.", creature.long_name()),
+			              creature.colour());
+
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format("Trap spawned {} at ({},{}).\n",
+				creature.long_name(), creature.pos().x, creature.pos().y);
+		}
+	}
+	// TODO: Spawn squad
+
+	remove_feature(feature, Terrain::Open);
+}
+
+Vec3 find_nearby_good_spawn_pos(Vec3 centre)
+{
+	Creature::Handle creature_on_centre = Creature::creature_at_pos(centre);
+	if (creature_on_centre == Creature::None)
+	{
+		// hopefully this usually happens
+		return centre;
+	}
+
+	// check positions outwards in rings
+	for (int r = 1; r < 3; ++r)
+	{
+		Vec3 chosen = find_nearby_good_spawn_pos(centre, r);
+		if (chosen != c_NoValidSpawnPos)
+		{
+			return chosen;
+		}
+	}
+
+	return c_NoValidSpawnPos;
+}
+
+Vec3 find_nearby_good_spawn_pos(Vec3 centre, int radius)
+{
+	Box2 check_box = Box2::around_tile(centre.xy(), radius);
+
+	Vec3TempList good_list;
+	for (Vec2 check : check_box)
+	{
+		Vec3 check3 = check.xyz(centre.z);
+		if (Terrain::can_spawn(World::read().get_terrain(check3)))
+		{
+			Creature::Handle creature_on_check = Creature::creature_at_pos(check3);
+			if (creature_on_check == Creature::None)
+			{
+				good_list.push_back(check3);
+			}
+		}
+	}
+
+	if (good_list.empty())
+	{
+		return Random::from_vector(good_list);
+	}
+	return c_NoValidSpawnPos;
 }
 
 } // namespace Feature

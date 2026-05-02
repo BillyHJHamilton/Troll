@@ -33,6 +33,7 @@ namespace Terrain
 		DoorColloportus,
 		SlidingWall,
 		Portcullis,
+		MonsterTrap,
 		ShopSeed,
 
 		Count

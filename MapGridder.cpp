@@ -317,8 +317,15 @@ void MapGridder::add_secret_area(Room const & room,
 				}
 			}
 
-			// TODO: Could sometimes add a fire crab trap (if there is a trigger)
-			//  -> it would appear in the neighbour room
+			if (Random::one_in(3))
+			{
+				PosTempList const trap_pos_list = get_good_positions_away_from_wall(neighbour);
+				if (!trap_pos_list.empty())
+				{
+					Vec2 trap_pos = Random::from_vector(trap_pos_list);
+					Feature::spawn(trap_pos.xyz(map_z), Terrain::MonsterTrap, trigger);
+				}
+			}
 			break;
 		}
 	}
@@ -744,6 +751,40 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 		result.push_back(Random::from_vector(wall_positions));
 	}
 	return result;
+}
+
+MapGridder::PosTempList MapGridder::get_good_positions_away_from_wall(Room const& room) const
+{
+	// Goal: Find all positions
+	//  1. Inside the room
+	//  2. Not along wall
+	//  3. On a piece of isolated floor
+	//    -> We check the terrain for this
+
+	PosTempList result_vec;
+
+	if (room.GetBox().size.x < 3 ||
+		room.GetBox().size.y < 3)
+	{
+		return result_vec;  // empty vector
+	}
+
+	Box2 check_box = room.GetBox().minus_border(1);
+	int max_x = check_box.max(c_AxisX);
+	int max_y = check_box.max(c_AxisY);
+	for (int x = check_box.min.x; x < max_x; ++x)
+	{
+		for (int y = check_box.min.y; y < max_y; ++y)
+		{
+			Vec2 pos = { x, y };
+			if (is_good_for_isolated_floor(pos))
+			{
+				result_vec.push_back(pos);
+			}
+		}
+	}
+
+	return result_vec;
 }
 
 MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& room) const
