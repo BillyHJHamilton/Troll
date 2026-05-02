@@ -129,6 +129,7 @@ namespace Creature
 		Spells_Random,		// Will be assigned some random spells near its skill level.
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.
+		Spawn_From_Trap,	// Can be spawned by a monster trap.
 		Count
 	};
 	using TagBitset = std::bitset<(std::size_t)Tag::Count>;

@@ -2,6 +2,7 @@
 
 #include "Types.h"
 
+#include "Creature.h" // for Creature::Tag::None
 #include "NameHash.h"
 #include "Spawn.h"
 #include "Spell.h" // for bitset
@@ -42,9 +43,9 @@ namespace Gingerbread
 
 	bool can_spawn_identity (Creature::Type type, float target_difficulty);
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-		FloatTempList& out_weights);
+		FloatTempList& out_weights, Creature::Tag required_tag = Creature::Tag::None);
 
-	Creature::Type find_type_to_spawn (float target_difficulty);
+	//Creature::Type find_type_to_spawn (float target_difficulty);
 
 	void claim_identity(Creature::Handle creature);
 	void release_identity(Creature::Handle creature);

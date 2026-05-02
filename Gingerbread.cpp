@@ -338,21 +338,21 @@ void init()
 		/*Difficulty*/ 0.8f, /*Probability*/ 0.8f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
 		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
-			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
+			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short, Tag::Spawn_From_Trap)
 		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
 	Builder(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 0.8f, /*HP*/ 5,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter)
-		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
+		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes, Tag::Spawn_From_Trap)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
 	Builder(Creature::BigFireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 2.5f, /*Probability*/ 0.2f, /*HP*/ 10,
 		"big fire crab", "big fire crab", 'c', cstr_Crimson, Gender::Neuter)
-		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
+		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes, Tag::Spawn_From_Trap)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
@@ -580,7 +580,7 @@ bool can_spawn_identity (Creature::Type type, float target_difficulty)
 }
 
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-	FloatTempList& out_weights)
+	FloatTempList& out_weights, Creature::Tag required_tag)
 {
 	for (int type = 1; // skip player
 		type < Creature::Type::Count;
@@ -595,6 +595,12 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 			continue;
 		}
 
+		if (required_tag != Creature::Tag::None &&
+			!has_tag((Creature::Type)type, required_tag))
+		{
+			continue;
+		}
+
 		float const probability = stats.probability *
 			Spawn::probability_factor(stats.difficulty, target_difficulty);
 
@@ -605,7 +611,7 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 		}
 	}
 }
-
+/*
 Creature::Type find_type_to_spawn (float target_difficulty)
 {
 	Spawn::OptionTempList options;
@@ -626,7 +632,7 @@ Creature::Type find_type_to_spawn (float target_difficulty)
 		return Creature::None;
 	}
 }
-
+*/
 void claim_identity(Creature::Handle creature)
 {
 	Creature::Type const type = creature.type();

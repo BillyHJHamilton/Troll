@@ -100,8 +100,6 @@ int spawn_treasures(Map& map, int treasures_to_spawn);
 Vec2 find_boss_spawn_position(Map const& map);
 void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius);
 
-// Decides on a creature or squad to spawn.
-Spawn::Option choose_spawn_option(float target_difficulty);
 void spawn_squad(int squad_id, Vec3 start_pos);
 
 Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type);
@@ -594,15 +592,16 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 	}
 }
 
-Spawn::Option choose_spawn_option(float target_difficulty)
+// TODO: Move with other public functions
+Spawn::Option choose_spawn_option(float target_difficulty, Creature::Tag required_tag)
 {
 	Spawn::OptionTempList options;
 	FloatTempList weights;
 	options.reserve(Creature::Count);
 	weights.reserve(Creature::Count);
 
-	Gingerbread::find_spawn_options(target_difficulty, options, weights);
-	Squad::find_spawn_options(target_difficulty, options, weights);
+	Gingerbread::find_spawn_options(target_difficulty, options, weights, required_tag);
+	Squad::find_spawn_options(target_difficulty, options, weights, required_tag);
 
 	if (Util::Size(options) > 0)
 	{
