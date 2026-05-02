@@ -111,25 +111,25 @@ Triggered Parameters::choose_triggered() const
 TriggerType Parameters::choose_trigger_type(bool allow_button,
                                             bool allow_torch) const
 {
-	IntTempList trigger_weights((int)(TriggerType::Count), 0);  // count, value
+	IntTempList weights((int)(TriggerType::Count), 0);  // count, value
 	int sum = 0;
 
 	if (allow_button)
 	{
 		int button_weight = trigger_weights[(int)(TriggerType::FlipendoButton)];
-		trigger_weights[(int)(TriggerType::FlipendoButton)] = button_weight;
+		weights[(int)(TriggerType::FlipendoButton)] = button_weight;
 		sum += button_weight;
 	}
 	if (allow_torch)
 	{
 		int torch_weight = trigger_weights[(int)(TriggerType::LightTorch)];
-		trigger_weights[(int)(TriggerType::LightTorch)] = torch_weight;
+		weights[(int)(TriggerType::LightTorch)] = torch_weight;
 		sum += torch_weight;
 	}
 
 	if (sum > 0)
 	{
-		return (TriggerType)(Random::weighted_index(trigger_weights));
+		return (TriggerType)(Random::weighted_index(weights));
 	}
 	return TriggerType::NotPossible;
 }
