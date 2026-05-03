@@ -1,29 +1,10 @@
 #pragma once
 
 #include "Types.h"
+#include "Door.h"
 #include "Room.h"
 #include "Stairs.h"
 
-
-// These cannot be inside MapGenerator or forward declarations are impossible
-enum class TriggerType : int
-{
-	None,  // e.g. Alohamora Portrait
-	FlipendoButton,
-	LightTorch,
-	Count,
-};
-
-enum class DoorType : int
-{
-	None,
-	Portrait,
-	SlidingWall,
-	Portcullis,
-	Count,
-};
-
-bool is_compatible(TriggerType trigger, DoorType door);
 
 
 // The architecture is that each map owns its own "MapGenerator".
@@ -50,10 +31,6 @@ public:
 		int MaxCorridorLength = 6;
 
 		bool IsShopSeed = false;
-
-		// Type distributions for triggers and doors
-		int trigger_weights[(int)(TriggerType::Count)] = { 1 };  // None: 1, all others: 0
-		int door_weights[(int)(DoorType::Count)] = { 1 };  // None: 1, all others: 0
 
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;

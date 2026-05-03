@@ -9,26 +9,6 @@
 #include "VectorUtil.h"
 #include "World.h"
 
-//-----------------------------------------------------------------------------
-// Global interface
-
-bool is_compatible(TriggerType trigger, DoorType door)
-{
-	float constexpr c_Compatible[(int)(TriggerType::Count)][(int)(DoorType::Count)] =
-	{
-		//	None	Portrait	SlidingWall	Portcullis
-		{	true,	true,		false,		false,	},	// None
-		{	true,	false,		true,		true,	},	// FlipendoButton
-		{	true,	false,		true,		true,	},	// LightTorch
-	};
-
-	return c_Compatible[(int)(trigger)][(int)(door)];
-}
-
-
-//-----------------------------------------------------------------------------
-// MapGenerator class
-
 MapGenerator::MapGenerator(Map& owner)
 	: m_Map(owner)
 {
@@ -52,15 +32,6 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 	s.srz_int(MaxCorridorLength);
 
 	s.srz_bool(IsShopSeed);
-
-	for (int i = 0; i < (int)(TriggerType::Count); i++)
-	{
-		s.srz_int(trigger_weights[i]);
-	}
-	for (int i = 0; i < (int)(DoorType::Count); i++)
-	{
-		s.srz_int(door_weights[i]);
-	}
 
 	s.srz_int(percent_torches_lit);
 }

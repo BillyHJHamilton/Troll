@@ -97,9 +97,6 @@ void init()
 		Taunt::Data{.text="Hello, {0}.",
 			.condition=Greeting, .format=true},
 		Taunt::Data{.text="Where do you think you're going?"},
-		Taunt::Data{.text="You'll soon find out..."},
-		Taunt::Data{.text="Some wizarding families are better than others.",
-			.condition=FollowUp},
 
 		Taunt::Data{.text="sneers scornfully",
 			.presentation=Emote, .rarity=4},
@@ -221,9 +218,9 @@ void init()
 		Taunt::Data{.text="Blimey!"},
 		Taunt::Data{.text="Are you mental?"},
 		Taunt::Data{.text="Take this, cauldron-bum!",
-			.condition=AttackSpell, .rarity=5},
+			.condition=AttackSpell, .rarity=8},
 		Taunt::Data{.text="Dragon bogeys!",
-			.condition=HasStatus, .subtype=Status::Dancing, .rarity=5},
+			.condition=HasStatus, .subtype=Status::Dancing, .rarity=8},
 		Taunt::Data{.text="Oh, bloody hell!",
 			.condition=Losing},
 		Taunt::Data{.text="You need to sort our your priorities.",
@@ -231,7 +228,7 @@ void init()
 		Taunt::Data{.text="You git!",
 			.condition=Losing},
 		Taunt::Data{.text="Ron, Ron, Ron Weasley!",
-			.condition=Winning, .rarity=6},
+			.condition=Winning, .rarity=8},
 
 		// "Excuse me, are you the imprint of a departed soul?"
 	};
@@ -297,9 +294,13 @@ void init()
 
 	s_taunts[Creature::Cedric_4] =
 	{
+		Taunt::Data{.text="gives you a smile and draws his wand.",
+			.presentation=Emote, .condition=AnyTime, .rarity=20},
 		Taunt::Data{.text="sparkles handsomely",
-			.presentation=Emote, .condition=AnyTime, .rarity=10},
+			.presentation=Emote, .condition=AnyTime, .rarity=20},
 		Taunt::Data{.text="I'm the real Hogwarts champion!"},
+		Taunt::Data{.text="strikes a pose",
+			.presentation=Emote, .condition=Winning},
 	};
 
 	s_taunts[Creature::Fleur_4] =
@@ -322,12 +323,12 @@ void init()
 			.condition=PlayerMiscast},
 		Taunt::Data{.text="Are ze spells too 'ard for you?",
 			.condition=PlayerMiscast},
-		Taunt::Data{.text="Ze language is deeficult for you?",
+		Taunt::Data{.text="Ze speeking is deeficult for you?",
 			.condition=PlayerStatus, .subtype=Status::TongueTied},
 		Taunt::Data{.text="Oh deear, 'ave you fallen down?",
 			.condition=PlayerStatus, .subtype=Status::Prone},
 
-		Taunt::Data{.text="smiles radiantly",
+		Taunt::Data{.text="smiles proudly",
 			.presentation=Emote, .condition=Winning, .rarity=4},
 		Taunt::Data{.text="pouts haughtily",
 			.presentation=Emote, .condition=Losing, .rarity=4},
@@ -359,6 +360,10 @@ void init()
 		Taunt::Data{.text="You know NOTHING of true love."},
 		Taunt::Data{.text="The Dark Lord belongs to ME.",
 			.rarity=20},
+		Taunt::Data{.text="Harry Potter belongs to ME.",
+			.rarity=20},
+		Taunt::Data{.text="Draco Malfoy belongs to ME.",
+			.rarity=40},
 		Taunt::Data{.text="tosses her luxurious auburn hair",
 			.presentation=Emote},
 

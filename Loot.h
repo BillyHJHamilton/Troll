@@ -15,7 +15,7 @@ namespace Loot
 		Sweets,
 		Potion,
 		Floor,
-		Chest_Main,
+		Treasure,
 		Shop,
 		Student_Generic,
 		Count

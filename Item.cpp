@@ -132,7 +132,7 @@ std::string Handle::name () const
 	}
 }
 
-std::string Handle::colour () const
+char const* Handle::colour () const
 {
 	switch (type())
 	{
@@ -171,7 +171,9 @@ std::string Handle::description () const
 
 		case BBBean:
 		{
-			return "They mean every flavour.";
+			return "They mean every flavour!  "
+				"Eating beans may raise your sugar level, depending on the flavour.  "
+				"Hogwarts students sometimes use these beans as currency.";
 		}
 
 		case SweetsItem:
@@ -318,7 +320,7 @@ UseResult Handle::use ()
 
 void Handle::stack_onto (Item::Handle other)
 {
-	edit_inst(index).next = other;
+	edit_inst(index).next = (int)other;
 
 	edit_inst(index).height = other.valid() ?
 		1 + other.stack_height() :

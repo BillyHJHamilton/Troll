@@ -274,7 +274,10 @@ void sweep_beam_on_current_pos (Beam::Data & beam, Draw::View& view, int codepoi
 		{
 			// Lose accuracy for clouds
 			Cloud::Type cloud = World::read().get_cloud(beam.pos);
-			beam.cloud_accuracy_loss += Cloud::accuracy_loss(cloud);
+			if (cloud != Cloud::None)
+			{
+				beam.cloud_accuracy_loss += Cloud::accuracy_loss(cloud);
+			}
 		}
 	}
 }

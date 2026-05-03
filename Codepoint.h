@@ -4,8 +4,6 @@
 // We're omitting the customary c_ here since the entire namespace is constants.
 namespace Codepoint
 {
-	int constexpr UppercasePsi = 0x3A8;
-
 	int constexpr ArrowUp = 0x2191;
 	int constexpr ArrowDown = 0x2193;
 	int constexpr BackwardsSquiggle = 0x3e8;
@@ -22,6 +20,16 @@ namespace Codepoint
 	int constexpr SolidBlock = 0x2588;
 
 	int constexpr MidTilde = 0x2053; // lower than the default one
+
+	// these are currently not used
+	int constexpr UppercasePsi = 0x3a8;
+	int constexpr ApproximatelyEquals = 0x2248;
+	int constexpr Small3 = 0xf872;
+	int constexpr CyrillicLowercaseZe = 0x0437;  // small, curly 3
+	int constexpr CyrillicLowercaseUkrainianIe = 0x0454;  // small, curly backwards 3
+	int constexpr Currency = 0xa4;
+	int constexpr DoubleCircle = 0x25ce;
+	int constexpr Wheel8Way = 0x2638;
 	
 	// Custom glyphs.
 	// These ones are in decimal for simplicity.
@@ -36,4 +44,9 @@ namespace Codepoint
 	int constexpr Desk1 = 12345;
 	int constexpr Desk2 = 12346;
 	int constexpr Armour = 12347;
+	int constexpr EctoplasmDoor = 12348;
+	int constexpr DoorOpen = 12349;
+	int constexpr DoorClosed = 12350;
+	int constexpr DoorLocked = 12351;
+	int constexpr DoorColloportus = 12352;
 }

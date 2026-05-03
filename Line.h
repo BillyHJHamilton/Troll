@@ -41,7 +41,7 @@ namespace LineCache
 		void advance_and_loop();
 
 		// iterator-style functions
-		operator bool() const { return !finished(); }
+		explicit operator bool() const { return !finished(); }
 		Vec2 operator*() const { return current; }
 		Vec2 const* operator->() const { return &current; }
 		Vec2 operator++() { advance(); return current; }
@@ -70,7 +70,7 @@ namespace LineCache
 		void advance_and_loop() { itr.advance_and_loop(); }
 
 		// iterator-style functions
-		operator bool() const { return !finished(); }
+		explicit operator bool() const { return !finished(); }
 		Vec3 operator*() const { return {itr->x, itr->y, z}; }
 		Vec3 operator++() { advance(); return operator*(); }
 		// post-increment not provided to avoid accidental copy
@@ -126,7 +126,7 @@ public:
 	bool finished() const { return steps_left < 0; }
 
 	// iterator-style functions
-	operator bool() { return !finished(); }
+	explicit operator bool() { return !finished(); }
 	Vec2 const& operator*() const { return current; }
 	Vec2 const* operator->() const { return &current; }
 	Vec2 const& operator++() { advance(); return current; }

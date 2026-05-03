@@ -30,14 +30,20 @@ namespace Spell
 	void alohomora(EffectParams params);
 	void tarantallegra(EffectParams params);
 	void locomotor_mortis(EffectParams params);
+
 	void rictusempra(EffectParams params);
+	void skurge(EffectParams params);
 	void fumos(EffectParams params);
 	void mimblewimble(EffectParams params);
 	void lacarnum_inflamare(EffectParams params);
+
 	void furnunculus(EffectParams params);
 	void finite_incantatem(EffectParams params);
+
 	void accio(EffectParams params);
+	void colloportus(EffectParams params);
 	void stupefy(EffectParams params);
 	void impedementa(EffectParams params);
+
 	void bat_bogey_hex(EffectParams params);
 }

@@ -282,7 +282,7 @@ void Inventory::invent_sort ()
 		else
 		{
 			// Shrug!
-			return a < b;
+			return (int)a < (int)b;
 		}
 	};
 

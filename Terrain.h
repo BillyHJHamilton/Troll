@@ -24,8 +24,13 @@ namespace Terrain
 		TorchUnlit,
 		TorchLit,
 		Scanner,
-		Portrait,
 		FlipendoButton,
+		Portrait,
+		Ectoplasm,
+		DoorOpen,
+		DoorClosed,
+		DoorLocked,
+		DoorColloportus,
 		SlidingWall,
 		Portcullis,
 		ShopSeed,
@@ -36,6 +41,8 @@ namespace Terrain
 	inline bool is_valid_type(Terrain::Type t) { return t < Count; }
 
 	int get_character(Terrain::Type t);
+	char const* get_colour(Terrain::Type t);
+	inline bool has_colour(Terrain::Type t) { return get_colour(t) != nullptr; }
 	char const* get_name(Terrain::Type t);
 	std::string look_describe(Terrain::Type t);
 	bool permits_sight(Terrain::Type t);

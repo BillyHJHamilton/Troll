@@ -72,8 +72,10 @@ namespace Item
 		// int interface
 		Handle () : index(c_Invalid) { }
 		Handle (int const i) : index(i) { }
-		operator int () { return index; }
-		operator int const () const { return index; }
+		explicit operator int () { return index; }
+		explicit operator int const () const { return index; }
+		bool operator== (Handle rhs) const { return index == rhs.index; }
+		bool operator!= (Handle rhs) const { return index != rhs.index; }
 
 		// invalidate handle without destroying item it points to
 		void invalidate() { index = c_Invalid; }
@@ -91,7 +93,7 @@ namespace Item
 		// Complex accessors
 		int codepoint () const;
 		std::string name () const;
-		std::string colour () const;
+		char const* colour () const;
 		std::string description () const;
 		std::string interaction_name () const;
 		//bool is_plural () const;

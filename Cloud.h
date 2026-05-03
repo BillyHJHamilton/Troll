@@ -16,6 +16,8 @@ namespace Cloud
 	// The main benefit would be that smoke could conceal a slime puddle.
 	// In future, clouds/puddles also might behave different in water.
 
+	int constexpr c_InfiniteLifetime = 999999999;
+
 	inline bool is_cloud (Cloud::Type c) { return c >= Cloud::Type(0) && c < Count; }
 	int get_codepoint (Cloud::Type c);
 	char const * get_colour (Cloud::Type c);

@@ -249,9 +249,6 @@
     <ClCompile Include="Suggestion.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
-    <ClCompile Include="Feature.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FloatGeometry.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -262,6 +259,12 @@
       <Filter>Source Files\Item</Filter>
     </ClCompile>
     <ClCompile Include="MapGridder.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Door.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Feature.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
     <ClCompile Include="Shop.cpp">
@@ -491,9 +494,6 @@
     <ClInclude Include="Suggestion.h">
       <Filter>Header Files\World</Filter>
     </ClInclude>
-    <ClInclude Include="Feature.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Target.h">
       <Filter>Header Files\Magic</Filter>
     </ClInclude>
@@ -508,6 +508,15 @@
     </ClInclude>
     <ClInclude Include="Loot.h">
       <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="SparseVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Door.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Feature.h">
+      <Filter>Header Files\World</Filter>
     </ClInclude>
     <ClInclude Include="SparseVector.h">
       <Filter>Header Files</Filter>

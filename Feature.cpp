@@ -3,6 +3,7 @@
 #include "Damage.h"
 #include "Debug.h"
 #include "Draw.h"
+#include "Grammar.h"
 #include "Item.h"
 #include "Loot.h"
 #include "Pathfind.h"
@@ -28,6 +29,11 @@ namespace Feature
 // 	             - trigger only activates when the last torch with that trigger is lit
 //  - TorchLit - no payload
 //  - Portrait - no payload
+//  - Ectoplasm - no payload
+//  - DoorOpen - no payload
+//  - DoorClosed - no payload
+//  - DoorLocked - no payload
+//  - DoorColloportus - payload is countdown until it reopens
 //  - FlipendoButton - payload is which trigger id it activates
 //                   - it also turns into a wall on that trigger
 //  - SlidingWall - payload is which trigger id it responds to
@@ -77,6 +83,8 @@ void init_desk(Itr feature);
 
 void update_feature(Itr feature);
 void update_scanner(Itr feature);
+void update_door_closed(Itr feature);
+void update_door_colloportus(Itr feature);
 void update_shop_seed(Itr feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
@@ -133,6 +141,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Desk:
 				init_desk(new_feature);
 				break;
+			case Terrain::DoorClosed:
 			case Terrain::ShopSeed:
 				register_for_updates(new_feature);
 				break;
@@ -143,11 +152,17 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::Portcullis:
 				DebugBreak("Spawn Feature with trigger");
 				break;
+			case Terrain::DoorColloportus:
+				DebugBreak("Never spawn DoorColloportus directly");
+				break;
 			// no initialization needed
 			// case Terrain::Armour:
 			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			// case Terrain::TorchLit:
 			// case Terrain::Portrait:
+			// case Terrain::Ectoplasm:
+			// case Terrain::DoorOpen:
+			// case Terrain::DoorLocked:
 		}
 	}
 }
@@ -269,7 +284,7 @@ void init_chest(Feature::Itr feature)
 
 	// Slightly better than normal for this level.
 	float const difficulty = World::read().find_map_difficulty(feature->pos) + 1.0f;
-	Loot::stack(Loot::Chest_Main, top, Creature::None, difficulty);
+	Loot::stack(Loot::Treasure, top, Creature::None, difficulty);
 
 	int const num_beans = Random::in_range(3,6);
 	for (int i = 0; i < num_beans; ++i)
@@ -317,7 +332,12 @@ void update_feature(Feature::Itr feature)
 		case Terrain::Scanner:
 			update_scanner(feature);
 			break;
-
+		case Terrain::DoorClosed:
+			update_door_closed(feature);
+			break;
+		case Terrain::DoorColloportus:
+			update_door_colloportus(feature);
+			break;
 		case Terrain::ShopSeed:
 			update_shop_seed(feature);
 			break;
@@ -331,6 +351,34 @@ void update_scanner(Feature::Itr feature)
 	{
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
+	}
+}
+
+void update_door_closed(Feature::Itr feature)
+{
+	// TODO: Opening the door should take a move
+	//  -> It will have to be detected when a creatue is moving
+	//    -> Including the player
+	//  -> The movement AI will have to understand it
+	//    -> Moving onto a door is a move, but does not consume a path step
+	//    -> The move has not failed, even though the creature didn't move
+
+	Creature::Handle creature_on_door = Creature::creature_at_pos(feature->pos);
+	if (creature_on_door != Creature::None)
+	{
+		Draw::creature_message(creature_on_door, std::format("{} {} a door.",
+			Grammar::You(creature_on_door), Grammar::verbs("open", creature_on_door)));
+		World::edit().set_terrain(feature->pos, Terrain::DoorOpen);
+	}
+}
+
+void update_door_colloportus(Feature::Itr feature)
+{
+	--feature->payload;
+	if (feature->payload <= 0)
+	{
+		Draw::pos_message(feature->pos, "A door unlocks.");
+		World::edit().set_terrain(feature->pos, Terrain::DoorClosed);
 	}
 }
 
@@ -430,6 +478,55 @@ void open_portrait(Vec3 pos)
 	{
 		Draw::pos_message(pos, "The portrait swings open!");
 		remove_feature(feature, Terrain::Open);
+	}
+}
+
+void clear_ectoplasm(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Draw::pos_message(pos, "The ectoplasm is scrubbed away!");
+		remove_feature(feature, Terrain::Open);
+	}
+}
+
+void unlock_door(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Draw::pos_message(pos, "The door unlocks!");
+		World::edit().set_terrain(pos, Terrain::DoorClosed);
+		feature->needs_update = true;
+	}
+}
+
+void lock_door(Vec3 pos)
+{
+	Feature::Itr feature = find_feature(pos);
+	if (Check(feature.valid()))
+	{
+		Creature::Handle creature_on_door = Creature::creature_at_pos(feature->pos);
+		if (creature_on_door != Creature::None)
+		{
+			Draw::creature_message(creature_on_door, std::format("The door is blocked by {}.",
+				Grammar::you(creature_on_door)));
+			return;
+		}
+
+		Terrain::Type old_type = World::read().get_terrain(pos);
+		if (old_type == Terrain::DoorOpen)
+		{
+			Draw::pos_message(pos, "The door swings shut and locks!");
+		}
+		else
+		{
+			Draw::pos_message(pos, "The door locks!");
+		}
+		World::edit().set_terrain(pos, Terrain::DoorColloportus);
+		feature->needs_update = true;
+		feature->payload = Random::in_range(10, 15);
 	}
 }
 

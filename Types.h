@@ -24,12 +24,10 @@ struct Box2;
 
 enum CompassDirection : int;
 
-enum class DoorType : int;
 enum class GameMode : byte;
 enum class Gender : byte;
 enum class MoveMode : byte;
 enum class RoomType : int;
-enum class TriggerType : int;
 enum class Visibility : byte;
 
 namespace Ability
@@ -60,6 +58,16 @@ namespace Damage
 	enum Type : int;
 	struct Cause;
 	struct Packet;
+}
+
+namespace Door
+{
+	enum class LockedGenus : int;
+	enum class Spelled : int;
+	enum class Triggered : int;
+	enum class TriggerType : int;
+	enum class Unlocked : int;
+	struct Parameters;
 }
 
 namespace Draw

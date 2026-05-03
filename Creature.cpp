@@ -54,13 +54,13 @@ std::unordered_map<int,Damage::Cause> s_fainting_creatures; // and how they fain
 static Creature::Instance const & read_creature_instance (Creature::Handle creature)
 {
 	assert(creature.valid());
-	return s_creatures[creature];
+	return s_creatures[(int)creature];
 }
 
 static Creature::Instance & edit_creature_instance (Creature::Handle creature)
 {
 	assert(creature.valid());
-	return s_creatures[creature];
+	return s_creatures[(int)creature];
 }
 
 static Gingerbread::Stats const & read_creature_stats (Creature::Handle creature)
@@ -72,13 +72,13 @@ static Gingerbread::Stats const & read_creature_stats (Creature::Handle creature
 static Creature::DerivedStats const & read_derived_stats (Creature::Handle creature)
 {
 	assert(creature.valid());
-	return s_derived_stats[creature];
+	return s_derived_stats[(int)creature];
 }
 
 static Creature::DerivedStats & edit_derived_stats (Creature::Handle creature)
 {
 	assert(creature.valid());
-	return s_derived_stats[creature];
+	return s_derived_stats[(int)creature];
 }
 
 void init ()
@@ -856,7 +856,7 @@ HandleItr::HandleItr(int start_at)
 	: current(start_at)
 {
 	while (!current.valid()
-		&& current < s_max_creature_index)
+		&& (int)current < s_max_creature_index)
 	{
 		++current;
 	}
@@ -871,7 +871,7 @@ void HandleItr::advance ()
 {
 	++ current;
 	while (!current.valid()
-		&& current < s_max_creature_index)
+		&& (int)current < s_max_creature_index)
 	{
 		++ current;
 	}
@@ -879,7 +879,7 @@ void HandleItr::advance ()
 
 bool HandleItr::finished () const
 {
-	return current >= s_max_creature_index;
+	return (int)current >= s_max_creature_index;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1064,9 +1064,9 @@ void draw_visible_creatures (Draw::View const & view)
 		return;
 	}
 
-	for (int i : s_visible_creatures)
+	for (Creature::Handle c : s_visible_creatures)
 	{
-		draw_creature(i, view);
+		draw_creature(c, view);
 	}
 }
 
