@@ -98,10 +98,11 @@ void flipendo_vs_creature (EffectParams const & params)
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
-		// TODO: Get terrain name
-		Draw::creature_message(target, std::format("{0} knocked into the wall!",
-			Grammar::You_are(target)));
+		Terrain::Type knock_terrain = World::read().get_terrain(knock_pos);
+		Draw::creature_message(target, std::format("{0} knocked into the {1}!",
+			Grammar::You_are(target), Terrain::get_name(knock_terrain)));
 		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
+		Feature::damage(knock_pos, {1, Damage::Basic, Damage::Cause(caster)});
 	}
 	else if (secondary_target != Creature::None)
 	{
