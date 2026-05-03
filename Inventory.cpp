@@ -49,6 +49,18 @@ bool Inventory::has_item () const
 	return !invent.empty();
 }
 
+bool Inventory::has_item_to_sell () const
+{
+	for (Item::Handle const item : invent)
+	{
+		if (item.can_sell())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 int Inventory::num_slots () const
 {
 	return Util::Size(invent);

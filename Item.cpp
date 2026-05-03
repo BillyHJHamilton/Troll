@@ -303,6 +303,11 @@ int Handle::buy_price () const
 	}
 }
 
+int Handle::sell_price () const
+{
+	return std::max(1, (2*buy_price())/2);
+}
+
 UseResult Handle::use ()
 {
 	switch (type())

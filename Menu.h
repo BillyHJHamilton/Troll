@@ -56,6 +56,7 @@ namespace Menu
 	void show_message_history();
 	void show_settings();
 	void show_shop_buy();
+	void show_shop_sell();
 
 	// Debug menus
 #if _DEBUG

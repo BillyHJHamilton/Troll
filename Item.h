@@ -104,6 +104,7 @@ namespace Item
 		bool stacks_in_bag () const { return bag_stack_mode() != BagStack::None; }
 		bool can_stack_in_bag_with (Item::Handle other) const;
 		int buy_price () const;
+		int sell_price () const;
 
 		// Mutators
 		UseResult use ();

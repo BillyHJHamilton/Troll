@@ -554,8 +554,6 @@ void init()
 	};
 
 	// TODO: Add a way for Fred and George to finish one other's sentences.
-	// TODO: Have them say different things after you buy, or leave without buying,
-	//   when out of stock, when player has nothing to sell, when leaving soon, etc.
 	s_taunts[Creature::Fred_Shop] = 
 	{
 		Taunt::Data{.text="Psst!  Over here!",
@@ -602,8 +600,10 @@ void init()
 
 		Taunt::Data{.text="We're on your side, you know.",
 			.condition=ShopLeaving},
-		Taunt::Data{.text="Huge fans of your work.",
+		Taunt::Data{.text="We're huge fans of your work.",
 			.condition=ShopLeaving},
+		Taunt::Data{.text="Loved that bit with the Sorting Hat.",
+			.condition=ShopLeaving, .rarity=12},
 	};
 
 }

@@ -18,6 +18,7 @@
 #include "MenuSelectHouse.h"
 #include "MenuSettings.h"
 #include "MenuShopBuy.h"
+#include "MenuShopSell.h"
 #include "MenuSpells.h"
 #include "MenuTitle.h"
 #include "VectorUtil.h"
@@ -44,6 +45,7 @@ MenuPrologue s_menu_prologue;
 MenuSelectHouse s_menu_select_house;
 MenuSettings s_menu_settings;
 MenuShopBuy s_menu_shop_buy;
+MenuShopSell s_menu_shop_sell;
 MenuSpells s_menu_spells;
 MenuTitle s_menu_title;
 MenuPause s_menu_pause;
@@ -260,6 +262,12 @@ void show_shop_buy()
 {
 	set_menu(s_menu_shop_buy);
 	s_menu_shop_buy.refresh();
+}
+
+void show_shop_sell()
+{
+	set_menu(s_menu_shop_sell);
+	s_menu_shop_sell.refresh();
 }
 
 #if _DEBUG

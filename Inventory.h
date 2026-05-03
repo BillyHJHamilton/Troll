@@ -14,7 +14,8 @@ public:
 	
 	void serialize_instance(ISerializer& s);
 
-	bool has_item () const;	
+	bool has_item () const;
+	bool has_item_to_sell () const;
 	int num_slots () const;
 	int total_items () const;
 	int num_beans () const;

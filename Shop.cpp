@@ -87,8 +87,7 @@ void post_load()
 	}
 	else if (s_data.menu_open == MenuOpen::Sell)
 	{
-		// TODO
-		// Menu::show_shop_sell();
+		Menu::show_shop_sell();
 	}
 };
 
@@ -212,9 +211,16 @@ void interact(Creature::Type shop_creature)
 	}
 	else
 	{
-		// TODO: George has the "Sell" menu
-		Draw::add_message("George says, \"Talk to Fred if you'd like to buy.\"",
-			Gingerbread::read(shop_creature).colour);
+		if (Inventory::read().has_item_to_sell())
+		{
+			s_data.menu_open = MenuOpen::Sell;
+			Menu::show_shop_sell();
+		}
+		else
+		{
+			Draw::add_message("George says, \"Come back if you have something to sell!\"",
+				Gingerbread::read(shop_creature).colour);
+		}
 	}
 }
 
