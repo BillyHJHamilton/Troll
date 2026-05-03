@@ -30,7 +30,7 @@ public:
 
 		int MaxCorridorLength = 6;
 
-		bool IsShopSeed = false;
+		bool PlaceShopSeed = false;
 
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;

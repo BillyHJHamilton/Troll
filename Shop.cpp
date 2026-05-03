@@ -22,7 +22,7 @@ namespace Shop
 //-------------------------------------------------------------------------------------------------
 // Data
 
-int constexpr c_ShopItems = 7;
+int constexpr c_ShopItems = 9;
 int constexpr c_ActiveTurns = 100;
 int constexpr c_InactiveTurns = 150;
 Interval constexpr c_TalkDelayLong = {10, 20};

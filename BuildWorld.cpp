@@ -52,13 +52,20 @@ void BuildWorld()
 		.max_treasures = 7,
 	});
 
+	int next_shop = Random::in_range(1,2);
+
 	for (int z = 0; z <= c_MaxZ; ++z)
 	{
 		MapGenerator::Parameters & gen_param = world.edit_map(z).get_generator().EditParameters();
 		//gen_param.MinNumRooms += z;
 		//gen_param.MaxNumRooms += 2*z;
-		gen_param.IsShopSeed = Random::coinflip();
 		gen_param.percent_torches_lit = 80 - z * 10;
+
+		if (z < c_MaxZ && z == next_shop)
+		{
+			gen_param.PlaceShopSeed = true;
+			next_shop += Random::in_range(2,3);
+		}
 
 		Door::Parameters & door_param = world.edit_map(z).edit_door_param();
 
