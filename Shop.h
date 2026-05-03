@@ -22,6 +22,7 @@ namespace Shop
 	void notify_deal();
 	void notify_menu_close();
 
+	Vec3 get_tether_pos();
 	bool has_made_deal();
 	bool should_talk(Creature::Type speaker);
 	void notify_talk(Creature::Type speaker);

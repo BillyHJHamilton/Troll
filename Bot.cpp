@@ -806,6 +806,18 @@ void bot_shopkeep(Creature::Handle const creature, Brain& brain, Thoughts& thoug
 	{
 		--brain.awareness;
 	}
+
+	// Mill around a bit.
+	if (Random::one_in(4))
+	{
+		CompassDirection const d = Random::compass_direction(/*include_no_move*/ false);
+		Vec2 const move = c_Compass[d];
+		Vec3 const new_pos = creature.pos() + move.xy0();
+		if (range_2d(Shop::get_tether_pos(), new_pos, 1))
+		{
+			try_move(creature, move);
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

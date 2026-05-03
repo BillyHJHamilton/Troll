@@ -50,6 +50,7 @@ enum class DealState : byte
 
 struct Data
 {
+	Vec3 tether_pos = {0,0,0};
 	int next_trigger = 0;
 	int next_talk = 0;
 	int num_talk = 0;
@@ -162,6 +163,7 @@ bool try_spawn(Vec3 pos)
 	float difficulty = World::read().find_map_difficulty(pos);
 	restock(difficulty);
 
+	s_data.tether_pos = pos;
 	s_data.next_trigger = Game::get_turn_number() + c_ActiveTurns;
 	s_data.next_talk = Game::get_turn_number() + Random::in_range(c_TalkDelayShort);
 	s_data.num_talk = Random::in_range(c_MaxTalk);
@@ -251,6 +253,11 @@ void notify_menu_close()
 
 	// Pass turn upon leaving the menu.
 	Player::set_acted(true);
+}
+
+Vec3 get_tether_pos()
+{
+	return s_data.tether_pos;
 }
 
 bool has_made_deal()
