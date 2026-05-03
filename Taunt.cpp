@@ -295,7 +295,7 @@ void init()
 	s_taunts[Creature::Cedric_4] =
 	{
 		Taunt::Data{.text="gives you a smile and draws his wand.",
-			.presentation=Emote, .condition=AnyTime, .rarity=20},
+			.presentation=Emote, .condition=Greeting},
 		Taunt::Data{.text="sparkles handsomely",
 			.presentation=Emote, .condition=AnyTime, .rarity=20},
 		Taunt::Data{.text="I'm the real Hogwarts champion!"},

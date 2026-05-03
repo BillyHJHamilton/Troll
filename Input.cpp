@@ -17,9 +17,6 @@
 #include "Spell.h"
 #include "World.h"
 
-// TEMP
-#include "Shop.h"
-
 #include <cassert>
 #include <iostream>
 
@@ -285,13 +282,6 @@ Input::Result handle_next_input ()
 		if (key == TK_X)
 		{
 			Action::player_look_at();
-			return Result::Handled;
-		}
-
-		if (key == TK_S && terminal_check(TK_CONTROL))
-		{
-			Shop::restock(1.0f); // todo: difficulty
-			Menu::show_shop_buy();
 			return Result::Handled;
 		}
 
