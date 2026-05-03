@@ -187,6 +187,9 @@ bool try_serialize_all(ISerializer& s)
 
 		s_game_mode = GameMode::Normal;
 		Draw::add_message("Welcome back.");
+
+		// Systems that need to react after load.
+		Shop::post_load();
 	}
 
 	return true;

@@ -92,6 +92,11 @@ void clear()
 
 void close()
 {
+	if (s_current_menu)
+	{
+		s_current_menu->on_close();
+	}
+
 	s_current_menu = nullptr;
 	s_back_stack.clear();
 	Game::set_mode(GameMode::Normal);
@@ -106,6 +111,11 @@ void back()
 	}
 	else
 	{
+		if (s_current_menu)
+		{
+			s_current_menu->on_close();
+		}
+
 		s_current_menu = Util::PopBack(s_back_stack);
 	}
 }

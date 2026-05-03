@@ -60,11 +60,13 @@ To Do:
  - Dialogue:
   - Say specific lines after you buy, sell, or leave without buying
   - Also change general dialogue after transaction ("Good luck!")
-  - Track who (Fred/George) spoke last, and take turns
-  - Talk less often than combat characters (include a special cooldown)
+  X Track who (Fred/George) spoke last, and take turns
+  X Talk less often than combat characters (include a special cooldown)
   - Allow special crosstalk
  - Go away sooner, especially if you bought lots already
  - Try not to place them where they block the door
+  - Or let them mingle a little
+
 
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.

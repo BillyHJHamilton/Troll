@@ -15,6 +15,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Shop.h"
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
@@ -1427,7 +1428,6 @@ void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoug
 	{
 		IntTempList taunts;
 		Taunt::find_taunts(creature, Taunt::AttackSpell, spell, taunts);
-
 		maybe_taunt_from_list(creature, brain, thoughts, taunts);
 	}
 }
@@ -1436,12 +1436,25 @@ void taunt_shop(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
 	PerfTimer perf("taunt_shop");
 
+	if (!Shop::should_talk(creature.type()))
+	{
+		return;
+	}
+
 	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
 	{
-		IntTempList taunts;
-		Taunt::find_taunts(creature, Taunt::AnyTime, c_Invalid, taunts);
+		Taunt::Condition const condition = (Shop::has_made_deal()) ?
+			Taunt::Condition::ShopLeaving :
+			Taunt::Condition::ShopAttract;
 
+		IntTempList taunts;
+		Taunt::find_taunts(creature, condition, c_Invalid, taunts);
 		maybe_taunt_from_list(creature, brain, thoughts, taunts);
+
+		if (thoughts.has_taunted)
+		{
+			Shop::notify_talk(creature.type());
+		}
 	}
 }
 

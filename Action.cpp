@@ -139,12 +139,13 @@ bool player_try_move(Vec2 relative_move)
 			if (creature_in_way.has_tag(Creature::Tag::Shop))
 			{
 				Shop::interact(creature_in_way.type());
-				// TODO: Handle case where player quits the game while in shop.
-				// Maybe simply by saving before you go in, and not if you quit while inside?
-				// - Or else, understand enough to trigger end of turn on reload.
-				// - Perhaps by serializing the player_acted value after all?
-				// - Or by forcing the end of turn before quitting?  by forcing you out of the menu with player_acted = true?
-				// - We could set player_acted here, but not process until out of menu?
+
+				// TODO: Shopping should take a turn, but what if the player quits in the menu?
+				// - Maybe simply save before you go in, and not if you quit while inside?
+				//  - In other words, treat the transaction as an action which is not executed until you leave
+				//  - That's how it works in Crawl - you check off items, then pay your bill when you leave.
+				//  - But as a matter of UI, I prefer buy/sell immediately.
+				// - Or set something which triggers end of turn on either "close menu" or "reload"?
 			}
 			// else: basic melee or other interactions
 		}

@@ -59,7 +59,7 @@ namespace Terrain
 		Data{"door", /*colloportus*/Codepoint::DoorColloportus,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"wall" /*sliding*/,	Codepoint::SolidBlock,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	f_None},
 		Data{"portcullis",			'#',						nullptr,		40,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /*shop seed*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
+		Data{"floor" /*shop seed*/,	'/',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 	};
 
 	int get_character(Terrain::Type t)

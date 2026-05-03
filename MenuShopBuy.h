@@ -7,6 +7,7 @@ class MenuShopBuy : public MenuList
 public:
 	virtual void draw_screen();
 	virtual Input::Result handle_input(int key);
+	virtual void on_close() override;
 
 	void refresh();
 

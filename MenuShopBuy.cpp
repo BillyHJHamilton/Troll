@@ -29,6 +29,11 @@ Input::Result MenuShopBuy::handle_input (int key)
 	}
 }
 
+void MenuShopBuy::on_close()
+{
+	Shop::notify_menu_close();
+}
+
 void MenuShopBuy::refresh()
 {
 	clear_list();
@@ -104,6 +109,7 @@ void MenuShopBuy::try_buy_item()
 		Item::Handle bought_item = shop_inventory.pop_item(slot);
 		player_inventory.add_item(bought_item);
 
+		Shop::notify_deal();
 
 		if (!shop_inventory.has_item())
 		{

@@ -12,6 +12,7 @@ public:
 
 	virtual void draw_screen () = 0;
 	virtual Input::Result handle_input (int key) = 0;
+	virtual void on_close () {};
 };
 
 namespace Menu

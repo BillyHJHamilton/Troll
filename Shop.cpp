@@ -4,12 +4,15 @@
 #include "Creature.h"
 #include "Draw.h"
 #include "Game.h"
+#include "Geometry.h"
 #include "Gingerbread.h"
 #include "Loot.h"
 #include "Menu.h"
 #include "Pathfind.h"
+#include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Taunt.h"
 #include "VectorUtil.h"
 #include "World.h"
 
@@ -22,10 +25,44 @@ namespace Shop
 int constexpr c_ShopItems = 7;
 int constexpr c_ActiveTurns = 100;
 int constexpr c_InactiveTurns = 150;
+Interval constexpr c_TalkDelayLong = {10, 20};
+Interval constexpr c_TalkDelayShort = {2, 5};
+Interval constexpr c_MaxTalk = {2,4};
 
 Inventory s_shop_inventory;
 
-int s_next_trigger_turn = 0;
+// Normally we close all menus when reloading the game, but closing
+// the shop counts as an action, so we need to reopen it on load.
+enum class MenuOpen : byte
+{
+	None,
+	Buy,
+	Sell
+};
+
+// Tracks whether player has bought/sold something.  Affects dialogue.
+enum class DealState : byte
+{
+	NoDeal,
+	Deal,
+	DealEarlier,
+};
+
+struct Data
+{
+	int next_trigger = 0;
+	int next_talk = 0;
+	int num_talk = 0;
+	Creature::Type last_speaker = Creature::None;
+	MenuOpen menu_open = MenuOpen::None;
+	DealState deal_state = DealState::NoDeal;
+};
+Data s_data;
+
+//-------------------------------------------------------------------------------------------------
+// Helper function declarations
+
+void do_taunt(Creature::Type type, Taunt::Condition condition);
 
 //-------------------------------------------------------------------------------------------------
 // Interface
@@ -33,13 +70,27 @@ int s_next_trigger_turn = 0;
 void clear()
 {
 	s_shop_inventory = Inventory{};
+	s_data = Data{};
 }
 
 void serialize(ISerializer& s)
 {
 	s_shop_inventory.serialize_instance(s);
-	s.srz_int(s_next_trigger_turn);
+	s.srz_value(s_data);
 }
+
+void post_load()
+{
+	if (s_data.menu_open == MenuOpen::Buy)
+	{
+		Menu::show_shop_buy();
+	}
+	else if (s_data.menu_open == MenuOpen::Sell)
+	{
+		// TODO
+		// Menu::show_shop_sell();
+	}
+};
 
 Inventory const& read_inventory()
 {
@@ -93,7 +144,7 @@ bool is_active()
 bool try_spawn(Vec3 pos)
 {
 	if (is_active() ||
-		Game::get_turn_number() < s_next_trigger_turn)
+		Game::get_turn_number() < s_data.next_trigger)
 	{
 		return false;
 	}
@@ -112,7 +163,10 @@ bool try_spawn(Vec3 pos)
 	float difficulty = World::read().find_map_difficulty(pos);
 	restock(difficulty);
 
-	s_next_trigger_turn = Game::get_turn_number() + c_ActiveTurns;
+	s_data.next_trigger = Game::get_turn_number() + c_ActiveTurns;
+	s_data.next_talk = Game::get_turn_number() + Random::in_range(c_TalkDelayShort);
+	s_data.num_talk = Random::in_range(c_MaxTalk);
+	s_data.deal_state = DealState::NoDeal;
 
 	if (f.visible() || g.visible())
 	{
@@ -130,13 +184,13 @@ void update()
 		Creature::Handle george = Gingerbread::find_incarnation(Creature::George_Shop);
 
 		// Consider if we should despawn.
-		if (Game::get_turn_number() >= s_next_trigger_turn &&
+		if (Game::get_turn_number() >= s_data.next_trigger &&
 			(!fred.valid() || !fred.visible()) &&
 			(!george.valid() || !george.visible()))
 		{
 			fred.destroy();
 			george.destroy();
-			s_next_trigger_turn = Game::get_turn_number() + c_InactiveTurns;
+			s_data.next_trigger = Game::get_turn_number() + c_InactiveTurns;
 		}
 	}
 }
@@ -147,6 +201,7 @@ void interact(Creature::Type shop_creature)
 	{
 		if (s_shop_inventory.read().has_item())
 		{
+			s_data.menu_open = MenuOpen::Buy;
 			Menu::show_shop_buy();
 		}
 		else
@@ -163,4 +218,71 @@ void interact(Creature::Type shop_creature)
 	}
 }
 
+void notify_deal()
+{
+	s_data.deal_state = DealState::Deal;
 }
+
+void notify_menu_close()
+{
+	Creature::Type const creature_type = (s_data.menu_open == MenuOpen::Buy) ?
+		Creature::Fred_Shop :
+		Creature::George_Shop;
+
+	if (s_data.deal_state == DealState::Deal)
+	{
+		do_taunt(creature_type, Taunt::Condition::ShopDeal);
+		s_data.deal_state = DealState::DealEarlier;
+		s_data.next_talk = std::min(s_data.next_talk,
+			Game::get_turn_number() + Random::in_range(c_TalkDelayShort));
+	}
+	else
+	{
+		do_taunt(creature_type, Taunt::Condition::ShopNoDeal);
+	}
+
+	s_data.menu_open = MenuOpen::None;
+
+	// Pass turn upon leaving the menu.
+	Player::set_acted(true);
+}
+
+bool has_made_deal()
+{
+	return s_data.deal_state != DealState::NoDeal;
+}
+
+// We don't want Fred and George to exhaust all their dialogue right away,
+// so we restrict their talking with several variables.
+bool should_talk(Creature::Type speaker)
+{
+	return s_data.num_talk > 0 &&
+		s_data.last_speaker != speaker &&
+		Game::get_turn_number() >= s_data.next_talk;
+}
+
+void notify_talk(Creature::Type speaker)
+{
+	s_data.last_speaker = speaker;
+	s_data.next_talk = Game::get_turn_number() + Random::in_range(c_TalkDelayLong);
+	--s_data.num_talk;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Helper function implementations
+
+void do_taunt(Creature::Type type, Taunt::Condition condition)
+{
+	Creature::Handle creature = Gingerbread::find_incarnation(type);
+	if (creature.valid())
+	{
+		IntTempList taunts;
+		Taunt::find_taunts(creature, condition, c_Invalid, taunts);
+		if (!taunts.empty())
+		{
+			Taunt::say_taunt(creature, Random::from_vector(taunts));
+		}
+	}
+}
+
+} // namespace Shop

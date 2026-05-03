@@ -560,19 +560,50 @@ void init()
 	{
 		Taunt::Data{.text="Psst!  Over here!",
 			.condition=Greeting, .repeat=true},
-		Taunt::Data{.text="Have you collected any beans for us?"},
-		Taunt::Data{.text="Anything you need?"},
-		Taunt::Data{.text="Don't give up!", .rarity=10},
-		Taunt::Data{.text="Give 'em our regards!", .rarity=10},
+
+		Taunt::Data{.text="Have you collected any beans for us?",
+			.condition=ShopAttract},
+		Taunt::Data{.text="Anything you need?",
+			.condition=ShopAttract},
+
+		Taunt::Data{.text="A pleasure doing business.",
+			.condition=ShopDeal, .repeat=true},
+		Taunt::Data{.text="Discerning, as always.",
+			.condition=ShopDeal, .rarity=3},
+
+		Taunt::Data{.text="Nothing catch your fancy?",
+			.condition=ShopNoDeal, .repeat=true},
+		Taunt::Data{.text="Next time, then.",
+			.condition=ShopNoDeal, .repeat=true},
+		Taunt::Data{.text="Tough customer!",
+			.condition=ShopNoDeal, .rarity=3, .repeat=true},
+
+		Taunt::Data{.text="Don't give up!",
+			.condition=ShopLeaving},
+		Taunt::Data{.text="Give 'em our regards!",
+			.condition=ShopLeaving},
 	};
 
 	s_taunts[Creature::George_Shop] = 
 	{
-		Taunt::Data{.text="Care to trade?"},
-		Taunt::Data{.text="Are you running short of beans?"},
-		Taunt::Data{.text="Anything you'd like to sell?"},
-		Taunt::Data{.text="We're on your side, you know.", .rarity=10},
-		Taunt::Data{.text="Huge fans of your work.", .rarity=10},
+		Taunt::Data{.text="Care to trade?",
+			.condition=ShopAttract},
+		Taunt::Data{.text="Are you running short of beans?",
+			.condition=ShopAttract},
+		Taunt::Data{.text="Anything you'd like to sell?",
+			.condition=ShopAttract},
+
+		Taunt::Data{.text="A pleasure doing business.",
+			.condition=ShopDeal, .repeat=true},
+		Taunt::Data{.text="I hope they're tasty!",
+			.condition=ShopDeal, .rarity=3},
+		Taunt::Data{.text="Enjoy the beans!",
+			.condition=ShopDeal, .rarity=3},
+
+		Taunt::Data{.text="We're on your side, you know.",
+			.condition=ShopLeaving},
+		Taunt::Data{.text="Huge fans of your work.",
+			.condition=ShopLeaving},
 	};
 
 }
