@@ -53,6 +53,19 @@ To Do:
 
 - Miscast effects
 
+- Shop
+ - Appear less often, but with more items to purchase
+ - Offer spell notes for sale
+ - Handle save/load with shop
+ - Dialogue:
+  - Say specific lines after you buy, sell, or leave without buying
+  - Also change general dialogue after transaction ("Good luck!")
+  - Track who (Fred/George) spoke last, and take turns
+  - Talk less often than combat characters (include a special cooldown)
+  - Allow special crosstalk
+ - Go away sooner, especially if you bought lots already
+ - Try not to place them where they block the door
+
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
   - Would act a lot like fog, but be penetrated by light and fire
