@@ -18,37 +18,45 @@ namespace Squad
 static std::vector<Squad::Definition> const s_squads =
 {
 	{ .debug_name="Gnome Squad", .difficulty=1.0f, .probability=0.4f,
+	  .habitats=0x1,  // set as bits, TODO: How should this be done?
 	  .flags=f_Repeat, .members={
 		{Creature::Gnome, 2,5},
 	}},
 
-	// TODO: Streeler squad
-	//  -> from traps but not main dungeon?
+	{ .debug_name="Streeler Squad", .difficulty=1.5f, .probability=90.3f,
+	  .habitats=0x2,  // set as bits, not in Hogwarts
+	  .flags=f_Repeat, .members={
+		{Creature::Streeler, 2,3},  // if 3 streelers aren't a problem, 10 wouldn't be
+	}},
 
 	{ .debug_name="Puff Posse", .difficulty=1.5f, .probability=0.1f,
+	  .habitats=0x1,  // set as bits
 	  .flags=f_Repeat, .members={
 		{Creature::Hufflepuff_1, 3,4}
 	}},
 
 	{ .debug_name="Crabbe and Goyle", .difficulty=3.0f, .probability=1.0f,
+	  .habitats=0x1,  // set as bits
 	  .flags=f_None, .members={
 		{Creature::Crabbe_3},
 		{Creature::Goyle_3},
 	}},
 
 	{ .debug_name="Crab Squad", .difficulty=3.0f, .probability=0.3f,
-	  .habitats=0x1,  // set as bits, TODO: How should this be done?
+	  .habitats=0x3,  // set as bits, Hogwarts and trap
 	  .flags=f_Repeat, .members={
 		{Creature::BigFireCrab},
 		{Creature::FireCrab, 2,3},
 	}},
 
 	{ .debug_name="Imp Nest", .difficulty=3.0f, .probability=0.3f,
+	  .habitats=0x1,  // set as bits
 	  .flags=f_Repeat, .members={
 		{Creature::Imp, 2,3},
 	}},
 
 	{ .debug_name="Doxy Nest", .difficulty=4.0f, .probability=0.3f,
+	  .habitats=0x1,  // set as bits
 	  .flags=f_Repeat, .members={
 		{Creature::Doxy, 4,6},
 	}},

@@ -609,8 +609,15 @@ void trigger_monster_trap(Feature::Itr feature)
 {
 	// TODO: Can I use Pathfind::find_nearest_open
 	//  -> as Spawn::spawn_squad
+	//  -> what dies it return for failure?
 
 	Vec3 spawn_pos = find_nearby_good_spawn_pos(feature->pos);
+	if (spawn_pos == c_NoValidSpawnPos)
+	{
+		Draw::pos_message(feature->pos, "You hear a clunk.");
+		remove_feature(feature, Terrain::Open);
+		return;
+	}
 
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
 	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
@@ -621,8 +628,8 @@ void trigger_monster_trap(Feature::Itr feature)
 		assert(Creature::is_valid_type(creature_type));
 		Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
 
-		Draw::pos_message(feature->pos, std::format("A {} drops in.", creature.long_name()),
-			              creature.colour());
+		Draw::pos_message(spawn_pos, std::format("A {} {} in.", creature.long_name(),
+			              Grammar::verbs("drop", creature)), creature.colour());
 
 		if (Debug::enabled(Debug::Map))
 		{
@@ -636,7 +643,7 @@ void trigger_monster_trap(Feature::Itr feature)
 
 		// TODO: Squad names?
 		//  -> Squad colours?
-		Draw::pos_message(feature->pos, "Beasts drop in.");
+		Draw::pos_message(spawn_pos, "Beasts drop in.");
 	}
 
 	remove_feature(feature, Terrain::Open);

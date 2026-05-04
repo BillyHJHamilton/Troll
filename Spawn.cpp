@@ -464,7 +464,18 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		//Vec2 const pos = next_spawn_position();
 		//Vec3 const pos3 = pos.xyz(map.get_z());
 
-		Spawn::Option option = choose_spawn_option(map.get_difficulty());
+		// TODO: Parameters for habitat
+		//  -> 1 map can have several habitats
+		//  -> could be lists for all or, any of, must not
+		//  -> do we want to influence probabilities?
+		//  -> there will have to be a datastructure for the desired habitats
+		//    -> it gets passed around through many functions
+		//  -> at of 2026-05-04, probabilities (including squads) are
+		//    -> Identity students (e.g. Harry):	14.3
+		//    -> Generic students (e.g. Slytherin):	2.5
+		//    -> Beasts (e.g. streeler):			6.5
+		Spawn::Option option = choose_spawn_option(map.get_difficulty(),
+		                                           Creature::Habitat::Hogwarts);
 
 		if (option.type == Option::None)
 		{

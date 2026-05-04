@@ -333,6 +333,7 @@ void MapGridder::add_secret_area(Room const & room,
 				}
 			}
 
+			// TODO: Set this as a param
 			if (Random::one_in(3))
 			{
 				PosTempList const trap_pos_list = get_good_positions_away_from_wall(neighbour);

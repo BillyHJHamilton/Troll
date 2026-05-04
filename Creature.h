@@ -118,6 +118,7 @@ namespace Creature
 	enum class Habitat : int
 	{
 		None = c_Invalid,
+		Hogwarts,
 		Trap,	// Can be spawned by a monster trap.
 		Count
 	};
