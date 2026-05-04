@@ -34,6 +34,7 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 	s.srz_bool(IsShopSeed);
 
 	s.srz_int(percent_torches_lit);
+	s.srz_int(percent_monster_trap);
 }
 
 void MapGenerator::Region::serialize(ISerializer& s)

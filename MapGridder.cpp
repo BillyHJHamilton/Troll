@@ -333,8 +333,7 @@ void MapGridder::add_secret_area(Room const & room,
 				}
 			}
 
-			// TODO: Set this as a param
-			if (Random::one_in(3))
+			if (Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_trap)
 			{
 				PosTempList const trap_pos_list = get_good_positions_away_from_wall(neighbour);
 				if (!trap_pos_list.empty())

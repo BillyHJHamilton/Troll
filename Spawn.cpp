@@ -543,8 +543,8 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		//Vec2 const pos = next_spawn_position();
 		//Vec3 const pos3 = pos.xyz(map.get_z());
 
-		// TODO: Parameters for habitat
-		//  -> 1 map can have several habitats
+		// TODO: Map parameters for habitat
+		//  -> 1 map can have monsters from several habitats
 		//  -> could be lists for all or, any of, must not
 		//  -> do we want to influence probabilities?
 		//  -> there will have to be a datastructure for the desired habitats
