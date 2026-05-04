@@ -593,15 +593,15 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 }
 
 // TODO: Move with other public functions
-Spawn::Option choose_spawn_option(float target_difficulty, Creature::Tag required_tag)
+Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat habitat)
 {
 	Spawn::OptionTempList options;
 	FloatTempList weights;
 	options.reserve(Creature::Count);
 	weights.reserve(Creature::Count);
 
-	Gingerbread::find_spawn_options(target_difficulty, options, weights, required_tag);
-	Squad::find_spawn_options(target_difficulty, options, weights, required_tag);
+	Gingerbread::find_spawn_options(target_difficulty, options, weights, habitat);
+	Squad::find_spawn_options(target_difficulty, options, weights, habitat);
 
 	if (Util::Size(options) > 0)
 	{

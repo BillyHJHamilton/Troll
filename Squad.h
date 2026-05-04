@@ -43,7 +43,7 @@ namespace Squad
 	Squad::Definition const& read_definition(int squad_id);
 	bool can_spawn(int squad_id, float target_difficulty);
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-		FloatTempList& out_weights, Creature::Tag required_tag = Creature::Tag::None);
+		FloatTempList& out_weights, Creature::Habitat habitat = Creature::Habitat::None);
 
 	//---------------------------------------------------------------------------------------------
 	// Active squads

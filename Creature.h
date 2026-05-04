@@ -112,6 +112,17 @@ namespace Creature
 	using TypeList = std::vector<Creature::Type>;
 	using TypeTempList = std::vector<Creature::Type, Scratch<Creature::Type>>;
 
+	// Creature Habitats represent where a creature can spawn.
+	// They include other categories used to choose which creature can spawn.
+	// Eventually there should be habitats like Greenhouse.
+	enum class Habitat : int
+	{
+		None = c_Invalid,
+		Trap,	// Can be spawned by a monster trap.
+		Count
+	};
+	using HabitatBitset = std::bitset<(std::size_t)Habitat::Count>;
+
 	// Creature Tags represent a creature type's special traits.
 	// They are named like Category_Tag.  Mainly used for Fantastic Beasts.
 	enum class Tag : int
@@ -129,7 +140,6 @@ namespace Creature
 		Spells_Random,		// Will be assigned some random spells near its skill level.
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.
-		Spawn_From_Trap,	// Can be spawned by a monster trap.
 		Count
 	};
 	using TagBitset = std::bitset<(std::size_t)Tag::Count>;
@@ -216,6 +226,7 @@ namespace Creature
 		int num_abilities () const;
 		bool has_ability (Ability::Index ability) const;
 		std::vector<Ability::Index> const& ability_list () const;
+		bool has_habitat (Habitat habitat) const;
 		bool has_tag (Tag tag) const;
 		bool has_flag (Flag flag) const;
 		bool ready_to_move () const;

@@ -35,6 +35,7 @@ namespace Gingerbread
 	std::vector<Ability::Index> const& read_abilities(Creature::Type type);
 	std::string short_name(Creature::Type type);
 	std::string long_name(Creature::Type type);
+	bool has_habitat(Creature::Type type, Creature::Habitat habitat);
 	bool has_tag(Creature::Type type, Creature::Tag tag);
 	void provide_items(Creature::Handle creature);
 
@@ -43,7 +44,7 @@ namespace Gingerbread
 
 	bool can_spawn_identity (Creature::Type type, float target_difficulty);
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-		FloatTempList& out_weights, Creature::Tag required_tag = Creature::Tag::None);
+		FloatTempList& out_weights, Creature::Habitat habitat = Creature::Habitat::None);
 
 	//Creature::Type find_type_to_spawn (float target_difficulty);
 

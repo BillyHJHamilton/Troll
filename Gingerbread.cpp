@@ -28,6 +28,7 @@ namespace Gingerbread
 
 Gingerbread::Stats s_gingerbread [Creature::Count];
 Spell::Bitset s_gingerbread_spells [Creature::Count];
+Creature::HabitatBitset s_gingerbread_habitats [Creature::Count];
 Creature::TagBitset s_gingerbread_tags [Creature::Count];
 Ragged<Ability::Index> s_gingerbread_abilities;
 Grid<float> s_resistances; // (creature type, damage type)
@@ -74,6 +75,7 @@ struct Builder
 		int codepoint, char const* colour, Gender gender);
 
 	Builder& magic(int skill, std::string spell_string);
+	Builder& habitats(Creature::Habitat new_habitat);
 	Builder& tags(Creature::Tag new_tag);
 	Builder& abil(std::vector<Ability::Index>&& abilities);
 	Builder& loot(Loot::Type loot_type); // implying 100%
@@ -82,6 +84,13 @@ struct Builder
 	Builder& resist(Damage::Type type);
 	Builder& vuln(Damage::Type type);
 	Builder& immune(Damage::Type type);
+
+	template<class ... Packed>
+	Builder& habitats(Creature::Habitat habitat, Packed... args)
+	{
+		habitats(habitat);
+		return tags(args...);
+	}
 
 	template<class ... Packed>
 	Builder& tags(Creature::Tag tag, Packed... args)
@@ -129,6 +138,7 @@ void parse_spell_string (Spell::Bitset & out_spell_bitset, std::string const & s
 void init()
 {
 	using Tag = Creature::Tag;
+	using Habitat = Creature::Habitat;
 
 	// Allocate memory.
 	s_gingerbread_abilities.resize(Creature::Count);
@@ -337,22 +347,25 @@ void init()
 	Builder(Creature::Streeler, c_IdentityGeneric,
 		/*Difficulty*/ 0.8f, /*Probability*/ 0.8f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
+		.habitats(Habitat::Trap)
 		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
-			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short, Tag::Spawn_From_Trap)
+			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
 		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
 	Builder(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 0.8f, /*HP*/ 5,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter)
-		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes, Tag::Spawn_From_Trap)
+		.habitats(Habitat::Trap)
+		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
 	Builder(Creature::BigFireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 2.5f, /*Probability*/ 0.2f, /*HP*/ 10,
 		"big fire crab", "big fire crab", 'c', cstr_Crimson, Gender::Neuter)
-		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes, Tag::Spawn_From_Trap)
+		.habitats(Habitat::Trap)
+		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
 
@@ -507,6 +520,17 @@ std::string long_name (Creature::Type type)
 	return "no one";
 }
 
+bool has_habitat(Creature::Type type, Creature::Habitat habitat)
+{
+	if (Creature::is_valid_type(type))
+	{
+		return s_gingerbread_habitats[type].test((size_t)habitat);
+	}
+
+	DebugBreak();
+	return false;
+}
+
 bool has_tag(Creature::Type type, Creature::Tag tag)
 {
 	if (Creature::is_valid_type(type))
@@ -580,7 +604,7 @@ bool can_spawn_identity (Creature::Type type, float target_difficulty)
 }
 
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-	FloatTempList& out_weights, Creature::Tag required_tag)
+	FloatTempList& out_weights, Creature::Habitat habitat)
 {
 	for (int type = 1; // skip player
 		type < Creature::Type::Count;
@@ -595,8 +619,8 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 			continue;
 		}
 
-		if (required_tag != Creature::Tag::None &&
-			!has_tag((Creature::Type)type, required_tag))
+		if (habitat != Creature::Habitat::None &&
+			!has_habitat((Creature::Type)type, habitat))
 		{
 			continue;
 		}
@@ -730,6 +754,12 @@ Builder& Builder::magic(int skill_magic, std::string spell_string)
 {
 	s_gingerbread[m_type].skill_magic = skill_magic;
 	parse_spell_string(s_gingerbread_spells[m_type], spell_string);
+	return *this;
+}
+
+Builder& Builder::habitats(Creature::Habitat habitat)
+{
+	s_gingerbread_habitats[m_type].set((size_t)habitat, true);
 	return *this;
 }
 

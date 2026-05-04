@@ -46,6 +46,7 @@ namespace Cloud
 namespace Creature
 {
 	enum Type : int;
+	enum class Habitat : int;
 	enum class Tag : int;
 	enum class Flag : int;
 	struct Stats;

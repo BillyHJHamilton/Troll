@@ -157,7 +157,7 @@ bool can_spawn(int squad_id, float target_difficulty)
 }
 
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-	FloatTempList& out_weights, Creature::Tag required_tag)
+	FloatTempList& out_weights, Creature::Habitat habitat)
 {
 	for (int i = 0; i < Util::Size(s_squads); ++i)
 	{
@@ -168,9 +168,8 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 			continue;
 		}
 
-		// TODO: Choose squads with the required tags
-		//  -> squads will need tags
-		if (required_tag != Creature::Tag::None)
+		// TODO: Choose squads by habitats
+		if (habitat != Creature::Habitat::None)
 		{
 			continue;
 		}

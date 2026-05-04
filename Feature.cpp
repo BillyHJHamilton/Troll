@@ -610,7 +610,7 @@ void trigger_monster_trap(Feature::Itr feature)
 	Vec3 spawn_pos = find_nearby_good_spawn_pos(feature->pos);
 
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
-	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Tag::Spawn_From_Trap);
+	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
 
 	if (option.type == Spawn::Option::Creature)
 	{

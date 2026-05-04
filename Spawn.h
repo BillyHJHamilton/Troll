@@ -81,7 +81,7 @@ namespace Spawn
 
 	// Decides on a creature or squad to spawn.
 	Spawn::Option choose_spawn_option(float target_difficulty,
-		Creature::Tag required_tag = Creature::Tag::None);
+		Creature::Habitat habitat = Creature::Habitat::None);
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);
 	float probability_factor (float difficulty, float target_difficulty);
