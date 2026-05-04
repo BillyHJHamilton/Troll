@@ -174,6 +174,85 @@ void check_spawning()
 	}
 }
 
+Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat habitat)
+{
+	Spawn::OptionTempList options;
+	FloatTempList weights;
+	options.reserve(Creature::Count);
+	weights.reserve(Creature::Count);
+
+	Gingerbread::find_spawn_options(target_difficulty, options, weights, habitat);
+	Squad::find_spawn_options(target_difficulty, options, weights, habitat);
+
+	if (Util::Size(options) > 0)
+	{
+		return options.at(Random::weighted_index(weights));
+	}
+	else
+	{
+		return {Option::None, c_Invalid};
+	}
+}
+
+void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
+{
+	if (Check(Squad::is_defined(squad_id)))
+	{
+		Squad::Definition const& squad = Squad::read_definition(squad_id);
+
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format(" - Spawning squad {} at ({},{}) - diff {}.\n",
+				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
+		}
+
+		Creature::TypeTempList to_spawn;
+		to_spawn.reserve(Squad::c_MaxSquadSize);
+
+		int const squad_id = Squad::find_free_index();
+		if (squad_id == c_Invalid)
+		{
+			DebugBreak("Max squads reached!  Spawning aborted.");
+			return;
+		}
+
+		for (Squad::Member const& member : squad.members)
+		{
+			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
+			assert(Creature::is_valid_type(member.type));
+			to_spawn.insert(to_spawn.end(), num_to_spawn, member.type);
+		}
+
+		Vec3TempList spawn_positions;
+		Pathfind::NearestOpenParam nearest_open_param
+		{
+			.max_cost = 5,
+			.num_to_find = Util::Size(to_spawn),
+			.allow_start = true,
+			.allow_visible = allow_visible
+		};
+
+		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
+
+		for (int i = 0;
+			i < Util::Size(to_spawn) && i < Util::Size(spawn_positions);
+			++i)
+		{
+			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
+			creature.set_squad(squad_id);
+			remove_spawn_position(spawn_positions[i].xy());
+
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format("  - Spawned {} at ({},{}) - diff {}.\n",
+					creature.long_name(), creature.pos().x, creature.pos().y,
+					Gingerbread::read(creature.type()).difficulty);
+			}
+		}
+	}
+
+}
+
 bool difficulty_in_range (float difficulty, float target_difficulty)
 {
 	if (Math::FloatGreater(difficulty, target_difficulty + Spawn::c_MaxOverLevel) ||
@@ -599,87 +678,6 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 			map.set_terrain(pos, Terrain::OpenNoSpawn);
 		}
 	}
-}
-
-// TODO: Move with other public functions
-Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat habitat)
-{
-	Spawn::OptionTempList options;
-	FloatTempList weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
-
-	Gingerbread::find_spawn_options(target_difficulty, options, weights, habitat);
-	Squad::find_spawn_options(target_difficulty, options, weights, habitat);
-
-	if (Util::Size(options) > 0)
-	{
-		return options.at(Random::weighted_index(weights));
-	}
-	else
-	{
-		return {Option::None, c_Invalid};
-	}
-}
-
-// TODO: Move with other public functions
-void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
-{
-	if (Check(Squad::is_defined(squad_id)))
-	{
-		Squad::Definition const& squad = Squad::read_definition(squad_id);
-
-		if (Debug::enabled(Debug::Map))
-		{
-			std::cout << std::format(" - Spawning squad {} at ({},{}) - diff {}.\n",
-				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
-		}
-
-		Creature::TypeTempList to_spawn;
-		to_spawn.reserve(Squad::c_MaxSquadSize);
-
-		int const squad_id = Squad::find_free_index();
-		if (squad_id == c_Invalid)
-		{
-			DebugBreak("Max squads reached!  Spawning aborted.");
-			return;
-		}
-
-		for (Squad::Member const& member : squad.members)
-		{
-			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
-			assert(Creature::is_valid_type(member.type));
-			to_spawn.insert(to_spawn.end(), num_to_spawn, member.type);
-		}
-
-		Vec3TempList spawn_positions;
-		Pathfind::NearestOpenParam nearest_open_param
-		{
-			.max_cost = 5,
-			.num_to_find = Util::Size(to_spawn),
-			.allow_start = true,
-			.allow_visible = allow_visible
-		};
-
-		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
-
-		for (int i = 0;
-			i < Util::Size(to_spawn) && i < Util::Size(spawn_positions);
-			++i)
-		{
-			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
-			creature.set_squad(squad_id);
-			remove_spawn_position(spawn_positions[i].xy());
-
-			if (Debug::enabled(Debug::Map))
-			{
-				std::cout << std::format("  - Spawned {} at ({},{}) - diff {}.\n",
-					creature.long_name(), creature.pos().x, creature.pos().y,
-					Gingerbread::read(creature.type()).difficulty);
-			}
-		}
-	}
-
 }
 
 // Note: Must call find_spawn_positions first.
