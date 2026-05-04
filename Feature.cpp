@@ -607,6 +607,9 @@ void trigger_portcullis(Feature::Itr feature)
 
 void trigger_monster_trap(Feature::Itr feature)
 {
+	// TODO: Can I use Pathfind::find_nearest_open
+	//  -> as Spawn::spawn_squad
+
 	Vec3 spawn_pos = find_nearby_good_spawn_pos(feature->pos);
 
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
@@ -627,7 +630,14 @@ void trigger_monster_trap(Feature::Itr feature)
 				creature.long_name(), creature.pos().x, creature.pos().y);
 		}
 	}
-	// TODO: Spawn squad
+	else
+	{
+		Spawn::spawn_squad(option.index, spawn_pos, true);
+
+		// TODO: Squad names?
+		//  -> Squad colours?
+		Draw::pos_message(feature->pos, "Beasts drop in.");
+	}
 
 	remove_feature(feature, Terrain::Open);
 }

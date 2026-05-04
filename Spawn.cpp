@@ -100,8 +100,6 @@ int spawn_treasures(Map& map, int treasures_to_spawn);
 Vec2 find_boss_spawn_position(Map const& map);
 void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius);
 
-void spawn_squad(int squad_id, Vec3 start_pos);
-
 Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type);
 
 //-----------------------------------------------------------------------------
@@ -497,7 +495,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		else if (option.type == Option::Squad)
 		{
 			Vec3 const pos3 = choose_spawn_position(map, Suggestion::EnemyModerate);
-			spawn_squad(option.index, pos3);
+			spawn_squad(option.index, pos3, false);
 			++creatures_spawned; // That still only counts as one!
 		}
 	}
@@ -613,7 +611,8 @@ Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat hab
 	}
 }
 
-void spawn_squad(int squad_id, Vec3 start_pos)
+// TODO: Move with other public functions
+void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
 {
 	if (Check(Squad::is_defined(squad_id)))
 	{
@@ -648,7 +647,7 @@ void spawn_squad(int squad_id, Vec3 start_pos)
 			.max_cost = 5,
 			.num_to_find = Util::Size(to_spawn),
 			.allow_start = true,
-			.allow_visible = false
+			.allow_visible = allow_visible
 		};
 
 		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);

@@ -83,6 +83,8 @@ namespace Spawn
 	Spawn::Option choose_spawn_option(float target_difficulty,
 		Creature::Habitat habitat = Creature::Habitat::None);
 
+	void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible);
+
 	bool difficulty_in_range (float difficulty, float target_difficulty);
 	float probability_factor (float difficulty, float target_difficulty);
 }

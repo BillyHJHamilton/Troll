@@ -22,6 +22,9 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::Gnome, 2,5},
 	}},
 
+	// TODO: Streeler squad
+	//  -> from traps but not main dungeon?
+
 	{ .debug_name="Puff Posse", .difficulty=1.5f, .probability=0.1f,
 	  .flags=f_Repeat, .members={
 		{Creature::Hufflepuff_1, 3,4}
@@ -34,6 +37,7 @@ static std::vector<Squad::Definition> const s_squads =
 	}},
 
 	{ .debug_name="Crab Squad", .difficulty=3.0f, .probability=0.3f,
+	  .habitats=0x1,  // set as bits, TODO: How should this be done?
 	  .flags=f_Repeat, .members={
 		{Creature::BigFireCrab},
 		{Creature::FireCrab, 2,3},
@@ -129,12 +133,18 @@ Squad::Definition const& read_definition(int squad_id)
 	return s_squads.at(squad_id);
 }
 
-bool can_spawn(int squad_id, float target_difficulty)
+bool can_spawn(int squad_id, float target_difficulty, Creature::Habitat habitat)
 {
 	Squad::Definition const& squad = s_squads[squad_id];
 
 	if (squad.probability <= 0.0f ||
 		!Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
+	{
+		return false;
+	}
+
+	if (habitat != Creature::Habitat::None &&
+		!squad.habitats.test((size_t)habitat))
 	{
 		return false;
 	}
@@ -163,13 +173,7 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 	{
 		Squad::Definition const& squad = s_squads[i];
 
-		if (!can_spawn(i, target_difficulty))
-		{
-			continue;
-		}
-
-		// TODO: Choose squads by habitats
-		if (habitat != Creature::Habitat::None)
+		if (!can_spawn(i, target_difficulty, habitat))
 		{
 			continue;
 		}
