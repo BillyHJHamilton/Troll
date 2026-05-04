@@ -72,6 +72,19 @@ int MapGenerator::GetRoomCount() const
 	return Util::Size(m_RoomVec);
 }
 
+int MapGenerator::GetRoomNeighbourCountExcludingSecretPassages(int roomIndex) const
+{
+	int neighbour_count = 0;
+	for (int neighbour_index : m_RoomVec[roomIndex].GetNeighbours())
+	{
+		if (!IsRoomSecretPassage(neighbour_index))
+		{
+			neighbour_count++;
+		}
+	}
+	return neighbour_count;
+}
+
 int MapGenerator::GetRegionCount() const
 {
 	return Util::Size(m_RegionVec);

@@ -53,9 +53,14 @@ public:
 	std::vector<Room> const& GetRoomVector() const { return m_RoomVec; }
 	bool IsStartRoom() const { return m_StartRoomIndex != c_Invalid; }
 	bool IsStartRoom(int roomIndex) const { return roomIndex == m_StartRoomIndex; }
+	bool IsRoomSecretPassage(int roomIndex) const
+	{ return IsRegionSecretPassage(m_RoomVec[roomIndex].GetRegion()); }
+	int GetRoomNeighbourCountExcludingSecretPassages(int roomIndex) const;
 
 	int GetRegionCount() const;
 	int GetRegionParent(int regionIndex) const { return m_RegionVec[regionIndex].parent; }
+	bool IsRegionSecretPassage(int regionIndex) const
+	{ return m_RegionVec[regionIndex].parent == Room::c_SecretPassage; }
 	bool IsStartRegionOrAncestorOfIt(int regionIndex) const;
 
 	// Generates rooms and tries to join everything up.

@@ -151,11 +151,14 @@ void MapGridder::add_treasure_suggestions() const
 			continue;
 		}
 
-		// TODO: Ignore secret passges when counting exits?
+		// We cannot exclude secret passages as neighbours
+		//  -> the room then has multiple entrances, an no longer has a well-defined back
+		//  -> the treasure appear blocking the secret passage
+		//    -> or the main entrance, if the passage is treated as the front
+
 		if (room.GetNeighbourCount() == 1)
 		{
 			// end room of region or 1-room attic
-
 			Vec2 pos = get_pos_at_room_back(room);
 			m_map.edit_suggestions().add_treasure_normal(pos);
 			m_map.set_terrain(pos, Terrain::Placeholder);
@@ -427,7 +430,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 	}
 
 	// special room types
-	// TODO: Remove these when we have vaults?
+	// TODO: Remove cosmetic room when we have vaults?
 	//  -> or at least use a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
@@ -480,15 +483,53 @@ void MapGridder::add_cosmetic_torches(Room const& room) const
 
 void MapGridder::add_cosmetic_armour(Room const & room) const
 {
-	// TODO: Armour flanking doorways sometimes
-
 	int map_z = m_map.get_z();
-	PosTempList positions =	get_good_positions_along_wall(room);
-	for (Vec2 pos : positions)
+
+	switch (Random::in_range(0, 3))
 	{
-		if ((pos.x + pos.y) % 2 == 0)  // every other space
+		case 0:
+		case 1:  // more common because it looks nice
 		{
-			Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+			// armour flanking doorways
+			PosTempList const positions = get_good_positions_by_doorways(room);
+			for (Vec2 pos : positions)
+			{
+				Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+			}
+			break;
+		}
+
+		case 2:
+		{
+			// armour along walls
+			PosTempList const positions = get_good_positions_along_wall(room);
+			for (Vec2 pos : positions)
+			{
+				if ((pos.x + pos.y) % 2 == 0)  // every other space
+				{
+					Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+				}
+			}
+			break;
+		}
+
+		case 3:
+		{
+			// a few suits of armour along the wall
+			PosTempList positions = get_good_positions_along_wall(room);
+			IntTempList index_list = Util::GetIndices(positions);
+			Random::shuffle_vector(index_list);
+			int count = std::min(Util::Size(positions), Random::in_range(1, 3));
+			for (int i = 0; i < count; ++i)
+			{
+				// don't put 2 side-by-side
+				Vec2 pos = positions[index_list[i]];
+				if (is_good_for_isolated_floor(pos))
+				{
+					Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+				}
+			}
+			break;
 		}
 	}
 }
@@ -809,7 +850,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 
 	for (int y = y_min + 1; y < y_max; ++y)
 	{
-		// min X side
+		// min X (west) side
 		Vec2 pos1{ x_min, y };
 		if (is_by_west_wall(pos1) &&
 			is_good_for_isolated_floor(pos1))
@@ -817,7 +858,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 			result_vec.push_back(pos1);
 		}
 
-		// max X side
+		// max X (east) side
 		Vec2 pos2{ x_max, y };
 		if (is_by_east_wall(pos2) &&
 			is_good_for_isolated_floor(pos2))
@@ -830,7 +871,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 
 	for (int x = x_min + 1; x < x_max; ++x)
 	{
-		// min Y side
+		// min Y (north) side
 		Vec2 pos1{ x, y_min };
 		if (is_by_north_wall(pos1) &&
 			is_good_for_isolated_floor(pos1))
@@ -838,7 +879,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 			result_vec.push_back(pos1);
 		}
 
-		// max Y side
+		// max Y (south) side
 		Vec2 pos2{ x, y_max };
 		if (is_by_south_wall(pos2) &&
 			is_good_for_isolated_floor(pos2))
@@ -962,6 +1003,161 @@ MapGridder::PosTempList MapGridder::box_to_positions(Box2 const& box) const
 	return result;
 }
 
+MapGridder::PosTempList MapGridder::get_good_positions_by_doorways(Room const& room) const
+{
+	PosTempList result_vec;
+
+	// find room edges
+	int const x_min = room.GetBox().min.x;
+	int const y_min = room.GetBox().min.y;
+	int const x_max = room.GetBox().inner_max(c_AxisX);
+	int const y_max = room.GetBox().inner_max(c_AxisY);
+
+	// search corners
+	//  -> we want to check both walls, but only add it once
+	Vec2 pos_nw{ x_min, y_min };
+	Vec2 pos_sw{ x_min, y_max };
+	Vec2 pos_ne{ x_max, y_min };
+	Vec2 pos_se{ x_max, y_max };
+
+	if(is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassWest) ||
+	   is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassNorth))
+	{
+		result_vec.push_back(pos_nw);
+	}
+	if(is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassWest) ||
+	   is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassSouth))
+	{
+		result_vec.push_back(pos_sw);
+	}
+	if(is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassEast) ||
+	   is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassNorth))
+	{
+		result_vec.push_back(pos_ne);
+	}
+	if(is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassEast) ||
+	   is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassSouth))
+	{
+		result_vec.push_back(pos_se);
+	}
+
+	// search along X sides of room
+
+	for (int y = y_min + 1; y < y_max; ++y)
+	{
+		Vec2 pos_west{ x_min, y };
+		if(is_good_position_by_doorways(room, pos_west, CompassDirection::c_CompassWest))
+		{
+			result_vec.push_back(pos_west);
+		}
+
+		Vec2 pos_east{ x_max, y };
+		if(is_good_position_by_doorways(room, pos_east, CompassDirection::c_CompassEast))
+		{
+			result_vec.push_back(pos_east);
+		}
+	}
+
+	// search along Y sides of room
+
+	for (int x = x_min + 1; x < x_max; ++x)
+	{
+		Vec2 pos_north{ x, y_min };
+		if(is_good_position_by_doorways(room, pos_north, CompassDirection::c_CompassNorth))
+		{
+			result_vec.push_back(pos_north);
+		}
+
+		Vec2 pos_south{ x, y_max };
+		if(is_good_position_by_doorways(room, pos_south, CompassDirection::c_CompassSouth))
+		{
+			result_vec.push_back(pos_south);
+		}
+	}
+
+	// done
+
+	return result_vec;
+}
+
+bool MapGridder::is_good_position_by_doorways(Room const & room, Vec2 pos,
+                                              CompassDirection dir_wall) const
+{
+	//        <-----O----->
+	//     dir_cw   |  dir_ccw
+	//              v
+	//           dir_wall
+	//
+	//     .......         XXX...  ...XXX        XXX....  ....XXX
+	//     ...@...         ...@..  ..@...        ....@..  ..@....
+	//    XXX.X.XXX        XXXXXX  XXXXXX        XXXXXXX  XXXXXXX
+	//    XXX.X.XXX        XXXXXX  XXXXXX        XXXXXXX  XXXXXXX
+	//      wall            1-away side             2-away side
+	//    corridors          corridors               corridors
+	//
+	// Goal: Determine if this position is
+	//  1. On good floor
+	//  2. By at least one wall corridor
+	//    -> Which must have good floor at its exit
+	//    -> But the corridor entrance itself can be e.g. a locked door
+	//  3. Not by either side corridor
+	//    -> Either directly, or 2 cells away
+	// Note: We also have to worry about going outside the map array
+	//  -> pos and its neighbours are safe
+	//  -> Looking 2 cells away is not safe
+
+	if (!is_good_floor(pos))
+	{
+		return false;
+	}
+
+	CompassDirection dir_ccw = get_counterclockwise_90(dir_wall);
+	CompassDirection dir_cw  = get_clockwise_90(dir_wall);
+	Vec2 pos_ccw = pos + c_Compass[dir_ccw];
+	Vec2 pos_cw  = pos + c_Compass[dir_cw];
+
+	// Check for at least 1 wall corridor.
+	//  -> if one would be outside the map, that corridor's a no
+	bool is_wall_corridor_ccw = room.GetBox().contains(pos_ccw) &&
+	                            is_good_floor(pos_ccw) &&
+	                            is_by_corridor(pos_ccw, dir_wall);
+	bool is_wall_corridor_cw  = room.GetBox().contains(pos_cw) &&
+	                            is_good_floor(pos_cw) &&
+	                            is_by_corridor(pos_cw, dir_wall);
+	if (!is_wall_corridor_ccw && !is_wall_corridor_cw)
+	{
+		return false;
+	}
+
+	// Check for adjacent side corridors.
+	bool is_side_corridor_ccw = is_by_corridor(pos, dir_ccw);
+	bool is_side_corridor_cw  = is_by_corridor(pos, dir_cw);
+	if (is_side_corridor_ccw || is_side_corridor_cw)
+	{
+		return false;
+	}
+
+	// Check for side corridors 2 cells away.
+	//  -> if one would be outside the map, that corridor's a no
+	//
+	// We do this to avoid moving diagonally between 2 suits of armour to enter a room.
+	//    XX$....
+	//    ...$.$.
+	//    XXXX.XX
+
+	bool is_side_corridor_ccw2 = room.GetBox().contains(pos_ccw) &&
+	                             is_by_corridor(pos_ccw, dir_ccw);
+	bool is_side_corridor_cw2  = room.GetBox().contains(pos_cw) &&
+	                             is_by_corridor(pos_cw, dir_cw);
+	if (is_side_corridor_ccw2 || is_side_corridor_cw2)
+	{
+		return false;
+	}
+
+	// good
+	return true;
+}
+
 
 //-----------------------------------------------------------------------------
 // Functions to check if positions are good
@@ -1050,10 +1246,52 @@ bool MapGridder::is_inside_north_south_wall(Vec2 const & pos) const
 		is_good_wall(Vec2{ pos.x, pos.y + 1 });
 }
 
-/*
-	// Functions to select positions in or near rooms
-	PosTempList GetPlainWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
-	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
-	                                      Box2TempList const & boxVec);
- */
+bool MapGridder::is_good_corridor_end(Vec2 const& pos) const
+{
+	Terrain::Type terrain = m_map.get_terrain(pos);
+	switch(terrain)
+	{
+		// not Terrain::Portrait
+		case Terrain::Ectoplasm:
+		case Terrain::DoorLocked:
+		// not Terrain::SlidingWall
+		case Terrain::Portcullis:
+			return true;
+		default:
+			return !Terrain::is_solid(terrain);
+	}
+}
+
+bool MapGridder::is_inside_corridor_X(Vec2 const & pos) const
+{
+	return
+		is_good_wall(Vec2{ pos.x, pos.y - 1 }) &&
+		is_good_corridor_end(pos) &&
+		is_good_wall(Vec2{ pos.x, pos.y + 1 });
+}
+
+bool MapGridder::is_inside_corridor_Y(Vec2 const & pos) const
+{
+	return
+		is_good_wall(Vec2{ pos.x - 1, pos.y }) &&
+		is_good_corridor_end(pos) &&
+		is_good_wall(Vec2{ pos.x + 1, pos.y });
+}
+
+bool MapGridder::is_by_corridor(Vec2 const& pos, CompassDirection dir) const
+{
+	switch (dir)
+	{
+		case CompassDirection::c_CompassEast:
+			return is_by_east_corridor(pos);
+		case CompassDirection::c_CompassNorth:
+			return is_by_north_corridor(pos);
+		case CompassDirection::c_CompassWest:
+			return is_by_west_corridor(pos);
+		case CompassDirection::c_CompassSouth:
+			return is_by_south_corridor(pos);
+		default:
+			DebugBreak("MapGridder::is_by_corridor can't do diagonal");
+			return false;
+	}
+}
