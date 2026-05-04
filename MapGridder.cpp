@@ -272,6 +272,11 @@ void MapGridder::add_secret_area(Room const & room,
 	//  -> secret passages let you reach the secret area from the wrong end
 	//  -> with triggers, both would open together
 	//  -> I think add_unlocked_door might now add one anyway
+	// I think this would let me unify these functions
+	//  -> We say which side is the intended entrance
+	//  -> That side has a door and a switch
+	//  -> The other side might have a door and a switch
+	//  -> For secret passages, we pick an intended entrance at random
 
 	int const map_z = m_map.get_z();
 
@@ -290,7 +295,15 @@ void MapGridder::add_secret_area(Room const & room,
 		{
 			Door::Spelled const door_type = m_doors.choose_spelled();
 			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door.xyz(map_z), door_terrain);
+			if (door_type == Door::Spelled::Ectoplasm)
+			{
+				Vec2 ectoplasm_pos = Random::in_box(room.GetBox());
+				Feature::spawn(ectoplasm_pos.xyz(map_z), door_terrain);
+			}
+			else
+			{
+				Feature::spawn(door.xyz(map_z), door_terrain);
+			}
 			break;
 		}
 
@@ -365,18 +378,29 @@ void MapGridder::add_secret_passage(Room const & room,
 		{
 			Door::Spelled const door_type = m_doors.choose_spelled();
 			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door0.xyz(map_z), door_terrain);
-			if (room.CorridorLength() >= 3)
+			if (door_type == Door::Spelled::Ectoplasm)
 			{
-				if (door_type == Door::Spelled::AlohamoraDoor)
+				// just one door, randomly along the corridor
+				Vec2 ectoplasm_pos = Random::in_box(room.GetBox());
+				Feature::spawn(ectoplasm_pos.xyz(map_z), door_terrain);
+			}
+			else
+			{
+				// a door at one end, maybe both
+				Feature::spawn(door0.xyz(map_z), door_terrain);
+				if (room.CorridorLength() >= 3)
 				{
-					// 2 locked doors in a row is annoying because one blocks LoS to the other
-					Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
+					if (door_type == Door::Spelled::AlohamoraDoor)
+					{
+						// 2 locked doors in a row is annoying because one blocks LoS to the other
+						Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
+					}
+					else
+					{
+						Feature::spawn(door1.xyz(map_z), door_terrain);
+					}
 				}
-				else
-				{
-					Feature::spawn(door1.xyz(map_z), door_terrain);
-				}
+				// else just one door
 			}
 			break;
 		}
@@ -1245,6 +1269,11 @@ bool MapGridder::is_inside_north_south_wall(Vec2 const & pos) const
 		is_good_wall(Vec2{ pos.x, pos.y     }) &&
 		is_good_wall(Vec2{ pos.x, pos.y + 1 });
 }
+
+// TODO: Add is_by_wall function with direction parameter?
+//  -> Also is_inside_wall
+//  -> maybe I could make more 4-wall functions less repetative
+//  -> or maybe that would be overkill
 
 bool MapGridder::is_good_corridor_end(Vec2 const& pos) const
 {
