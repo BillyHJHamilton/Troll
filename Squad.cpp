@@ -1,5 +1,6 @@
 #include "Squad.h"
 
+#include "Colour.h"
 #include "Creature.h"
 #include "Gingerbread.h"
 #include "Math.h"
@@ -23,8 +24,8 @@ static std::vector<Squad::Definition> const s_squads =
 		{Creature::Gnome, 2,5},
 	}},
 
-	{ .debug_name="Streeler Squad", .difficulty=1.5f, .probability=90.3f,
-	  .habitats=0x2,  // set as bits, not in Hogwarts
+	{ .debug_name="Streeler Squad", .difficulty=1.5f, .probability=0.3f,
+	  .habitats=0x2,  // set as bits, don't spawn in Hogwarts
 	  .flags=f_Repeat, .members={
 		{Creature::Streeler, 2,3},  // if 3 streelers aren't a problem, 10 wouldn't be
 	}},
@@ -139,6 +140,18 @@ bool is_defined(int squad_id)
 Squad::Definition const& read_definition(int squad_id)
 {
 	return s_squads.at(squad_id);
+}
+
+char const* colour(int squad_id)
+{
+	Squad::Definition const& squad = s_squads[squad_id];
+
+	if (squad.members.empty())
+	{
+		return cstr_White;  // no one in squad; something is wrong
+	}
+
+	return Gingerbread::read(squad.members[0].type).colour;
 }
 
 bool can_spawn(int squad_id, float target_difficulty, Creature::Habitat habitat)

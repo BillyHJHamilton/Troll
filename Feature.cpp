@@ -12,6 +12,7 @@
 #include "Serialize.h"
 #include "SparseVector.h"
 #include "Spawn.h"
+#include "Squad.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
 #include "World.h"
@@ -54,12 +55,6 @@ SparseVector<Feature::Instance> s_features;
 using Itr = SparseVector<Feature::Instance>::Itr;
 
 int s_next_trigger_id = 0;
-
-// Vec3TempList is coming in from "Pathfind.h"
-//  -> should this be in VectorUtil.h?
-//    -> con: It would have to #include "Geometry.h"
-
-Vec3 constexpr c_NoValidSpawnPos = { 999999, 999999, 999999 };
 
 enum class Material
 {
@@ -107,8 +102,6 @@ void trigger_all(int trigger);
 void trigger_sliding_wall(Itr feature);
 void trigger_portcullis(Itr feature);
 void trigger_monster_trap(Itr feature);
-Vec3 find_nearby_good_spawn_pos(Vec3 centre);  // can return c_NoValidSpawnPos
-Vec3 find_nearby_good_spawn_pos(Vec3 centre, int radius);  // can return c_NoValidSpawnPos
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -607,23 +600,30 @@ void trigger_portcullis(Feature::Itr feature)
 
 void trigger_monster_trap(Feature::Itr feature)
 {
-	// TODO: Can I use Pathfind::find_nearest_open
-	//  -> as Spawn::spawn_squad
-	//  -> what dies it return for failure?
-
-	Vec3 spawn_pos = find_nearby_good_spawn_pos(feature->pos);
-	if (spawn_pos == c_NoValidSpawnPos)
-	{
-		Draw::pos_message(feature->pos, "You hear a clunk.");
-		remove_feature(feature, Terrain::Open);
-		return;
-	}
-
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
 	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
 
 	if (option.type == Spawn::Option::Creature)
 	{
+		Vec3TempList spawn_positions;
+		Pathfind::NearestOpenParam nearest_open_param
+		{
+			.max_cost = 3,
+			.num_to_find = 1,
+			.allow_start = true,
+			.allow_visible = true,
+		};
+		Pathfind::find_nearest_open(feature->pos, nearest_open_param, spawn_positions);
+
+		if (spawn_positions.empty())
+		{
+			// no valid spawn position, so trap doesn't work
+			Draw::pos_message(feature->pos, "You hear a clunk.");
+			remove_feature(feature, Terrain::Open);
+			return;
+		}
+
+		Vec3 spawn_pos = spawn_positions[0];
 		Creature::Type const creature_type = (Creature::Type)option.index;
 		assert(Creature::is_valid_type(creature_type));
 		Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
@@ -634,66 +634,27 @@ void trigger_monster_trap(Feature::Itr feature)
 		if (Debug::enabled(Debug::Map))
 		{
 			std::cout << std::format("Trap spawned {} at ({},{}).\n",
-				creature.long_name(), creature.pos().x, creature.pos().y);
+				creature.long_name(), spawn_pos.x, spawn_pos.y);
 		}
 	}
 	else
 	{
-		Spawn::spawn_squad(option.index, spawn_pos, true);
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format("Trap is trying to spawn a squad at ({},{}).\n",
+				feature->pos.x, feature->pos.y);
+			// more will print in Spawn::spawn_squad
+		}
+
+		// drop as close to desired cell as possible
+		//  -> they can land around the player
+		Spawn::spawn_squad(option.index, feature->pos, true);
 
 		// TODO: Squad names?
-		//  -> Squad colours?
-		Draw::pos_message(spawn_pos, "Beasts drop in.");
+		Draw::pos_message(feature->pos, "Beasts drop in.", Squad::colour(option.index));
 	}
 
 	remove_feature(feature, Terrain::Open);
-}
-
-Vec3 find_nearby_good_spawn_pos(Vec3 centre)
-{
-	Creature::Handle creature_on_centre = Creature::creature_at_pos(centre);
-	if (creature_on_centre == Creature::None)
-	{
-		// hopefully this usually happens
-		return centre;
-	}
-
-	// check positions outwards in rings
-	for (int r = 1; r < 3; ++r)
-	{
-		Vec3 chosen = find_nearby_good_spawn_pos(centre, r);
-		if (chosen != c_NoValidSpawnPos)
-		{
-			return chosen;
-		}
-	}
-
-	return c_NoValidSpawnPos;
-}
-
-Vec3 find_nearby_good_spawn_pos(Vec3 centre, int radius)
-{
-	Box2 check_box = Box2::around_tile(centre.xy(), radius);
-
-	Vec3TempList good_list;
-	for (Vec2 check : check_box)
-	{
-		Vec3 check3 = check.xyz(centre.z);
-		if (Terrain::can_spawn(World::read().get_terrain(check3)))
-		{
-			Creature::Handle creature_on_check = Creature::creature_at_pos(check3);
-			if (creature_on_check == Creature::None)
-			{
-				good_list.push_back(check3);
-			}
-		}
-	}
-
-	if (good_list.empty())
-	{
-		return Random::from_vector(good_list);
-	}
-	return c_NoValidSpawnPos;
 }
 
 } // namespace Feature

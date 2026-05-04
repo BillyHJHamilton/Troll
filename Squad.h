@@ -42,8 +42,10 @@ namespace Squad
 	//int num_defined();
 	bool is_defined(int squad_id);
 	Squad::Definition const& read_definition(int squad_id);
+	char const* colour (int squad_id);
 	bool can_spawn(int squad_id, float target_difficulty,
 		Creature::Habitat habitat = Creature::Habitat::None);
+
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 		FloatTempList& out_weights, Creature::Habitat habitat = Creature::Habitat::None);
 
