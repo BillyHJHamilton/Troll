@@ -192,11 +192,6 @@ void MapGridder::add_shop_seed() const
 				int map_z = m_map.get_z();
 				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed);
 
-				//int trigger = Feature::get_new_trigger();
-				//Vec2 scan_from = shop_centre + c_Compass[Random::compass_direction(false)];
-				//Feature::spawn(scan_from  .xyz(map_z), Terrain::Scanner,  trigger);
-				//Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed, trigger);
-
 				if (Debug::enabled(Debug::Map))
 				{
 					std::cout << "Added shop seed.\n";
@@ -225,84 +220,81 @@ void MapGridder::add_corridor_doors(int room_index) const
 		Room const & neighbour0 = m_generator.GetRoom(room.GetNeighbours()[0]);
 		Room const & neighbour1 = m_generator.GetRoom(room.GetNeighbours()[1]);
 
-		// the ends of the hallway aren't hard to find, but which is which?
-		Vec2 door0 = room.GetBox().min;
-		Vec2 door1 = room.GetBox().inner_max();
-		Vec2 const neighbour0_Center = neighbour0.GetBox().centre();
-		if (square_dist(neighbour0_Center, door1) <
-			square_dist(neighbour0_Center, door0))
-		{
-			Vec2 temp = door0;
-			door0 = door1;
-			door1 = temp;
-		}
-
 		// secret passage - both ends locked
 		int const parent_region = m_generator.GetRegionParent(room.GetRegion());
 		if (parent_region == Room::c_SecretPassage)
 		{
-			// don't spawn anything in the passage itself
-			//  -> it's OK if things spawn where the doors were after the passage is open
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-
-			add_secret_passage(room, neighbour0, door0, neighbour1, door1);
+			// choose a random end to be the outside
+			if (Random::coinflip())
+			{
+				add_secret_corridor(room, /* allow_open */ false, neighbour0, neighbour1);
+			}
+			else
+			{
+				add_secret_corridor(room, /* allow_open */ false, neighbour1, neighbour0);
+			}
 			return;
 		}
 
 		// secret area - only 1 end locked
 		if (neighbour0.GetRegion() == parent_region)
 		{
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-			add_secret_area(room, neighbour0, door0);
+			add_secret_corridor(room, /* allow_open */ true, neighbour0, neighbour1);
 			return;
 		}
 		else if (neighbour1.GetRegion() == parent_region)
 		{
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-			add_secret_area(room, neighbour1, door1);
+			add_secret_corridor(room, /* allow_open */ true, neighbour1, neighbour0);
 			return;
 		}
 	}
 }
 
-void MapGridder::add_secret_area(Room const & room,
-                                 Room const & neighbour, Vec2 const & door) const
+void MapGridder::add_secret_corridor(Room const & corridor, bool allow_open,
+                                     Room const & outside, Room const & inside) const
 {
-	// TODO: Doors on both ends of the entrace corridor?
-	//  -> secret passages let you reach the secret area from the wrong end
-	//  -> with triggers, both would open together
-	//  -> I think add_unlocked_door might now add one anyway
-	// I think this would let me unify these functions
-	//  -> We say which side is the intended entrance
-	//  -> That side has a door and a switch
-	//  -> The other side might have a door and a switch
-	//  -> For secret passages, we pick an intended entrance at random
-
 	int const map_z = m_map.get_z();
 
-	PosTempList const button_pos_list = get_good_positions_inside_wall(neighbour);
-	PosTempList const torch_pos_list  = choose_torch_positions(neighbour);
+	Vec2 const door_outside = get_door_pos(corridor, outside);
+	Vec2 const door_inside  = get_door_pos(corridor, inside);
 
-	bool const is_allow_button = !button_pos_list.empty();
-	bool const is_allow_torch  = ! torch_pos_list.empty();
-	Door::TriggerType const trigger_type =
-		m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
+	PosTempList const button_outside_pos_list = get_good_positions_inside_wall(outside);
+	PosTempList const button_inside_pos_list  = get_good_positions_inside_wall(inside);
+
+	// Can trigger on torches, but then the passage only opens from one side
+	PosTempList const torch_pos_list = choose_torch_positions(outside);
+
+	bool const is_allow_button = !button_outside_pos_list.empty();
+	bool const is_allow_torch  = !torch_pos_list.empty();
+	Door::TriggerType const trigger_type = m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
+
+	// don't spawn anything in the passage itself
+	//  -> it's OK if things spawn where the doors were after the passage is open
+	m_map.fill_box(corridor.GetBox(), Terrain::OpenNoSpawn);
 
 	bool const is_allow_trigger = trigger_type != Door::TriggerType::NotPossible;
-	switch(m_doors.choose_locked_genus(/* allow none */ true, is_allow_trigger))
+	switch(m_doors.choose_locked_genus(allow_open, is_allow_trigger))
 	{
 		case Door::LockedGenus::Spell:
 		{
-			Door::Spelled const door_type = m_doors.choose_spelled();
-			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			if (door_type == Door::Spelled::Ectoplasm)
+			Door::Spelled const door_type      = m_doors.choose_spelled();
+			Terrain::Type const door_terrain   = Door::get_terrain(door_type);
+			Terrain::Type const inside_terrain = Door::get_match_terrain(door_type);
+			switch (Door::get_placement(door_type, corridor.CorridorLength()))
 			{
-				Vec2 ectoplasm_pos = Random::in_box(room.GetBox());
-				Feature::spawn(ectoplasm_pos.xyz(map_z), door_terrain);
-			}
-			else
-			{
-				Feature::spawn(door.xyz(map_z), door_terrain);
+				case Door::Placement::Entrance:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain);
+					break;
+				case Door::Placement::BothEnds:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain);
+					Feature::spawn(door_inside .xyz(map_z), inside_terrain);
+					break;
+				case Door::Placement::Along:
+				{
+					Vec2 random_pos = Random::in_box(corridor.GetBox());
+					Feature::spawn(random_pos.xyz(map_z), door_terrain);
+					break;
+				}
 			}
 			break;
 		}
@@ -311,16 +303,41 @@ void MapGridder::add_secret_area(Room const & room,
 		{
 			int const trigger = Feature::get_new_trigger();
 
-			Door::Triggered const door_type = m_doors.choose_triggered();
-			Terrain::Type   const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
+			Door::Triggered const door_type      = m_doors.choose_triggered();
+			Terrain::Type   const door_terrain   = Door::get_terrain(door_type);
+			Terrain::Type   const inside_terrain = Door::get_match_terrain(door_type);
 
+			switch (Door::get_placement(door_type, corridor.CorridorLength()))
+			{
+				case Door::Placement::Entrance:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain, trigger);
+					break;
+				case Door::Placement::BothEnds:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain,   trigger);
+					Feature::spawn(door_inside .xyz(map_z), inside_terrain, trigger);
+					break;
+				case Door::Placement::Along:
+				{
+					Vec2 random_pos = Random::in_box(corridor.GetBox());
+					Feature::spawn(random_pos.xyz(map_z), door_terrain, trigger);
+					break;
+				}
+			}
+
+			bool is_2_triggers = false;
 			switch (trigger_type)
 			{
 				case Door::TriggerType::FlipendoButton:
 				{
-					Vec2 const button = Random::from_vector(button_pos_list);
-					Feature::spawn(button.xyz(map_z), Terrain::FlipendoButton, trigger);
+					Vec2 const button_outside = Random::from_vector(button_outside_pos_list);
+					Feature::spawn(button_outside.xyz(map_z), Terrain::FlipendoButton, trigger);
+
+					if (!button_inside_pos_list.empty() && Random::coinflip())
+					{
+						Vec2 const button_inside = Random::from_vector(button_inside_pos_list);
+						Feature::spawn(button_inside.xyz(map_z), Terrain::FlipendoButton, trigger);
+						is_2_triggers = true;
+					}
 					break;
 				}
 				case Door::TriggerType::LightTorch:
@@ -333,110 +350,18 @@ void MapGridder::add_secret_area(Room const & room,
 				}
 			}
 
-			if (Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_trap)
+			if (is_2_triggers == false &&
+				Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_trap)
 			{
-				PosTempList const trap_pos_list = get_good_positions_away_from_wall(neighbour);
+				PosTempList const trap_pos_list = get_good_positions_away_from_wall(outside);
 				if (!trap_pos_list.empty())
 				{
 					Vec2 trap_pos = Random::from_vector(trap_pos_list);
 					Feature::spawn(trap_pos.xyz(map_z), Terrain::MonsterTrap, trigger);
 				}
 			}
-			break;
-		}
-	}
-}
 
-void MapGridder::add_secret_passage(Room const & room,
-                                    Room const & neighbour0, Vec2 const & door0,
-                                    Room const & neighbour1, Vec2 const & door1) const
-{
-	int const map_z = m_map.get_z();
-
-	PosTempList button0_pos_list = get_good_positions_inside_wall(neighbour0);
-	PosTempList button1_pos_list = get_good_positions_inside_wall(neighbour1);
-
-	// Can trigger on torches, but then the passage only opens from one side
-	PosTempList torch_pos_list;
-	if (Random::coinflip())
-	{
-		torch_pos_list = choose_torch_positions(neighbour0);
-	}
-	else
-	{
-		torch_pos_list = choose_torch_positions(neighbour1);
-	}
-
-	bool const is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
-	bool const is_allow_torch  = !torch_pos_list.empty();
-	Door::TriggerType const trigger_type = m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
-
-	bool const is_allow_trigger = trigger_type != Door::TriggerType::NotPossible;
-	switch(m_doors.choose_locked_genus(/* allow none */ false, is_allow_trigger))
-	{
-		case Door::LockedGenus::Spell:
-		{
-			Door::Spelled const door_type = m_doors.choose_spelled();
-			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			if (door_type == Door::Spelled::Ectoplasm)
-			{
-				// just one door, randomly along the corridor
-				Vec2 ectoplasm_pos = Random::in_box(room.GetBox());
-				Feature::spawn(ectoplasm_pos.xyz(map_z), door_terrain);
-			}
-			else
-			{
-				// a door at one end, maybe both
-				Feature::spawn(door0.xyz(map_z), door_terrain);
-				if (room.CorridorLength() >= 3)
-				{
-					if (door_type == Door::Spelled::AlohamoraDoor)
-					{
-						// 2 locked doors in a row is annoying because one blocks LoS to the other
-						Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
-					}
-					else
-					{
-						Feature::spawn(door1.xyz(map_z), door_terrain);
-					}
-				}
-				// else just one door
-			}
-			break;
-		}
-
-		case Door::LockedGenus::Trigger:
-		{
-			int const trigger = Feature::get_new_trigger();
-
-			Door::Triggered const door_type = m_doors.choose_triggered();
-			Terrain::Type   const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
-			if (room.CorridorLength() > 1)
-			{
-				Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
-			}
-
-			switch (trigger_type)
-			{
-				case Door::TriggerType::FlipendoButton:
-				{
-					Vec2 const button0 = Random::from_vector(button0_pos_list);
-					Vec2 const button1 = Random::from_vector(button1_pos_list);
-					Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
-					Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
-					break;
-				}
-				case Door::TriggerType::LightTorch:
-				{
-					for (int i = 0; i < Util::Size(torch_pos_list); ++i)
-					{
-						Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
-					}
-					break;
-				}
-			}
-			break;
+			break;  // case Door::LockedGenus::Trigger:
 		}
 	}
 }
@@ -756,6 +681,22 @@ Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
 	}
 
 	return result;
+}
+
+Vec2 MapGridder::get_door_pos(Room const& corridor, Room const& chamber) const
+{
+	// the ends of the hallway aren't hard to find, but which is which?
+	Vec2 const door0 = corridor.GetBox().min;
+	Vec2 const door1 = corridor.GetBox().inner_max();
+	Vec2 const chamber_center = chamber.GetBox().centre();
+
+	if (square_dist(chamber_center, door0) <
+		square_dist(chamber_center, door1))
+	{
+		return door0;
+	}
+	else
+		return door1;
 }
 
 MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) const

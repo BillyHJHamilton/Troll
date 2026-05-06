@@ -26,11 +26,8 @@ protected:
 	void add_shop_seed() const;
 
 	void add_corridor_doors(int room_index) const;
-	void add_secret_area(Room const & room,
-	                     Room const & neighbour, Vec2 const & door) const;
-	void add_secret_passage(Room const & room,
-	                        Room const & neighbour0, Vec2 const & door0,
-	                        Room const & neighbour1, Vec2 const & door1) const;
+	void add_secret_corridor(Room const & corridor, bool allow_open,
+	                         Room const & outside, Room const & inside) const;
 
 	// Pass 3 functions
 	void add_cosmetic_chamber(int room_index) const;
@@ -47,6 +44,7 @@ protected:
 
 	// Functions to select positions
 	Vec2 get_pos_at_room_back(Room const & room) const;
+	Vec2 get_door_pos(Room const & corridor, Room const & chamber) const;
 	PosTempList choose_torch_positions(Room const & room) const;
 	PosTempList get_good_positions_away_from_wall(Room const & room) const;
 	PosTempList get_good_positions_along_wall(Room const & room) const;

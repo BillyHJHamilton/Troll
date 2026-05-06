@@ -59,7 +59,7 @@ void BuildWorld()
 		//gen_param.MaxNumRooms += 2*z;
 		gen_param.IsShopSeed = Random::coinflip();
 		gen_param.percent_torches_lit = 80 - z * 10;
-		gen_param.percent_monster_trap = 45 - z * 3;
+		gen_param.percent_monster_trap = 30 - z * 2;
 
 		Door::Parameters & door_param = world.edit_map(z).edit_door_param();
 

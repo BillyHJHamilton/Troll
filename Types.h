@@ -64,6 +64,7 @@ namespace Damage
 namespace Door
 {
 	enum class LockedGenus : int;
+	enum class Placement : byte;
 	enum class Spelled : int;
 	enum class Triggered : int;
 	enum class TriggerType : int;
