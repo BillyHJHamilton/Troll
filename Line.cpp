@@ -354,6 +354,29 @@ void Itr::advance_and_loop()
 	advance();
 }
 
+void Itr::retreat()
+{
+	if (at_start())
+	{
+		return;
+	}
+
+	--step;
+
+	if (step == 0)
+	{
+		current = start;
+	}
+	else
+	{
+		// Cached lines don't include start position since it's always (0,0).
+		int const new_index = step - 1;
+
+		Vec2 const offset = s_line_cache.at(id).at(new_index);
+		current = start + offset;
+	}
+}
+
 } // namespace LineCache
 
 

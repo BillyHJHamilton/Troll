@@ -34,11 +34,18 @@ namespace LineCache
 
 		int steps_left() const;
 		bool finished() const { return steps_left() < 0; }
+		int steps_done() const { return step; }
+		bool at_start() const { return step == 0; }
 		void advance();
 
 		// As advance, but if end is reached, reset the start position to the end
 		// and keep going.  This means the line will never be finished.
 		void advance_and_loop();
+
+		// As advance, but moves the other way along the line.
+		// This function does nothing if the iterator is already at the line start.
+		// This function may work incorrectly after calling advance_and_loop.
+		void retreat();
 
 		// iterator-style functions
 		explicit operator bool() const { return !finished(); }
@@ -68,6 +75,7 @@ namespace LineCache
 		bool const finished() const { return itr.finished(); }
 		void advance() { itr.advance(); }
 		void advance_and_loop() { itr.advance_and_loop(); }
+		void retreat() { itr.retreat(); }
 
 		// iterator-style functions
 		explicit operator bool() const { return !finished(); }

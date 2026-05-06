@@ -321,7 +321,15 @@ void skurge(EffectParams params)
 
 void fumos (EffectParams params)
 {
-	Vec3 const target_pos = params.target_pos;
+	Vec3 target_pos = params.target_pos;
+
+	if (World::read().is_solid(target_pos) &&
+		params.impact_line != nullptr)
+	{
+		LineCache::Itr3D line = *params.impact_line; // copy
+		line.retreat();
+		target_pos = *line;
+	}
 
 	bool msg = false;
 	for (CompassItr itr(true); itr; ++itr)
