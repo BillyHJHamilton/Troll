@@ -28,6 +28,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	// Pass 1: Add basic rooms shapes
 	//   -> including stairs
 	//   -> it's only safe to look in the grid representation for the current room
+	//   -> we can add these in any order because they never overlap
 
 	for (int i = 0; i < m_generator.GetRoomCount(); ++i)
 	{
@@ -41,7 +42,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	//   -> open space on the map is available for any function to use
 	//     -> first come, first served
 	//     -> once used, turn it into some other terrain
-	//     -> don't replace terrain that isn't "good" (can_spawn floor and walls)
+	//     -> don't replace terrain that isn't "good" (floor with can_spawn or wall)
 	//     -> to reserve open floor space for later use, replace it with Terrain::Placeholder
 
 	// Pass 2: Add important features
@@ -152,16 +153,28 @@ void MapGridder::add_treasure_suggestions() const
 		}
 
 		// We cannot exclude secret passages as neighbours
-		//  -> the room then has multiple entrances, an no longer has a well-defined back
-		//  -> the treasure appear blocking the secret passage
+		//  -> the room then has multiple entrances, and thus no longer has a well-defined back
+		//  -> the treasure can appear blocking the secret passage
 		//    -> or the main entrance, if the passage is treated as the front
 
 		if (room.GetNeighbourCount() == 1)
 		{
 			// end room of region or 1-room attic
-			Vec2 pos = get_pos_at_room_back(room);
-			m_map.edit_suggestions().add_treasure_normal(pos);
-			m_map.set_terrain(pos, Terrain::Placeholder);
+			int const neighbourIndex = room.GetNeighbours()[0];
+			Vec2 const entrance_pos = get_door_pos(m_generator.GetRoom(neighbourIndex), room);
+			Vec2 const treasure_pos = get_pos_at_room_back(room, entrance_pos);
+			m_map.set_terrain(treasure_pos, Terrain::Placeholder);
+
+			Vec2 const monster_pos = get_pos_at_room_back(room, treasure_pos);
+			bool too_close = rounded_range(treasure_pos, monster_pos, 2);
+			if (too_close)
+			{
+				m_map.edit_suggestions().add_treasure(treasure_pos);
+			}
+			else
+			{
+				m_map.edit_suggestions().add_treasure(treasure_pos, monster_pos);
+			}
 		}
 	}
 }
@@ -351,7 +364,7 @@ void MapGridder::add_secret_corridor(Room const & corridor, bool allow_open,
 			}
 
 			if (is_2_triggers == false &&
-				Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_trap)
+				Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_on_trigger)
 			{
 				PosTempList const trap_pos_list = get_good_positions_away_from_wall(outside);
 				if (!trap_pos_list.empty())
@@ -632,13 +645,10 @@ void MapGridder::replace_all(Terrain::Type old_type, Terrain::Type new_type) con
 //-----------------------------------------------------------------------------
 // Functions to select positions
 
-Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
+Vec2 MapGridder::get_pos_at_room_back(Room const& room, Vec2 far_from) const
 {
 	Vec2 const roomCenter = room.GetBox().centre();
-
-	int const neighbourIndex = room.GetNeighbours()[0];
-	Vec2 const neighbourCenter = m_generator.GetRoom(neighbourIndex).GetBox().centre();
-	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - far_from);
 
 	// both components of roomBackDirection are -1, 0, or 1
 	//  -> never (0, 0), so 8 possibilities

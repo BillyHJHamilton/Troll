@@ -58,8 +58,8 @@ void BuildWorld()
 		//gen_param.MinNumRooms += z;
 		//gen_param.MaxNumRooms += 2*z;
 		gen_param.IsShopSeed = Random::coinflip();
-		gen_param.percent_torches_lit = 80 - z * 10;
-		gen_param.percent_monster_trap = 30 - z * 2;
+		gen_param.percent_torches_lit        = 80 - z * 10;
+		gen_param.percent_monster_on_trigger = 30 - z *  2;
 
 		Door::Parameters & door_param = world.edit_map(z).edit_door_param();
 
@@ -87,6 +87,7 @@ void BuildWorld()
 		Spawn::Parameters& spawn_param = world.edit_map(z).edit_spawn_param();
 		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::Chest    )] = c_MaxZ;
 		spawn_param.treasure_holder_weights[(int)(Spawn::TreasureHolder::SlimePool)] = z;
+		spawn_param.percent_monster_on_treasure = 45 - z *  3;
 	}
 
 	Spawn::post_world_setup();

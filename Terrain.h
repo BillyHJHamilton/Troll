@@ -23,7 +23,7 @@ namespace Terrain
 		Desk,
 		TorchUnlit,
 		TorchLit,
-		Scanner,
+		PressurePlate,
 		FlipendoButton,
 		Portrait,
 		Ectoplasm,

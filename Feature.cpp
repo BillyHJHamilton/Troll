@@ -84,7 +84,7 @@ void init_chest(Itr feature);
 void init_desk(Itr feature);
 
 void update_feature(Itr feature);
-void update_scanner(Itr feature);
+void update_pressure_plate(Itr feature);
 void update_door_closed(Itr feature);
 void update_door_colloportus(Itr feature);
 void update_shop_seed(Itr feature);
@@ -149,7 +149,7 @@ void spawn(Vec3 pos, Terrain::Type type)
 				register_for_updates(new_feature);
 				break;
 			// special initialization
-			case Terrain::Scanner:
+			case Terrain::PressurePlate:
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
@@ -180,7 +180,7 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 		// Feature-specific initialization.
 		switch (type)
 		{
-			case Terrain::Scanner:
+			case Terrain::PressurePlate:
 				register_for_updates(new_feature);
 				break;
 			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
@@ -334,8 +334,8 @@ void update_feature(Feature::Itr feature)
 	Terrain::Type feature_type = World::read().get_terrain(feature->pos);
 	switch (feature_type)
 	{
-		case Terrain::Scanner:
-			update_scanner(feature);
+		case Terrain::PressurePlate:
+			update_pressure_plate(feature);
 			break;
 		case Terrain::DoorClosed:
 			update_door_closed(feature);
@@ -349,11 +349,11 @@ void update_feature(Feature::Itr feature)
 	}
 }
 
-void update_scanner(Feature::Itr feature)
+void update_pressure_plate(Feature::Itr feature)
 {
-	if (Player::pos().z == feature->pos.z &&
-		World::read().has_los(feature->pos, Player::pos(), 5))
+	if (Player::pos() == feature->pos)
 	{
+		Draw::pos_message(feature->pos, "You step on a pressure plate.");
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
 	}
@@ -567,7 +567,7 @@ void trigger_all(int trigger)
 		Terrain::Type feature_type = World::read().get_terrain(feature->pos);
 		switch (feature_type)
 		{
-		case Terrain::Scanner:
+		case Terrain::PressurePlate:
 			remove_feature(feature, Terrain::Open);
 			break;
 		case Terrain::FlipendoButton:

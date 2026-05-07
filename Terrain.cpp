@@ -46,7 +46,7 @@ namespace Terrain
 																						f_NoAutotarget,							Target::f_Fire | Target::f_Flipendo},
 		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
 		Data{"torch" /*lit*/,		Codepoint::TorchLit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
-		Data{"floor" /*scanner*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
+		Data{"floor" /*pres plate*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"button",				Codepoint::FlipendoButton,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"portrait",			Codepoint::Portrait,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	cstr_LightGreen,100,	f_PermitSight | f_Solid | f_Feature |
@@ -88,7 +88,7 @@ namespace Terrain
 			case Terrain::Open:
 			case Terrain::OpenNoSpawn:
 			case Terrain::OpenHighlight:
-			case Terrain::Scanner:
+			case Terrain::PressurePlate:
 			case Terrain::ShopSeed:
 				return "- the floor";
 			case Terrain::Wall:

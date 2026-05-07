@@ -41,6 +41,7 @@ namespace Spawn
 		int treasure_holder_weights[(int)(TreasureHolder::Count)] = { 1 };  // Chest: 1, all others: 0
 		int min_treasures = 1;
 		int max_treasures = 3;
+		int percent_monster_on_treasure = 30;
 
 	};
 

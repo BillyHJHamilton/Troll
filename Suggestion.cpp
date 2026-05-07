@@ -40,6 +40,8 @@ Manager::Manager()
 	{
 		m_simple_vecs[i].reserve(c_DefaultCapacity);
 	}
+
+	m_treasure_vec.reserve(c_DefaultCapacity);
 }
 
 void Manager::serialize(ISerializer & s)
@@ -49,6 +51,8 @@ void Manager::serialize(ISerializer & s)
 		s.srz_vector(m_simple_vecs[i], "m_simple_vecs[i]");
 		//s.srz_vector(m_simple_vecs[i], "m_simple_vecs[" + std::to_string(i) + "]");
 	}
+
+	s.srz_vector(m_treasure_vec, "m_treasure_vec");
 }
 
 int Manager::get_total_count() const
@@ -60,6 +64,8 @@ int Manager::get_total_count() const
 		count += Util::Size(m_simple_vecs[i]);
 	}
 
+	count += Util::Size(m_treasure_vec);
+
 	return count;
 }
 
@@ -70,14 +76,19 @@ int Manager::get_count(Type type) const
 	return Util::Size(m_simple_vecs[type]);
 }
 
+int Manager::get_count_treasure() const
+{
+	return Util::Size(m_treasure_vec);
+}
+
 SimpleList const & Manager::get(Type type) const
 {
 	return m_simple_vecs[type];
 }
 
-void Manager :: add_treasure_normal(Vec2 position)
+TreasureList const & Manager::get_treasure() const
 {
-	m_simple_vecs[TreasureNormal].push_back(position);
+	return m_treasure_vec;
 }
 
 void Manager :: add_player_start(Vec2 position)
@@ -105,12 +116,37 @@ void Manager :: add_boss(Vec2 position)
 	m_simple_vecs[Boss].push_back(position);
 }
 
+void Manager :: add_treasure(Vec2 position)
+{
+	Treasure instance =
+	{ .treasure_pos = position,
+	};
+	m_treasure_vec.push_back(instance);
+}
+
+void Manager :: add_treasure(Vec2 position, Vec2 spawn_at)
+{
+	Treasure instance =
+	{ .treasure_pos = position,
+	  .spawn_at = spawn_at,
+	  .can_spawn = true,
+	};
+	m_treasure_vec.push_back(instance);
+}
+
 void Manager :: remove(Type type, int index)
 {
 	assert(is_valid_type(type));
 	assert(index < get_count(type));
 
 	Util::RemoveSwap(m_simple_vecs[type], index);
+}
+
+void Manager :: remove_treasure(int index)
+{
+	assert(index < get_count_treasure());
+
+	Util::RemoveSwap(m_treasure_vec, index);
 }
 
 } // namespace Suggestion

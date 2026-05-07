@@ -34,7 +34,7 @@ public:
 
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
-		int percent_monster_trap = 30;
+		int percent_monster_on_trigger = 20;
 
 		void Serialize(ISerializer& s);
 	};

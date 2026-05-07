@@ -42,9 +42,6 @@ std::vector<Spawn::History> s_spawn_history;
 // Declared here in static memory to reduce allocations.
 std::vector<Vec2> s_spawn_positions;
 
-// Valid positions for treasure chests.  A subset of spawn positions.
-std::vector<Vec2> s_special_positions;
-
 // List of possible problems with a spawn point (for debug).
 enum class Problem : int
 {
@@ -78,12 +75,8 @@ Vec2 next_spawn_position();
 
 void remove_spawn_position(Vec2 pos);
 
-// Searches remaining spawn positions, so should be called after normal spawning.
-// Calling next_chest_position removes from main list and chest list.
-void find_chest_positions(const Map& map);
+// Not currently used, but potentially valuable.
 bool is_ok_chest_position(const Map& map, Vec2 pos);
-bool has_special_positions();
-Vec2 next_special_position();
 
 // Check if a map meets the conditions to spawn.
 bool is_map_ready(int map_id, int player_map);
@@ -134,7 +127,6 @@ void spawn_early(Map& map, int map_id)
 
 	if (treasures_to_spawn > 0)
 	{
-		find_chest_positions(map);
 		int treasure_count = spawn_treasures(map, treasures_to_spawn);
 		history.treasures_spawned += treasure_count;
 	}
@@ -403,35 +395,6 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 	return false;
 }
 
-void find_chest_positions(const Map& map)
-{
-	s_special_positions.clear();
-
-	// TODO: What if there aren't enough suggestions?
-	//  -> could fall back on the old system
-	//  -> currently, fewer chests spawn (handled in spawn_chests)
-	//  -> should this go directly in the spawn_chests function?
-	//    -> need a new position table after spawning features anyway
-	for (Vec2 const & pos : map.read_suggestions().get(Suggestion::TreasureNormal))
-	{
-		s_special_positions.push_back(pos);
-	}
-}
-
-bool has_special_positions()
-{
-	return !s_special_positions.empty();
-}
-
-Vec2 next_special_position()
-{
-	int const i = Random::index(s_special_positions);
-	Vec2 const pos = s_special_positions.at(i);
-	Util::RemoveSwap(s_special_positions, i);
-	Util::RemoveSwapFirstMatchingItem(s_spawn_positions, pos);
-	return pos;
-}
-
 bool is_map_ready(int map_id, int player_map)
 {
 	const Spawn::History& history = s_spawn_history[map_id];
@@ -628,10 +591,27 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 	float const difficulty = map.get_difficulty();
 	int const map_z = map.get_z();
 
-	int spawned = 0;
-	while (has_special_positions() && spawned < treasures_to_spawn)
+	IntTempList index_list = Util::GetIndices(map.read_suggestions().get_treasure());
+
+	// TODO: What if there aren't enough suggestions?
+	//  -> currently, fewer treasures spawn
+	//  -> could fall back on the old system
+	//    -> is_ok_chest_position
+	//  -> could have weaker suggestions
+	//    -> could lead to slime pooling across useful hallways
+
+	Random::shuffle_vector(index_list);
+	if (Util::Size(index_list) > treasures_to_spawn)
 	{
-		Vec2 const pos2 = next_special_position();
+		index_list.resize(treasures_to_spawn);  // discard remaining positions
+	}
+
+	int spawned = 0;
+	while (spawned < Util::Size(index_list))
+	{
+		int const index = index_list[spawned];
+		Suggestion::Treasure const suggestion = map.read_suggestions().get_treasure()[index];
+		Vec2 const pos2 = suggestion.treasure_pos;
 		Vec3 const pos3 = pos2.xyz(map_z);
 		TreasureHolder const holder = (TreasureHolder)(Random::weighted_index(
 			param.treasure_holder_weights, (int)(TreasureHolder::Count)));
@@ -642,7 +622,20 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 				Feature::spawn(pos3, Terrain::Chest);
 				break;
 			case TreasureHolder::SlimePool:
-				map.set_terrain(pos2, Terrain::OpenNoSpawn);  // replacing Placeholder
+				if (suggestion.can_spawn &&
+					Random::in_range(0, 99) < param.percent_monster_on_treasure)
+				{
+					// pressure plate under the treasure
+					Vec3 const spawn_at3 = suggestion.spawn_at.xyz(map_z);
+					int const trigger = Feature::get_new_trigger();
+					Feature::spawn(pos3,      Terrain::PressurePlate, trigger);
+					Feature::spawn(spawn_at3, Terrain::MonsterTrap,   trigger);
+				}
+				else
+				{
+					// treasure is not booby-trapped
+					map.set_terrain(pos2, Terrain::OpenNoSpawn);
+				}
 				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
 				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
 				break;
@@ -653,7 +646,7 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 
 	if (Debug::enabled(Debug::Map))
 	{
-		int suggestion_count = map.read_suggestions().get_count(Suggestion::TreasureNormal);
+		int suggestion_count = map.read_suggestions().get_count_treasure();
 		std::cout << std::format("Placed {}/{} treasures ({} suggestions).\n",
 			spawned, treasures_to_spawn, suggestion_count);
 	}

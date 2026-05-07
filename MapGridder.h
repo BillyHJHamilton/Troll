@@ -43,7 +43,7 @@ protected:
 	void replace_all(Terrain::Type old_type, Terrain::Type new_type) const;
 
 	// Functions to select positions
-	Vec2 get_pos_at_room_back(Room const & room) const;
+	Vec2 get_pos_at_room_back(Room const & room, Vec2 far_from) const;
 	Vec2 get_door_pos(Room const & corridor, Room const & chamber) const;
 	PosTempList choose_torch_positions(Room const & room) const;
 	PosTempList get_good_positions_away_from_wall(Room const & room) const;
