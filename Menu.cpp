@@ -17,6 +17,8 @@
 #include "MenuPrologue.h"
 #include "MenuSelectHouse.h"
 #include "MenuSettings.h"
+#include "MenuShopBuy.h"
+#include "MenuShopSell.h"
 #include "MenuSpells.h"
 #include "MenuTitle.h"
 #include "VectorUtil.h"
@@ -42,6 +44,8 @@ MenuName s_menu_name;
 MenuPrologue s_menu_prologue;
 MenuSelectHouse s_menu_select_house;
 MenuSettings s_menu_settings;
+MenuShopBuy s_menu_shop_buy;
+MenuShopSell s_menu_shop_sell;
 MenuSpells s_menu_spells;
 MenuTitle s_menu_title;
 MenuPause s_menu_pause;
@@ -90,6 +94,11 @@ void clear()
 
 void close()
 {
+	if (s_current_menu)
+	{
+		s_current_menu->on_close();
+	}
+
 	s_current_menu = nullptr;
 	s_back_stack.clear();
 	Game::set_mode(GameMode::Normal);
@@ -104,6 +113,11 @@ void back()
 	}
 	else
 	{
+		if (s_current_menu)
+		{
+			s_current_menu->on_close();
+		}
+
 		s_current_menu = Util::PopBack(s_back_stack);
 	}
 }
@@ -211,7 +225,7 @@ void show_spells_known()
 
 void show_inventory()
 {	
-	if (Inventory::read().num_items() > 0)
+	if (Inventory::read().num_slots() > 0)
 	{
 		set_menu(s_menu_inventory);
 		s_menu_inventory.refresh();
@@ -242,6 +256,18 @@ void show_settings()
 {
 	set_menu(s_menu_settings);
 	s_menu_settings.reset_cursor();
+}
+
+void show_shop_buy()
+{
+	set_menu(s_menu_shop_buy);
+	s_menu_shop_buy.refresh();
+}
+
+void show_shop_sell()
+{
+	set_menu(s_menu_shop_sell);
+	s_menu_shop_sell.refresh();
 }
 
 #if _DEBUG

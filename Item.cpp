@@ -107,7 +107,14 @@ std::string Handle::name () const
 		case Notes:
 		{
 			Creature::Type const owner = (Creature::Type)(read_inst(index).subtype);
-			return Gingerbread::short_name(owner) + "'s notes";
+			if (owner == Creature::None)
+			{
+				return "Notes on " + Spell::get_name((Spell::Index)flavour());
+			}
+			else
+			{
+				return Gingerbread::short_name(owner) + "'s notes";
+			}
 		}
 
 		case BBBean:
@@ -150,8 +157,16 @@ std::string Handle::description () const
 		case Notes:
 		{
 			Creature::Type const owner = (Creature::Type)(read_inst(index).subtype);
-			return std::format("Some parchment covered in {}'s handwriting.",
-				Gingerbread::short_name(owner));
+			if (owner == Creature::None)
+			{
+				return std::format("Some notes describing the {} spell.",
+					Spell::get_name((Spell::Index)flavour()));
+			}
+			else
+			{
+				return std::format("Some parchment covered in {}'s handwriting.",
+					Gingerbread::short_name(owner));
+			}
 		}
 
 		case BBBean:
@@ -221,6 +236,24 @@ bool Handle::can_discard () const
 	return false;
 }
 
+bool Handle::can_sell () const
+{
+	switch (type())
+	{
+		case BBBean:
+		case Notes:
+			return false;
+
+		case SweetsItem:
+		case PotionItem:
+			return true;
+
+		default:
+			DebugBreak("Unhandled case.");
+			return false;
+	}
+}
+
 Item::BagStack Handle::bag_stack_mode () const
 {
 	switch (type())
@@ -254,6 +287,25 @@ bool Handle::can_stack_in_bag_with (Item::Handle other) const
 	}
 
 	return false;
+}
+
+int Handle::buy_price () const
+{
+	switch (type())
+	{
+		case Notes:			return Spell::get_difficulty((Spell::Index)flavour());
+		case BBBean:		return 1;
+		case SweetsItem:	return Sweets::buy_price(flavour());
+		case PotionItem:	return Potion::buy_price(flavour());
+
+		default:
+			return c_Invalid;
+	}
+}
+
+int Handle::sell_price () const
+{
+	return std::max(1, (2*buy_price())/3);
 }
 
 UseResult Handle::use ()

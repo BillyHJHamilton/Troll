@@ -36,7 +36,12 @@ Inventory const& Inventory::read()
 
 void Inventory::serialize(ISerializer& s)
 {
-	s.srz_vector(s_inventory.invent, "s_inventory");
+	s_inventory.serialize_instance(s);
+}
+
+void Inventory::serialize_instance(ISerializer& s)
+{
+	s.srz_vector(invent, "s_inventory");
 }
 
 bool Inventory::has_item () const
@@ -44,14 +49,44 @@ bool Inventory::has_item () const
 	return !invent.empty();
 }
 
-int Inventory::num_items () const
+bool Inventory::has_item_to_sell () const
+{
+	for (Item::Handle const item : invent)
+	{
+		if (item.can_sell())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+int Inventory::num_slots () const
 {
 	return Util::Size(invent);
 }
 
+int Inventory::total_items () const
+{
+	int n = 0;
+	for (int i = 0; i < num_slots(); ++i)
+	{
+		n += invent[i].stack_height();
+	}
+	return n;
+}
+
+int Inventory::num_beans () const
+{
+	int const bean_slot = find_first_item(Item::BBBean);
+	return (bean_slot == c_Invalid) ?
+		0 :
+		peek_item(bean_slot).stack_height();
+}
+
 int Inventory::random_slot () const
 {
-	if (num_items() == 0)
+	if (num_slots() == 0)
 	{
 		return c_Invalid;
 	}
@@ -210,11 +245,31 @@ void Inventory::remove_item (int slot)
 		return;
 	}
 
-	// TODO: Better deallocate it!!
-	// TODO: Better confirm it's not a lot of items deep in a stack!
-
 	invent[slot].destroy_stack();
 	Util::RemoveAt(invent, slot);
+}
+
+void Inventory::remove_items (int slot, int num_to_remove)
+{
+	if (!Util::IsValidIndex(invent, slot))
+	{
+		DebugBreak();
+		return;
+	}
+
+	if (num_to_remove == invent[slot].stack_height())
+	{
+		invent[slot].destroy_stack();
+		Util::RemoveAt(invent, slot);
+	}
+	else
+	{
+		for (int i = 0; i < num_to_remove; ++i)
+		{
+			Item::Handle item = Item::unstack(invent[slot]);
+			item.destroy();
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

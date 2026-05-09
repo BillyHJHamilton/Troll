@@ -15,6 +15,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Shop.h"
 #include "Spell.h"
 #include "Stairs.h"
 #include "Status.h"
@@ -95,6 +96,7 @@ void bot_regroup(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_investigate(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_chase(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void bot_shopkeep(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 
 bool is_aware(Creature::Handle const creature);
 bool is_separated_from_leader(Creature::Handle const creature);
@@ -124,6 +126,9 @@ void taunt_followup(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
 void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoughts,
 	Spell::Index spell);
+void taunt_shop(Creature::Handle creature, Brain& brain, Thoughts& thoughts);
+void maybe_taunt_from_list(Creature::Handle creature, Brain& brain, Thoughts& thoughts,
+	IntTempList& taunts);
 
 // ------------------------------------------------------------------------------------------------
 // Interface functions
@@ -302,6 +307,10 @@ void do_turn (Creature::Handle creature)
 			bot_fight(creature, brain, thoughts);
 			break;
 
+		case Bot::Shopkeep:
+			bot_shopkeep(creature, brain, thoughts);
+			break;
+
 		default:
 			DebugBreak("Missing case in Bot::do_turn");
 	}
@@ -332,6 +341,10 @@ void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 
 		case State::Fight:
 			// Already in combat.
+			break;
+
+		case State::Shopkeep:
+			// Not interested!
 			break;
 
 		default:
@@ -452,6 +465,15 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 
 void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	if (creature.has_tag(Creature::Tag::Shop))
+	{
+		if (brain.state != State::Shopkeep)
+		{
+			enter_state(creature, brain, State::Shopkeep);
+		}
+		return;
+	}
+
 	if (thoughts.target_visible)
 	{
 		if (brain.state != State::Fight)
@@ -758,6 +780,43 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	if (!done)
 	{
 		creature.rest_step();
+	}
+}
+
+void bot_shopkeep(Creature::Handle const creature, Brain& brain, Thoughts& thoughts)
+{
+	if (thoughts.target_visible)
+	{
+		if (!is_aware(creature))
+		{
+			brain.awareness = c_MaxAwareness;
+
+			taunt_greeting(creature, brain, thoughts);
+			if (!thoughts.has_taunted)
+			{
+				Draw::creature_message(creature, Grammar::You(creature) + " waves to you.",
+					creature.colour());
+			}
+		}
+
+		taunt_followup(creature, brain, thoughts);
+		taunt_shop(creature, brain, thoughts);
+	}
+	else
+	{
+		--brain.awareness;
+	}
+
+	// Mill around a bit.
+	if (Random::one_in(4))
+	{
+		CompassDirection const d = Random::compass_direction(/*include_no_move*/ false);
+		Vec2 const move = c_Compass[d];
+		Vec3 const new_pos = creature.pos() + move.xy0();
+		if (range_2d(Shop::get_tether_pos(), new_pos, 1))
+		{
+			try_move(creature, move);
+		}
 	}
 }
 
@@ -1370,16 +1429,7 @@ void taunt_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 
 		Taunt::find_status_taunts(creature, brain.target, taunts);
 
-		int const num_taunts = Util::Size(taunts);
-		if (num_taunts > 0)
-		{
-			// More likely to taunt if we have more available
-			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
-			if (Random::in_range(0.0f, 8.0f) < p_taunt)
-			{
-				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
-			}
-		}
+		maybe_taunt_from_list(creature, brain, thoughts, taunts);
 	}
 }
 
@@ -1390,16 +1440,47 @@ void taunt_attack_spell(Creature::Handle creature, Brain& brain, Thoughts& thoug
 	{
 		IntTempList taunts;
 		Taunt::find_taunts(creature, Taunt::AttackSpell, spell, taunts);
+		maybe_taunt_from_list(creature, brain, thoughts, taunts);
+	}
+}
 
-		int const num_taunts = Util::Size(taunts);
-		if (num_taunts > 0)
+void taunt_shop(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
+{
+	PerfTimer perf("taunt_shop");
+
+	if (!Shop::should_talk(creature.type()))
+	{
+		return;
+	}
+
+	if (!thoughts.has_taunted && brain.target == Player::handle() && creature.visible())
+	{
+		Taunt::Condition const condition = (Shop::has_made_deal()) ?
+			Taunt::Condition::ShopLeaving :
+			Taunt::Condition::ShopAttract;
+
+		IntTempList taunts;
+		Taunt::find_taunts(creature, condition, c_Invalid, taunts);
+		maybe_taunt_from_list(creature, brain, thoughts, taunts);
+
+		if (thoughts.has_taunted)
 		{
-			// More likely to taunt if we have more available
-			float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
-			if (Random::in_range(0.0f, 8.0f) < p_taunt)
-			{
-				say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
-			}
+			Shop::notify_talk(creature.type());
+		}
+	}
+}
+
+void maybe_taunt_from_list(Creature::Handle creature, Brain& brain, Thoughts& thoughts,
+	IntTempList& taunts)
+{
+	int const num_taunts = Util::Size(taunts);
+	if (num_taunts > 0)
+	{
+		// More likely to taunt if we have more available
+		float const p_taunt = std::min(3.0f, sqrt((float)num_taunts));
+		if (Random::in_range(0.0f, 8.0f) < p_taunt)
+		{
+			say_taunt(creature, brain, thoughts, Random::from_vector(taunts));
 		}
 	}
 }

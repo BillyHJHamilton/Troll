@@ -53,6 +53,10 @@ To Do:
 
 - Miscast effects
 
+- Shop
+ - Offer spell notes for sale
+ - Allow special crosstalk
+
 - Spells (New)
  - Lumos?  We could have darkness in the dungeons.  That would be fun.
   - Would act a lot like fog, but be penetrated by light and fire

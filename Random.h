@@ -12,6 +12,7 @@ namespace Random
 	std::mt19937& get_generator ();
 
 	int in_range (int min, int max);
+	int in_range (Interval interval);
 	float in_range (float min, float max);
 	Vec2 in_box(Box2 b);
 	int index (int size);

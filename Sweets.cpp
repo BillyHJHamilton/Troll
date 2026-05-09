@@ -80,6 +80,15 @@ char const* get_description(int sweet)
 	return "";
 }
 
+int buy_price(int sweet)
+{
+	if (is_valid(sweet))
+	{
+		return s_sweets[sweet].sugar - 1;
+	}
+	return c_Invalid;
+}
+
 void eat (Creature::Handle eater, int sweet)
 {
 	if (eater.is_player())

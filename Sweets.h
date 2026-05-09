@@ -20,6 +20,8 @@ namespace Sweets
 	char const* get_name(int sweet);
 	char const* get_colour(int sweet);
 	char const* get_description(int sweet);
+	
+	int buy_price(int sweet);
 
 	void eat (Creature::Handle eater, int sweet);
 }
