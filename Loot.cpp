@@ -38,7 +38,7 @@ void init()
 
 Item::Type select(Loot::Type loot_type)
 {
-	std::vector<int>& weight_list = s_loot_table.at(loot_type);
+	std::vector<int> const& weight_list = s_loot_table.at(loot_type);
 	int const roll = Random::weighted_index(weight_list);
 	
 	// Subtract 1 so that None equals -1, not 0.

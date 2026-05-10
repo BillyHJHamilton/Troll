@@ -63,7 +63,7 @@ void MenuInventory::draw_selected_item()
 
 	std::string const name = item.name();
 	std::string const description = item.description();
-	std::string interaction = item.interaction_name();
+	std::string const interaction = item.interaction_name();
 
 	std::stringstream ss;
 	ss << item.name() << "\n\n";

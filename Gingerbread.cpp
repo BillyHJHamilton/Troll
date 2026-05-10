@@ -180,7 +180,7 @@ void init()
 	Builder(Creature::Harry_1, "Harry", 
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(10, "VM FP LM")
-		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 	
 	Builder(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 10)
@@ -190,7 +190,7 @@ void init()
 	Builder(Creature::Ron_2, "Ron",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 14)
 		.magic(5, "FP VM FM")
-		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 
 	Builder(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 12)
