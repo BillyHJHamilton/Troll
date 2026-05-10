@@ -186,7 +186,7 @@ Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat hab
 	}
 }
 
-void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
+int spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
 {
 	if (Check(Squad::is_defined(squad_id)))
 	{
@@ -201,11 +201,11 @@ void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
 		Creature::TypeTempList to_spawn;
 		to_spawn.reserve(Squad::c_MaxSquadSize);
 
-		int const squad_id = Squad::find_free_index();
-		if (squad_id == c_Invalid)
+		int const squad_index = Squad::find_free_index();
+		if (squad_index == c_Invalid)
 		{
 			DebugBreak("Max squads reached!  Spawning aborted.");
-			return;
+			return c_Invalid;
 		}
 
 		for (Squad::Member const& member : squad.members)
@@ -231,7 +231,7 @@ void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
 			++i)
 		{
 			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
-			creature.set_squad(squad_id);
+			creature.set_squad(squad_index);
 			remove_spawn_position(spawn_positions[i].xy());
 
 			if (Debug::enabled(Debug::Map))
@@ -241,8 +241,11 @@ void spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
 					Gingerbread::read(creature.type()).difficulty);
 			}
 		}
+
+		return squad_index;
 	}
 
+	return c_Invalid;
 }
 
 bool difficulty_in_range (float difficulty, float target_difficulty)

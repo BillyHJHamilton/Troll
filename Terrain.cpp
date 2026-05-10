@@ -65,6 +65,8 @@ namespace Terrain
 		Data{"floor" /*port tarp*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"floor" /*monstr trp*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"floor" /*mon trp am*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
+		Data{"floor" /*dead mon*/,	'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
+		Data{"floor" /*trgr delay*/,'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
 		Data{"floor" /*shop seed*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 	};
 

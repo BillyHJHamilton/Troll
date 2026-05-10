@@ -24,27 +24,17 @@ namespace Feature
 //-------------------------------------------------------------------------------------------------
 // Data
 
-// Feature Types:
-//  - Chest - payload is Item::Handle
-//  - DoorColloportus - payload is countdown until it reopens
-//
-// Payload is which trigger id it activates:
-//  - TorchUnlit - trigger only activates when the last torch with that trigger is lit
-//  - FlipendoButton - it also turns into a wall on that trigger
-//  - PressurePlate
-//  - TripwireX
-//  - TripwireY
-//
-// Payload is which trigger id it responds to:
-//  - SlidingWall
-//  - Portcullis
-//  - PortcullisTrap - becomes a portcullis with the same trigger
-//  - MonsterTrap
+// Feature Type payloads:
+//  - Chest - Item::Handle of item to add to map when chest is opened
+//  - DoorColloportus - countdown until the door reopens
+//  - TriggerOnCoutdown - countdown until the rtrigger triggers
+//  - TriggerOnMonsterDead - Creature::Handle to trigger on the death of
 
 struct Instance
 {
 	Vec3 pos;
 	int hp;
+	int trigger;
 	bool needs_update;
 
 	// Parameters to be interpreted based on type of feature.
@@ -78,7 +68,7 @@ char const* cstr_TriggerFailed = "You hear a clunk.";
 // Helper declarations
 
 Itr find_feature(Vec3 pos);
-Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload);
+Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int trigger, int payload);
 void remove_feature(Feature::Itr feature, Terrain::Type new_terrain_type);
 
 void register_for_updates(Feature::Itr feature);
@@ -90,13 +80,15 @@ void update_pressure_plate(Itr feature);
 void update_tripwire(Feature::Itr feature, Axis check_axis);
 void update_door_closed(Itr feature);
 void update_door_colloportus(Itr feature);
+void update_trigger_delay(Itr feature);
+void update_trigger_on_monster_dead(Itr feature);
 void update_shop_seed(Itr feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
                   Material const material, std::string const name);
 
 void light_torch(Vec3 pos);
-bool is_any_unlit_torch_with_trigger(int trigger);
+int count_features_of_a_type_with_trigger(Terrain::Type terrain, int trigger);
 
 // Warning: Calling this normally causes features to be added/removed.
 // Do not assume that feature references will remain valid afterwards.
@@ -137,7 +129,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
-		Itr new_feature = add_feature_internal(pos, type, c_Invalid, c_Invalid);
+		//                                                hp         trigger    payload
+		Itr new_feature = add_feature_internal(pos, type, c_Invalid, c_Invalid, c_Invalid);
 
 		// Feature-specific initialization.
 		switch (type)
@@ -162,12 +155,22 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::PortcullisTrap:
 			case Terrain::MonsterTrap:
 			case Terrain::MonsterTrapAmbush:
+				// TODO: Is there some better way to check this?
+				//   -> And the other half in the spawn-with-trigger variant
+				// TODO: Can we say which feature?
 				DebugBreak("Spawn Feature with trigger");
 				break;
 			case Terrain::DoorColloportus:
 				DebugBreak("Never spawn DoorColloportus directly");
 				break;
-			// no initialization needed
+			case Terrain::TriggerDelay:
+				// TODO: Can these be collapsed into 1 case that says which feature?
+				DebugBreak("Never spawn TriggerDelay directly");
+				break;
+			case Terrain::TriggerOnMonsterDead:
+				DebugBreak("Never spawn TriggerOnMonsterDead directly");
+				break;
+			// no initialization needed - TODO: Do we need these?
 			// case Terrain::Armour:
 			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
 			// case Terrain::TorchLit:
@@ -183,7 +186,8 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 {
 	if (Check(Terrain::is_feature(type)))
 	{
-		Feature::Itr new_feature = add_feature_internal(pos, type, c_Invalid, trigger);
+		//                                                         hp         trigger  payload
+		Feature::Itr new_feature = add_feature_internal(pos, type, c_Invalid, trigger, c_Invalid);
 
 		// Feature-specific initialization.
 		switch (type)
@@ -253,12 +257,14 @@ Feature::Itr find_feature(Vec3 pos)
 	return s_features.get_itr(index);
 }
 
-Feature::Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int payload)
+Feature::Itr add_feature_internal(Vec3 pos, Terrain::Type terrain,
+                                  int hp, int trigger, int payload)
 {
 	World::edit().set_terrain(pos, terrain);
 	int new_index = s_features.insert({
 		.pos = pos,
 		.hp = hp,
+		.trigger = trigger,
 		.payload = payload,
 		});
 	return s_features.get_itr(new_index);
@@ -361,6 +367,12 @@ void update_feature(Feature::Itr feature)
 		case Terrain::DoorColloportus:
 			update_door_colloportus(feature);
 			break;
+		case Terrain::TriggerDelay:
+			update_trigger_delay(feature);
+			break;
+		case Terrain::TriggerOnMonsterDead:
+			update_trigger_on_monster_dead(feature);
+			break;
 		case Terrain::ShopSeed:
 			update_shop_seed(feature);
 			break;
@@ -374,7 +386,7 @@ void update_pressure_plate(Feature::Itr feature)
 		Draw::pos_message(feature->pos, "You step on a pressure plate.");
 
 		// This feature is removed when it triggers itself.
-		trigger_all(feature->payload);
+		trigger_all(feature->trigger);
 	}
 }
 
@@ -388,12 +400,14 @@ void update_tripwire(Feature::Itr feature, Axis check_axis)
 	{
 		// Check if we have a clear path to the player.
 		//  -> we don't know which way we will look (+1 or -1)
-		//  -> we want to stop at any cell which might become blocked
-		int delta = Math::Sign(Player::pos()[check_axis] - feature->pos[check_axis]);
+		//  -> we know the tripwire cell is clear
+		//  -> we have to check the player cell
+		//    -> otherwise, it can trigger while the player is under the portcullis
+		int delta = Math::Sign(feature->pos[check_axis] - Player::pos()[check_axis]);
 
 		bool is_open = true;
-		for (Vec3 pos = feature->pos;
-		     pos != Player::pos();
+		for (Vec3 pos = Player::pos();
+		     pos != feature->pos;
 		     pos[check_axis] += delta)
 		{
 			if (!Terrain::can_spawn(World::read().get_terrain(pos)))
@@ -406,7 +420,7 @@ void update_tripwire(Feature::Itr feature, Axis check_axis)
 		if (is_open)
 		{
 			// This feature is removed when it triggers itself.
-			trigger_all(feature->payload);
+			trigger_all(feature->trigger);
 		}
 	}
 }
@@ -431,11 +445,44 @@ void update_door_closed(Feature::Itr feature)
 
 void update_door_colloportus(Feature::Itr feature)
 {
+	// payload is timer until it unlocks itself
 	--feature->payload;
 	if (feature->payload <= 0)
 	{
 		Draw::pos_message(feature->pos, "A door unlocks.");
 		World::edit().set_terrain(feature->pos, Terrain::DoorClosed);
+	}
+}
+
+void update_trigger_delay(Feature::Itr feature)
+{
+	// payload is timer until it triggers
+	--feature->payload;
+	if (feature->payload <= 0)
+	{
+		// This feature is removed when it triggers itself.
+		trigger_all(feature->trigger);
+	}
+}
+
+void update_trigger_on_monster_dead(Feature::Itr feature)
+{
+	// payload is handle to creature
+	Creature::Handle creature = (Creature::Handle)feature->payload;
+	if (!creature.valid())
+	{
+		int trigger = feature->trigger;
+		int feature_count = count_features_of_a_type_with_trigger(
+			Terrain::TriggerOnMonsterDead, trigger);
+		if (feature_count <= 1)
+		{
+			// This feature is removed when it triggers itself.
+			trigger_all(trigger);
+		}
+		else
+		{
+			remove_feature(feature, Terrain::Open);
+		}
 	}
 }
 
@@ -507,25 +554,26 @@ void light_torch(Vec3 pos)
 		Draw::pos_message(pos, "The torch bursts into flames!");
 		World::edit().set_terrain(pos, Terrain::TorchLit);
 
-		int trigger = feature->payload;
-		if (!is_any_unlit_torch_with_trigger(trigger))
+		int trigger = feature->trigger;
+		if (count_features_of_a_type_with_trigger(Terrain::TorchUnlit, trigger) == 0)
 		{
 			trigger_all(trigger);
 		}
 	}
 }
 
-bool is_any_unlit_torch_with_trigger(int trigger)
+int count_features_of_a_type_with_trigger(Terrain::Type terrain, int trigger)
 {
+	int count = 0;
 	for (const Feature::Instance & feature : s_features)
 	{
-		if (feature.payload == trigger &&
-			World::read().get_terrain(feature.pos) == Terrain::TorchUnlit)
+		if (feature.trigger == trigger &&
+			World::read().get_terrain(feature.pos) == terrain)
 		{
-			return true;
+			++count;
 		}
 	}
-	return false;
+	return count;
 }
 
 void open_portrait(Vec3 pos)
@@ -583,7 +631,7 @@ void lock_door(Vec3 pos)
 		}
 		World::edit().set_terrain(pos, Terrain::DoorColloportus);
 		feature->needs_update = true;
-		feature->payload = Random::in_range(10, 15);
+		feature->payload = Random::in_range(10, 15);  // timer until it unlocks itself
 	}
 }
 
@@ -597,8 +645,7 @@ void activate_flipendo_button(Vec3 pos)
 		Draw::pos_message(pos, "The button flips.");
 
 		// This feature is removed when it triggers itself.
-		int const trigger = feature->payload;
-		trigger_all(trigger);
+		trigger_all(feature->trigger);
 	}
 }
 
@@ -611,7 +658,7 @@ void trigger_all(int trigger)
 
 	for (Feature::Itr feature = s_features.begin(); feature; ++feature)
 	{
-		if (feature->payload != trigger)
+		if (feature->trigger != trigger)
 		{
 			continue;
 		}
@@ -673,8 +720,13 @@ void trigger_portcullis_trap(Feature::Itr feature)
 
 void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 {
+	int constexpr c_AmbushLockedTime = 100;
+
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
 	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
+
+	Creature::HandleList creature_list;
+	creature_list.reserve(Squad::c_MaxSquadSize);
 
 	if (option.type == Spawn::Option::Creature)
 	{
@@ -688,26 +740,22 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 		};
 		Pathfind::find_nearest_open(feature->pos, nearest_open_param, spawn_positions);
 
-		if (spawn_positions.empty())
+		if (!spawn_positions.empty())
 		{
-			// no valid spawn position, so trap doesn't work
-			Draw::pos_message(feature->pos, cstr_TriggerFailed);
-			remove_feature(feature, Terrain::Open);
-			return;
-		}
+			Vec3 spawn_pos = spawn_positions[0];
+			Creature::Type const creature_type = (Creature::Type)option.index;
+			assert(Creature::is_valid_type(creature_type));
+			Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
+			creature_list.push_back(creature);
 
-		Vec3 spawn_pos = spawn_positions[0];
-		Creature::Type const creature_type = (Creature::Type)option.index;
-		assert(Creature::is_valid_type(creature_type));
-		Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
+			Draw::pos_message(spawn_pos, std::format("A {} {} in.", creature.long_name(),
+				Grammar::verbs("drop", creature)), creature.colour());
 
-		Draw::pos_message(spawn_pos, std::format("A {} {} in.", creature.long_name(),
-			              Grammar::verbs("drop", creature)), creature.colour());
-
-		if (Debug::enabled(Debug::Map))
-		{
-			std::cout << std::format("Trap spawned {} at ({},{}).\n",
-				creature.long_name(), spawn_pos.x, spawn_pos.y);
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format("Trap spawned {} at ({},{}).\n",
+					creature.long_name(), spawn_pos.x, spawn_pos.y);
+			}
 		}
 	}
 	else
@@ -721,23 +769,72 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 
 		// drop as close to desired cell as possible
 		//  -> they can land around the player
-		Spawn::spawn_squad(option.index, feature->pos, true);
-		// TODO: Return a handle/id
+		int squad_index = Spawn::spawn_squad(option.index, feature->pos, true);
+		if (squad_index != c_Invalid)
+		{
+			creature_list = Squad::get_squad(squad_index);
+			assert(!creature_list.empty());
 
-		// TODO: Squad names?
-		Draw::pos_message(feature->pos, "Beasts drop in.", Squad::colour(option.index));
+			// TODO: Squad names?
+			Draw::pos_message(feature->pos, "Beasts drop in.", Squad::colour(option.index));
+		}
+	}
+
+	if (creature_list.empty())
+	{
+		Draw::pos_message(feature->pos, cstr_TriggerFailed);
+
+		if (is_retrigger_on_defeat)
+		{
+			// Oh, no!  We are locked in a room with no enemies!
+			// The door will only open when we defeat the final one of zero total.
+			// That's impossible, so how will we ever get out?
+
+			World::edit().set_terrain(feature->pos, Terrain::TriggerDelay);
+			feature->payload = 1;
+			register_for_updates(feature);
+
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format("Trap at ({},{}) failed to spawn monsters.\n",
+					feature->pos.x, feature->pos.y);
+			}
+
+			return;
+		}
 	}
 
 	if (is_retrigger_on_defeat)
 	{
-		// TODO: Trigger + monster ID, 2 variables
-		// Squad and creature ids are different
-		//  -> I hope this doesn't mean we need 2 trigger types
-		World::edit().set_terrain(feature->pos, Terrain::PressurePlate);
+		// Replace this trap with a delayed trigger
+		//  -> It will eventually activate the trigger again
+		World::edit().set_terrain(feature->pos, Terrain::TriggerDelay);
+		feature->payload = c_AmbushLockedTime;
 		register_for_updates(feature);
 
-		// TODO: Add a timer to eventually open the doors again anyway
-		//  -> It will also need 2 variables (trigger and timer)
+		// Add 1 trigger to watch each creature spawned.
+		//  -> When they are all dead, the trigger activates
+		// TODO: Oops!  This stomps non-solid terrain
+		Vec3TempList trigger_positions;
+		Pathfind::NearestOpenParam nearest_open_param
+		{
+			.max_cost = 10,  // I don't care where these spawn
+			.num_to_find = Util::Size(creature_list),
+			.allow_start = true,
+			.allow_visible = true,
+		};
+		Pathfind::find_nearest_open(feature->pos, nearest_open_param, trigger_positions);
+
+		assert(Util::Size(trigger_positions) <= Util::Size(creature_list));
+		for(int i = 0; i < Util::Size(trigger_positions); ++i)
+		{
+			Feature::Itr new_feature = add_feature_internal(
+				trigger_positions[i], Terrain::TriggerOnMonsterDead,
+			    c_Invalid, feature->trigger, (int)(creature_list[i]));
+			//  hp         trigger           payload
+
+			register_for_updates(new_feature);
+		}
 	}
 	else
 	{
