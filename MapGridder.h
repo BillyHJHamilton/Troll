@@ -29,6 +29,7 @@ protected:
 	void add_secret_corridor(Room const & corridor, bool allow_open,
 	                         Room const & outside, Room const & inside) const;
 
+	void add_all_ambush_chambers() const;
 	bool add_ambush_chamber(int room_index) const;  // returns if it succeeded
 
 	// Phase 3 functions - cosmetic features

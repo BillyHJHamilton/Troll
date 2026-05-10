@@ -48,8 +48,8 @@ namespace Terrain
 		Data{"torch" /*unlit*/,		Codepoint::TorchUnlit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	Target::f_Fire},
 		Data{"torch" /*lit*/,		Codepoint::TorchLit,		nullptr,		25,		f_PermitSight | f_Solid | f_Feature,	f_None},
 		Data{"floor" /*pres plate*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
-		Data{"floor" /*tripwire X*/,'-',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
-		Data{"floor" /*tripwire Y*/,'|',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
+		Data{"floor" /*tripwire X*/,'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
+		Data{"floor" /*tripwire Y*/,'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
 		Data{"button",				Codepoint::FlipendoButton,	nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Flipendo},
 		Data{"portrait",			Codepoint::Portrait,		nullptr,		100,	f_Solid | f_Feature | f_CrosshairFill,	Target::f_Alohomora},
 		Data{"ectoplasm",			Codepoint::EctoplasmDoor,	cstr_LightGreen,100,	f_PermitSight | f_Solid | f_Feature |
@@ -65,8 +65,8 @@ namespace Terrain
 		Data{"floor" /*port tarp*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"floor" /*monstr trp*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 		Data{"floor" /*mon trp am*/,'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
-		Data{"floor" /*dead mon*/,	'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
 		Data{"floor" /*trgr delay*/,'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
+		Data{"floor" /*dead mon*/,	'.',						nullptr,		0,		f_PermitSight | f_CanSpawn | f_Feature,	f_None},
 		Data{"floor" /*shop seed*/,	'.',						nullptr,		0,		f_PermitSight | f_Feature,				f_None},
 	};
 

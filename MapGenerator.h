@@ -32,6 +32,9 @@ public:
 
 		bool IsShopSeed = false;
 
+		int MinAmbushRooms = 0;
+		int MaxAmbushRooms = 2;
+
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
 		int percent_monster_on_trigger = 20;

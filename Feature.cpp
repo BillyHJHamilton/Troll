@@ -656,8 +656,24 @@ void trigger_all(int trigger)
 		return;
 	}
 
+	// First gather the list of features to trigger, then trigger them.
+	// Any new features created during triggering will not be triggered themselves.
+	std::vector<Feature::Itr,Scratch<Feature::Itr>> to_trigger;
+	to_trigger.reserve(s_features.size() / 10); // just a guess
 	for (Feature::Itr feature = s_features.begin(); feature; ++feature)
 	{
+		if (feature->trigger == trigger)
+		{
+			to_trigger.push_back(feature);
+		}
+	}
+
+	for (Feature::Itr& feature : to_trigger)
+	{
+		if (!feature.valid())
+		{
+			continue;
+		}
 		if (feature->trigger != trigger)
 		{
 			continue;
@@ -669,6 +685,8 @@ void trigger_all(int trigger)
 		case Terrain::PressurePlate:
 		case Terrain::TripwireX:
 		case Terrain::TripwireY:
+		case Terrain::TriggerDelay:
+		case Terrain::TriggerOnMonsterDead:
 			remove_feature(feature, Terrain::Open);
 			break;
 		case Terrain::FlipendoButton:
@@ -808,32 +826,52 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 	{
 		// Replace this trap with a delayed trigger
 		//  -> It will eventually activate the trigger again
+
 		World::edit().set_terrain(feature->pos, Terrain::TriggerDelay);
 		feature->payload = c_AmbushLockedTime;
 		register_for_updates(feature);
 
 		// Add 1 trigger to watch each creature spawned.
 		//  -> When they are all dead, the trigger activates
-		// TODO: Oops!  This stomps non-solid terrain
-		Vec3TempList trigger_positions;
-		Pathfind::NearestOpenParam nearest_open_param
-		{
-			.max_cost = 10,  // I don't care where these spawn
-			.num_to_find = Util::Size(creature_list),
-			.allow_start = true,
-			.allow_visible = true,
-		};
-		Pathfind::find_nearest_open(feature->pos, nearest_open_param, trigger_positions);
+		//  -> it doesn't matter where; they don't use their position
+		// We cannot use Pathfind::find_nearest_open
+		//  -> It will select terrain with features and they will get stomped
+		// TODO: If we have triggers without features, these should be that
+		//  -> We just want one per creature spawned
+		//  -> Or one for all the spawned creatures, if the datastructure supports that
 
-		assert(Util::Size(trigger_positions) <= Util::Size(creature_list));
-		for(int i = 0; i < Util::Size(trigger_positions); ++i)
+		int map_z = feature->pos.z;
+		int creature_index = 0;
+		Box2 check_area = Box2::around_tile(feature->pos.xy(), 5);
+		std::cout << std::format("Placing triggers in box ({} - {}, {} - {})\n",
+			check_area.min.x, check_area.inner_max().x,
+			check_area.min.y, check_area.inner_max().y);
+		for (Vec2 const& pos : check_area)
 		{
-			Feature::Itr new_feature = add_feature_internal(
-				trigger_positions[i], Terrain::TriggerOnMonsterDead,
-			    c_Invalid, feature->trigger, (int)(creature_list[i]));
-			//  hp         trigger           payload
+			Vec3 pos3 = pos.xyz(map_z);
+			if (World::read().get_terrain(pos3) == Terrain::Open)
+			{
+				std::cout << std::format("  Adding trigger at ({}, {})\tFeatures was at ({}, {})\n",
+					pos.x, pos.y, feature->pos.x, feature->pos.y);
+				Feature::Itr new_feature = add_feature_internal(
+					pos3, Terrain::TriggerOnMonsterDead,
+					c_Invalid, feature->trigger, (int)(creature_list[creature_index]));
+				//  hp         trigger           payload
 
-			register_for_updates(new_feature);
+				register_for_updates(new_feature);
+
+				++creature_index;
+				if (creature_index >= Util::Size(creature_list))
+				{
+					// placed enough triggers
+					break;
+				}
+			}
+			else
+			{
+				std::cout << std::format("  Pos ({}, {}) was not open\n",
+					pos.x, pos.y);
+			}
 		}
 	}
 	else

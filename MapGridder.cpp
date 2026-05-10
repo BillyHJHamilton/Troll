@@ -67,18 +67,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 		}
 	}
 
-	Random::shuffle_vector(index_list);
-	for (int index : index_list)
-	{
-		if (m_generator.GetRoom(index).IsChamber())
-		{
-			bool success = add_ambush_chamber(index);
-			if (success)
-			{
-				break;  // just 1 for now
-			}
-		}
-	}
+	add_all_ambush_chambers();
 
 	// Phase 3: Add cosmetic features
 	//   -> armour, desks, cosmetic torches
@@ -392,6 +381,46 @@ void MapGridder::add_secret_corridor(Room const & corridor, bool allow_open,
 	}
 }
 
+void MapGridder::add_all_ambush_chambers() const
+{
+	MapGenerator::Parameters const& param = m_generator.ReadParameters();
+	int desired = Random::in_range(param.MinAmbushRooms, param.MaxAmbushRooms);
+	if (desired == 0)
+	{
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << "Did not try to place any ambush rooms.\n";
+		}
+		return;  // that was easy
+	}
+
+	IntTempList index_list = Util::GetIndices(m_generator.GetRoomVector());
+	Random::shuffle_vector(index_list);
+
+	int placed = 0;
+	for (int index : index_list)
+	{
+		if (m_generator.GetRoom(index).IsChamber())
+		{
+			bool success = add_ambush_chamber(index);
+			if (success)
+			{
+				++placed;
+				if (placed >= desired)
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {} / {} ambush rooms.\n",
+			placed, desired);
+	}
+}
+
 bool MapGridder::add_ambush_chamber(int room_index) const
 {
 	// For a proper ambush room:
@@ -407,11 +436,9 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 		DebugBreak("Only use MapGridder::add_ambush_chamber for chambers.");
 	}
 
-	std::cout << "Trying to add an ambush chamber" << std::endl;
 	Axis long_axis = get_long_axis(room.GetBox().size);
 	if (room.GetBox().size[long_axis] < 5)
 	{
-		std::cout << "  Chamber too small" << std::endl;
 		return false;  // not enough room for an ambush
 	}
 
@@ -424,7 +451,6 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 		Vec2 door_pos = get_door_pos(neighbour, room);
 		if (!is_good_floor(door_pos))
 		{
-			std::cout << "  An exit is in use" << std::endl;
 			return false;  // there is an exit we can't drop a portcullis across
 		}
 		doors.push_back(door_pos);
@@ -444,7 +470,6 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 
 	if (!is_good_floor(tripwire_pos) || !is_good_floor(spawn_pos))
 	{
-		std::cout << "  Tripwire pos or spawn pos is blocked" << std::endl;
 		return false;  // something is in the way
 	}
 
@@ -463,7 +488,6 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 		Feature::spawn(door_pos.xyz(map_z), Terrain::PortcullisTrap, trigger);
 	}
 
-	std::cout << "  Success" << std::endl;
 	return true;
 }
 
