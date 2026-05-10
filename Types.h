@@ -18,6 +18,7 @@ class MapGenerator;
 class Room;
 class World;
 
+using Axis = int;
 struct Vec2;
 struct Vec3;
 struct Box2;

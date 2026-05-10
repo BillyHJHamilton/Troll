@@ -21,11 +21,11 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 	// Room positions are all in global space.
 
-	// Pass 0: Fill map with walls
+	// Phase 0: Fill map with walls
 
 	m_map.fill(Terrain::Wall);
 
-	// Pass 1: Add basic rooms shapes
+	// Phase 1: Add basic rooms shapes
 	//   -> including stairs
 	//   -> it's only safe to look in the grid representation for the current room
 	//   -> we can add these in any order because they never overlap
@@ -45,7 +45,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	//     -> don't replace terrain that isn't "good" (floor with can_spawn or wall)
 	//     -> to reserve open floor space for later use, replace it with Terrain::Placeholder
 
-	// Pass 2: Add important features
+	// Phase 2: Add important features
 	//   -> choose chest locations (chests will be added with Items)
 	//   -> shop location
 	//   -> secret areas and secret passages
@@ -63,11 +63,24 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	{
 		if (m_generator.GetRoom(index).IsCorridor())
 		{
-			add_corridor_doors(index);
+			add_locked_doors(index);
 		}
 	}
 
-	// Pass 3: Add cosmetic features
+	Random::shuffle_vector(index_list);
+	for (int index : index_list)
+	{
+		if (m_generator.GetRoom(index).IsChamber())
+		{
+			bool success = add_ambush_chamber(index);
+			if (success)
+			{
+				break;  // just 1 for now
+			}
+		}
+	}
+
+	// Phase 3: Add cosmetic features
 	//   -> armour, desks, cosmetic torches
 
 	Random::shuffle_vector(index_list);
@@ -90,7 +103,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 	// Do we want a spawn suggestions pass?
 
-	// Pass 4: Add items (and chests)
+	// Phase 4: Add items (and chests) and do cleanup
 
 	Spawn::spawn_early(m_map, map_id);
 	replace_all(Terrain::Placeholder, Terrain::Open);
@@ -106,7 +119,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 
 //-----------------------------------------------------------------------------
-// Pass 1 functions
+// Phase 1 functions - basic room shapes
 
 void MapGridder::add_basic(int room_index) const
 {
@@ -140,7 +153,7 @@ void MapGridder::add_basic(int room_index) const
 
 
 //-----------------------------------------------------------------------------
-// Pass 2 functions
+// Phase 2 functions - important features
 
 void MapGridder::add_treasure_suggestions() const
 {
@@ -215,12 +228,12 @@ void MapGridder::add_shop_seed() const
 	}
 }
 
-void MapGridder::add_corridor_doors(int room_index) const
+void MapGridder::add_locked_doors(int room_index) const
 {
 	Room const& room = m_generator.GetRoom(room_index);
 	if (!room.IsCorridor())
 	{
-		DebugBreak("Only use MapGridder::add_corridor_doors for corridors.");
+		DebugBreak("Only use MapGridder::add_locked_doors for corridors.");
 	}
 
 	if (room.GetRegion() != Room::c_MainRegion &&
@@ -379,9 +392,84 @@ void MapGridder::add_secret_corridor(Room const & corridor, bool allow_open,
 	}
 }
 
+bool MapGridder::add_ambush_chamber(int room_index) const
+{
+	// For a proper ambush room:
+	//  1. These is a tripwire across the floor in one direction
+	//  2. It you touch the tripwire, ambush activates
+	//   -> an enemy (or squad) drops in
+	//   -> portcullises block all exits
+	//  3. When you defeat the enemy, the portcullises open again
+
+	Room const& room = m_generator.GetRoom(room_index);
+	if (!room.IsChamber())
+	{
+		DebugBreak("Only use MapGridder::add_ambush_chamber for chambers.");
+	}
+
+	std::cout << "Trying to add an ambush chamber" << std::endl;
+	Axis long_axis = get_long_axis(room.GetBox().size);
+	if (room.GetBox().size[long_axis] < 5)
+	{
+		std::cout << "  Chamber too small" << std::endl;
+		return false;  // not enough room for an ambush
+	}
+
+	// Find all the doors.
+
+	PosTempList doors;
+	for (int neighbour_index : room.GetNeighbours())
+	{
+		Room const& neighbour = m_generator.GetRoom(neighbour_index);
+		Vec2 door_pos = get_door_pos(neighbour, room);
+		if (!is_good_floor(door_pos))
+		{
+			std::cout << "  An exit is in use" << std::endl;
+			return false;  // there is an exit we can't drop a portcullis across
+		}
+		doors.push_back(door_pos);
+	}
+
+	// Find positions for tripwire and enemy spawn.
+
+	Vec2 centre = room.GetBox().centre();
+	Vec2 tripwire_pos = centre;
+	tripwire_pos[long_axis] = room.GetBox().min[long_axis] + 1;
+	Vec2 spawn_pos = centre;
+	spawn_pos[long_axis] = room.GetBox().inner_max(long_axis) - 1;
+	if (Random::coinflip())
+	{
+		std::swap(tripwire_pos, spawn_pos);
+	}
+
+	if (!is_good_floor(tripwire_pos) || !is_good_floor(spawn_pos))
+	{
+		std::cout << "  Tripwire pos or spawn pos is blocked" << std::endl;
+		return false;  // something is in the way
+	}
+
+	// Add the ambush
+
+	int map_z = m_map.get_z();
+	int const trigger = Feature::get_new_trigger();
+
+	Axis short_axis = get_other_axis(long_axis);
+	Terrain::Type tripwire_terrain = Terrain::get_tripwire(short_axis);
+	Feature::spawn(tripwire_pos.xyz(map_z), tripwire_terrain, trigger);
+	Feature::spawn(spawn_pos.xyz(map_z), Terrain::MonsterTrapAmbush, trigger);
+
+	for (Vec2 const& door_pos : doors)
+	{
+		Feature::spawn(door_pos.xyz(map_z), Terrain::PortcullisTrap, trigger);
+	}
+
+	std::cout << "  Success" << std::endl;
+	return true;
+}
+
 
 //-----------------------------------------------------------------------------
-// Pass 3 functions
+// Phase 3 functions - cosmetic features
 
 void MapGridder::add_cosmetic_chamber(int room_index) const
 {
@@ -392,7 +480,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 	}
 
 	// special room types
-	// TODO: Remove cosmetic room when we have vaults?
+	// TODO: Remove cosmetic rooms when we have vaults?
 	//  -> or at least use a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
@@ -620,7 +708,7 @@ void MapGridder::add_unlocked_door(Vec2 const& pos) const
 
 
 //-----------------------------------------------------------------------------
-// Pass 4 functions
+// Phase 4 functions - items and cleanup
 
 void MapGridder::replace_all(Terrain::Type old_type, Terrain::Type new_type) const
 {
@@ -1236,6 +1324,7 @@ bool MapGridder::is_good_corridor_end(Vec2 const& pos) const
 		case Terrain::DoorLocked:
 		// not Terrain::SlidingWall
 		case Terrain::Portcullis:
+			// treat these as doorways even though they are solid
 			return true;
 		default:
 			return !Terrain::is_solid(terrain);

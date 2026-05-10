@@ -24,16 +24,20 @@ namespace Terrain
 		TorchUnlit,
 		TorchLit,
 		PressurePlate,
+		TripwireX,
+		TripwireY,
 		FlipendoButton,
 		Portrait,
 		Ectoplasm,
 		DoorOpen,
 		DoorClosed,
 		DoorLocked,
-		DoorColloportus,
+		DoorColloportus,  // never place this, it will be added during the game
 		SlidingWall,
 		Portcullis,
-		MonsterTrap,
+		PortcullisTrap,  // spawns a portcullis
+		MonsterTrap,  // spawns a monster
+		MonsterTrapAmbush,  // spawns a monster, retriggers when it dies
 		ShopSeed,
 
 		Count
@@ -55,7 +59,9 @@ namespace Terrain
 	bool is_auto_target(Terrain::Type t);
 	bool fills_crosshair(Terrain::Type t);
 	bool is_matching_target(Terrain::Type t, uint target_flags);
+
 	Terrain::Type swap_stairs(Terrain::Type t);
+	Terrain::Type get_tripwire(Axis axis);
 
 	enum class HighlightType : byte
 	{

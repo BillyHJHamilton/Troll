@@ -18,18 +18,20 @@ protected:
 	using Box2TempList = std::vector<Box2,Scratch<Box2>>;
 	// should these be in VectorUtil.h?
 
-	// Pass 1 functions
+	// Phase 1 functions - basic room shapes
 	void add_basic(int room_index) const;
 
-	// Pass 2 functions
+	// Phase 2 functions - important features
 	void add_treasure_suggestions() const;
 	void add_shop_seed() const;
 
-	void add_corridor_doors(int room_index) const;
+	void add_locked_doors(int room_index) const;
 	void add_secret_corridor(Room const & corridor, bool allow_open,
 	                         Room const & outside, Room const & inside) const;
 
-	// Pass 3 functions
+	bool add_ambush_chamber(int room_index) const;  // returns if it succeeded
+
+	// Phase 3 functions - cosmetic features
 	void add_cosmetic_chamber(int room_index) const;
 	void add_cosmetic_torches(Room const & room) const;
 	void add_cosmetic_armour(Room const & room) const;
@@ -39,7 +41,7 @@ protected:
 	void add_unlocked_doors(int room_index) const;
 	void add_unlocked_door(Vec2 const & pos) const;
 
-	// Pass 4 functions
+	// Phase 4 functions - items and cleanup
 	void replace_all(Terrain::Type old_type, Terrain::Type new_type) const;
 
 	// Functions to select positions

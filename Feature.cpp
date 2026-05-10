@@ -6,6 +6,7 @@
 #include "Grammar.h"
 #include "Item.h"
 #include "Loot.h"
+#include "Math.h"
 #include "Pathfind.h"
 #include "Player.h"
 #include "Random.h"
@@ -25,21 +26,20 @@ namespace Feature
 
 // Feature Types:
 //  - Chest - payload is Item::Handle
-//  - Desk - no payload
-//  - TorchUnlit - payload is which trigger id it activates
-// 	             - trigger only activates when the last torch with that trigger is lit
-//  - TorchLit - no payload
-//  - Portrait - no payload
-//  - Ectoplasm - no payload
-//  - DoorOpen - no payload
-//  - DoorClosed - no payload
-//  - DoorLocked - no payload
 //  - DoorColloportus - payload is countdown until it reopens
-//  - FlipendoButton - payload is which trigger id it activates
-//                   - it also turns into a wall on that trigger
-//  - SlidingWall - payload is which trigger id it responds to
-//  - Portcullis - payload is which trigger id it responds to
-//  - MonsterTrap - payload is which trigger id it responds to
+//
+// Payload is which trigger id it activates:
+//  - TorchUnlit - trigger only activates when the last torch with that trigger is lit
+//  - FlipendoButton - it also turns into a wall on that trigger
+//  - PressurePlate
+//  - TripwireX
+//  - TripwireY
+//
+// Payload is which trigger id it responds to:
+//  - SlidingWall
+//  - Portcullis
+//  - PortcullisTrap - becomes a portcullis with the same trigger
+//  - MonsterTrap
 
 struct Instance
 {
@@ -72,6 +72,8 @@ float constexpr c_Resistances[(int)(Material::Count)][Damage::Type::Count] =
 	{	1.0f,	0.0f,	2.0f,	0.0f,	},	// Wood
 };
 
+char const* cstr_TriggerFailed = "You hear a clunk.";
+
 //-------------------------------------------------------------------------------------------------
 // Helper declarations
 
@@ -85,6 +87,7 @@ void init_desk(Itr feature);
 
 void update_feature(Itr feature);
 void update_pressure_plate(Itr feature);
+void update_tripwire(Feature::Itr feature, Axis check_axis);
 void update_door_closed(Itr feature);
 void update_door_colloportus(Itr feature);
 void update_shop_seed(Itr feature);
@@ -101,7 +104,8 @@ void trigger_all(int trigger);
 
 void trigger_sliding_wall(Itr feature);
 void trigger_portcullis(Itr feature);
-void trigger_monster_trap(Itr feature);
+void trigger_portcullis_trap(Itr feature);
+void trigger_monster_trap(Itr feature, bool is_retrigger_on_defeat);
 
 //-------------------------------------------------------------------------------------------------
 // Module interface
@@ -150,10 +154,14 @@ void spawn(Vec3 pos, Terrain::Type type)
 				break;
 			// special initialization
 			case Terrain::PressurePlate:
+			case Terrain::TripwireX:
+			case Terrain::TripwireY:
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::PortcullisTrap:
 			case Terrain::MonsterTrap:
+			case Terrain::MonsterTrapAmbush:
 				DebugBreak("Spawn Feature with trigger");
 				break;
 			case Terrain::DoorColloportus:
@@ -181,13 +189,17 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 		switch (type)
 		{
 			case Terrain::PressurePlate:
+			case Terrain::TripwireX:
+			case Terrain::TripwireY:
 				register_for_updates(new_feature);
 				break;
 			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
 			case Terrain::FlipendoButton:
 			case Terrain::SlidingWall:
 			case Terrain::Portcullis:
+			case Terrain::PortcullisTrap:
 			case Terrain::MonsterTrap:
+			case Terrain::MonsterTrapAmbush:
 				break;
 			default:
 				DebugBreak("Spawn Feature without trigger");
@@ -337,6 +349,12 @@ void update_feature(Feature::Itr feature)
 		case Terrain::PressurePlate:
 			update_pressure_plate(feature);
 			break;
+		case Terrain::TripwireX:
+			update_tripwire(feature, c_AxisX);
+			break;
+		case Terrain::TripwireY:
+			update_tripwire(feature, c_AxisY);
+			break;
 		case Terrain::DoorClosed:
 			update_door_closed(feature);
 			break;
@@ -354,8 +372,42 @@ void update_pressure_plate(Feature::Itr feature)
 	if (Player::pos() == feature->pos)
 	{
 		Draw::pos_message(feature->pos, "You step on a pressure plate.");
+
 		// This feature is removed when it triggers itself.
 		trigger_all(feature->payload);
+	}
+}
+
+void update_tripwire(Feature::Itr feature, Axis check_axis)
+{
+	assert(check_axis == c_AxisX || check_axis == c_AxisY);
+
+	Axis other_axis = get_other_axis(check_axis);
+	if (Player::pos().z == feature->pos.z &&
+	    Player::pos()[other_axis] == feature->pos[other_axis])
+	{
+		// Check if we have a clear path to the player.
+		//  -> we don't know which way we will look (+1 or -1)
+		//  -> we want to stop at any cell which might become blocked
+		int delta = Math::Sign(Player::pos()[check_axis] - feature->pos[check_axis]);
+
+		bool is_open = true;
+		for (Vec3 pos = feature->pos;
+		     pos != Player::pos();
+		     pos[check_axis] += delta)
+		{
+			if (!Terrain::can_spawn(World::read().get_terrain(pos)))
+			{
+				is_open = false;
+				break;  // found an obstruction, so stop looking
+			}
+		}
+
+		if (is_open)
+		{
+			// This feature is removed when it triggers itself.
+			trigger_all(feature->payload);
+		}
 	}
 }
 
@@ -568,6 +620,8 @@ void trigger_all(int trigger)
 		switch (feature_type)
 		{
 		case Terrain::PressurePlate:
+		case Terrain::TripwireX:
+		case Terrain::TripwireY:
 			remove_feature(feature, Terrain::Open);
 			break;
 		case Terrain::FlipendoButton:
@@ -579,8 +633,14 @@ void trigger_all(int trigger)
 		case Terrain::Portcullis:
 			trigger_portcullis(feature);
 			break;
+		case Terrain::PortcullisTrap:
+			trigger_portcullis_trap(feature);
+			break;
 		case Terrain::MonsterTrap:
-			trigger_monster_trap(feature);
+			trigger_monster_trap(feature, false);
+			break;
+		case Terrain::MonsterTrapAmbush:
+			trigger_monster_trap(feature, true);
 			break;
 		}
 	}
@@ -598,7 +658,20 @@ void trigger_portcullis(Feature::Itr feature)
 	remove_feature(feature, Terrain::Open);
 }
 
-void trigger_monster_trap(Feature::Itr feature)
+void trigger_portcullis_trap(Feature::Itr feature)
+{
+	if (Creature::creature_at_pos(feature->pos).valid())
+	{
+		Draw::pos_message(feature->pos, cstr_TriggerFailed);
+	}
+	else
+	{
+		Draw::pos_message(feature->pos, "A portcullis slams down!");
+		World::edit().set_terrain(feature->pos, Terrain::Portcullis);
+	}
+}
+
+void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 {
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
 	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
@@ -618,7 +691,7 @@ void trigger_monster_trap(Feature::Itr feature)
 		if (spawn_positions.empty())
 		{
 			// no valid spawn position, so trap doesn't work
-			Draw::pos_message(feature->pos, "You hear a clunk.");
+			Draw::pos_message(feature->pos, cstr_TriggerFailed);
 			remove_feature(feature, Terrain::Open);
 			return;
 		}
@@ -649,12 +722,27 @@ void trigger_monster_trap(Feature::Itr feature)
 		// drop as close to desired cell as possible
 		//  -> they can land around the player
 		Spawn::spawn_squad(option.index, feature->pos, true);
+		// TODO: Return a handle/id
 
 		// TODO: Squad names?
 		Draw::pos_message(feature->pos, "Beasts drop in.", Squad::colour(option.index));
 	}
 
-	remove_feature(feature, Terrain::Open);
+	if (is_retrigger_on_defeat)
+	{
+		// TODO: Trigger + monster ID, 2 variables
+		// Squad and creature ids are different
+		//  -> I hope this doesn't mean we need 2 trigger types
+		World::edit().set_terrain(feature->pos, Terrain::PressurePlate);
+		register_for_updates(feature);
+
+		// TODO: Add a timer to eventually open the doors again anyway
+		//  -> It will also need 2 variables (trigger and timer)
+	}
+	else
+	{
+		remove_feature(feature, Terrain::Open);
+	}
 }
 
 } // namespace Feature
