@@ -24,6 +24,11 @@ namespace Taunt
 		Losing,
 		Winning,
 		FollowUp,		// Used immediately after previous taunt.
+
+		ShopAttract,	// Used before player interacts with shop.
+		ShopDeal,		// Used when player buys/sells at shop.
+		ShopNoDeal,		// Used when player leaves menu without transaction.
+		ShopLeaving,	// Used after player has interacted with shop.
 	};
 
 	struct Data

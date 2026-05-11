@@ -22,6 +22,7 @@ void init()
 	s_loot_table[Potion] =			{	0,		0,		0,		0,		1,		};
 	s_loot_table[Floor] =			{	0,		0,		14,		3,		1,		};
 	s_loot_table[Treasure] =		{	0,		0,		0,		1,		2,		};
+	s_loot_table[Shop] =			{	0,		0,		0,		2,		1,		};
 	s_loot_table[Student_Generic] =	{	8,		0,		0,		3,		1,		};
 
 	// Validation
@@ -37,7 +38,7 @@ void init()
 
 Item::Type select(Loot::Type loot_type)
 {
-	std::vector<int>& weight_list = s_loot_table.at(loot_type);
+	std::vector<int> const& weight_list = s_loot_table.at(loot_type);
 	int const roll = Random::weighted_index(weight_list);
 	
 	// Subtract 1 so that None equals -1, not 0.

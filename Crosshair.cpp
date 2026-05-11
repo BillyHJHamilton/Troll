@@ -150,8 +150,12 @@ void cycle (int step, bool manually)
 	targets.reserve(Util::Size(visible_creatures) + 10);
 	for (Creature::Handle creature : visible_creatures)
 	{
-		targets.push_back(creature.pos());
+		if (!creature.has_tag(Creature::Tag::Shop))
+		{
+			targets.push_back(creature.pos());
+		}
 	}
+	int const num_creature_targets = Util::Size(targets);
 
 	// Don't consider features when in pure automatic mode, unless there are no creatures.
 	if (targets.empty() || manually)
@@ -178,10 +182,10 @@ void cycle (int step, bool manually)
 		// wrap around
 		target_index = (num_targets + target_index) % num_targets;
 
-		if (target_index <= Util::LastIndex(visible_creatures))
+		if (target_index < num_creature_targets)
 		{
 			s_target_mode = TargetMode::Automatic_Creature;
-			s_target_creature = visible_creatures[target_index];
+			s_target_creature = Creature::creature_at_pos(targets.at(target_index));
 			s_target_pos = s_target_creature.pos();
 		}
 		else

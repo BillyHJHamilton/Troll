@@ -106,6 +106,10 @@ namespace Creature
 		// AU's!
 		HarryTheHufflepuff_1,
 
+		// Shop Characters
+		Fred_Shop,
+		George_Shop,
+
 		Count
 	};
 
@@ -138,6 +142,7 @@ namespace Creature
 		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
 		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
 		Move_Slow,			// It needs to skip a turn before moving.
+		Shop,				// Character acts as a shop instead of fighting.
 		Spells_Random,		// Will be assigned some random spells near its skill level.
 		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
 		Vision_Short,		// Can only see 3 squares instead of 8.

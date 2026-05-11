@@ -52,7 +52,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 	add_treasure_suggestions();
 
-	if (generator.ReadParameters().IsShopSeed)
+	if (generator.ReadParameters().PlaceShopSeed)
 	{
 		add_shop_seed();
 	}

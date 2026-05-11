@@ -50,4 +50,8 @@ namespace Gingerbread
 
 	void claim_identity(Creature::Handle creature);
 	void release_identity(Creature::Handle creature);
+
+	// Finds current creature with same identity, if any (not necessarily same type).
+	// Returns invalid handle if generic or not currently spawned.
+	Creature::Handle find_incarnation(Creature::Type type_for_identity);
 }

@@ -12,6 +12,7 @@ public:
 
 	virtual void draw_screen () = 0;
 	virtual Input::Result handle_input (int key) = 0;
+	virtual void on_close () {};
 };
 
 namespace Menu
@@ -54,6 +55,8 @@ namespace Menu
 	void show_pause_menu();
 	void show_message_history();
 	void show_settings();
+	void show_shop_buy();
+	void show_shop_sell();
 
 	// Debug menus
 #if _DEBUG

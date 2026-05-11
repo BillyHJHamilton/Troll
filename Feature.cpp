@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Shop.h"
 #include "SparseVector.h"
 #include "Spawn.h"
 #include "Squad.h"
@@ -492,14 +493,14 @@ void update_shop_seed(Feature::Itr feature)
 		World::read().has_los(feature->pos, Player::pos(), 5) &&
 		!Creature::creature_at_pos(feature->pos).valid())
 	{
-		Vec3 const pos = feature->pos;
-		remove_feature(feature, Terrain::Open);
+		bool const success = Shop::try_spawn(feature->pos);
+		if (success)
+		{
+			Vec3 const pos = feature->pos;
+			remove_feature(feature, Terrain::Open);
 
-		Player::stop_automove();
-		Draw::pos_message(pos, "A shop appears!");
-
-		// TODO: Spawn a real shop
-		spawn(pos, Terrain::Chest);
+			Player::stop_automove();
+		}
 	}
 }
 

@@ -31,7 +31,7 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 
 	s.srz_int(MaxCorridorLength);
 
-	s.srz_bool(IsShopSeed);
+	s.srz_bool(PlaceShopSeed);
 
 	s.srz_int(percent_torches_lit);
 	s.srz_int(percent_monster_on_trigger);

@@ -30,7 +30,7 @@ public:
 
 		int MaxCorridorLength = 6;
 
-		bool IsShopSeed = false;
+		bool PlaceShopSeed = false;
 
 		int MinAmbushRooms = 0;
 		int MaxAmbushRooms = 2;

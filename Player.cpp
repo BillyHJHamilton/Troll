@@ -315,8 +315,8 @@ void tick_sugar ()
 {
 	float& sugar = edit_data().sugar;
 
-	float constexpr loss_rate = 1.0f / 700.0f;
-	float const loss = loss_rate * sugar;
+	float constexpr c_LossRate = 1.0f / 700.0f;
+	float const loss = c_LossRate * sugar;
 
 	sugar = std::max(0.0f, sugar - loss);
 	Player::handle().update_derived_stats();

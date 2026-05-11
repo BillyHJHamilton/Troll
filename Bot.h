@@ -16,6 +16,7 @@ namespace Bot
 		Investigate,
 		Chase,
 		Fight,
+		Shopkeep,
 	};
 
 	// Data for an AI creature.

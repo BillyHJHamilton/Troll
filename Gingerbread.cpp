@@ -150,6 +150,8 @@ void init()
 	register_identity("Colin", "Colin Creevy", House::colour(House::Gryffindor), Gender::Male);
 	register_identity("Crabbe", "Vincent Crabbe", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Fleur", "Fleur Delacour", cstr_Sky, Gender::Female);
+	register_identity("Fred", "Fred Weasley", cstr_Orange, Gender::Male);
+	register_identity("George", "George Weasley", cstr_Orange, Gender::Male);
 	register_identity("Ginny", "Ginny Weasley", House::colour(House::Gryffindor), Gender::Female);
 	register_identity("Goyle", "Gregory Goyle", House::colour(House::Slytherin), Gender::Male);
 	register_identity("Harry", "Harry Potter", House::colour(House::Gryffindor), Gender::Male);
@@ -192,7 +194,7 @@ void init()
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(10, "VM FP LM")
 		.habitats(Habitat::Hogwarts)
-		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 	
 	Builder(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 10)
@@ -204,7 +206,7 @@ void init()
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 14)
 		.magic(5, "FP VM FM")
 		.habitats(Habitat::Hogwarts)
-		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 60}});
+		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 
 	Builder(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 12)
@@ -423,6 +425,16 @@ void init()
 		.habitats(Habitat::Hogwarts)
 		.tags(Creature::Tag::Move_Slow)
 		.loot({{Loot::Notes, 70}, {Loot::Potion, 40}});
+
+	// Shop Characters:
+	
+	Builder(Creature::Fred_Shop, "Fred",
+		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		.tags(Tag::Shop);
+
+	Builder(Creature::George_Shop, "George",
+		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		.tags(Tag::Shop);
 
 	// Validate that we didn't miss something.
 	for (int i = 0; i < Creature::Count; ++i)
@@ -727,6 +739,21 @@ void release_identity(Creature::Handle creature)
 			metadata->current_handle = Creature::None;
 		}
 	}
+}
+
+Creature::Handle find_incarnation(Creature::Type type_for_identity)
+{
+	NameHash const identity = read(type_for_identity).identity;
+	if (identity != c_IdentityGeneric)
+	{
+		IdentityMetadata* metadata = Util::Find(s_metadata, identity);
+		if (metadata)
+		{
+			return metadata->current_handle;
+		}
+	}
+
+	return (Creature::Handle)c_Invalid;
 }
 
 //------------------------------------------------------------------------------

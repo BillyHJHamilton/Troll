@@ -11,9 +11,14 @@ public:
 	static Inventory& edit();
 	static Inventory const& read();
 	static void serialize(ISerializer& s);
+	
+	void serialize_instance(ISerializer& s);
 
 	bool has_item () const;
-	int num_items () const;
+	bool has_item_to_sell () const;
+	int num_slots () const;
+	int total_items () const;
+	int num_beans () const;
 	int random_slot () const;
 	Item::Handle const peek_item (int slot) const;
 
@@ -29,6 +34,7 @@ public:
 	void add_item (Item::Handle item);
 	void use_item (int slot);
 	void remove_item (int slot); // removes entire slot
+	void remove_items (int slot, int num_to_remove); // remove part or all of a slot
 	Item::Handle pop_item (int slot); // for stealing from player
 
 protected:

@@ -267,6 +267,15 @@
     <ClCompile Include="Feature.cpp">
       <Filter>Source Files\World</Filter>
     </ClCompile>
+    <ClCompile Include="Shop.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuShopBuy.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuShopSell.cpp">
+      <Filter>Source Files\UI\Menus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -511,6 +520,18 @@
     </ClInclude>
     <ClInclude Include="Feature.h">
       <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="SparseVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shop.h">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuShopBuy.h">
+      <Filter>Header Files\UI\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuShopSell.h">
+      <Filter>Header Files\UI\Menus</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

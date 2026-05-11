@@ -15,6 +15,7 @@
 #include "PerfTimer.h"
 #include "Player.h"
 #include "Random.h"
+#include "Shop.h"
 #include "Spell.h"
 #include "SpellEffect.h"
 #include "Status.h"
@@ -117,8 +118,8 @@ void player_rest_step()
 
 bool player_try_move(Vec2 relative_move)
 {
-	bool const moved = try_move(Player::handle(), relative_move, MoveMode::Walk);
-	if (moved)
+	bool done_turn = try_move(Player::handle(), relative_move, MoveMode::Walk);
+	if (done_turn)
 	{
 		// Pick up items.
 		Item::Handle item = World::edit().pop_item(Player::pos());
@@ -128,10 +129,24 @@ bool player_try_move(Vec2 relative_move)
 			Draw::add_message("Got " + item.name() + ".");
 			item = World::edit().pop_item(Player::pos());
 		}
-
-		Player::set_acted(true);
 	}
-	return moved;
+	else
+	{
+		Vec3 const new_pos = pos_after_move(Player::handle(), relative_move);
+		Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos);
+		if (creature_in_way.valid())
+		{
+			if (creature_in_way.has_tag(Creature::Tag::Shop))
+			{
+				// Don't end turn here; it will happen when the menu is closed.
+				Shop::interact(creature_in_way.type());
+			}
+			// else: basic melee or other interactions
+		}
+	}
+
+	Player::set_acted(done_turn);
+	return done_turn;
 }
 
 bool player_try_cast_spell (Spell::Index spell)

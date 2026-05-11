@@ -22,15 +22,20 @@ void init ()
 	generator = std::mt19937(r());
 }
 
-float in_range (float min, float max)
-{
-	std::uniform_real_distribution<float> dist(min, max);
-	return dist(generator);
-}
-
 int in_range (int min, int max)
 {
 	std::uniform_int_distribution<int> dist(min, max);
+	return dist(generator);
+}
+
+int in_range (Interval interval)
+{
+	return in_range(interval.min, interval.max);
+}
+
+float in_range (float min, float max)
+{
+	std::uniform_real_distribution<float> dist(min, max);
 	return dist(generator);
 }
 
