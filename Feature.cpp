@@ -844,16 +844,11 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 		int map_z = feature->pos.z;
 		int creature_index = 0;
 		Box2 check_area = Box2::around_tile(feature->pos.xy(), 5);
-		std::cout << std::format("Placing triggers in box ({} - {}, {} - {})\n",
-			check_area.min.x, check_area.inner_max().x,
-			check_area.min.y, check_area.inner_max().y);
 		for (Vec2 const& pos : check_area)
 		{
 			Vec3 pos3 = pos.xyz(map_z);
 			if (World::read().get_terrain(pos3) == Terrain::Open)
 			{
-				std::cout << std::format("  Adding trigger at ({}, {})\tFeatures was at ({}, {})\n",
-					pos.x, pos.y, feature->pos.x, feature->pos.y);
 				Feature::Itr new_feature = add_feature_internal(
 					pos3, Terrain::TriggerOnMonsterDead,
 					c_Invalid, feature->trigger, (int)(creature_list[creature_index]));
@@ -867,11 +862,6 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 					// placed enough triggers
 					break;
 				}
-			}
-			else
-			{
-				std::cout << std::format("  Pos ({}, {}) was not open\n",
-					pos.x, pos.y);
 			}
 		}
 	}
