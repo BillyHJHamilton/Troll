@@ -515,10 +515,10 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		//  -> do we want to influence probabilities?
 		//  -> there will have to be a datastructure for the desired habitats
 		//    -> it gets passed around through many functions
-		//  -> at of 2026-05-04, probabilities (including squads) are
+		//  -> at of 2026-05-12, probabilities (including squads) are
 		//    -> Identity students (e.g. Harry):	14.3
 		//    -> Generic students (e.g. Slytherin):	2.5
-		//    -> Beasts (e.g. streeler):			6.5
+		//    -> Beasts (e.g. streeler):			6.2
 		Spawn::Option option = choose_spawn_option(map.get_difficulty(),
 		                                           Creature::Habitat::Hogwarts);
 

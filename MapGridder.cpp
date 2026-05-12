@@ -90,8 +90,6 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 		}
 	}
 
-	// Do we want a spawn suggestions pass?
-
 	// Phase 4: Add items (and chests) and do cleanup
 
 	Spawn::spawn_early(m_map, map_id);

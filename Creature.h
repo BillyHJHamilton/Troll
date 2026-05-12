@@ -133,6 +133,7 @@ namespace Creature
 	enum class Tag : int
 	{
 		None = c_Invalid,
+		Difficulty_Ignore,	// Full chance of adding, regadrless of difficulty
 		Bot_Blunder,		// Rarely stays in rest mode for long.
 		Bot_Sidestep,		// When not attacking, circles its target.
 		Colour_Rainbow,		// Cycles between rainbow colours.

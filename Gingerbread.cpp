@@ -375,11 +375,11 @@ void init()
 		.abil({Ability::StealBean, Ability::EatBean});
 
 	Builder(Creature::Streeler, c_IdentityGeneric,
-		/*Difficulty*/ 0.8f, /*Probability*/ 0.8f, /*HP*/ 4,
+		/*Difficulty*/ -0.5f, /*Probability*/ 0.5f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
-		.habitats(Habitat::Hogwarts, Habitat::Trap)
-		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
-			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
+		.habitats(Habitat::Hogwarts)
+		.tags(Tag::Difficulty_Ignore, Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes,
+			Tag::Immune_Legs, Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
 		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
@@ -654,9 +654,14 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 		++type)
 	{
 		Gingerbread::Stats const& stats = s_gingerbread[type];
+		bool is_difficulty_ignore = has_tag((Creature::Type)type,
+			Creature::Tag::Difficulty_Ignore);
+
+		bool is_difficulty_in_range = is_difficulty_ignore ? true :
+			Spawn::difficulty_in_range(stats.difficulty, target_difficulty);
 
 		if (stats.probability <= 0.0f ||
-			!Spawn::difficulty_in_range(stats.difficulty, target_difficulty) ||
+			!is_difficulty_in_range ||
 			!can_spawn_identity((Creature::Type)type, target_difficulty))
 		{
 			continue;
@@ -668,8 +673,11 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 			continue;
 		}
 
-		float const probability = stats.probability *
-			Spawn::probability_factor(stats.difficulty, target_difficulty);
+		float probability = stats.probability;
+		if (!is_difficulty_ignore)
+		{
+			probability *= Spawn::probability_factor(stats.difficulty, target_difficulty);
+		}
 
 		if (probability > 0.0f)
 		{
