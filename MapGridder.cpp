@@ -423,7 +423,7 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 {
 	// For a proper ambush room:
 	//  1. These is a tripwire across the floor in one direction
-	//  2. It you touch the tripwire, ambush activates
+	//  2. It you touch the tripwire, the ambush activates
 	//   -> an enemy (or squad) drops in
 	//   -> portcullises block all exits
 	//  3. When you defeat the enemy, the portcullises open again
@@ -455,13 +455,28 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 	}
 
 	// Find positions for tripwire and enemy spawn.
+	//  -> The tripwire should be at the end of the chamber with the doors
+
+	int room_min = room.GetBox().min[long_axis];
+	int room_max = room.GetBox().inner_max(long_axis);
+
+	int door_from_min = 999999;  // very large
+	int door_from_max = 999999;  // very large
+	for (Vec2 const& door_pos : doors)
+	{
+		int here_from_min = door_pos[long_axis] - room_min;
+		int here_from_max = room_max - door_pos[long_axis];
+		door_from_min = std::min(door_from_min, here_from_min);
+		door_from_max = std::min(door_from_max, here_from_max);
+	}
 
 	Vec2 centre = room.GetBox().centre();
 	Vec2 tripwire_pos = centre;
-	tripwire_pos[long_axis] = room.GetBox().min[long_axis] + 1;
+	tripwire_pos[long_axis] = room_min + 1;
 	Vec2 spawn_pos = centre;
-	spawn_pos[long_axis] = room.GetBox().inner_max(long_axis) - 1;
-	if (Random::coinflip())
+	spawn_pos[long_axis] = room_max - 1;
+	if (door_from_max < door_from_min ||
+		(door_from_max == door_from_min && Random::coinflip()))
 	{
 		std::swap(tripwire_pos, spawn_pos);
 	}

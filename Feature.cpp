@@ -729,6 +729,7 @@ void trigger_portcullis_trap(Feature::Itr feature)
 	if (Creature::creature_at_pos(feature->pos).valid())
 	{
 		Draw::pos_message(feature->pos, cstr_TriggerFailed);
+		remove_feature(feature, Terrain::Open);  // don't close when monsters are defeated
 	}
 	else
 	{
