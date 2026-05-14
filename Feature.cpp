@@ -801,6 +801,7 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 
 	if (creature_list.empty())
 	{
+		// no monsters were added (probably because there was nowhere to put them)
 		Draw::pos_message(feature->pos, cstr_TriggerFailed);
 
 		if (is_retrigger_on_defeat)
@@ -821,6 +822,10 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 
 			return;
 		}
+	}
+	else
+	{
+		Player::stop_automove();
 	}
 
 	if (is_retrigger_on_defeat)
