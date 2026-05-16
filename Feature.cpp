@@ -28,8 +28,8 @@ namespace Feature
 // Feature Type payloads:
 //  - Chest - Item::Handle of item to add to map when chest is opened
 //  - DoorColloportus - countdown until the door reopens
-//  - TriggerOnCoutdown - countdown until the rtrigger triggers
-//  - TriggerOnMonsterDead - Creature::Handle to trigger on the death of
+//  - TriggerOnCoutdown - countdown until the trigger triggers
+//  - TriggerOnMonsterDefeat - Creature::Handle of creature to defeat to trigger trigger
 
 struct Instance
 {
@@ -82,7 +82,7 @@ void update_tripwire(Feature::Itr feature, Axis check_axis);
 void update_door_closed(Itr feature);
 void update_door_colloportus(Itr feature);
 void update_trigger_delay(Itr feature);
-void update_trigger_on_monster_dead(Itr feature);
+void update_trigger_on_monster_defeat(Itr feature);
 void update_shop_seed(Itr feature);
 
 void damage_basic(Vec3 pos, Damage::Packet const& damage_packet,
@@ -168,8 +168,8 @@ void spawn(Vec3 pos, Terrain::Type type)
 				// TODO: Can these be collapsed into 1 case that says which feature?
 				DebugBreak("Never spawn TriggerDelay directly");
 				break;
-			case Terrain::TriggerOnMonsterDead:
-				DebugBreak("Never spawn TriggerOnMonsterDead directly");
+			case Terrain::TriggerOnMonsterDefeat:
+				DebugBreak("Never spawn TriggerOnMonsterDefeat directly");
 				break;
 			// no initialization needed - TODO: Do we need these?
 			// case Terrain::Armour:
@@ -371,8 +371,8 @@ void update_feature(Feature::Itr feature)
 		case Terrain::TriggerDelay:
 			update_trigger_delay(feature);
 			break;
-		case Terrain::TriggerOnMonsterDead:
-			update_trigger_on_monster_dead(feature);
+		case Terrain::TriggerOnMonsterDefeat:
+			update_trigger_on_monster_defeat(feature);
 			break;
 		case Terrain::ShopSeed:
 			update_shop_seed(feature);
@@ -466,7 +466,7 @@ void update_trigger_delay(Feature::Itr feature)
 	}
 }
 
-void update_trigger_on_monster_dead(Feature::Itr feature)
+void update_trigger_on_monster_defeat(Feature::Itr feature)
 {
 	// payload is handle to creature
 	Creature::Handle creature = (Creature::Handle)feature->payload;
@@ -474,7 +474,7 @@ void update_trigger_on_monster_dead(Feature::Itr feature)
 	{
 		int trigger = feature->trigger;
 		int feature_count = count_features_of_a_type_with_trigger(
-			Terrain::TriggerOnMonsterDead, trigger);
+			Terrain::TriggerOnMonsterDefeat, trigger);
 		if (feature_count <= 1)
 		{
 			// This feature is removed when it triggers itself.
@@ -687,7 +687,7 @@ void trigger_all(int trigger)
 		case Terrain::TripwireX:
 		case Terrain::TripwireY:
 		case Terrain::TriggerDelay:
-		case Terrain::TriggerOnMonsterDead:
+		case Terrain::TriggerOnMonsterDefeat:
 			remove_feature(feature, Terrain::Open);
 			break;
 		case Terrain::FlipendoButton:
@@ -768,8 +768,10 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 			Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
 			creature_list.push_back(creature);
 
-			Draw::pos_message(spawn_pos, std::format("A {} {} in.", creature.long_name(),
-				Grammar::verbs("drop", creature)), creature.colour());
+			Grammar::NameParam param {.capitalize = true, .mode = Grammar::NameParam::Indefinite};
+			Draw::pos_message(spawn_pos, std::format("{} {} in.",
+				Grammar::format_name(creature, param), Grammar::verbs("drop", creature)),
+				creature.colour());
 
 			if (Debug::enabled(Debug::Map))
 			{
@@ -839,13 +841,14 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 		register_for_updates(feature);
 
 		// Add 1 trigger to watch each creature spawned.
-		//  -> When they are all dead, the trigger activates
+		//  -> When they are all defeated, the trigger activates
 		//  -> it doesn't matter where; they don't use their position
 		// We cannot use Pathfind::find_nearest_open
 		//  -> It will select terrain with features and they will get stomped
 		// TODO: If we have triggers without features, these should be that
 		//  -> We just want one per creature spawned
 		//  -> Or one for all the spawned creatures, if the datastructure supports that
+		//  -> Also for the "locked in without enemies" trigger above
 
 		int map_z = feature->pos.z;
 		int creature_index = 0;
@@ -856,7 +859,7 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 			if (World::read().get_terrain(pos3) == Terrain::Open)
 			{
 				Feature::Itr new_feature = add_feature_internal(
-					pos3, Terrain::TriggerOnMonsterDead,
+					pos3, Terrain::TriggerOnMonsterDefeat,
 					c_Invalid, feature->trigger, (int)(creature_list[creature_index]));
 				//  hp         trigger           payload
 

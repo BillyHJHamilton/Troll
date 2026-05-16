@@ -11,6 +11,7 @@
 #include "World.h"
 
 #include <cassert>
+#include <climits>
 
 MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	: m_map(map)
@@ -197,12 +198,12 @@ void MapGridder::add_shop_seed() const
 		for (int pos_index : pos_index_list)
 		{
 			Vec2 const& shop_centre = pos_vec[pos_index];
-			Box2 shop_area = Box2::around_tile(shop_centre, 1);
+			Box2 const shop_area = Box2::around_tile(shop_centre, 1);
 			if (is_good_floor(shop_area))
 			{
 				m_map.fill_box(shop_area, Terrain::OpenNoSpawn);
 
-				int map_z = m_map.get_z();
+				int const map_z = m_map.get_z();
 				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed);
 
 				if (Debug::enabled(Debug::Map))
@@ -434,7 +435,7 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 		DebugBreak("Only use MapGridder::add_ambush_chamber for chambers.");
 	}
 
-	Axis long_axis = get_long_axis(room.GetBox().size);
+	Axis const long_axis = get_long_axis(room.GetBox().size);
 	if (room.GetBox().size[long_axis] < 5)
 	{
 		return false;  // not enough room for an ambush
@@ -446,7 +447,7 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 	for (int neighbour_index : room.GetNeighbours())
 	{
 		Room const& neighbour = m_generator.GetRoom(neighbour_index);
-		Vec2 door_pos = get_door_pos(neighbour, room);
+		Vec2 const door_pos = get_door_pos(neighbour, room);
 		if (!is_good_floor(door_pos))
 		{
 			return false;  // there is an exit we can't drop a portcullis across
@@ -457,20 +458,20 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 	// Find positions for tripwire and enemy spawn.
 	//  -> The tripwire should be at the end of the chamber with the doors
 
-	int room_min = room.GetBox().min[long_axis];
-	int room_max = room.GetBox().inner_max(long_axis);
+	int const room_min = room.GetBox().min[long_axis];
+	int const room_max = room.GetBox().inner_max(long_axis);
 
-	int door_from_min = 999999;  // very large
-	int door_from_max = 999999;  // very large
+	int door_from_min = INT_MAX;
+	int door_from_max = INT_MAX;
 	for (Vec2 const& door_pos : doors)
 	{
-		int here_from_min = door_pos[long_axis] - room_min;
-		int here_from_max = room_max - door_pos[long_axis];
+		int const here_from_min = door_pos[long_axis] - room_min;
+		int const here_from_max = room_max - door_pos[long_axis];
 		door_from_min = std::min(door_from_min, here_from_min);
 		door_from_max = std::min(door_from_max, here_from_max);
 	}
 
-	Vec2 centre = room.GetBox().centre();
+	Vec2 const centre = room.GetBox().centre();
 	Vec2 tripwire_pos = centre;
 	tripwire_pos[long_axis] = room_min + 1;
 	Vec2 spawn_pos = centre;
@@ -488,11 +489,11 @@ bool MapGridder::add_ambush_chamber(int room_index) const
 
 	// Add the ambush
 
-	int map_z = m_map.get_z();
+	int const map_z = m_map.get_z();
 	int const trigger = Feature::get_new_trigger();
 
-	Axis short_axis = get_other_axis(long_axis);
-	Terrain::Type tripwire_terrain = Terrain::get_tripwire(short_axis);
+	Axis const short_axis = get_other_axis(long_axis);
+	Terrain::Type const tripwire_terrain = Terrain::get_tripwire(short_axis);
 	Feature::spawn(tripwire_pos.xyz(map_z), tripwire_terrain, trigger);
 	Feature::spawn(spawn_pos.xyz(map_z), Terrain::MonsterTrapAmbush, trigger);
 
@@ -570,7 +571,7 @@ void MapGridder::add_cosmetic_torches(Room const& room) const
 
 void MapGridder::add_cosmetic_armour(Room const & room) const
 {
-	int map_z = m_map.get_z();
+	int const map_z = m_map.get_z();
 
 	switch (Random::in_range(0, 3))
 	{
@@ -603,14 +604,14 @@ void MapGridder::add_cosmetic_armour(Room const & room) const
 		case 3:
 		{
 			// a few suits of armour along the wall
-			PosTempList positions = get_good_positions_along_wall(room);
+			PosTempList const positions = get_good_positions_along_wall(room);
 			IntTempList index_list = Util::GetIndices(positions);
 			Random::shuffle_vector(index_list);
-			int count = std::min(Util::Size(positions), Random::in_range(1, 3));
+			int const count = std::min(Util::Size(positions), Random::in_range(1, 3));
 			for (int i = 0; i < count; ++i)
 			{
 				// don't put 2 side-by-side
-				Vec2 pos = positions[index_list[i]];
+				Vec2 const pos = positions[index_list[i]];
 				if (is_good_for_isolated_floor(pos))
 				{
 					Feature::spawn(pos.xyz(map_z), Terrain::Armour);
@@ -1120,23 +1121,23 @@ MapGridder::PosTempList MapGridder::get_good_positions_by_doorways(Room const& r
 	Vec2 pos_ne{ x_max, y_min };
 	Vec2 pos_se{ x_max, y_max };
 
-	if(is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassWest) ||
-	   is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassNorth))
+	if (is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassWest) ||
+		is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassNorth))
 	{
 		result_vec.push_back(pos_nw);
 	}
-	if(is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassWest) ||
-	   is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassSouth))
+	if (is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassWest) ||
+		is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassSouth))
 	{
 		result_vec.push_back(pos_sw);
 	}
-	if(is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassEast) ||
-	   is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassNorth))
+	if (is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassEast) ||
+		is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassNorth))
 	{
 		result_vec.push_back(pos_ne);
 	}
-	if(is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassEast) ||
-	   is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassSouth))
+	if (is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassEast) ||
+		is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassSouth))
 	{
 		result_vec.push_back(pos_se);
 	}
@@ -1146,13 +1147,13 @@ MapGridder::PosTempList MapGridder::get_good_positions_by_doorways(Room const& r
 	for (int y = y_min + 1; y < y_max; ++y)
 	{
 		Vec2 pos_west{ x_min, y };
-		if(is_good_position_by_doorways(room, pos_west, CompassDirection::c_CompassWest))
+		if (is_good_position_by_doorways(room, pos_west, CompassDirection::c_CompassWest))
 		{
 			result_vec.push_back(pos_west);
 		}
 
 		Vec2 pos_east{ x_max, y };
-		if(is_good_position_by_doorways(room, pos_east, CompassDirection::c_CompassEast))
+		if (is_good_position_by_doorways(room, pos_east, CompassDirection::c_CompassEast))
 		{
 			result_vec.push_back(pos_east);
 		}
@@ -1163,13 +1164,13 @@ MapGridder::PosTempList MapGridder::get_good_positions_by_doorways(Room const& r
 	for (int x = x_min + 1; x < x_max; ++x)
 	{
 		Vec2 pos_north{ x, y_min };
-		if(is_good_position_by_doorways(room, pos_north, CompassDirection::c_CompassNorth))
+		if (is_good_position_by_doorways(room, pos_north, CompassDirection::c_CompassNorth))
 		{
 			result_vec.push_back(pos_north);
 		}
 
 		Vec2 pos_south{ x, y_max };
-		if(is_good_position_by_doorways(room, pos_south, CompassDirection::c_CompassSouth))
+		if (is_good_position_by_doorways(room, pos_south, CompassDirection::c_CompassSouth))
 		{
 			result_vec.push_back(pos_south);
 		}

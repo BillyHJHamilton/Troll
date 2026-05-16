@@ -46,8 +46,6 @@ namespace Gingerbread
 	void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
 		FloatTempList& out_weights, Creature::Habitat habitat = Creature::Habitat::None);
 
-	//Creature::Type find_type_to_spawn (float target_difficulty);
-
 	void claim_identity(Creature::Handle creature);
 	void release_identity(Creature::Handle creature);
 

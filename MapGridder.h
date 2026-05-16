@@ -70,25 +70,25 @@ protected:
 	bool is_inside_east_west_wall(Vec2 const & pos) const;
 	bool is_inside_north_south_wall(Vec2 const & pos) const;
 	bool is_by_east_wall(Vec2 const & pos) const
-	{	return is_inside_north_south_wall(Vec2{ pos.x + 1, pos.y });	}
+		{	return is_inside_north_south_wall(Vec2{ pos.x + 1, pos.y });	}
 	bool is_by_north_wall(Vec2 const & pos) const
-	{	return is_inside_east_west_wall(Vec2{ pos.x, pos.y - 1 });	}
+		{	return is_inside_east_west_wall(Vec2{ pos.x, pos.y - 1 });	}
 	bool is_by_west_wall(Vec2 const & pos) const
-	{	return is_inside_north_south_wall(Vec2{ pos.x - 1, pos.y });	}
+		{	return is_inside_north_south_wall(Vec2{ pos.x - 1, pos.y });	}
 	bool is_by_south_wall(Vec2 const & pos) const
-	{	return is_inside_east_west_wall(Vec2{ pos.x, pos.y + 1 });	}
+		{	return is_inside_east_west_wall(Vec2{ pos.x, pos.y + 1 });	}
 
 	bool is_good_corridor_end(Vec2 const & pos) const;
 	bool is_inside_corridor_X(Vec2 const & pos) const;
 	bool is_inside_corridor_Y(Vec2 const & pos) const;
 	bool is_by_east_corridor(Vec2 const & pos) const
-	{	return is_inside_corridor_X(Vec2{ pos.x + 1, pos.y });	}
+		{	return is_inside_corridor_X(Vec2{ pos.x + 1, pos.y });	}
 	bool is_by_north_corridor(Vec2 const & pos) const
-	{	return is_inside_corridor_Y(Vec2{ pos.x, pos.y - 1 });	}
+		{	return is_inside_corridor_Y(Vec2{ pos.x, pos.y - 1 });	}
 	bool is_by_west_corridor(Vec2 const & pos) const
-	{	return is_inside_corridor_X(Vec2{ pos.x - 1, pos.y });	}
+		{	return is_inside_corridor_X(Vec2{ pos.x - 1, pos.y });	}
 	bool is_by_south_corridor(Vec2 const & pos) const
-	{	return is_inside_corridor_Y(Vec2{ pos.x, pos.y + 1 });	}
+		{	return is_inside_corridor_Y(Vec2{ pos.x, pos.y + 1 });	}
 	bool is_by_corridor(Vec2 const& pos, CompassDirection dir) const;
 
 

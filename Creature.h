@@ -133,20 +133,20 @@ namespace Creature
 	enum class Tag : int
 	{
 		None = c_Invalid,
-		Difficulty_Ignore,	// Full chance of adding, regadrless of difficulty
-		Bot_Blunder,		// Rarely stays in rest mode for long.
-		Bot_Sidestep,		// When not attacking, circles its target.
-		Colour_Rainbow,		// Cycles between rainbow colours.
-		Evade_Medium,		// It gains an innate +12 bonus to evasion.
-		Evade_High,			// It gains an innate +25 bonus to evasion.
-		Faint_Disappear,	// When defeated, disappears instead of fainting.
-		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
-		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
-		Move_Slow,			// It needs to skip a turn before moving.
-		Shop,				// Character acts as a shop instead of fighting.
-		Spells_Random,		// Will be assigned some random spells near its skill level.
-		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
-		Vision_Short,		// Can only see 3 squares instead of 8.
+		Bot_Blunder,			// Rarely stays in rest mode for long.
+		Bot_Sidestep,			// When not attacking, circles its target.
+		Colour_Rainbow,			// Cycles between rainbow colours.
+		Evade_Medium,			// It gains an innate +12 bonus to evasion.
+		Evade_High,				// It gains an innate +25 bonus to evasion.
+		Faint_Disappear,		// When defeated, disappears instead of fainting.
+		Immune_Clothes,			// No clothes, so immune to having clothes set on fire.
+		Immune_Legs,			// No legs, so immune to dancing, leg-locker, etc.
+		Move_Slow,				// It needs to skip a turn before moving.
+		Shop,					// Character acts as a shop instead of fighting.
+		Spawn_IgnoreDifficulty,	// Full chance of adding, regardless of difficulty
+		Spells_Random,			// Will be assigned some random spells near its skill level.
+		Trail_Slime,			// Leaves a trail of slime clouds when it moves.
+		Vision_Short,			// Can only see 3 squares instead of 8.
 		Count
 	};
 	using TagBitset = std::bitset<(std::size_t)Tag::Count>;

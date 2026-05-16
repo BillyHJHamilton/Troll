@@ -39,7 +39,7 @@ namespace Terrain
 		MonsterTrap,  // spawns a monster
 		MonsterTrapAmbush,  // spawns a monster, retriggers when it dies
 		TriggerDelay,  // never place this, it will be added during the game
-		TriggerOnMonsterDead,  // never place this, it will be added during the game
+		TriggerOnMonsterDefeat,  // never place this, it will be added during the game
 		ShopSeed,
 
 		Count

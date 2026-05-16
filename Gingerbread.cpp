@@ -378,8 +378,8 @@ void init()
 		/*Difficulty*/ -0.5f, /*Probability*/ 0.5f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
 		.habitats(Habitat::Hogwarts)
-		.tags(Tag::Difficulty_Ignore, Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes,
-			Tag::Immune_Legs, Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
+		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
+			Tag::Move_Slow, Tag::Spawn_IgnoreDifficulty, Tag::Trail_Slime, Tag::Vision_Short)
 		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
@@ -655,7 +655,7 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 	{
 		Gingerbread::Stats const& stats = s_gingerbread[type];
 		bool is_difficulty_ignore = has_tag((Creature::Type)type,
-			Creature::Tag::Difficulty_Ignore);
+			Creature::Tag::Spawn_IgnoreDifficulty);
 
 		bool is_difficulty_in_range = is_difficulty_ignore ? true :
 			Spawn::difficulty_in_range(stats.difficulty, target_difficulty);
@@ -686,28 +686,7 @@ void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_lis
 		}
 	}
 }
-/*
-Creature::Type find_type_to_spawn (float target_difficulty)
-{
-	Spawn::OptionTempList options;
-	FloatTempList weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
 
-	find_spawn_options(target_difficulty, options, weights);
-
-	if (Util::Size(options) > 0)
-	{
-		int const choice = Random::weighted_index(weights);
-		assert(Util::IsValidIndex(options, choice));
-		return (Creature::Type)options.at(choice).index;
-	}
-	else
-	{
-		return Creature::None;
-	}
-}
-*/
 void claim_identity(Creature::Handle creature)
 {
 	Creature::Type const type = creature.type();
