@@ -69,6 +69,8 @@ char const* cstr_TriggerFailed = "You hear a clunk.";
 // Helper declarations
 
 Itr find_feature(Vec3 pos);
+bool requires_trigger(Terrain::Type terrain);
+bool is_never_spawned_directly(Terrain::Type terrain);
 Itr add_feature_internal(Vec3 pos, Terrain::Type terrain, int hp, int trigger, int payload);
 void remove_feature(Feature::Itr feature, Terrain::Type new_terrain_type);
 
@@ -146,39 +148,20 @@ void spawn(Vec3 pos, Terrain::Type type)
 			case Terrain::ShopSeed:
 				register_for_updates(new_feature);
 				break;
-			// special initialization
-			case Terrain::PressurePlate:
-			case Terrain::TripwireX:
-			case Terrain::TripwireY:
-			case Terrain::FlipendoButton:
-			case Terrain::SlidingWall:
-			case Terrain::Portcullis:
-			case Terrain::PortcullisTrap:
-			case Terrain::MonsterTrap:
-			case Terrain::MonsterTrapAmbush:
-				// TODO: Is there some better way to check this?
-				//   -> And the other half in the spawn-with-trigger variant
-				// TODO: Can we say which feature?
-				DebugBreak("Spawn Feature with trigger");
+			default:
+				if (is_never_spawned_directly(type))
+				{
+					std::string message =
+						std::format("Never spawn Feature {} directly", (int)(type));
+					DebugBreak(message.c_str());
+				}
+				else if (requires_trigger(type))
+				{
+					std::string message =
+						std::format("Never spawn Feature {} without trigger", (int)(type));
+					DebugBreak(message.c_str());
+				}
 				break;
-			case Terrain::DoorColloportus:
-				DebugBreak("Never spawn DoorColloportus directly");
-				break;
-			case Terrain::TriggerDelay:
-				// TODO: Can these be collapsed into 1 case that says which feature?
-				DebugBreak("Never spawn TriggerDelay directly");
-				break;
-			case Terrain::TriggerOnMonsterDefeat:
-				DebugBreak("Never spawn TriggerOnMonsterDefeat directly");
-				break;
-			// no initialization needed - TODO: Do we need these?
-			// case Terrain::Armour:
-			// case Terrain::TorchUnlit:  // cosmetic torch, can also spawn as trigger
-			// case Terrain::TorchLit:
-			// case Terrain::Portrait:
-			// case Terrain::Ectoplasm:
-			// case Terrain::DoorOpen:
-			// case Terrain::DoorLocked:
 		}
 	}
 }
@@ -198,16 +181,22 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 			case Terrain::TripwireY:
 				register_for_updates(new_feature);
 				break;
-			case Terrain::TorchUnlit:  // can also spawn as cosmetic (no trigger)
-			case Terrain::FlipendoButton:
-			case Terrain::SlidingWall:
-			case Terrain::Portcullis:
-			case Terrain::PortcullisTrap:
-			case Terrain::MonsterTrap:
-			case Terrain::MonsterTrapAmbush:
+			case Terrain::TorchUnlit:
+				// no updates needed, but can also spawn as cosmetic (no trigger)
 				break;
 			default:
-				DebugBreak("Spawn Feature without trigger");
+				if (is_never_spawned_directly(type))
+				{
+					std::string message =
+						std::format("Never spawn Feature {} directly", (int)(type));
+					DebugBreak(message.c_str());
+				}
+				else if (!requires_trigger(type))
+				{
+					std::string message =
+						std::format("Never spawn Feature {} with trigger", (int)(type));
+					DebugBreak(message.c_str());
+				}
 				break;
 		}
 	}
@@ -256,6 +245,39 @@ Feature::Itr find_feature(Vec3 pos)
 {
 	int const index = s_features.find_index_by_key(&Feature::Instance::pos, pos);
 	return s_features.get_itr(index);
+}
+
+bool requires_trigger(Terrain::Type terrain)
+{
+	switch (terrain)
+	{
+		//case Terrain::TorchUnlit:  can spawn with or without trigger
+		case Terrain::PressurePlate:
+		case Terrain::TripwireX:
+		case Terrain::TripwireY:
+		case Terrain::FlipendoButton:
+		case Terrain::SlidingWall:
+		case Terrain::Portcullis:
+		case Terrain::PortcullisTrap:
+		case Terrain::MonsterTrap:
+		case Terrain::MonsterTrapAmbush:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool is_never_spawned_directly(Terrain::Type terrain)
+{
+	switch (terrain)
+	{
+		case Terrain::DoorColloportus:
+		case Terrain::TriggerDelay:
+		case Terrain::TriggerOnMonsterDefeat:
+			return true;
+		default:
+			return false;
+	}
 }
 
 Feature::Itr add_feature_internal(Vec3 pos, Terrain::Type terrain,

@@ -35,9 +35,9 @@ namespace Terrain
 		DoorColloportus,  // never place this, it will be added during the game
 		SlidingWall,
 		Portcullis,
-		PortcullisTrap,  // spawns a portcullis
+		PortcullisTrap,  // spawns a portcullis, trigger again to remove
 		MonsterTrap,  // spawns a monster
-		MonsterTrapAmbush,  // spawns a monster, retriggers when it dies
+		MonsterTrapAmbush,  // spawns a monster, retriggers when it is defeated
 		TriggerDelay,  // never place this, it will be added during the game
 		TriggerOnMonsterDefeat,  // never place this, it will be added during the game
 		ShopSeed,
