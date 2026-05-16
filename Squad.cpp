@@ -13,51 +13,76 @@
 namespace Squad
 {
 
+//------------------------------------------------------------------------------
+// Helper functions for initialization
+
+// If this gets long, there could be a Builder class as in Gingerbread.cpp.
+
+void habitats(Creature::HabitatBitset & out, Creature::Habitat new_habitat)
+{
+	out.set((int)(new_habitat), true);
+}
+
+template<class ... Packed>
+void habitats(Creature::HabitatBitset & out, Creature::Habitat new_habitat, Packed... args)
+{
+	habitats(out, new_habitat);
+	habitats(out, args...);
+}
+
+template<class ... Packed>
+Creature::HabitatBitset habitats(Creature::Habitat new_habitat, Packed... args)
+{
+	Creature::HabitatBitset result;
+	habitats(result, new_habitat, args...);
+	return result;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Data
 
 static std::vector<Squad::Definition> const s_squads =
 {
 	{ .debug_name="Streeler Squad", .difficulty=0.2f, .probability=0.4f,
-	  .habitats=0x2,  // set as bits, don't spawn in Hogwarts
+	  .habitats=habitats(Creature::Habitat::Trap),
 	  .flags=f_Repeat, .members={
 		{Creature::Streeler, 2,3},
 	}},
 
 	{ .debug_name="Gnome Squad", .difficulty=1.0f, .probability=0.4f,
-	  .habitats=0x1,  // set as bits, TODO: How should this be done?
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Gnome, 2,5},
 	}},
 
 	{ .debug_name="Puff Posse", .difficulty=1.5f, .probability=0.1f,
-	  .habitats=0x1,  // set as bits
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Hufflepuff_1, 3,4}
 	}},
 
 	{ .debug_name="Crabbe and Goyle", .difficulty=3.0f, .probability=1.0f,
-	  .habitats=0x1,  // set as bits
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_None, .members={
 		{Creature::Crabbe_3},
 		{Creature::Goyle_3},
 	}},
 
 	{ .debug_name="Crab Squad", .difficulty=3.0f, .probability=0.3f,
-	  .habitats=0x3,  // set as bits, Hogwarts and trap
+	  .habitats=habitats(Creature::Habitat::Hogwarts, Creature::Habitat::Trap),
 	  .flags=f_Repeat, .members={
 		{Creature::BigFireCrab},
 		{Creature::FireCrab, 2,3},
 	}},
 
 	{ .debug_name="Imp Nest", .difficulty=3.0f, .probability=0.3f,
-	  .habitats=0x1,  // set as bits
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Imp, 2,3},
 	}},
 
 	{ .debug_name="Doxy Nest", .difficulty=4.0f, .probability=0.3f,
-	  .habitats=0x1,  // set as bits
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Doxy, 4,6},
 	}},
