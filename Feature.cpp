@@ -151,13 +151,13 @@ void spawn(Vec3 pos, Terrain::Type type)
 			default:
 				if (is_never_spawned_directly(type))
 				{
-					std::string message =
+					std::string const message =
 						std::format("Never spawn Feature {} directly", (int)(type));
 					DebugBreak(message.c_str());
 				}
 				else if (requires_trigger(type))
 				{
-					std::string message =
+					std::string const message =
 						std::format("Never spawn Feature {} without trigger", (int)(type));
 					DebugBreak(message.c_str());
 				}
@@ -187,13 +187,13 @@ void spawn(Vec3 pos, Terrain::Type type, int trigger)
 			default:
 				if (is_never_spawned_directly(type))
 				{
-					std::string message =
+					std::string const message =
 						std::format("Never spawn Feature {} directly", (int)(type));
 					DebugBreak(message.c_str());
 				}
 				else if (!requires_trigger(type))
 				{
-					std::string message =
+					std::string const message =
 						std::format("Never spawn Feature {} with trigger", (int)(type));
 					DebugBreak(message.c_str());
 				}
@@ -284,7 +284,7 @@ Feature::Itr add_feature_internal(Vec3 pos, Terrain::Type terrain,
                                   int hp, int trigger, int payload)
 {
 	World::edit().set_terrain(pos, terrain);
-	int new_index = s_features.insert({
+	int const new_index = s_features.insert({
 		.pos = pos,
 		.hp = hp,
 		.trigger = trigger,
@@ -372,8 +372,7 @@ void init_desk(Feature::Itr feature)
 void update_feature(Feature::Itr feature)
 {
 	assert(feature.valid());
-	Terrain::Type feature_type = World::read().get_terrain(feature->pos);
-	switch (feature_type)
+	switch (World::read().get_terrain(feature->pos))
 	{
 		case Terrain::PressurePlate:
 			update_pressure_plate(feature);
@@ -417,7 +416,7 @@ void update_tripwire(Feature::Itr feature, Axis check_axis)
 {
 	assert(check_axis == c_AxisX || check_axis == c_AxisY);
 
-	Axis other_axis = get_other_axis(check_axis);
+	Axis const other_axis = get_other_axis(check_axis);
 	if (Player::pos().z == feature->pos.z &&
 	    Player::pos()[other_axis] == feature->pos[other_axis])
 	{
@@ -494,8 +493,8 @@ void update_trigger_on_monster_defeat(Feature::Itr feature)
 	Creature::Handle creature = (Creature::Handle)feature->payload;
 	if (!creature.valid())
 	{
-		int trigger = feature->trigger;
-		int feature_count = count_features_of_a_type_with_trigger(
+		int const trigger = feature->trigger;
+		int const feature_count = count_features_of_a_type_with_trigger(
 			Terrain::TriggerOnMonsterDefeat, trigger);
 		if (feature_count <= 1)
 		{
@@ -702,8 +701,7 @@ void trigger_all(int trigger)
 			continue;
 		}
 
-		Terrain::Type feature_type = World::read().get_terrain(feature->pos);
-		switch (feature_type)
+		switch (World::read().get_terrain(feature->pos))
 		{
 		case Terrain::PressurePlate:
 		case Terrain::TripwireX:
@@ -765,7 +763,7 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 	int constexpr c_AmbushLockedTime = 100;
 
 	float const difficulty = World::read().find_map_difficulty(feature->pos);
-	Spawn::Option option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
+	Spawn::Option const option = Spawn::choose_spawn_option(difficulty, Creature::Habitat::Trap);
 
 	Creature::HandleList creature_list;
 	creature_list.reserve(Squad::c_MaxSquadSize);
@@ -784,13 +782,14 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 
 		if (!spawn_positions.empty())
 		{
-			Vec3 spawn_pos = spawn_positions[0];
+			Vec3 const spawn_pos = spawn_positions[0];
 			Creature::Type const creature_type = (Creature::Type)option.index;
 			assert(Creature::is_valid_type(creature_type));
-			Creature::Handle creature = Creature::spawn_creature(creature_type, spawn_pos);
+			Creature::Handle const creature = Creature::spawn_creature(creature_type, spawn_pos);
 			creature_list.push_back(creature);
 
-			Grammar::NameParam param {.capitalize = true, .mode = Grammar::NameParam::Indefinite};
+			Grammar::NameParam const param {.capitalize = true,
+			                                .mode = Grammar::NameParam::Indefinite};
 			Draw::pos_message(spawn_pos, std::format("{} {} in.",
 				Grammar::format_name(creature, param), Grammar::verbs("drop", creature)),
 				creature.colour());
@@ -813,7 +812,7 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 
 		// drop as close to desired cell as possible
 		//  -> they can land around the player
-		int squad_index = Spawn::spawn_squad(option.index, feature->pos, true);
+		int const squad_index = Spawn::spawn_squad(option.index, feature->pos, true);
 		if (squad_index != c_Invalid)
 		{
 			creature_list = Squad::get_squad(squad_index);
@@ -872,12 +871,12 @@ void trigger_monster_trap(Feature::Itr feature, bool is_retrigger_on_defeat)
 		//  -> Or one for all the spawned creatures, if the datastructure supports that
 		//  -> Also for the "locked in without enemies" trigger above
 
-		int map_z = feature->pos.z;
+		int const map_z = feature->pos.z;
 		int creature_index = 0;
 		Box2 check_area = Box2::around_tile(feature->pos.xy(), 5);
 		for (Vec2 const& pos : check_area)
 		{
-			Vec3 pos3 = pos.xyz(map_z);
+			Vec3 const pos3 = pos.xyz(map_z);
 			if (World::read().get_terrain(pos3) == Terrain::Open)
 			{
 				Feature::Itr new_feature = add_feature_internal(
