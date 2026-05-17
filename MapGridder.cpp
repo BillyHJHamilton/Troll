@@ -11,6 +11,7 @@
 #include "World.h"
 
 #include <cassert>
+#include <climits>
 
 MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	: m_map(map)
@@ -21,13 +22,14 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 	// Room positions are all in global space.
 
-	// Pass 0: Fill map with walls
+	// Phase 0: Fill map with walls
 
 	m_map.fill(Terrain::Wall);
 
-	// Pass 1: Add basic rooms shapes
+	// Phase 1: Add basic rooms shapes
 	//   -> including stairs
 	//   -> it's only safe to look in the grid representation for the current room
+	//   -> we can add these in any order because they never overlap
 
 	for (int i = 0; i < m_generator.GetRoomCount(); ++i)
 	{
@@ -41,10 +43,10 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	//   -> open space on the map is available for any function to use
 	//     -> first come, first served
 	//     -> once used, turn it into some other terrain
-	//     -> don't replace terrain that isn't "good" (can_spawn floor and walls)
+	//     -> don't replace terrain that isn't "good" (floor with can_spawn or wall)
 	//     -> to reserve open floor space for later use, replace it with Terrain::Placeholder
 
-	// Pass 2: Add important features
+	// Phase 2: Add important features
 	//   -> choose chest locations (chests will be added with Items)
 	//   -> shop location
 	//   -> secret areas and secret passages
@@ -62,11 +64,13 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 	{
 		if (m_generator.GetRoom(index).IsCorridor())
 		{
-			add_corridor_doors(index);
+			add_locked_doors(index);
 		}
 	}
 
-	// Pass 3: Add cosmetic features
+	add_all_ambush_chambers();
+
+	// Phase 3: Add cosmetic features
 	//   -> armour, desks, cosmetic torches
 
 	Random::shuffle_vector(index_list);
@@ -87,9 +91,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 		}
 	}
 
-	// Do we want a spawn suggestions pass?
-
-	// Pass 4: Add items (and chests)
+	// Phase 4: Add items (and chests) and do cleanup
 
 	Spawn::spawn_early(m_map, map_id);
 	replace_all(Terrain::Placeholder, Terrain::Open);
@@ -105,7 +107,7 @@ MapGridder::MapGridder(Map& map, MapGenerator& generator, int map_id)
 
 
 //-----------------------------------------------------------------------------
-// Pass 1 functions
+// Phase 1 functions - basic room shapes
 
 void MapGridder::add_basic(int room_index) const
 {
@@ -139,7 +141,7 @@ void MapGridder::add_basic(int room_index) const
 
 
 //-----------------------------------------------------------------------------
-// Pass 2 functions
+// Phase 2 functions - important features
 
 void MapGridder::add_treasure_suggestions() const
 {
@@ -151,14 +153,29 @@ void MapGridder::add_treasure_suggestions() const
 			continue;
 		}
 
-		// TODO: Ignore secret passges when counting exits?
+		// We cannot exclude secret passages as neighbours
+		//  -> the room then has multiple entrances, and thus no longer has a well-defined back
+		//  -> the treasure can appear blocking the secret passage
+		//    -> or the main entrance, if the passage is treated as the front
+
 		if (room.GetNeighbourCount() == 1)
 		{
 			// end room of region or 1-room attic
+			int const neighbourIndex = room.GetNeighbours()[0];
+			Vec2 const entrance_pos = get_door_pos(m_generator.GetRoom(neighbourIndex), room);
+			Vec2 const treasure_pos = get_pos_at_room_back(room, entrance_pos);
+			m_map.set_terrain(treasure_pos, Terrain::Placeholder);
 
-			Vec2 pos = get_pos_at_room_back(room);
-			m_map.edit_suggestions().add_treasure_normal(pos);
-			m_map.set_terrain(pos, Terrain::Placeholder);
+			Vec2 const monster_pos = get_pos_at_room_back(room, treasure_pos);
+			bool too_close = rounded_range(treasure_pos, monster_pos, 2);
+			if (too_close)
+			{
+				m_map.edit_suggestions().add_treasure(treasure_pos);
+			}
+			else
+			{
+				m_map.edit_suggestions().add_treasure(treasure_pos, monster_pos);
+			}
 		}
 	}
 }
@@ -181,18 +198,13 @@ void MapGridder::add_shop_seed() const
 		for (int pos_index : pos_index_list)
 		{
 			Vec2 const& shop_centre = pos_vec[pos_index];
-			Box2 shop_area = Box2::around_tile(shop_centre, 1);
+			Box2 const shop_area = Box2::around_tile(shop_centre, 1);
 			if (is_good_floor(shop_area))
 			{
 				m_map.fill_box(shop_area, Terrain::OpenNoSpawn);
 
-				int map_z = m_map.get_z();
+				int const map_z = m_map.get_z();
 				Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed);
-
-				//int trigger = Feature::get_new_trigger();
-				//Vec2 scan_from = shop_centre + c_Compass[Random::compass_direction(false)];
-				//Feature::spawn(scan_from  .xyz(map_z), Terrain::Scanner,  trigger);
-				//Feature::spawn(shop_centre.xyz(map_z), Terrain::ShopSeed, trigger);
 
 				if (Debug::enabled(Debug::Map))
 				{
@@ -204,12 +216,12 @@ void MapGridder::add_shop_seed() const
 	}
 }
 
-void MapGridder::add_corridor_doors(int room_index) const
+void MapGridder::add_locked_doors(int room_index) const
 {
 	Room const& room = m_generator.GetRoom(room_index);
 	if (!room.IsCorridor())
 	{
-		DebugBreak("Only use MapGridder::add_corridor_doors for corridors.");
+		DebugBreak("Only use MapGridder::add_locked_doors for corridors.");
 	}
 
 	if (room.GetRegion() != Room::c_MainRegion &&
@@ -222,72 +234,82 @@ void MapGridder::add_corridor_doors(int room_index) const
 		Room const & neighbour0 = m_generator.GetRoom(room.GetNeighbours()[0]);
 		Room const & neighbour1 = m_generator.GetRoom(room.GetNeighbours()[1]);
 
-		// the ends of the hallway aren't hard to find, but which is which?
-		Vec2 door0 = room.GetBox().min;
-		Vec2 door1 = room.GetBox().inner_max();
-		Vec2 const neighbour0_Center = neighbour0.GetBox().centre();
-		if (square_dist(neighbour0_Center, door1) <
-			square_dist(neighbour0_Center, door0))
-		{
-			Vec2 temp = door0;
-			door0 = door1;
-			door1 = temp;
-		}
-
 		// secret passage - both ends locked
 		int const parent_region = m_generator.GetRegionParent(room.GetRegion());
 		if (parent_region == Room::c_SecretPassage)
 		{
-			// don't spawn anything in the passage itself
-			//  -> it's OK if things spawn where the doors were after the passage is open
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-
-			add_secret_passage(room, neighbour0, door0, neighbour1, door1);
+			// choose a random end to be the outside
+			if (Random::coinflip())
+			{
+				add_secret_corridor(room, /* allow_open */ false, neighbour0, neighbour1);
+			}
+			else
+			{
+				add_secret_corridor(room, /* allow_open */ false, neighbour1, neighbour0);
+			}
 			return;
 		}
 
 		// secret area - only 1 end locked
 		if (neighbour0.GetRegion() == parent_region)
 		{
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-			add_secret_area(room, neighbour0, door0);
+			add_secret_corridor(room, /* allow_open */ true, neighbour0, neighbour1);
 			return;
 		}
 		else if (neighbour1.GetRegion() == parent_region)
 		{
-			m_map.fill_box(room.GetBox(), Terrain::OpenNoSpawn);
-			add_secret_area(room, neighbour1, door1);
+			add_secret_corridor(room, /* allow_open */ true, neighbour1, neighbour0);
 			return;
 		}
 	}
 }
 
-void MapGridder::add_secret_area(Room const & room,
-                                 Room const & neighbour, Vec2 const & door) const
+void MapGridder::add_secret_corridor(Room const & corridor, bool allow_open,
+                                     Room const & outside, Room const & inside) const
 {
-	// TODO: Doors on both ends of the entrace corridor?
-	//  -> secret passages let you reach the secret area from the wrong end
-	//  -> with triggers, both would open together
-	//  -> I think add_unlocked_door might now add one anyway
-
 	int const map_z = m_map.get_z();
 
-	PosTempList const button_pos_list = get_good_positions_inside_wall(neighbour);
-	PosTempList const torch_pos_list  = choose_torch_positions(neighbour);
+	Vec2 const door_outside = get_door_pos(corridor, outside);
+	Vec2 const door_inside  = get_door_pos(corridor, inside);
 
-	bool const is_allow_button = !button_pos_list.empty();
-	bool const is_allow_torch  = ! torch_pos_list.empty();
-	Door::TriggerType const trigger_type =
-		m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
+	PosTempList const button_outside_pos_list = get_good_positions_inside_wall(outside);
+	PosTempList const button_inside_pos_list  = get_good_positions_inside_wall(inside);
+
+	// Can trigger on torches, but then the passage only opens from one side
+	PosTempList const torch_pos_list = choose_torch_positions(outside);
+
+	bool const is_allow_button = !button_outside_pos_list.empty();
+	bool const is_allow_torch  = !torch_pos_list.empty();
+	Door::TriggerType const trigger_type = m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
+
+	// don't spawn anything in the passage itself
+	//  -> it's OK if things spawn where the doors were after the passage is open
+	m_map.fill_box(corridor.GetBox(), Terrain::OpenNoSpawn);
 
 	bool const is_allow_trigger = trigger_type != Door::TriggerType::NotPossible;
-	switch(m_doors.choose_locked_genus(/* allow none */ true, is_allow_trigger))
+	switch(m_doors.choose_locked_genus(allow_open, is_allow_trigger))
 	{
 		case Door::LockedGenus::Spell:
 		{
-			Door::Spelled const door_type = m_doors.choose_spelled();
-			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door.xyz(map_z), door_terrain);
+			Door::Spelled const door_type      = m_doors.choose_spelled();
+			Terrain::Type const door_terrain   = Door::get_terrain(door_type);
+			Terrain::Type const inside_terrain = Door::get_match_terrain(door_type);
+			switch (Door::get_placement(door_type, corridor.CorridorLength()))
+			{
+				case Door::Placement::Entrance:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain);
+					break;
+				case Door::Placement::BothEnds:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain);
+					Feature::spawn(door_inside .xyz(map_z), inside_terrain);
+					break;
+				case Door::Placement::Along:
+				{
+					Vec2 random_pos = Random::in_box(corridor.GetBox());
+					Feature::spawn(random_pos.xyz(map_z), door_terrain);
+					break;
+				}
+			}
 			break;
 		}
 
@@ -295,16 +317,41 @@ void MapGridder::add_secret_area(Room const & room,
 		{
 			int const trigger = Feature::get_new_trigger();
 
-			Door::Triggered const door_type = m_doors.choose_triggered();
-			Terrain::Type   const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door.xyz(map_z), door_terrain, trigger);
+			Door::Triggered const door_type      = m_doors.choose_triggered();
+			Terrain::Type   const door_terrain   = Door::get_terrain(door_type);
+			Terrain::Type   const inside_terrain = Door::get_match_terrain(door_type);
 
+			switch (Door::get_placement(door_type, corridor.CorridorLength()))
+			{
+				case Door::Placement::Entrance:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain, trigger);
+					break;
+				case Door::Placement::BothEnds:
+					Feature::spawn(door_outside.xyz(map_z), door_terrain,   trigger);
+					Feature::spawn(door_inside .xyz(map_z), inside_terrain, trigger);
+					break;
+				case Door::Placement::Along:
+				{
+					Vec2 random_pos = Random::in_box(corridor.GetBox());
+					Feature::spawn(random_pos.xyz(map_z), door_terrain, trigger);
+					break;
+				}
+			}
+
+			bool is_2_triggers = false;
 			switch (trigger_type)
 			{
 				case Door::TriggerType::FlipendoButton:
 				{
-					Vec2 const button = Random::from_vector(button_pos_list);
-					Feature::spawn(button.xyz(map_z), Terrain::FlipendoButton, trigger);
+					Vec2 const button_outside = Random::from_vector(button_outside_pos_list);
+					Feature::spawn(button_outside.xyz(map_z), Terrain::FlipendoButton, trigger);
+
+					if (!button_inside_pos_list.empty() && Random::coinflip())
+					{
+						Vec2 const button_inside = Random::from_vector(button_inside_pos_list);
+						Feature::spawn(button_inside.xyz(map_z), Terrain::FlipendoButton, trigger);
+						is_2_triggers = true;
+					}
 					break;
 				}
 				case Door::TriggerType::LightTorch:
@@ -317,99 +364,150 @@ void MapGridder::add_secret_area(Room const & room,
 				}
 			}
 
-			// TODO: Could sometimes add a fire crab trap (if there is a trigger)
-			//  -> it would appear in the neighbour room
-			break;
+			if (is_2_triggers == false &&
+				Random::in_range(0, 99) < m_generator.ReadParameters().percent_monster_on_trigger)
+			{
+				PosTempList const trap_pos_list = get_good_positions_away_from_wall(outside);
+				if (!trap_pos_list.empty())
+				{
+					Vec2 trap_pos = Random::from_vector(trap_pos_list);
+					Feature::spawn(trap_pos.xyz(map_z), Terrain::MonsterTrap, trigger);
+				}
+			}
+
+			break;  // case Door::LockedGenus::Trigger:
 		}
 	}
 }
 
-void MapGridder::add_secret_passage(Room const & room,
-                                    Room const & neighbour0, Vec2 const & door0,
-                                    Room const & neighbour1, Vec2 const & door1) const
+void MapGridder::add_all_ambush_chambers() const
 {
+	MapGenerator::Parameters const& param = m_generator.ReadParameters();
+	int desired = Random::in_range(param.MinAmbushRooms, param.MaxAmbushRooms);
+	if (desired == 0)
+	{
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << "Did not try to place any ambush rooms.\n";
+		}
+		return;  // that was easy
+	}
+
+	IntTempList index_list = Util::GetIndices(m_generator.GetRoomVector());
+	Random::shuffle_vector(index_list);
+
+	int placed = 0;
+	for (int index : index_list)
+	{
+		if (m_generator.GetRoom(index).IsChamber())
+		{
+			bool success = add_ambush_chamber(index);
+			if (success)
+			{
+				++placed;
+				if (placed >= desired)
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	if (Debug::enabled(Debug::Map))
+	{
+		std::cout << std::format("Placed {} / {} ambush rooms.\n",
+			placed, desired);
+	}
+}
+
+bool MapGridder::add_ambush_chamber(int room_index) const
+{
+	// For a proper ambush room:
+	//  1. These is a tripwire across the floor in one direction
+	//  2. It you touch the tripwire, the ambush activates
+	//   -> an enemy (or squad) drops in
+	//   -> portcullises block all exits
+	//  3. When you defeat the enemy, the portcullises open again
+
+	Room const& room = m_generator.GetRoom(room_index);
+	if (!room.IsChamber())
+	{
+		DebugBreak("Only use MapGridder::add_ambush_chamber for chambers.");
+	}
+
+	Axis const long_axis = get_long_axis(room.GetBox().size);
+	if (room.GetBox().size[long_axis] < 5)
+	{
+		return false;  // not enough room for an ambush
+	}
+
+	// Find all the doors.
+
+	PosTempList doors;
+	for (int neighbour_index : room.GetNeighbours())
+	{
+		Room const& neighbour = m_generator.GetRoom(neighbour_index);
+		Vec2 const door_pos = get_door_pos(neighbour, room);
+		if (!is_good_floor(door_pos))
+		{
+			return false;  // there is an exit we can't drop a portcullis across
+		}
+		doors.push_back(door_pos);
+	}
+
+	// Find positions for tripwire and enemy spawn.
+	//  -> The tripwire should be at the end of the chamber with the doors
+
+	int const room_min = room.GetBox().min[long_axis];
+	int const room_max = room.GetBox().inner_max(long_axis);
+
+	int door_from_min = INT_MAX;
+	int door_from_max = INT_MAX;
+	for (Vec2 const& door_pos : doors)
+	{
+		int const here_from_min = door_pos[long_axis] - room_min;
+		int const here_from_max = room_max - door_pos[long_axis];
+		door_from_min = std::min(door_from_min, here_from_min);
+		door_from_max = std::min(door_from_max, here_from_max);
+	}
+
+	Vec2 const centre = room.GetBox().centre();
+	Vec2 tripwire_pos = centre;
+	tripwire_pos[long_axis] = room_min + 1;
+	Vec2 spawn_pos = centre;
+	spawn_pos[long_axis] = room_max - 1;
+	if (door_from_max < door_from_min ||
+		(door_from_max == door_from_min && Random::coinflip()))
+	{
+		std::swap(tripwire_pos, spawn_pos);
+	}
+
+	if (!is_good_floor(tripwire_pos) || !is_good_floor(spawn_pos))
+	{
+		return false;  // something is in the way
+	}
+
+	// Add the ambush
+
 	int const map_z = m_map.get_z();
+	int const trigger = Feature::get_new_trigger();
 
-	PosTempList button0_pos_list = get_good_positions_inside_wall(neighbour0);
-	PosTempList button1_pos_list = get_good_positions_inside_wall(neighbour1);
+	Axis const short_axis = get_other_axis(long_axis);
+	Terrain::Type const tripwire_terrain = Terrain::get_tripwire(short_axis);
+	Feature::spawn(tripwire_pos.xyz(map_z), tripwire_terrain, trigger);
+	Feature::spawn(spawn_pos.xyz(map_z), Terrain::MonsterTrapAmbush, trigger);
 
-	// Can trigger on torches, but then the passage only opens from one side
-	PosTempList torch_pos_list;
-	if (Random::coinflip())
+	for (Vec2 const& door_pos : doors)
 	{
-		torch_pos_list = choose_torch_positions(neighbour0);
-	}
-	else
-	{
-		torch_pos_list = choose_torch_positions(neighbour1);
+		Feature::spawn(door_pos.xyz(map_z), Terrain::PortcullisTrap, trigger);
 	}
 
-	bool const is_allow_button = !button0_pos_list.empty() && !button1_pos_list.empty();
-	bool const is_allow_torch  = !torch_pos_list.empty();
-	Door::TriggerType const trigger_type = m_doors.choose_trigger_type(is_allow_button, is_allow_torch);
-
-	bool const is_allow_trigger = trigger_type != Door::TriggerType::NotPossible;
-	switch(m_doors.choose_locked_genus(/* allow none */ false, is_allow_trigger))
-	{
-		case Door::LockedGenus::Spell:
-		{
-			Door::Spelled const door_type = m_doors.choose_spelled();
-			Terrain::Type const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door0.xyz(map_z), door_terrain);
-			if (room.CorridorLength() >= 3)
-			{
-				if (door_type == Door::Spelled::AlohamoraDoor)
-				{
-					// 2 locked doors in a row is annoying because one blocks LoS to the other
-					Feature::spawn(door1.xyz(map_z), Terrain::DoorOpen);
-				}
-				else
-				{
-					Feature::spawn(door1.xyz(map_z), door_terrain);
-				}
-			}
-			break;
-		}
-
-		case Door::LockedGenus::Trigger:
-		{
-			int const trigger = Feature::get_new_trigger();
-
-			Door::Triggered const door_type = m_doors.choose_triggered();
-			Terrain::Type   const door_terrain = Door::get_terrain(door_type);
-			Feature::spawn(door0.xyz(map_z), door_terrain, trigger);
-			if (room.CorridorLength() > 1)
-			{
-				Feature::spawn(door1.xyz(map_z), door_terrain, trigger);
-			}
-
-			switch (trigger_type)
-			{
-				case Door::TriggerType::FlipendoButton:
-				{
-					Vec2 const button0 = Random::from_vector(button0_pos_list);
-					Vec2 const button1 = Random::from_vector(button1_pos_list);
-					Feature::spawn(button0.xyz(map_z), Terrain::FlipendoButton, trigger);
-					Feature::spawn(button1.xyz(map_z), Terrain::FlipendoButton, trigger);
-					break;
-				}
-				case Door::TriggerType::LightTorch:
-				{
-					for (int i = 0; i < Util::Size(torch_pos_list); ++i)
-					{
-						Feature::spawn(torch_pos_list[i].xyz(map_z), Terrain::TorchUnlit, trigger);
-					}
-					break;
-				}
-			}
-			break;
-		}
-	}
+	return true;
 }
 
 
 //-----------------------------------------------------------------------------
-// Pass 3 functions
+// Phase 3 functions - cosmetic features
 
 void MapGridder::add_cosmetic_chamber(int room_index) const
 {
@@ -420,7 +518,7 @@ void MapGridder::add_cosmetic_chamber(int room_index) const
 	}
 
 	// special room types
-	// TODO: Remove these when we have vaults?
+	// TODO: Remove cosmetic rooms when we have vaults?
 	//  -> or at least use a heavier-duty system
 	switch(Random::in_range(0, 10))
 	{
@@ -473,15 +571,53 @@ void MapGridder::add_cosmetic_torches(Room const& room) const
 
 void MapGridder::add_cosmetic_armour(Room const & room) const
 {
-	// TODO: Armour flanking doorways sometimes
+	int const map_z = m_map.get_z();
 
-	int map_z = m_map.get_z();
-	PosTempList positions =	get_good_positions_along_wall(room);
-	for (Vec2 pos : positions)
+	switch (Random::in_range(0, 3))
 	{
-		if ((pos.x + pos.y) % 2 == 0)  // every other space
+		case 0:
+		case 1:  // more common because it looks nice
 		{
-			Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+			// armour flanking doorways
+			PosTempList const positions = get_good_positions_by_doorways(room);
+			for (Vec2 pos : positions)
+			{
+				Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+			}
+			break;
+		}
+
+		case 2:
+		{
+			// armour along walls
+			PosTempList const positions = get_good_positions_along_wall(room);
+			for (Vec2 pos : positions)
+			{
+				if ((pos.x + pos.y) % 2 == 0)  // every other space
+				{
+					Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+				}
+			}
+			break;
+		}
+
+		case 3:
+		{
+			// a few suits of armour along the wall
+			PosTempList const positions = get_good_positions_along_wall(room);
+			IntTempList index_list = Util::GetIndices(positions);
+			Random::shuffle_vector(index_list);
+			int const count = std::min(Util::Size(positions), Random::in_range(1, 3));
+			for (int i = 0; i < count; ++i)
+			{
+				// don't put 2 side-by-side
+				Vec2 const pos = positions[index_list[i]];
+				if (is_good_for_isolated_floor(pos))
+				{
+					Feature::spawn(pos.xyz(map_z), Terrain::Armour);
+				}
+			}
+			break;
 		}
 	}
 }
@@ -610,7 +746,7 @@ void MapGridder::add_unlocked_door(Vec2 const& pos) const
 
 
 //-----------------------------------------------------------------------------
-// Pass 4 functions
+// Phase 4 functions - items and cleanup
 
 void MapGridder::replace_all(Terrain::Type old_type, Terrain::Type new_type) const
 {
@@ -635,13 +771,10 @@ void MapGridder::replace_all(Terrain::Type old_type, Terrain::Type new_type) con
 //-----------------------------------------------------------------------------
 // Functions to select positions
 
-Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
+Vec2 MapGridder::get_pos_at_room_back(Room const& room, Vec2 far_from) const
 {
 	Vec2 const roomCenter = room.GetBox().centre();
-
-	int const neighbourIndex = room.GetNeighbours()[0];
-	Vec2 const neighbourCenter = m_generator.GetRoom(neighbourIndex).GetBox().centre();
-	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - neighbourCenter);
+	Vec2 const roomBackDirection = truncate_to_unit(roomCenter - far_from);
 
 	// both components of roomBackDirection are -1, 0, or 1
 	//  -> never (0, 0), so 8 possibilities
@@ -684,6 +817,22 @@ Vec2 MapGridder::get_pos_at_room_back(Room const& room) const
 	}
 
 	return result;
+}
+
+Vec2 MapGridder::get_door_pos(Room const& corridor, Room const& chamber) const
+{
+	// the ends of the hallway aren't hard to find, but which is which?
+	Vec2 const door0 = corridor.GetBox().min;
+	Vec2 const door1 = corridor.GetBox().inner_max();
+	Vec2 const chamber_center = chamber.GetBox().centre();
+
+	if (square_dist(chamber_center, door0) <
+		square_dist(chamber_center, door1))
+	{
+		return door0;
+	}
+	else
+		return door1;
 }
 
 MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) const
@@ -746,6 +895,40 @@ MapGridder::PosTempList MapGridder::choose_torch_positions(Room const& room) con
 	return result;
 }
 
+MapGridder::PosTempList MapGridder::get_good_positions_away_from_wall(Room const& room) const
+{
+	// Goal: Find all positions
+	//  1. Inside the room
+	//  2. Not along wall
+	//  3. On a piece of isolated floor
+	//    -> We check the terrain for this
+
+	PosTempList result_vec;
+
+	if (room.GetBox().size.x < 3 ||
+		room.GetBox().size.y < 3)
+	{
+		return result_vec;  // empty vector
+	}
+
+	Box2 check_box = room.GetBox().minus_border(1);
+	int max_x = check_box.max(c_AxisX);
+	int max_y = check_box.max(c_AxisY);
+	for (int x = check_box.min.x; x < max_x; ++x)
+	{
+		for (int y = check_box.min.y; y < max_y; ++y)
+		{
+			Vec2 pos = { x, y };
+			if (is_good_for_isolated_floor(pos))
+			{
+				result_vec.push_back(pos);
+			}
+		}
+	}
+
+	return result_vec;
+}
+
 MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& room) const
 {
 	// Goal: Find all positions
@@ -768,7 +951,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 
 	for (int y = y_min + 1; y < y_max; ++y)
 	{
-		// min X side
+		// min X (west) side
 		Vec2 pos1{ x_min, y };
 		if (is_by_west_wall(pos1) &&
 			is_good_for_isolated_floor(pos1))
@@ -776,7 +959,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 			result_vec.push_back(pos1);
 		}
 
-		// max X side
+		// max X (east) side
 		Vec2 pos2{ x_max, y };
 		if (is_by_east_wall(pos2) &&
 			is_good_for_isolated_floor(pos2))
@@ -789,7 +972,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 
 	for (int x = x_min + 1; x < x_max; ++x)
 	{
-		// min Y side
+		// min Y (north) side
 		Vec2 pos1{ x, y_min };
 		if (is_by_north_wall(pos1) &&
 			is_good_for_isolated_floor(pos1))
@@ -797,7 +980,7 @@ MapGridder::PosTempList MapGridder::get_good_positions_along_wall(Room const& ro
 			result_vec.push_back(pos1);
 		}
 
-		// max Y side
+		// max Y (south) side
 		Vec2 pos2{ x, y_max };
 		if (is_by_south_wall(pos2) &&
 			is_good_for_isolated_floor(pos2))
@@ -921,6 +1104,161 @@ MapGridder::PosTempList MapGridder::box_to_positions(Box2 const& box) const
 	return result;
 }
 
+MapGridder::PosTempList MapGridder::get_good_positions_by_doorways(Room const& room) const
+{
+	PosTempList result_vec;
+
+	// find room edges
+	int const x_min = room.GetBox().min.x;
+	int const y_min = room.GetBox().min.y;
+	int const x_max = room.GetBox().inner_max(c_AxisX);
+	int const y_max = room.GetBox().inner_max(c_AxisY);
+
+	// search corners
+	//  -> we want to check both walls, but only add it once
+	Vec2 pos_nw{ x_min, y_min };
+	Vec2 pos_sw{ x_min, y_max };
+	Vec2 pos_ne{ x_max, y_min };
+	Vec2 pos_se{ x_max, y_max };
+
+	if (is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassWest) ||
+		is_good_position_by_doorways(room, pos_nw, CompassDirection::c_CompassNorth))
+	{
+		result_vec.push_back(pos_nw);
+	}
+	if (is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassWest) ||
+		is_good_position_by_doorways(room, pos_sw, CompassDirection::c_CompassSouth))
+	{
+		result_vec.push_back(pos_sw);
+	}
+	if (is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassEast) ||
+		is_good_position_by_doorways(room, pos_ne, CompassDirection::c_CompassNorth))
+	{
+		result_vec.push_back(pos_ne);
+	}
+	if (is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassEast) ||
+		is_good_position_by_doorways(room, pos_se, CompassDirection::c_CompassSouth))
+	{
+		result_vec.push_back(pos_se);
+	}
+
+	// search along X sides of room
+
+	for (int y = y_min + 1; y < y_max; ++y)
+	{
+		Vec2 pos_west{ x_min, y };
+		if (is_good_position_by_doorways(room, pos_west, CompassDirection::c_CompassWest))
+		{
+			result_vec.push_back(pos_west);
+		}
+
+		Vec2 pos_east{ x_max, y };
+		if (is_good_position_by_doorways(room, pos_east, CompassDirection::c_CompassEast))
+		{
+			result_vec.push_back(pos_east);
+		}
+	}
+
+	// search along Y sides of room
+
+	for (int x = x_min + 1; x < x_max; ++x)
+	{
+		Vec2 pos_north{ x, y_min };
+		if (is_good_position_by_doorways(room, pos_north, CompassDirection::c_CompassNorth))
+		{
+			result_vec.push_back(pos_north);
+		}
+
+		Vec2 pos_south{ x, y_max };
+		if (is_good_position_by_doorways(room, pos_south, CompassDirection::c_CompassSouth))
+		{
+			result_vec.push_back(pos_south);
+		}
+	}
+
+	// done
+
+	return result_vec;
+}
+
+bool MapGridder::is_good_position_by_doorways(Room const & room, Vec2 pos,
+                                              CompassDirection dir_wall) const
+{
+	//        <-----O----->
+	//     dir_cw   |  dir_ccw
+	//              v
+	//           dir_wall
+	//
+	//     .......         XXX...  ...XXX        XXX....  ....XXX
+	//     ...@...         ...@..  ..@...        ....@..  ..@....
+	//    XXX.X.XXX        XXXXXX  XXXXXX        XXXXXXX  XXXXXXX
+	//    XXX.X.XXX        XXXXXX  XXXXXX        XXXXXXX  XXXXXXX
+	//      wall            1-away side             2-away side
+	//    corridors          corridors               corridors
+	//
+	// Goal: Determine if this position is
+	//  1. On good floor
+	//  2. By at least one wall corridor
+	//    -> Which must have good floor at its exit
+	//    -> But the corridor entrance itself can be e.g. a locked door
+	//  3. Not by either side corridor
+	//    -> Either directly, or 2 cells away
+	// Note: We also have to worry about going outside the map array
+	//  -> pos and its neighbours are safe
+	//  -> Looking 2 cells away is not safe
+
+	if (!is_good_floor(pos))
+	{
+		return false;
+	}
+
+	CompassDirection dir_ccw = get_counterclockwise_90(dir_wall);
+	CompassDirection dir_cw  = get_clockwise_90(dir_wall);
+	Vec2 pos_ccw = pos + c_Compass[dir_ccw];
+	Vec2 pos_cw  = pos + c_Compass[dir_cw];
+
+	// Check for at least 1 wall corridor.
+	//  -> if one would be outside the map, that corridor's a no
+	bool is_wall_corridor_ccw = room.GetBox().contains(pos_ccw) &&
+	                            is_good_floor(pos_ccw) &&
+	                            is_by_corridor(pos_ccw, dir_wall);
+	bool is_wall_corridor_cw  = room.GetBox().contains(pos_cw) &&
+	                            is_good_floor(pos_cw) &&
+	                            is_by_corridor(pos_cw, dir_wall);
+	if (!is_wall_corridor_ccw && !is_wall_corridor_cw)
+	{
+		return false;
+	}
+
+	// Check for adjacent side corridors.
+	bool is_side_corridor_ccw = is_by_corridor(pos, dir_ccw);
+	bool is_side_corridor_cw  = is_by_corridor(pos, dir_cw);
+	if (is_side_corridor_ccw || is_side_corridor_cw)
+	{
+		return false;
+	}
+
+	// Check for side corridors 2 cells away.
+	//  -> if one would be outside the map, that corridor's a no
+	//
+	// We do this to avoid moving diagonally between 2 suits of armour to enter a room.
+	//    XX$....
+	//    ...$.$.
+	//    XXXX.XX
+
+	bool is_side_corridor_ccw2 = room.GetBox().contains(pos_ccw) &&
+	                             is_by_corridor(pos_ccw, dir_ccw);
+	bool is_side_corridor_cw2  = room.GetBox().contains(pos_cw) &&
+	                             is_by_corridor(pos_cw, dir_cw);
+	if (is_side_corridor_ccw2 || is_side_corridor_cw2)
+	{
+		return false;
+	}
+
+	// good
+	return true;
+}
+
 
 //-----------------------------------------------------------------------------
 // Functions to check if positions are good
@@ -1009,10 +1347,58 @@ bool MapGridder::is_inside_north_south_wall(Vec2 const & pos) const
 		is_good_wall(Vec2{ pos.x, pos.y + 1 });
 }
 
-/*
-	// Functions to select positions in or near rooms
-	PosTempList GetPlainWallPositions(Room const & room) const;
-	static bool isContainedByAnyInList(Vec2 const & pos, Box2TempList const & boxVec);
-	static bool isAnyContainedByAnyInList(PosTempList const & posVec,
-	                                      Box2TempList const & boxVec);
- */
+// TODO: Add is_by_wall function with direction parameter?
+//  -> Also is_inside_wall
+//  -> maybe I could make more 4-wall functions less repetative
+//  -> or maybe that would be overkill
+
+bool MapGridder::is_good_corridor_end(Vec2 const& pos) const
+{
+	Terrain::Type terrain = m_map.get_terrain(pos);
+	switch(terrain)
+	{
+		// not Terrain::Portrait
+		case Terrain::Ectoplasm:
+		case Terrain::DoorLocked:
+		// not Terrain::SlidingWall
+		case Terrain::Portcullis:
+			// treat these as doorways even though they are solid
+			return true;
+		default:
+			return !Terrain::is_solid(terrain);
+	}
+}
+
+bool MapGridder::is_inside_corridor_X(Vec2 const & pos) const
+{
+	return
+		is_good_wall(Vec2{ pos.x, pos.y - 1 }) &&
+		is_good_corridor_end(pos) &&
+		is_good_wall(Vec2{ pos.x, pos.y + 1 });
+}
+
+bool MapGridder::is_inside_corridor_Y(Vec2 const & pos) const
+{
+	return
+		is_good_wall(Vec2{ pos.x - 1, pos.y }) &&
+		is_good_corridor_end(pos) &&
+		is_good_wall(Vec2{ pos.x + 1, pos.y });
+}
+
+bool MapGridder::is_by_corridor(Vec2 const& pos, CompassDirection dir) const
+{
+	switch (dir)
+	{
+		case CompassDirection::c_CompassEast:
+			return is_by_east_corridor(pos);
+		case CompassDirection::c_CompassNorth:
+			return is_by_north_corridor(pos);
+		case CompassDirection::c_CompassWest:
+			return is_by_west_corridor(pos);
+		case CompassDirection::c_CompassSouth:
+			return is_by_south_corridor(pos);
+		default:
+			DebugBreak("MapGridder::is_by_corridor can't do diagonal");
+			return false;
+	}
+}

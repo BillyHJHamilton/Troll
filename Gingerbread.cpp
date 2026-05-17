@@ -28,6 +28,7 @@ namespace Gingerbread
 
 Gingerbread::Stats s_gingerbread [Creature::Count];
 Spell::Bitset s_gingerbread_spells [Creature::Count];
+Creature::HabitatBitset s_gingerbread_habitats [Creature::Count];
 Creature::TagBitset s_gingerbread_tags [Creature::Count];
 Ragged<Ability::Index> s_gingerbread_abilities;
 Grid<float> s_resistances; // (creature type, damage type)
@@ -74,6 +75,7 @@ struct Builder
 		int codepoint, char const* colour, Gender gender);
 
 	Builder& magic(int skill, std::string spell_string);
+	Builder& habitats(Creature::Habitat new_habitat);
 	Builder& tags(Creature::Tag new_tag);
 	Builder& abil(std::vector<Ability::Index>&& abilities);
 	Builder& loot(Loot::Type loot_type); // implying 100%
@@ -82,6 +84,13 @@ struct Builder
 	Builder& resist(Damage::Type type);
 	Builder& vuln(Damage::Type type);
 	Builder& immune(Damage::Type type);
+
+	template<class ... Packed>
+	Builder& habitats(Creature::Habitat habitat, Packed... args)
+	{
+		habitats(habitat);
+		return habitats(args...);
+	}
 
 	template<class ... Packed>
 	Builder& tags(Creature::Tag tag, Packed... args)
@@ -129,6 +138,7 @@ void parse_spell_string (Spell::Bitset & out_spell_bitset, std::string const & s
 void init()
 {
 	using Tag = Creature::Tag;
+	using Habitat = Creature::Habitat;
 
 	// Allocate memory.
 	s_gingerbread_abilities.resize(Creature::Count);
@@ -163,6 +173,7 @@ void init()
 	Builder(Creature::Neville_0, "Neville",
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 7)
 		.magic(0, "VM FP")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes, 50);
 
 	// TODO: Camera ability (or item, which player can also use).
@@ -170,31 +181,37 @@ void init()
 	Builder(Creature::ColinCreevy_0, "Colin",
 		/*Difficulty*/ 0.3f, /*Probability*/ 1.0f, /*HP*/ 5)
 		.magic(8, "VM MW")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Student_Generic);
 	
 	Builder(Creature::SallyAnne_0, "Sally-Anne",
 		/*Difficulty*/ 0.0f, /*Probability*/ 0.2f, /*HP*/ 3)
 		.magic(0, "VM")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Faint_Disappear);
 
 	Builder(Creature::Harry_1, "Harry", 
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(10, "VM FP LM")
+		.habitats(Habitat::Hogwarts)
 		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 	
 	Builder(Creature::Malfoy_1, "Malfoy",
 		/*Difficulty*/ 1.0f, /*Probability*/ 1.0f, /*HP*/ 10)
 		.magic(15, "VM FP TA")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::Ron_2, "Ron",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 14)
 		.magic(5, "FP VM FM")
+		.habitats(Habitat::Hogwarts)
 		.loot({{Loot::Notes, 60}, {Loot::Student_Generic, 100}});
 
 	Builder(Creature::Hermione_2, "Hermione",
 		/*Difficulty*/ 2.0f, /*Probability*/ 1.0f, /*HP*/ 12)
 		.magic(35, "VM MW LC AL FI")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	// Crabbe and Goyle have 0 probability because they spawn in a squad instead.
@@ -211,41 +228,49 @@ void init()
 	Builder(Creature::Harry_4, "Harry",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(45, "FP TA SP IP AC")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::Cedric_4, "Cedric",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(50, "SP RS") // PT, Lapifors?
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::Fleur_4, "Fleur",
 		/*Difficulty*/ 4.0f, /*Probability*/ 1.0f, /*HP*/ 16)
 		.magic(70, "MW LM FP FI") // PT, Sleepiness?
+		.habitats(Habitat::Hogwarts)
 		.loot({{Loot::Notes, 70}, {Loot::Potion, 60}});
 
 	Builder(Creature::Krum_5, "Krum",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 20)
 		.magic(50, "SP FN")
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Potion, 50);
 
 	Builder(Creature::Neville_5, "Neville",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 20)
 		.magic(50, "SP IP LM") // PT
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::Ginny_5, "Ginny",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 18)
 		.magic(60, "SP BT") // PT
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::Luna_5, "Luna",
 		/*Difficulty*/ 5.0f, /*Probability*/ 1.0f, /*HP*/ 17)
 		.magic(50, "SP MW FM TA") // PT
+		.habitats(Habitat::Hogwarts)
 		.loot(Loot::Notes);
 
 	Builder(Creature::MarySue, "Mary Sue",
 		/*Difficulty*/ 7.0f, /*Probability*/ 0.0f, /*HP*/ 30)
 		.magic(80, "SP RS BT FI")
+		// no natureal habitat
 		.abil({Ability::Believe, Ability::Karate});
 
 	// Generic students:
@@ -256,24 +281,28 @@ void init()
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 5,
 		"Hufflepuff", "first-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(6, "TA")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 3,
 		"Ravenclaw", "first-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
 		.magic(8, "MW")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
 		"Gryffindor", "first-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Male)
 		.magic(7, "FP")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_1, c_IdentityGeneric,
 		/*Difficulty*/ 0.6f, /*Probability*/ 0.2f, /*HP*/ 4,
 		"Slytherin", "first-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Female)
 		.magic(7, "FN")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Second-years
@@ -282,24 +311,28 @@ void init()
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 7,
 		"Hufflepuff", "second-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Female)
 		.magic(12, "TA")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 5,
 		"Ravenclaw", "second-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Male)
 		.magic(20, "MW")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
 		"Gryffindor", "second-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
 		.magic(15, "RS")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_2, c_IdentityGeneric,
 		/*Difficulty*/ 1.8f, /*Probability*/ 0.2f, /*HP*/ 6,
 		"Slytherin", "second-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
 		.magic(15, "LM")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Third-years
@@ -308,24 +341,28 @@ void init()
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 14,
 		"Hufflepuff", "third-year Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(22, "TA")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Ravenclaw_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 9,
 		"Ravenclaw", "third-year Ravenclaw", 'R', House::colour(House::Ravenclaw), Gender::Female)
 		.magic(30, "MW")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Gryffindor_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 11,
 		"Gryffindor", "third-year Gryffindor", 'G', House::colour(House::Gryffindor), Gender::Female)
 		.magic(24, "FP")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	Builder(Creature::Slytherin_3, c_IdentityGeneric,
 		/*Difficulty*/ 2.8f, /*Probability*/ 0.2f, /*HP*/ 10,
 		"Slytherin", "third-year Slytherin", 'S', House::colour(House::Slytherin), Gender::Male)
 		.magic(26, "FN")
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Spells_Random).loot(Loot::Student_Generic);
 
 	// Fantastic Beasts and Where To Find Them:
@@ -333,20 +370,23 @@ void init()
 	Builder(Creature::Gnome, c_IdentityGeneric,
 		/*Difficulty*/ 0.5f, /*Probability*/ 1.0f, /*HP*/ 2,
 		"gnome", "garden gnome", 'g', cstr_LightOrange, Gender::Neuter)
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Immune_Clothes, Tag::Evade_High)
 		.abil({Ability::StealBean, Ability::EatBean});
 
 	Builder(Creature::Streeler, c_IdentityGeneric,
-		/*Difficulty*/ 0.8f, /*Probability*/ 0.8f, /*HP*/ 4,
+		/*Difficulty*/ -0.5f, /*Probability*/ 0.5f, /*HP*/ 4,
 		"streeler", "streeler", 's', cstr_Red, Gender::Neuter)
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Bot_Blunder, Tag::Colour_Rainbow, Tag::Immune_Clothes, Tag::Immune_Legs,
-			Tag::Move_Slow, Tag::Trail_Slime, Tag::Vision_Short)
+			Tag::Move_Slow, Tag::Spawn_IgnoreDifficulty, Tag::Trail_Slime, Tag::Vision_Short)
 		.immune(Damage::Acid)
 		.abil({Ability::Headbutt});
 
 	Builder(Creature::FireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 0.8f, /*HP*/ 5,
 		"fire crab", "fire crab", 'c', cstr_Flame, Gender::Neuter)
+		.habitats(Habitat::Hogwarts, Habitat::Trap)
 		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
@@ -354,6 +394,7 @@ void init()
 	Builder(Creature::BigFireCrab, c_IdentityGeneric,
 		/*Difficulty*/ 2.5f, /*Probability*/ 0.2f, /*HP*/ 10,
 		"big fire crab", "big fire crab", 'c', cstr_Crimson, Gender::Neuter)
+		.habitats(Habitat::Hogwarts, Habitat::Trap)
 		.tags(Tag::Bot_Sidestep, Tag::Immune_Clothes)
 		.resist(Damage::Fire)
 		.abil({Ability::ShootFire});
@@ -361,12 +402,14 @@ void init()
 	Builder(Creature::Doxy, c_IdentityGeneric,
 		/*Difficulty*/ 1.5f, /*Probability*/ 0.6f, /*HP*/ 4,
 		"doxy", "doxy", 'd', cstr_LighterBlue, Gender::Neuter)
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Evade_High, Tag::Immune_Legs, Tag::Immune_Clothes)
 		.abil({Ability::DoxyBite});
 	
 	Builder(Creature::Imp, c_IdentityGeneric,
 		/*Difficulty*/ 2.0f, /*Probability*/ 0.5f, /*HP*/ 5,
 		"imp", "imp", 'i', cstr_LighterOrange, Gender::Neuter)
+		.habitats(Habitat::Hogwarts)
 		.tags(Tag::Evade_Medium, Tag::Immune_Clothes)
 		.abil({Ability::TripKick, Ability::Scratch});
 
@@ -379,6 +422,7 @@ void init()
 		/*Difficulty*/ 1.2f, /*Probability*/ 0.1f, /*HP*/ 14,
 		"Harry", "Harry the Hufflepuff", 'H', House::colour(House::Hufflepuff), Gender::Male)
 		.magic(10, "VM FP LM")
+		.habitats(Habitat::Hogwarts)
 		.tags(Creature::Tag::Move_Slow)
 		.loot({{Loot::Notes, 70}, {Loot::Potion, 40}});
 
@@ -519,6 +563,17 @@ std::string long_name (Creature::Type type)
 	return "no one";
 }
 
+bool has_habitat(Creature::Type type, Creature::Habitat habitat)
+{
+	if (Creature::is_valid_type(type))
+	{
+		return s_gingerbread_habitats[type].test((size_t)habitat);
+	}
+
+	DebugBreak();
+	return false;
+}
+
 bool has_tag(Creature::Type type, Creature::Tag tag)
 {
 	if (Creature::is_valid_type(type))
@@ -592,50 +647,43 @@ bool can_spawn_identity (Creature::Type type, float target_difficulty)
 }
 
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-	FloatTempList& out_weights)
+	FloatTempList& out_weights, Creature::Habitat habitat)
 {
 	for (int type = 1; // skip player
 		type < Creature::Type::Count;
 		++type)
 	{
 		Gingerbread::Stats const& stats = s_gingerbread[type];
+		bool is_difficulty_ignore = has_tag((Creature::Type)type,
+			Creature::Tag::Spawn_IgnoreDifficulty);
+
+		bool is_difficulty_in_range = is_difficulty_ignore ? true :
+			Spawn::difficulty_in_range(stats.difficulty, target_difficulty);
 
 		if (stats.probability <= 0.0f ||
-			!Spawn::difficulty_in_range(stats.difficulty, target_difficulty) ||
+			!is_difficulty_in_range ||
 			!can_spawn_identity((Creature::Type)type, target_difficulty))
 		{
 			continue;
 		}
 
-		float const probability = stats.probability *
-			Spawn::probability_factor(stats.difficulty, target_difficulty);
+		if (habitat != Creature::Habitat::None &&
+			!has_habitat((Creature::Type)type, habitat))
+		{
+			continue;
+		}
+
+		float probability = stats.probability;
+		if (!is_difficulty_ignore)
+		{
+			probability *= Spawn::probability_factor(stats.difficulty, target_difficulty);
+		}
 
 		if (probability > 0.0f)
 		{
 			out_list.emplace_back(Spawn::Option::Type::Creature, type);
 			out_weights.push_back(probability);
 		}
-	}
-}
-
-Creature::Type find_type_to_spawn (float target_difficulty)
-{
-	Spawn::OptionTempList options;
-	FloatTempList weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
-
-	find_spawn_options(target_difficulty, options, weights);
-
-	if (Util::Size(options) > 0)
-	{
-		int const choice = Random::weighted_index(weights);
-		assert(Util::IsValidIndex(options, choice));
-		return (Creature::Type)options.at(choice).index;
-	}
-	else
-	{
-		return Creature::None;
 	}
 }
 
@@ -751,6 +799,12 @@ Builder& Builder::magic(int skill_magic, std::string spell_string)
 {
 	s_gingerbread[m_type].skill_magic = skill_magic;
 	parse_spell_string(s_gingerbread_spells[m_type], spell_string);
+	return *this;
+}
+
+Builder& Builder::habitats(Creature::Habitat habitat)
+{
+	s_gingerbread_habitats[m_type].set((size_t)habitat, true);
 	return *this;
 }
 

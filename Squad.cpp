@@ -1,5 +1,6 @@
 #include "Squad.h"
 
+#include "Colour.h"
 #include "Creature.h"
 #include "Gingerbread.h"
 #include "Math.h"
@@ -12,39 +13,76 @@
 namespace Squad
 {
 
+//------------------------------------------------------------------------------
+// Helper functions for initialization
+
+// If this gets long, there could be a Builder class as in Gingerbread.cpp.
+
+void habitats(Creature::HabitatBitset & out, Creature::Habitat new_habitat)
+{
+	out.set((int)(new_habitat), true);
+}
+
+template<class ... Packed>
+void habitats(Creature::HabitatBitset & out, Creature::Habitat new_habitat, Packed... args)
+{
+	habitats(out, new_habitat);
+	habitats(out, args...);
+}
+
+template<class ... Packed>
+Creature::HabitatBitset habitats(Creature::Habitat new_habitat, Packed... args)
+{
+	Creature::HabitatBitset result;
+	habitats(result, new_habitat, args...);
+	return result;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Data
 
 static std::vector<Squad::Definition> const s_squads =
 {
+	{ .debug_name="Streeler Squad", .difficulty=0.2f, .probability=0.4f,
+	  .habitats=habitats(Creature::Habitat::Trap),
+	  .flags=f_Repeat, .members={
+		{Creature::Streeler, 2,3},
+	}},
+
 	{ .debug_name="Gnome Squad", .difficulty=1.0f, .probability=0.4f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Gnome, 2,5},
 	}},
 
 	{ .debug_name="Puff Posse", .difficulty=1.5f, .probability=0.1f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Hufflepuff_1, 3,4}
 	}},
 
 	{ .debug_name="Crabbe and Goyle", .difficulty=3.0f, .probability=1.0f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_None, .members={
 		{Creature::Crabbe_3},
 		{Creature::Goyle_3},
 	}},
 
 	{ .debug_name="Crab Squad", .difficulty=3.0f, .probability=0.3f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts, Creature::Habitat::Trap),
 	  .flags=f_Repeat, .members={
 		{Creature::BigFireCrab},
 		{Creature::FireCrab, 2,3},
 	}},
 
 	{ .debug_name="Imp Nest", .difficulty=3.0f, .probability=0.3f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Imp, 2,3},
 	}},
 
 	{ .debug_name="Doxy Nest", .difficulty=4.0f, .probability=0.3f,
+	  .habitats=habitats(Creature::Habitat::Hogwarts),
 	  .flags=f_Repeat, .members={
 		{Creature::Doxy, 4,6},
 	}},
@@ -129,12 +167,30 @@ Squad::Definition const& read_definition(int squad_id)
 	return s_squads.at(squad_id);
 }
 
-bool can_spawn(int squad_id, float target_difficulty)
+char const* colour(int squad_id)
+{
+	Squad::Definition const& squad = s_squads[squad_id];
+
+	if (squad.members.empty())
+	{
+		return cstr_White;  // no one in squad; something is wrong
+	}
+
+	return Gingerbread::read(squad.members[0].type).colour;
+}
+
+bool can_spawn(int squad_id, float target_difficulty, Creature::Habitat habitat)
 {
 	Squad::Definition const& squad = s_squads[squad_id];
 
 	if (squad.probability <= 0.0f ||
 		!Spawn::difficulty_in_range(squad.difficulty, target_difficulty))
+	{
+		return false;
+	}
+
+	if (habitat != Creature::Habitat::None &&
+		!squad.habitats.test((size_t)habitat))
 	{
 		return false;
 	}
@@ -157,13 +213,13 @@ bool can_spawn(int squad_id, float target_difficulty)
 }
 
 void find_spawn_options (float target_difficulty, Spawn::OptionTempList& out_list,
-	FloatTempList& out_weights)
+	FloatTempList& out_weights, Creature::Habitat habitat)
 {
 	for (int i = 0; i < Util::Size(s_squads); ++i)
 	{
 		Squad::Definition const& squad = s_squads[i];
 
-		if (!can_spawn(i, target_difficulty))
+		if (!can_spawn(i, target_difficulty, habitat))
 		{
 			continue;
 		}

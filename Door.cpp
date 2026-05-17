@@ -7,6 +7,7 @@
 
 namespace Door
 {
+// TODO: Array of door data
 
 bool Parameters::are_weights_valid() const
 {
@@ -111,25 +112,25 @@ Triggered Parameters::choose_triggered() const
 TriggerType Parameters::choose_trigger_type(bool allow_button,
                                             bool allow_torch) const
 {
-	IntTempList trigger_weights((int)(TriggerType::Count), 0);  // count, value
+	IntTempList weights((int)(TriggerType::Count), 0);  // count, value
 	int sum = 0;
 
 	if (allow_button)
 	{
 		int button_weight = trigger_weights[(int)(TriggerType::FlipendoButton)];
-		trigger_weights[(int)(TriggerType::FlipendoButton)] = button_weight;
+		weights[(int)(TriggerType::FlipendoButton)] = button_weight;
 		sum += button_weight;
 	}
 	if (allow_torch)
 	{
 		int torch_weight = trigger_weights[(int)(TriggerType::LightTorch)];
-		trigger_weights[(int)(TriggerType::LightTorch)] = torch_weight;
+		weights[(int)(TriggerType::LightTorch)] = torch_weight;
 		sum += torch_weight;
 	}
 
 	if (sum > 0)
 	{
-		return (TriggerType)(Random::weighted_index(trigger_weights));
+		return (TriggerType)(Random::weighted_index(weights));
 	}
 	return TriggerType::NotPossible;
 }
@@ -182,6 +183,69 @@ Terrain::Type get_terrain(Unlocked door_type)
 		return Terrain::DoorClosed;
 	default:
 		DebugBreak("Unhandled Unlocked door type in get_door_terrain");
+		return Terrain::Open;
+	}
+}
+
+Placement get_placement(Spelled door_type, int corridor_length)
+{
+	switch (door_type)
+	{
+	case Spelled::Portrait:
+		return (corridor_length <= 1) ? Placement::Entrance : Placement::BothEnds;
+	case Spelled::AlohamoraDoor:
+		return (corridor_length <= 2 || Random::coinflip()) ?
+			Placement::Entrance : Placement::BothEnds;
+	case Spelled::Ectoplasm:
+		return Placement::Along;
+	default:
+		DebugBreak("Unhandled Spelled door type in get_placement");
+		return Placement::Entrance;
+	}
+}
+
+Placement get_placement(Triggered door_type, int corridor_length)
+{
+	switch (door_type)
+	{
+	case Triggered::SlidingWall:
+		return (corridor_length <= 1) ? Placement::Entrance : Placement::BothEnds;
+	case Triggered::Portcullis:
+		return (corridor_length <= 1 || Random::coinflip()) ?
+			Placement::Along : Placement::BothEnds;
+	default:
+		DebugBreak("Unhandled Triggered door type in get_placement");
+		return Placement::Entrance;
+	}
+}
+
+Terrain::Type get_match_terrain(Spelled door_type)
+{
+	switch (door_type)
+	{
+	case Spelled::Portrait:
+		return Terrain::Portrait;
+	case Spelled::AlohamoraDoor:
+		// 2 locked doors in a row is annoying because one blocks LoS to the other
+		return Terrain::DoorOpen;
+	case Spelled::Ectoplasm:
+		return Terrain::Ectoplasm;  // shouldn't be used but might get called
+	default:
+		DebugBreak("Unhandled Spelled door type in get_match_terrain");
+		return Terrain::Open;
+	}
+}
+
+Terrain::Type get_match_terrain(Triggered door_type)
+{
+	switch (door_type)
+	{
+	case Triggered::SlidingWall:
+		return Terrain::SlidingWall;
+	case Triggered::Portcullis:
+		return Terrain::Portcullis;
+	default:
+		DebugBreak("Unhandled Triggered door type in get_match_terrain");
 		return Terrain::Open;
 	}
 }

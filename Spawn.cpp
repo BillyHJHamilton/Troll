@@ -42,9 +42,6 @@ std::vector<Spawn::History> s_spawn_history;
 // Declared here in static memory to reduce allocations.
 std::vector<Vec2> s_spawn_positions;
 
-// Valid positions for treasure chests.  A subset of spawn positions.
-std::vector<Vec2> s_special_positions;
-
 // List of possible problems with a spawn point (for debug).
 enum class Problem : int
 {
@@ -78,12 +75,8 @@ Vec2 next_spawn_position();
 
 void remove_spawn_position(Vec2 pos);
 
-// Searches remaining spawn positions, so should be called after normal spawning.
-// Calling next_chest_position removes from main list and chest list.
-void find_chest_positions(const Map& map);
+// Not currently used, but potentially valuable.
 bool is_ok_chest_position(const Map& map, Vec2 pos);
-bool has_special_positions();
-Vec2 next_special_position();
 
 // Check if a map meets the conditions to spawn.
 bool is_map_ready(int map_id, int player_map);
@@ -99,10 +92,6 @@ int spawn_treasures(Map& map, int treasures_to_spawn);
 
 Vec2 find_boss_spawn_position(Map const& map);
 void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius);
-
-// Decides on a creature or squad to spawn.
-Spawn::Option choose_spawn_option(float target_difficulty);
-void spawn_squad(int squad_id, Vec3 start_pos);
 
 Vec3 choose_spawn_position(Map const & map, Suggestion::Type spawn_type);
 
@@ -138,7 +127,6 @@ void spawn_early(Map& map, int map_id)
 
 	if (treasures_to_spawn > 0)
 	{
-		find_chest_positions(map);
 		int treasure_count = spawn_treasures(map, treasures_to_spawn);
 		history.treasures_spawned += treasure_count;
 	}
@@ -176,6 +164,88 @@ void check_spawning()
 			spawn_for_map(map, history);
 		}
 	}
+}
+
+Spawn::Option choose_spawn_option(float target_difficulty, Creature::Habitat habitat)
+{
+	Spawn::OptionTempList options;
+	FloatTempList weights;
+	options.reserve(Creature::Count);
+	weights.reserve(Creature::Count);
+
+	Gingerbread::find_spawn_options(target_difficulty, options, weights, habitat);
+	Squad::find_spawn_options(target_difficulty, options, weights, habitat);
+
+	if (Util::Size(options) > 0)
+	{
+		return options.at(Random::weighted_index(weights));
+	}
+	else
+	{
+		return {Option::None, c_Invalid};
+	}
+}
+
+int spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible)
+{
+	if (Check(Squad::is_defined(squad_id)))
+	{
+		Squad::Definition const& squad = Squad::read_definition(squad_id);
+
+		if (Debug::enabled(Debug::Map))
+		{
+			std::cout << std::format(" - Spawning squad {} at ({},{}) - diff {}.\n",
+				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
+		}
+
+		Creature::TypeTempList to_spawn;
+		to_spawn.reserve(Squad::c_MaxSquadSize);
+
+		int const squad_index = Squad::find_free_index();
+		if (squad_index == c_Invalid)
+		{
+			DebugBreak("Max squads reached!  Spawning aborted.");
+			return c_Invalid;
+		}
+
+		for (Squad::Member const& member : squad.members)
+		{
+			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
+			assert(Creature::is_valid_type(member.type));
+			to_spawn.insert(to_spawn.end(), num_to_spawn, member.type);
+		}
+
+		Vec3TempList spawn_positions;
+		Pathfind::NearestOpenParam nearest_open_param
+		{
+			.max_cost = 5,
+			.num_to_find = Util::Size(to_spawn),
+			.allow_start = true,
+			.allow_visible = allow_visible
+		};
+
+		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
+
+		for (int i = 0;
+			i < Util::Size(to_spawn) && i < Util::Size(spawn_positions);
+			++i)
+		{
+			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
+			creature.set_squad(squad_index);
+			remove_spawn_position(spawn_positions[i].xy());
+
+			if (Debug::enabled(Debug::Map))
+			{
+				std::cout << std::format("  - Spawned {} at ({},{}) - diff {}.\n",
+					creature.long_name(), creature.pos().x, creature.pos().y,
+					Gingerbread::read(creature.type()).difficulty);
+			}
+		}
+
+		return squad_index;
+	}
+
+	return c_Invalid;
 }
 
 bool difficulty_in_range (float difficulty, float target_difficulty)
@@ -328,35 +398,6 @@ bool is_ok_chest_position(const Map& map, Vec2 pos)
 	return false;
 }
 
-void find_chest_positions(const Map& map)
-{
-	s_special_positions.clear();
-
-	// TODO: What if there aren't enough suggestions?
-	//  -> could fall back on the old system
-	//  -> currently, fewer chests spawn (handled in spawn_chests)
-	//  -> should this go directly in the spawn_chests function?
-	//    -> need a new position table after spawning features anyway
-	for (Vec2 const & pos : map.read_suggestions().get(Suggestion::TreasureNormal))
-	{
-		s_special_positions.push_back(pos);
-	}
-}
-
-bool has_special_positions()
-{
-	return !s_special_positions.empty();
-}
-
-Vec2 next_special_position()
-{
-	int const i = Random::index(s_special_positions);
-	Vec2 const pos = s_special_positions.at(i);
-	Util::RemoveSwap(s_special_positions, i);
-	Util::RemoveSwapFirstMatchingItem(s_spawn_positions, pos);
-	return pos;
-}
-
 bool is_map_ready(int map_id, int player_map)
 {
 	const Spawn::History& history = s_spawn_history[map_id];
@@ -468,7 +509,18 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		//Vec2 const pos = next_spawn_position();
 		//Vec3 const pos3 = pos.xyz(map.get_z());
 
-		Spawn::Option option = choose_spawn_option(map.get_difficulty());
+		// TODO: Map parameters for habitat
+		//  -> 1 map can have monsters from several habitats
+		//  -> could be lists for all or, any of, must not
+		//  -> do we want to influence probabilities?
+		//  -> there will have to be a datastructure for the desired habitats
+		//    -> it gets passed around through many functions
+		//  -> at of 2026-05-12, probabilities (including squads) are
+		//    -> Identity students (e.g. Harry):	14.3
+		//    -> Generic students (e.g. Slytherin):	2.5
+		//    -> Beasts (e.g. streeler):			6.2
+		Spawn::Option option = choose_spawn_option(map.get_difficulty(),
+		                                           Creature::Habitat::Hogwarts);
 
 		if (option.type == Option::None)
 		{
@@ -499,7 +551,7 @@ int spawn_creatures(Map const& map, int creatures_to_spawn)
 		else if (option.type == Option::Squad)
 		{
 			Vec3 const pos3 = choose_spawn_position(map, Suggestion::EnemyModerate);
-			spawn_squad(option.index, pos3);
+			spawn_squad(option.index, pos3, false);
 			++creatures_spawned; // That still only counts as one!
 		}
 	}
@@ -542,10 +594,27 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 	float const difficulty = map.get_difficulty();
 	int const map_z = map.get_z();
 
-	int spawned = 0;
-	while (has_special_positions() && spawned < treasures_to_spawn)
+	IntTempList index_list = Util::GetIndices(map.read_suggestions().get_treasure());
+
+	// TODO: What if there aren't enough suggestions?
+	//  -> currently, fewer treasures spawn
+	//  -> could fall back on the old system
+	//    -> is_ok_chest_position
+	//  -> could have weaker suggestions
+	//    -> could lead to slime pooling across useful hallways
+
+	Random::shuffle_vector(index_list);
+	if (Util::Size(index_list) > treasures_to_spawn)
 	{
-		Vec2 const pos2 = next_special_position();
+		index_list.resize(treasures_to_spawn);  // discard remaining positions
+	}
+
+	int spawned = 0;
+	while (spawned < Util::Size(index_list))
+	{
+		int const index = index_list[spawned];
+		Suggestion::Treasure const suggestion = map.read_suggestions().get_treasure()[index];
+		Vec2 const pos2 = suggestion.treasure_pos;
 		Vec3 const pos3 = pos2.xyz(map_z);
 		TreasureHolder const holder = (TreasureHolder)(Random::weighted_index(
 			param.treasure_holder_weights, (int)(TreasureHolder::Count)));
@@ -556,7 +625,20 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 				Feature::spawn(pos3, Terrain::Chest);
 				break;
 			case TreasureHolder::SlimePool:
-				map.set_terrain(pos2, Terrain::OpenNoSpawn);  // replacing Placeholder
+				if (suggestion.can_spawn &&
+					Random::in_range(0, 99) < param.percent_monster_on_treasure)
+				{
+					// pressure plate under the treasure
+					Vec3 const spawn_at3 = suggestion.spawn_at.xyz(map_z);
+					int const trigger = Feature::get_new_trigger();
+					Feature::spawn(pos3,      Terrain::PressurePlate, trigger);
+					Feature::spawn(spawn_at3, Terrain::MonsterTrap,   trigger);
+				}
+				else
+				{
+					// treasure is not booby-trapped
+					map.set_terrain(pos2, Terrain::OpenNoSpawn);
+				}
 				spawn_pool(map, Cloud::Slime, pos3, Random::in_range(1, 3));
 				Loot::spawn(Loot::Treasure, pos3, Creature::None, difficulty);
 				break;
@@ -567,7 +649,7 @@ int spawn_treasures(Map& map, int treasures_to_spawn)
 
 	if (Debug::enabled(Debug::Map))
 	{
-		int suggestion_count = map.read_suggestions().get_count(Suggestion::TreasureNormal);
+		int suggestion_count = map.read_suggestions().get_count_treasure();
 		std::cout << std::format("Placed {}/{} treasures ({} suggestions).\n",
 			spawned, treasures_to_spawn, suggestion_count);
 	}
@@ -592,85 +674,6 @@ void spawn_pool(Map& map, Cloud::Type cloud_type, Vec3 centre, int radius)
 			map.set_terrain(pos, Terrain::OpenNoSpawn);
 		}
 	}
-}
-
-Spawn::Option choose_spawn_option(float target_difficulty)
-{
-	Spawn::OptionTempList options;
-	FloatTempList weights;
-	options.reserve(Creature::Count);
-	weights.reserve(Creature::Count);
-
-	Gingerbread::find_spawn_options(target_difficulty, options, weights);
-	Squad::find_spawn_options(target_difficulty, options, weights);
-
-	if (Util::Size(options) > 0)
-	{
-		return options.at(Random::weighted_index(weights));
-	}
-	else
-	{
-		return {Option::None, c_Invalid};
-	}
-}
-
-void spawn_squad(int squad_id, Vec3 start_pos)
-{
-	if (Check(Squad::is_defined(squad_id)))
-	{
-		Squad::Definition const& squad = Squad::read_definition(squad_id);
-
-		if (Debug::enabled(Debug::Map))
-		{
-			std::cout << std::format(" - Spawning squad {} at ({},{}) - diff {}.\n",
-				squad.debug_name, start_pos.x, start_pos.y, squad.difficulty);
-		}
-
-		Creature::TypeTempList to_spawn;
-		to_spawn.reserve(Squad::c_MaxSquadSize);
-
-		int const squad_id = Squad::find_free_index();
-		if (squad_id == c_Invalid)
-		{
-			DebugBreak("Max squads reached!  Spawning aborted.");
-			return;
-		}
-
-		for (Squad::Member const& member : squad.members)
-		{
-			int const num_to_spawn = Random::in_range(member.min_num, member.max_num);
-			assert(Creature::is_valid_type(member.type));
-			to_spawn.insert(to_spawn.end(), num_to_spawn, member.type);
-		}
-
-		Vec3TempList spawn_positions;
-		Pathfind::NearestOpenParam nearest_open_param
-		{
-			.max_cost = 5,
-			.num_to_find = Util::Size(to_spawn),
-			.allow_start = true,
-			.allow_visible = false
-		};
-
-		Pathfind::find_nearest_open(start_pos, nearest_open_param, spawn_positions);
-
-		for (int i = 0;
-			i < Util::Size(to_spawn) && i < Util::Size(spawn_positions);
-			++i)
-		{
-			Creature::Handle creature = Creature::spawn_creature(to_spawn[i], spawn_positions[i]);
-			creature.set_squad(squad_id);
-			remove_spawn_position(spawn_positions[i].xy());
-
-			if (Debug::enabled(Debug::Map))
-			{
-				std::cout << std::format("  - Spawned {} at ({},{}) - diff {}.\n",
-					creature.long_name(), creature.pos().x, creature.pos().y,
-					Gingerbread::read(creature.type()).difficulty);
-			}
-		}
-	}
-
 }
 
 // Note: Must call find_spawn_positions first.

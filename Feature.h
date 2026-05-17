@@ -38,7 +38,7 @@ namespace Feature
 	void open_portrait(Vec3 pos);
 	void clear_ectoplasm(Vec3 pos);
 	void unlock_door(Vec3 pos);
-	void lock_door(Vec3 pos);
+	void lock_door(Vec3 pos);  // colloportus
 	void activate_flipendo_button(Vec3 pos);
 }
 

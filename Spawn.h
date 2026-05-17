@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Creature.h"
 #include "VectorUtil.h"
 
 // Deals with placing characters and items in the world.
@@ -41,6 +42,7 @@ namespace Spawn
 		int treasure_holder_weights[(int)(TreasureHolder::Count)] = { 1 };  // Chest: 1, all others: 0
 		int min_treasures = 1;
 		int max_treasures = 3;
+		int percent_monster_on_treasure = 30;
 
 	};
 
@@ -78,6 +80,13 @@ namespace Spawn
 
 	// Spawns creatures.  Runs each turn after the game begins.
 	void check_spawning();
+
+	// Decides on a creature or squad to spawn.
+	Spawn::Option choose_spawn_option(float target_difficulty,
+		Creature::Habitat habitat = Creature::Habitat::None);
+
+	// Spawns a squad of creatures.  Returns the squad index.
+	int spawn_squad(int squad_id, Vec3 start_pos, bool allow_visible);
 
 	bool difficulty_in_range (float difficulty, float target_difficulty);
 	float probability_factor (float difficulty, float target_difficulty);

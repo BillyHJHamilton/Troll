@@ -32,8 +32,12 @@ public:
 
 		bool PlaceShopSeed = false;
 
+		int MinAmbushRooms = 0;
+		int MaxAmbushRooms = 2;
+
 		// Fraction of cosmetic torches (no triggers) that start lit
 		int percent_torches_lit = 50;
+		int percent_monster_on_trigger = 20;
 
 		void Serialize(ISerializer& s);
 	};
@@ -53,9 +57,14 @@ public:
 	std::vector<Room> const& GetRoomVector() const { return m_RoomVec; }
 	bool IsStartRoom() const { return m_StartRoomIndex != c_Invalid; }
 	bool IsStartRoom(int roomIndex) const { return roomIndex == m_StartRoomIndex; }
+	bool IsRoomSecretPassage(int roomIndex) const
+		{ return IsRegionSecretPassage(m_RoomVec[roomIndex].GetRegion()); }
+	int GetRoomNeighbourCountExcludingSecretPassages(int roomIndex) const;
 
 	int GetRegionCount() const;
 	int GetRegionParent(int regionIndex) const { return m_RegionVec[regionIndex].parent; }
+	bool IsRegionSecretPassage(int regionIndex) const
+		{ return m_RegionVec[regionIndex].parent == Room::c_SecretPassage; }
 	bool IsStartRegionOrAncestorOfIt(int regionIndex) const;
 
 	// Generates rooms and tries to join everything up.

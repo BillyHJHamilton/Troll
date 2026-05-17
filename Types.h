@@ -18,6 +18,7 @@ class MapGenerator;
 class Room;
 class World;
 
+using Axis = int;
 struct Vec2;
 struct Vec3;
 struct Box2;
@@ -46,6 +47,7 @@ namespace Cloud
 namespace Creature
 {
 	enum Type : int;
+	enum class Habitat : int;
 	enum class Tag : int;
 	enum class Flag : int;
 	struct Stats;
@@ -63,6 +65,7 @@ namespace Damage
 namespace Door
 {
 	enum class LockedGenus : int;
+	enum class Placement : byte;
 	enum class Spelled : int;
 	enum class Triggered : int;
 	enum class TriggerType : int;

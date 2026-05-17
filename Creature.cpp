@@ -269,6 +269,12 @@ std::vector<Ability::Index> const& Handle::ability_list () const
 	return Gingerbread::read_abilities(type());
 }
 
+bool Handle::has_habitat (Habitat habitat) const
+{
+	assert(valid());
+	return Gingerbread::has_habitat(type(), habitat);
+}
+
 bool Handle::has_tag (Tag tag) const
 {
 	assert(valid());

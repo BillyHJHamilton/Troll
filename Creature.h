@@ -116,24 +116,37 @@ namespace Creature
 	using TypeList = std::vector<Creature::Type>;
 	using TypeTempList = std::vector<Creature::Type, Scratch<Creature::Type>>;
 
+	// Creature Habitats represent where a creature can spawn.
+	// They include other categories used to choose which creature can spawn.
+	// Eventually there should be habitats like Greenhouse.
+	enum class Habitat : int
+	{
+		None = c_Invalid,
+		Hogwarts,
+		Trap,	// Can be spawned by a monster trap.
+		Count
+	};
+	using HabitatBitset = std::bitset<(std::size_t)Habitat::Count>;
+
 	// Creature Tags represent a creature type's special traits.
 	// They are named like Category_Tag.  Mainly used for Fantastic Beasts.
 	enum class Tag : int
 	{
 		None = c_Invalid,
-		Bot_Blunder,		// Rarely stays in rest mode for long.
-		Bot_Sidestep,		// When not attacking, circles its target.
-		Colour_Rainbow,		// Cycles between rainbow colours.
-		Evade_Medium,		// It gains an innate +12 bonus to evasion.
-		Evade_High,			// It gains an innate +25 bonus to evasion.
-		Faint_Disappear,	// When defeated, disappears instead of fainting.
-		Immune_Clothes,		// No clothes, so immune to having clothes set on fire.
-		Immune_Legs,		// No legs, so immune to dancing, leg-locker, etc.
-		Move_Slow,			// It needs to skip a turn before moving.
-		Shop,				// Character acts as a shop instead of fighting.
-		Spells_Random,		// Will be assigned some random spells near its skill level.
-		Trail_Slime,		// Leaves a trail of slime clouds when it moves.
-		Vision_Short,		// Can only see 3 squares instead of 8.
+		Bot_Blunder,			// Rarely stays in rest mode for long.
+		Bot_Sidestep,			// When not attacking, circles its target.
+		Colour_Rainbow,			// Cycles between rainbow colours.
+		Evade_Medium,			// It gains an innate +12 bonus to evasion.
+		Evade_High,				// It gains an innate +25 bonus to evasion.
+		Faint_Disappear,		// When defeated, disappears instead of fainting.
+		Immune_Clothes,			// No clothes, so immune to having clothes set on fire.
+		Immune_Legs,			// No legs, so immune to dancing, leg-locker, etc.
+		Move_Slow,				// It needs to skip a turn before moving.
+		Shop,					// Character acts as a shop instead of fighting.
+		Spawn_IgnoreDifficulty,	// Full chance of adding, regardless of difficulty
+		Spells_Random,			// Will be assigned some random spells near its skill level.
+		Trail_Slime,			// Leaves a trail of slime clouds when it moves.
+		Vision_Short,			// Can only see 3 squares instead of 8.
 		Count
 	};
 	using TagBitset = std::bitset<(std::size_t)Tag::Count>;
@@ -220,6 +233,7 @@ namespace Creature
 		int num_abilities () const;
 		bool has_ability (Ability::Index ability) const;
 		std::vector<Ability::Index> const& ability_list () const;
+		bool has_habitat (Habitat habitat) const;
 		bool has_tag (Tag tag) const;
 		bool has_flag (Flag flag) const;
 		bool ready_to_move () const;

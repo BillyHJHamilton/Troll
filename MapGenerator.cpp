@@ -34,6 +34,7 @@ void MapGenerator::Parameters::Serialize(ISerializer& s)
 	s.srz_bool(PlaceShopSeed);
 
 	s.srz_int(percent_torches_lit);
+	s.srz_int(percent_monster_on_trigger);
 }
 
 void MapGenerator::Region::serialize(ISerializer& s)
@@ -70,6 +71,19 @@ void MapGenerator::RequestConnection(int targetMapId, int numToAdd)
 int MapGenerator::GetRoomCount() const
 {
 	return Util::Size(m_RoomVec);
+}
+
+int MapGenerator::GetRoomNeighbourCountExcludingSecretPassages(int roomIndex) const
+{
+	int neighbour_count = 0;
+	for (int neighbour_index : m_RoomVec[roomIndex].GetNeighbours())
+	{
+		if (!IsRoomSecretPassage(neighbour_index))
+		{
+			neighbour_count++;
+		}
+	}
+	return neighbour_count;
 }
 
 int MapGenerator::GetRegionCount() const

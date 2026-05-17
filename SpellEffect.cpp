@@ -98,10 +98,11 @@ void flipendo_vs_creature (EffectParams const & params)
 	}
 	else if (World::read().is_solid(knock_pos))
 	{
-		// TODO: Get terrain name
-		Draw::creature_message(target, std::format("{0} knocked into the wall!",
-			Grammar::You_are(target)));
+		Terrain::Type knock_terrain = World::read().get_terrain(knock_pos);
+		Draw::creature_message(target, std::format("{0} knocked into the {1}!",
+			Grammar::You_are(target), Terrain::get_name(knock_terrain)));
 		target.take_damage({1, Damage::Basic, Damage::Cause(caster)});
+		Feature::damage(knock_pos, {1, Damage::Basic, Damage::Cause(caster)});
 	}
 	else if (secondary_target != Creature::None)
 	{
@@ -320,7 +321,15 @@ void skurge(EffectParams params)
 
 void fumos (EffectParams params)
 {
-	Vec3 const target_pos = params.target_pos;
+	Vec3 target_pos = params.target_pos;
+
+	if (World::read().is_solid(target_pos) &&
+		params.impact_line != nullptr)
+	{
+		LineCache::Itr3D line = *params.impact_line; // copy
+		line.retreat();
+		target_pos = *line;
+	}
 
 	bool msg = false;
 	for (CompassItr itr(true); itr; ++itr)

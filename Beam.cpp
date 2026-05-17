@@ -303,7 +303,8 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 				beam.noun, Terrain::get_name(t)));
 			beam.done = true;
 
-			if (matching_feature || (is_feature && beam.damage > 0))
+			if (matching_feature || (is_feature && beam.damage > 0) ||
+			    Util::IsFlagSet(beam.target_flags, Target::f_Midair))
 			{
 				// if we call this for a spell, its effect function must check if it hit a creature
 				detonate_in_midair(beam, line);

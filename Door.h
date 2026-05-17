@@ -70,4 +70,19 @@ namespace Door
 	Terrain::Type get_terrain(Triggered door_type);
 	Terrain::Type get_terrain(Unlocked door_type);
 
+	enum class Placement : byte
+	{
+		Entrance = 0,
+		BothEnds,
+		Along,  // random position along hallway
+		Count,
+	};
+
+	Placement get_placement(Spelled door_type, int corridor_length);
+	Placement get_placement(Triggered door_type, int corridor_length);
+
+	// What terrain to use for the door at the other end of the hallway?
+	Terrain::Type get_match_terrain(Spelled door_type);
+	Terrain::Type get_match_terrain(Triggered door_type);
+
 } // namespace Door
