@@ -11,6 +11,7 @@ namespace Action
 	bool player_try_cast_spell(Spell::Index spell);
 	void player_use_item(int inventory_slot);
 
+	Vec3 pos_after_move(Creature::Handle creature, Vec2 relative_move);
 	bool is_move_hazardous (Creature::Handle creature, Vec2 relative_move);
 	bool try_move (Creature::Handle creature, Vec2 relative_move, MoveMode move_mode);
 

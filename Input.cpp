@@ -199,8 +199,21 @@ Input::Result handle_next_input ()
 			Vec3 const mouse_pos = view.mouse_to_global_pos();
 			if (view.contains_global_pos(mouse_pos))
 			{
-				Player::start_pathfind(mouse_pos);
-				return Result::StartAutomate;
+				if (mouse_pos == Player::pos())
+				{
+					return Result::Skipped;
+				}
+				else if (chessboard_2d(Player::pos(), mouse_pos) == 1)
+				{
+					// Treat single step as a normal move, not automove.
+					Action::player_try_move((mouse_pos - Player::pos()).xy());
+					return Result::Handled;
+				}
+				else
+				{
+					Player::start_pathfind(mouse_pos);
+					return Result::StartAutomate;
+				}
 			}
 		}
 

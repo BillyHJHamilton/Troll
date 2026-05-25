@@ -2,6 +2,7 @@
 
 #include "Types.h"
 
+#include "Creature.h"
 #include "Damage.h"
 #include "Geometry.h"
 
@@ -24,6 +25,8 @@ namespace Player
 
 		AutomoveType automove_type = AutomoveType::None;
 		CompassDirection automove_dir = c_CompassInvalid;
+		Creature::Handle automove_destination_creature = Creature::Handle(c_Invalid);
+
 		bool acted = false;
 
 		float sugar = 65.0f; // 0 - 100

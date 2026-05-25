@@ -371,10 +371,15 @@ bool Handle::resists (Damage::Type damage_type) const
 	return Gingerbread::read_resistance(type(), damage_type) < 1.0f;
 }
 
+bool Handle::is_friendly_to_player() const
+{
+	return is_player() ||
+		(has_tag(Tag::Shop) && !Shop::is_hostile());
+}
+
 bool Handle::is_friend (Creature::Handle other_creature) const
 {
-	// For now, this is pretty simple:
-	return is_player() == other_creature.is_player();
+	return is_friendly_to_player() == other_creature.is_friendly_to_player();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1109,7 +1114,15 @@ Creature::HandleList const & get_visible_creatures ()
 
 bool has_visible_enemy ()
 {
-	return !s_visible_creatures.empty();
+	for (Creature::Handle const creature : s_visible_creatures)
+	{
+		if (!creature.is_friendly_to_player())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 } // namespace Creature

@@ -232,6 +232,14 @@ void player_use_item(int inventory_slot)
 	Player::set_acted(true);
 }
 
+Vec3 pos_after_move(Creature::Handle creature, Vec2 relative_move)
+{
+	World const& world = World::read();
+	Vec3 const old_pos = creature.pos();
+	Vec2 const new_pos = old_pos.xy() + relative_move;
+	return new_pos.xyz(old_pos.z + world.get_stairs_dz(old_pos, new_pos));
+}
+
 bool is_move_hazardous (Creature::Handle creature, Vec2 relative_move)
 {
 	Vec3 const new_pos = pos_after_move(creature, relative_move);
@@ -423,14 +431,6 @@ void try_use_ability (Ability::Index ability, Creature::Handle user, Vec3 target
 
 //-------------------------------------------------------------------------------------------------
 // Helper function implementations
-
-Vec3 pos_after_move (Creature::Handle creature, Vec2 relative_move)
-{
-	World const& world = World::read();
-	Vec3 const old_pos = creature.pos();
-	Vec2 const new_pos = old_pos.xy() + relative_move;
-	return new_pos.xyz(old_pos.z + world.get_stairs_dz(old_pos, new_pos));
-}
 
 bool check_distraction (Creature::Handle caster, float distraction_percent)
 {

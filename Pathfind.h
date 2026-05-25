@@ -9,11 +9,24 @@ using Vec3TempList = std::vector<Vec3,Scratch<Vec3>>;
 
 namespace Pathfind
 {
+	// How to handle unexplored tiles when pathfinding.
+	enum class UnexploredMode : byte
+	{
+		Default = 0,	// Treat it as its actual terrain, ignoring LOS
+		Block,			// Don't allow pathing through unexplored
+		Open,			// Treat all unexplored spaces as open
+	};
+
+	// How to handle creatures when pathfinding.
+	enum class CreatureMode : byte
+	{
+		AvoidAll = 0,	// Treat all creatures as solid obstacles
+		AvoidVisible,	// Only treat visible creatures as obstacles
+		IgnoreAll,		// Ignore all creatures
+	};
+
 	struct NeighbourParam
 	{
-		// Whether to allow moving over creatures.
-		bool ignore_creatures = false;
-
 		// Whether to allow moving to a different z-level.
 		bool allow_stairs = true;
 
@@ -24,21 +37,15 @@ namespace Pathfind
 		// Used when trying to pathfind onto another creature for combat.
 		Creature::Handle target_creature = Creature::None;
 
-		// How to handle unexplored tiles.
-		enum class UnexploredMode : byte
-		{
-			Default = 0,	// Treat it as its actual terrain, ignoring LOS
-			Block,			// Don't allow pathing through unexplored
-			Open,			// Treat all unexplored spaces as open
-		};
+		CreatureMode creature_mode = CreatureMode::AvoidAll;
 		UnexploredMode unexplored_mode = UnexploredMode::Default;
 	};
 
 	struct AstarParam
 	{
 		int max_cost = 25;
-		bool ignore_creatures = false;
-		bool allow_unexplored = true;
+		CreatureMode creature_mode = CreatureMode::AvoidAll;
+		UnexploredMode unexplored_mode = UnexploredMode::Default;
 	};
 
 	struct ExploreParam

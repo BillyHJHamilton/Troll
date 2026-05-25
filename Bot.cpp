@@ -24,6 +24,7 @@
 #include "Taunt.h"
 #include "Terrain.h"
 #include "VectorUtil.h"
+#include "Visibility.h"
 #include "World.h"
 
 #include <array>
@@ -196,15 +197,19 @@ std::vector<Vec3>& get_move_stack(Creature::Handle handle)
 //-------------------------------------------------------------------------------------------------
 // Player pathfinding bot
 
-bool try_player_pathfind(Vec3 goal)
+bool try_player_pathfind(Vec3 goal, Creature::Handle target_creature)
 {
 	MoveStack& move_stack = get_move_stack(0);
+
+	Visibility const vis = World::read().get_visibility(goal);
 
 	Pathfind::AstarParam param
 	{
 		.max_cost = 100, // we'll see if this is enough
-		.ignore_creatures = true,
-		.allow_unexplored = false,
+		.creature_mode = Pathfind::CreatureMode::AvoidVisible,
+		.unexplored_mode = (vis == Visibility::Hidden) ?
+			Pathfind::UnexploredMode::Open :
+			Pathfind::UnexploredMode::Block,
 	};
 	Pathfind::astar(Player::pos(), goal, param, move_stack);
 
@@ -1087,7 +1092,7 @@ bool try_go_to_target_pos(Creature::Handle creature, Brain& brain)
 		Pathfind::AstarParam param
 		{
 			.max_cost = c_MaxPathCost,
-			.ignore_creatures = false
+			.creature_mode = Pathfind::CreatureMode::AvoidAll,
 		};
 		Pathfind::astar(pos, brain.target_pos, param, move_stack);
 

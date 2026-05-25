@@ -105,15 +105,15 @@ void MenuShopSell::sell_item()
 	// For now, we just "scrounge" some more beans out of thin air.
 	Shop::scrounge_beans(price);
 
+	Item::Handle sold_item = player_inventory.pop_item(slot);
+	shop_inventory.add_item(sold_item);
+
 	int const shop_bean_slot = shop_inventory.find_first_item(Item::Type::BBBean);
 	for (int i = 0; i < price; ++i)
 	{
 		Item::Handle bean = shop_inventory.pop_item(shop_bean_slot);
 		player_inventory.add_item(bean);
 	}
-
-	Item::Handle sold_item = player_inventory.pop_item(slot);
-	shop_inventory.add_item(sold_item);
 
 	Shop::notify_deal();
 

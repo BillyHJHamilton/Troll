@@ -353,6 +353,11 @@ void end_turn()
 		Creature::remove_defeated_creatures();
 	}
 
+	if (Creature::has_visible_enemy())
+	{
+		Player::stop_automove();
+	}
+
 	if (!Player::is_game_over())
 	{
 		Feature::update_all();

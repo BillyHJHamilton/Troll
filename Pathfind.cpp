@@ -76,7 +76,7 @@ void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 		Visibility const vis = world.get_visibility(next_pos);
 
 		if (vis == Visibility::Hidden &&
-			param.unexplored_mode == NeighbourParam::UnexploredMode::Block)
+			param.unexplored_mode == UnexploredMode::Block)
 		{
 			continue;
 		}
@@ -94,13 +94,13 @@ void find_open_neighbours(Vec3 pos, NeighbourParam param, Vec3TempList& out)
 		}
 
 		if (Terrain::is_solid(t) &&
-			(vis != Visibility::Hidden ||
-				param.unexplored_mode != NeighbourParam::UnexploredMode::Open))
+			(vis != Visibility::Hidden || param.unexplored_mode != UnexploredMode::Open))
 		{
 			continue;
 		}
 
-		if (!param.ignore_creatures)
+		if (param.creature_mode == CreatureMode::AvoidAll ||
+			(param.creature_mode == CreatureMode::AvoidVisible && vis == Visibility::Visible))
 		{
 			Creature::Handle creature = Creature::creature_at_pos(next_pos);
 			if (creature.valid() && creature != param.target_creature)
@@ -170,10 +170,10 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 
 		NeighbourParam neighbour_param
 		{
-			.ignore_creatures = param.ignore_creatures,
 			.allow_stairs = true,
 			.target_creature = target,
-			.unexplored_mode = NeighbourParam::UnexploredMode::Default
+			.creature_mode = param.creature_mode,
+			.unexplored_mode = param.unexplored_mode
 		};
 
 		find_open_neighbours(here, neighbour_param, neighbours);
@@ -187,7 +187,8 @@ void astar(Vec3 start, Vec3 goal, AstarParam param, std::vector<Vec3>& path_out)
 			}
 
 			// Option to prevent pathing through unknown tiles.
-			if (!param.allow_unexplored && neighbour != goal &&
+			if (param.unexplored_mode == UnexploredMode::Block &&
+				neighbour != goal &&
 				world.get_visibility(neighbour) == Visibility::Hidden)
 			{
 				continue;
@@ -283,11 +284,11 @@ void into_darkness(Vec3 start, ExploreParam param, std::vector<Vec3>& path_out)
 
 		NeighbourParam neighbour_param
 		{
-			.ignore_creatures = true,
 			.allow_stairs = param.allow_stairs,
+			.creature_mode = CreatureMode::AvoidVisible,
 			.unexplored_mode = (param.goal == ExploreParam::GoalType::Darkness) ?
-				NeighbourParam::UnexploredMode::Open :
-				NeighbourParam::UnexploredMode::Block
+				UnexploredMode::Open :
+				UnexploredMode::Block
 		};
 		find_open_neighbours(here, neighbour_param, neighbours);
 		for (Vec3 neighbour : neighbours)
@@ -380,8 +381,8 @@ void find_firing_position(Creature::Handle creature, Vec3 target, FiringPosition
 
 		NeighbourParam neighbour_param
 		{
-			.ignore_creatures = false,
 			.allow_stairs = true,
+			.creature_mode = CreatureMode::AvoidAll,
 		};
 		find_open_neighbours(here, neighbour_param, neighbours);
 		Random::shuffle_vector(neighbours); // don't always move a predictable direction

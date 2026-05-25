@@ -246,6 +246,7 @@ namespace Creature
 		Item::Handle peek_item () const;
 		bool is_immune (Damage::Type damage_type) const;
 		bool resists (Damage::Type damage_type) const;
+		bool is_friendly_to_player() const;
 		bool is_friend (Creature::Handle other_creature) const;
 
 		// Complex accessors

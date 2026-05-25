@@ -349,19 +349,19 @@ inline bool range_2d(Vec3 p0, Vec3 p1, int max_range)
 }
 
 // Get euclidean distance on the xy components of the vectors.
-inline bool euclid_2d(Vec3 p0, Vec3 p1)
+inline float euclid_2d(Vec3 p0, Vec3 p1)
 {
 	return euclid(p0.xy(), p1.xy());
 }
 
 // Get manhattan distance on the xy components of the vectors.
-inline bool manhattan_2d(Vec3 p0, Vec3 p1)
+inline int manhattan_2d(Vec3 p0, Vec3 p1)
 {
 	return manhattan(p0.xy(), p1.xy());
 }
 
 // Get chessboard distance on the xy components of the vectors.
-inline bool chessboard_2d(Vec3 p0, Vec3 p1)
+inline int chessboard_2d(Vec3 p0, Vec3 p1)
 {
 	return chessboard(p0.xy(), p1.xy());
 }

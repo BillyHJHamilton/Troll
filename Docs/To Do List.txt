@@ -120,7 +120,10 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
-- Accuracy of Alohomora appears as 50% which is sort of misleading.
+Shop:
+ - Not all creatures are hostile - c.f. is hostile creature in view
+ - Automove - path around visible creatures
+  - don't automove into a creature unless it's the actual target square
 
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?

@@ -42,7 +42,7 @@ namespace Bot
 	void reset_brain(Creature::Handle creature);
 
 	// Player pathfinding bot
-	bool try_player_pathfind(Vec3 goal);
+	bool try_player_pathfind(Vec3 goal, Creature::Handle target_creature);
 	bool try_player_collect();
 	bool try_player_explore();
 	bool has_player_path();

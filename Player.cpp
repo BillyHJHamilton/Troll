@@ -98,25 +98,36 @@ void start_automove(CompassDirection dir)
 {
 	edit_data().automove_type = AutomoveType::Compass;
 	edit_data().automove_dir = dir;
+	edit_data().automove_destination_creature.invalidate();
 }
 
 void start_pathfind (Vec3 target)
 {
 	if (World::read().get_visibility(target) == Visibility::Hidden)
 	{
-		Draw::add_message("Can't travel to unexplored area.");
+		// TODO: I'd like to allow this, but it can send astar into a very long loop.
+		Draw::add_message("Can't auto-travel to unexplored square.");
 		return;
 	}
-	else if (World::read().is_solid(target))
+
+	if (World::read().get_visibility(target) != Visibility::Hidden &&
+		World::read().is_solid(target))
 	{
 		Draw::add_message("Can't travel to that square.");
 		return;
 	}
 
-	bool success = Bot::try_player_pathfind(target);
+	Creature::Handle target_creature = Creature::creature_at_pos(target);
+	if (!target_creature.visible())
+	{
+		target_creature.invalidate();
+	}
+
+	bool success = Bot::try_player_pathfind(target, target_creature);
 	if (success)
 	{
 		edit_data().automove_type = AutomoveType::Path;
+		edit_data().automove_destination_creature = target_creature;
 	}
 	else
 	{
@@ -130,6 +141,7 @@ void auto_collect ()
 	if (success)
 	{
 		edit_data().automove_type = AutomoveType::Path;
+		edit_data().automove_destination_creature.invalidate();
 	}
 	else
 	{
@@ -143,6 +155,7 @@ void auto_darkness ()
 	if (success)
 	{
 		edit_data().automove_type = AutomoveType::Path;
+		edit_data().automove_destination_creature.invalidate();
 	}
 	else
 	{
@@ -153,12 +166,14 @@ void auto_darkness ()
 void auto_explore ()
 {
 	edit_data().automove_type = AutomoveType::Explore;
+	edit_data().automove_destination_creature.invalidate();
 }
 
 void stop_automove()
 {
 	edit_data().automove_type = AutomoveType::None;
 	edit_data().automove_dir = c_CompassInvalid;
+	edit_data().automove_destination_creature.invalidate();
 	Bot::clear_player_path();
 }
 
@@ -217,6 +232,14 @@ void dispatch_automove()
 				return;
 			}
 
+			Vec3 const pos_after_move = Action::pos_after_move(Player::handle(), relative_move);
+			Creature::Handle const creature = Creature::creature_at_pos(pos_after_move);
+			if (creature.valid() && creature != read_data().automove_destination_creature)
+			{
+				Player::stop_automove();
+				return;
+			}
+
 			bool const moved = Action::player_try_move(c_Compass[dir]);
 
 			if (!moved)
@@ -258,6 +281,15 @@ void dispatch_automove()
 		}
 		else
 		{
+			Vec3 const pos_after_move = Action::pos_after_move(Player::handle(), move);
+			Creature::Handle const creature = Creature::creature_at_pos(pos_after_move);
+			if (creature.valid() &&
+				creature != read_data().automove_destination_creature)
+			{
+				Player::stop_automove();
+				return;
+			}
+
 			bool moved = Action::player_try_move(move);
 			if (!moved)
 			{
@@ -265,12 +297,6 @@ void dispatch_automove()
 				return;
 			}
 		}
-	}
-
-	if (Creature::has_visible_enemy())
-	{
-		Player::stop_automove();
-		return;
 	}
 }
 
