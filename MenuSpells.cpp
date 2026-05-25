@@ -118,7 +118,7 @@ void MenuSpells::draw_selected_spell ()
 		<< std::setw(3) << std::left << Spell::get_difficulty(s)
 		<< " (" << std::fixed << std::setprecision(0) << base_success << "% successful)\n";
 
-	if (target_type == Target::Beam || target_type == Target::Melee)
+	if (Spell::is_aggressive(s) && (target_type == Target::Beam || target_type == Target::Melee))
 	{
 		ss << std::setw(13) << std::left << "Accuracy:" << Spell::get_accuracy(s) << "\n";
 	}
