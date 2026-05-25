@@ -23,6 +23,7 @@ namespace Beam
 
 	// Beam flags
 	uint constexpr f_CasterAimed	= 1 << 0;
+	uint constexpr f_Aggressive		= 1 << 1;
 
 	struct Data
 	{

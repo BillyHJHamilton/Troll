@@ -120,6 +120,10 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
+- Accuracy of Alohomora appears as 50% which is sort of misleading.
+
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?
   They can see you but you can't see them. - Seems hard to reproduce.
+  - Maybe related to automove
+

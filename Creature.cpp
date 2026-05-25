@@ -22,6 +22,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "Serialize.h"
+#include "Shop.h"
 #include "Spell.h"
 #include "Squad.h"
 #include "Status.h"
@@ -333,6 +334,10 @@ bool Handle::has_item () const
 	{
 		return Inventory::read().has_item();
 	}
+	else if (has_tag(Tag::Shop))
+	{
+		return Shop::has_item(type());
+	}
 
 	return read_creature_instance(index).carried_item != c_Invalid;
 }
@@ -346,6 +351,11 @@ Item::Handle Handle::peek_item () const
 		return has_item() ?
 			Inventory::read().peek_item(0) :
 			Item::Handle(c_Invalid);
+	}
+	else if (has_tag(Tag::Shop))
+	{
+		// NOTE: Would need to handle this properly for gnomes to steal from Fred/George.
+		return Item::Handle(c_Invalid);
 	}
 
 	return read_creature_instance(index).carried_item;
@@ -410,6 +420,16 @@ bool Handle::visible () const
 
 	World const& world = World::read();
 	return world.is_visible(pos());
+}
+
+bool Handle::should_autotarget() const
+{
+	if (has_tag(Creature::Tag::Shop) && !Shop::is_hostile())
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool Handle::finds_pos_hazardous (Vec3 pos) const
@@ -808,8 +828,14 @@ Item::Handle Handle::pop_item ()
 			int const slot = Inventory::read().random_slot();
 			return Inventory::edit().pop_item(slot);
 		}
-
-		return Item::unstack(edit_creature_instance(index).carried_item);
+		else if (has_tag(Tag::Shop))
+		{
+			return Shop::pop_item(type());
+		}
+		else
+		{
+			return Item::unstack(edit_creature_instance(index).carried_item);
+		}
 	}
 }
 

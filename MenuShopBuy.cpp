@@ -49,6 +49,12 @@ void MenuShopBuy::refresh()
 	for (int slot = 0; slot < shop_inventory.num_slots(); ++slot)
 	{
 		Item::Handle const item = shop_inventory.peek_item(slot);
+
+		if (item.type() == Item::Type::BBBean)
+		{
+			continue;
+		}
+
 		int const price = item.buy_price();
 
 		std::string label = std::format("{} beans - {}", price, item.name());
@@ -103,7 +109,11 @@ void MenuShopBuy::try_buy_item()
 	if (player_beans >= price)
 	{
 		int const bean_slot = player_inventory.find_first_item(Item::BBBean);
-		player_inventory.remove_items(bean_slot, price);
+		for (int i = 0; i < price; ++i)
+		{
+			Item::Handle bean = player_inventory.pop_item(bean_slot);
+			shop_inventory.add_item(bean);
+		}
 
 		Item::Handle bought_item = shop_inventory.pop_item(slot);
 		player_inventory.add_item(bought_item);

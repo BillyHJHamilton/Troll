@@ -77,6 +77,16 @@ Damage::Type damage_type(Ability::Index index)
 	return s_ability_list.at(index).damage_type;
 }
 
+bool is_aggressive(Ability::Index index)
+{
+	if (s_ability_list[index].target_type == Target::Self)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 Target::Type target_type(Ability::Index index)
 {
 	assert(is_valid(index));

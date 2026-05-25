@@ -532,7 +532,7 @@ void init()
 			.presentation=Emote, .condition=PlayerStatus, .subtype=Status::Prone},
 	};
 
-	s_taunts[Creature::HarryTheHufflepuff_1] = 
+	s_taunts[Creature::HarryTheHufflepuff_1] =
 	{
 		Taunt::Data{.text="This is too much work."},
 		Taunt::Data{.text="Do we need to do this?"},
@@ -554,7 +554,7 @@ void init()
 	};
 
 	// TODO: Add a way for Fred and George to finish one other's sentences.
-	s_taunts[Creature::Fred_Shop] = 
+	s_taunts[Creature::Fred_Shop] =
 	{
 		Taunt::Data{.text="Psst!  Over here!",
 			.condition=Greeting, .repeat=true},
@@ -580,9 +580,11 @@ void init()
 			.condition=ShopLeaving},
 		Taunt::Data{.text="Give 'em our regards!",
 			.condition=ShopLeaving},
+
+		// TODO - Add some lines for combat mode.
 	};
 
-	s_taunts[Creature::George_Shop] = 
+	s_taunts[Creature::George_Shop] =
 	{
 		Taunt::Data{.text="Care to trade?",
 			.condition=ShopAttract},

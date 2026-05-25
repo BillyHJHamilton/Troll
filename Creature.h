@@ -252,6 +252,7 @@ namespace Creature
 		char const* colour () const;
 		bool is_player () const;
 		bool visible () const;
+		bool should_autotarget () const;
 		bool finds_pos_hazardous (Vec3 pos) const;
 		int vision () const;
 		float miscast_rate_for_spell (Spell::Index spell) const;

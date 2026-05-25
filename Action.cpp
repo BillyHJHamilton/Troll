@@ -136,12 +136,12 @@ bool player_try_move(Vec2 relative_move)
 		Creature::Handle creature_in_way = Creature::creature_at_pos(new_pos);
 		if (creature_in_way.valid())
 		{
-			if (creature_in_way.has_tag(Creature::Tag::Shop))
+			if (creature_in_way.has_tag(Creature::Tag::Shop) && !Shop::is_hostile())
 			{
 				// Don't end turn here; it will happen when the menu is closed.
 				Shop::interact(creature_in_way.type());
 			}
-			// else: basic melee or other interactions
+			// TODO: else: basic melee or other interactions
 		}
 	}
 

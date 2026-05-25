@@ -55,6 +55,9 @@ namespace Bot
 	// Tell a creature it should go take a look over there, if it's not busy.
 	void notify_investigate(Creature::Handle creature, Vec3 attack_origin);
 
+	// Tell a creature it was hit by a beam.  Details of beam may be inspected.
+	void notify_hit_by_beam(Creature::Handle creature, const Beam::Data& beam_data);
+
 	// Tell a creature its attacks have changed, so recalculate attack ranges.
 	void notify_attacks_changed(Creature::Handle creature);
 }

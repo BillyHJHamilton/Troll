@@ -132,6 +132,30 @@ bool is_damaging (Spell::Index spell_index)
 	return s_spell_list[spell_index].damage != 0;
 }
 
+bool is_aggressive (Spell::Index spell_index)
+{
+	assert(is_valid_index(spell_index));
+
+	if (s_spell_list[spell_index].target_type == Target::Self)
+	{
+		return false;
+	}
+
+	// TODO In future, possibly Skurge would be considered aggressive for ghosts only...?
+
+	switch (spell_index)
+	{
+		case Spell::Alohomora:
+		case Spell::Skurge:
+		case Spell::Fumos:
+		case Spell::Colloportus:
+			return false;
+
+		default:
+			return true;
+	}
+}
+
 Damage::Type damage_type (Spell::Index spell_index)
 {
 	assert(is_valid_index(spell_index));

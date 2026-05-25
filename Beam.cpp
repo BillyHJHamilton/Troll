@@ -91,6 +91,11 @@ Beam::Data make_spell_beam (Spell::Index spell, Creature::Handle caster, Vec3 ta
 	{
 		Util::SetFlag(beam_flags, f_CasterAimed);
 	}
+
+	if (Spell::is_aggressive(spell))
+	{
+		Util::SetFlag(beam_flags, f_Aggressive);
+	}
 	
 	uint const target_flags = Spell::get_target_flags(spell);
 
@@ -127,7 +132,12 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 
 	Creature::Handle intended_target = Creature::creature_at_pos(target_pos);
 	int ability_range = Ability::get_range(ability);
-	uint flags = f_CasterAimed;
+	uint beam_flags = f_CasterAimed;
+
+	if (Ability::is_aggressive(ability))
+	{
+		Util::SetFlag(beam_flags, f_Aggressive);
+	}
 
 	Beam::Type beam_type = Type::Projectile;
 	char const* noun = "ERROR BEAM";
@@ -169,7 +179,7 @@ Beam::Data make_ability_beam (Ability::Index ability, Creature::Handle caster, V
 		.damage_type = Ability::damage_type(ability),
 		.damage = Ability::get_damage(ability),
 		.spell_power = 0, // not a spell
-		.beam_flags = flags,
+		.beam_flags = beam_flags,
 		.target_flags = target_flags,
 		.done = false
 	};
@@ -354,12 +364,6 @@ void test_for_impact (Beam::Data & beam, LineCache::Itr3D const & line)
 
 static int get_hit_chance(Beam::Data const & beam, Creature::Handle target)
 {
-	// Special case for Fred and George
-	if (target.has_tag(Creature::Tag::Shop))
-	{
-		return 0;
-	}
-
 	int caster_accuracy_factor;
 	int target_evasion_divisor;
 	
@@ -460,6 +464,11 @@ void hit_creature(Beam::Data const & beam, Creature::Handle target, LineCache::I
 			.cause = Damage::Cause(beam.caster)
 		};
 		target.take_damage(dmg);
+	}
+
+	if (!target.is_player())
+	{
+		Bot::notify_hit_by_beam(target, beam);
 	}
 }
 

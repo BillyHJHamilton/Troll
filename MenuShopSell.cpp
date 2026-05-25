@@ -101,9 +101,15 @@ void MenuShopSell::sell_item()
 	Item::Handle const item = player_inventory.peek_item(slot);
 	int const price = item.sell_price();
 
+	// TODO: Should we stop selling if shop is out of beans?
+	// For now, we just "scrounge" some more beans out of thin air.
+	Shop::scrounge_beans(price);
+
+	int const shop_bean_slot = shop_inventory.find_first_item(Item::Type::BBBean);
 	for (int i = 0; i < price; ++i)
 	{
-		player_inventory.add_item(Item::make_bbb());
+		Item::Handle bean = shop_inventory.pop_item(shop_bean_slot);
+		player_inventory.add_item(bean);
 	}
 
 	Item::Handle sold_item = player_inventory.pop_item(slot);

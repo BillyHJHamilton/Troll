@@ -49,6 +49,13 @@ bool Inventory::has_item () const
 	return !invent.empty();
 }
 
+bool Inventory::has_non_bean () const
+{
+	return num_beans() > 0 ?
+		num_slots() > 1 :
+		num_slots() > 0;
+}
+
 bool Inventory::has_item_to_sell () const
 {
 	for (Item::Handle const item : invent)
@@ -76,6 +83,19 @@ int Inventory::total_items () const
 	return n;
 }
 
+int Inventory::num_non_beans() const
+{
+	int n = 0;
+	for (int i = 0; i < num_slots(); ++i)
+	{
+		if (invent[i].type() != Item::Type::BBBean)
+		{
+			n += invent[i].stack_height();
+		}
+	}
+	return n;
+}
+
 int Inventory::num_beans () const
 {
 	int const bean_slot = find_first_item(Item::BBBean);
@@ -93,6 +113,29 @@ int Inventory::random_slot () const
 	else
 	{
 		return Random::index(invent);
+	}
+}
+
+int Inventory::random_non_bean_slot() const
+{
+	if (num_beans() == 0)
+	{
+		return random_slot();
+	}
+	else if (num_slots() == 1)
+	{
+		// nothing but beans here, sir
+		return c_Invalid;
+	}
+	else
+	{
+		int const bean_slot = find_first_item(Item::Type::BBBean);
+		int slot = Random::in_range(0, num_slots() - 2);
+		if (slot >= bean_slot)
+		{
+			++slot;
+		}
+		return slot;
 	}
 }
 

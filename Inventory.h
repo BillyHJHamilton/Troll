@@ -15,11 +15,14 @@ public:
 	void serialize_instance(ISerializer& s);
 
 	bool has_item () const;
+	bool has_non_bean () const;
 	bool has_item_to_sell () const;
 	int num_slots () const;
 	int total_items () const;
+	int num_non_beans() const;
 	int num_beans () const;
 	int random_slot () const;
+	int random_non_bean_slot () const;
 	Item::Handle const peek_item (int slot) const;
 
 	// Find first slot with item of the given type.

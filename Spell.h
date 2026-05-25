@@ -98,6 +98,7 @@ namespace Spell
 	int get_dark (Spell::Index spell_index);
 	int get_damage (Spell::Index spell_index, Creature::Handle caster);
 	bool is_damaging (Spell::Index spell_index);
+	bool is_aggressive (Spell::Index spell_index);
 	Damage::Type damage_type (Spell::Index spell_index);
 	Damage::Packet damage_packet (Spell::Index spell_index, Creature::Handle caster);
 	int get_power (Spell::Index spell_index, Creature::Handle caster);

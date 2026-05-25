@@ -63,6 +63,8 @@ namespace Ability
 	bool is_damaging(Ability::Index index);
 	Damage::Type damage_type(Ability::Index index);
 
+	bool is_aggressive(Ability::Index index);
+
 	Target::Type target_type(Ability::Index index);
 	uint get_target_flags(Ability::Index index);
 	bool has_accuracy (Ability::Index index);

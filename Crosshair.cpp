@@ -150,7 +150,7 @@ void cycle (int step, bool manually)
 	targets.reserve(Util::Size(visible_creatures) + 10);
 	for (Creature::Handle creature : visible_creatures)
 	{
-		if (!creature.has_tag(Creature::Tag::Shop))
+		if (creature.should_autotarget())
 		{
 			targets.push_back(creature.pos());
 		}

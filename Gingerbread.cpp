@@ -429,11 +429,13 @@ void init()
 	// Shop Characters:
 	
 	Builder(Creature::Fred_Shop, "Fred",
-		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		/*Difficulty*/ 4.0f, /*Probability*/ 0.0f, /*HP*/ 15)
+		.magic(50, "SP MW")
 		.tags(Tag::Shop);
 
 	Builder(Creature::George_Shop, "George",
-		/*Difficulty*/ 0.0f, /*Probability*/ 0.0f, /*HP*/ 10)
+		/*Difficulty*/ 4.0f, /*Probability*/ 0.0f, /*HP*/ 15)
+		.magic(50, "SP RS")
 		.tags(Tag::Shop);
 
 	// Validate that we didn't miss something.

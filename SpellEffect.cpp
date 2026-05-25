@@ -507,7 +507,7 @@ void accio (EffectParams params)
 	{
 		if (target.has_item())
 		{
-			if (Random::one_in(3) || target.has_tag(Creature::Tag::Shop))
+			if (Random::one_in(3))
 			{
 				Draw::creature_message(target, std::format(
 					"{} {} onto {} belongings.",

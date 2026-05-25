@@ -3,6 +3,7 @@
 #include "Ability.h"
 #include "Action.h"
 #include "Beam.h"
+#include "BitFlag.h"
 #include "Creature.h"
 #include "Debug.h"
 #include "Draw.h"
@@ -167,12 +168,16 @@ void serialize(ISerializer& s)
 
 void reset_brain(Creature::Handle handle)
 {
-	// Technically we leave a brain for the player.
-	// It's not worth the confusingness of offsetting the indices.
-	// We even use the move stack a little for auto-move.
+	// Note: The index of a brain is the same as for its creature.
+	// This includes a brain for the player at [0], which is used a little for automove.
 
 	s_brains.at((int)handle) = Brain{};
 	s_move_stacks.at((int)handle).clear();
+
+	if (handle.valid() && handle.has_tag(Creature::Tag::Shop) && !Shop::is_hostile())
+	{
+		enter_state(handle, get_brain(handle), State::Shopkeep);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -352,6 +357,43 @@ void notify_investigate(Creature::Handle creature, Vec3 target_pos)
 	}
 }
 
+void notify_hit_by_beam(Creature::Handle creature, const Beam::Data& beam_data)
+{
+	if (!creature.valid())
+	{
+		return;
+	}
+
+	Brain& brain = get_brain(creature);
+
+	if (brain.state == State::Shopkeep)
+	{
+		if (!Util::IsFlagSet(beam_data.beam_flags, Beam::f_Aggressive))
+		{
+			return;
+		}
+
+		const bool by_player = beam_data.caster.valid() && beam_data.caster.is_player();
+
+		--brain.patience;
+
+		if (beam_data.damage > 0 && creature.hp_percent() <= 0.5f)
+		{
+			brain.patience = 0;
+		}
+
+		if (beam_data.damage > 0 && beam_data.intended_target == creature && by_player)
+		{
+			brain.patience = 0;
+		}
+
+		if (by_player && brain.patience <= 0)
+		{
+			Shop::become_hostile();
+		}
+	}
+}
+
 void notify_attacks_changed(Creature::Handle creature)
 {
 	Brain& brain = get_brain(creature);
@@ -465,12 +507,8 @@ void check_for_target(Creature::Handle creature, Brain& brain, Thoughts& thought
 
 void check_transitions(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
-	if (creature.has_tag(Creature::Tag::Shop))
+	if (creature.has_tag(Creature::Tag::Shop) && !Shop::is_hostile())
 	{
-		if (brain.state != State::Shopkeep)
-		{
-			enter_state(creature, brain, State::Shopkeep);
-		}
 		return;
 	}
 
@@ -577,8 +615,13 @@ void enter_state(Creature::Handle creature, Brain& brain, Bot::State state)
 		case State::Blunder:
 		{
 			brain.patience = 0;
+			break;
 		}
-		break;
+		case State::Shopkeep:
+		{
+			brain.patience = 4;
+			break;
+		}
 	}
 
 	if (Debug::enabled(Debug::Bot))
@@ -783,8 +826,21 @@ void bot_fight(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 	}
 }
 
-void bot_shopkeep(Creature::Handle const creature, Brain& brain, Thoughts& thoughts)
+void bot_shopkeep(Creature::Handle creature, Brain& brain, Thoughts& thoughts)
 {
+	// Trigger retreat if damaged by secondary sources harder to pin on the player.
+	if (creature.hp_percent() <= 0.5f)
+	{
+		brain.patience = 0;
+	}
+
+	if (brain.patience <= 0 && !Shop::is_hostile())
+	{
+		// Outta here!
+		Shop::retreat();
+		return;
+	}
+
 	if (thoughts.target_visible)
 	{
 		if (!is_aware(creature))
