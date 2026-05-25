@@ -34,7 +34,7 @@ ORGANIZATION
 - Avoid needless includes in headers (if a forward declaration will work).
 - Add forward declarations to Types.h and include it (instead of repeating them in each header).
 - List includes in these groups, then in alphabetic order:
-  - Header file for the current cpp file
+  - Header file for the current cpp file (or Types.h in header)
   - Header files from this project
   - Library header files
 

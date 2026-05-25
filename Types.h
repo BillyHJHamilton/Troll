@@ -38,6 +38,11 @@ namespace Ability
 	struct Data;
 }
 
+namespace Beam
+{
+	struct Data;
+}
+
 namespace Cloud
 {
 	enum Type : int;
