@@ -120,11 +120,6 @@ Design Thoughts from Richard
 Bugs / Issues
 -------------------------------------------------------------------------------
 
-Shop:
- - Not all creatures are hostile - c.f. is hostile creature in view
- - Automove - path around visible creatures
-  - don't automove into a creature unless it's the actual target square
-
 Maybe:
 - Apparently sometimes LOS is asymmetric with enemies?
   They can see you but you can't see them. - Seems hard to reproduce.
